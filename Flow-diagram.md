@@ -1,5 +1,5 @@
 ```mermaid
-flowchart LR
+flowchart TD
 
 %% Applicant
 A[Applicant] -->|Sends Email + CV| B[Microsoft 365 Mailbox]
