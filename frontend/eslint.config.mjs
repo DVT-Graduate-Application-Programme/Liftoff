@@ -7,14 +7,22 @@ import prettier from "eslint-config-prettier";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  ...tseslint.configs.strictTypeChecked,
+  ...tseslint.configs.strictTypeChecked.map((config) => ({
+    ...config,
+    files: ["**/*.ts", "**/*.tsx", "**/*.mts"],
+  })),
   {
+    files: ["**/*.ts", "**/*.tsx", "**/*.mts"],
     languageOptions: {
       parserOptions: {
         project: true,
         tsconfigRootDir: import.meta.dirname,
       },
     },
+  },
+  {
+    files: ["**/*.mjs", "**/*.cjs", "**/*.js"],
+    ...tseslint.configs.disableTypeChecked,
   },
   prettier,
   // Override default ignores of eslint-config-next.
