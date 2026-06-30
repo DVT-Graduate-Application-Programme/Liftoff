@@ -30,7 +30,7 @@ services:
 
   ollama-init:
     image: ollama/ollama:latest
-    entrypoint: ["ollama", "pull", "gemma3:4b"]
+    entrypoint: ["ollama", "pull", "gemma3:4b"] # To switch moddels just change gemma3:4b in the entrypoint . Fll list of available models at ollama.com/library.
     environment:
       OLLAMA_HOST: "http://ollama:11434"
     depends_on:
