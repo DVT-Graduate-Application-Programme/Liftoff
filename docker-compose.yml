@@ -9,11 +9,26 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags > /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
 
   backend:
     build: ./backend
@@ -22,23 +37,28 @@ services:
     environment:
       ConnectionStrings__Default: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       ASPNETCORE_ENVIRONMENT: Development
+      Ollama__BaseUrl: "http://ollama:11434"
     ports:
       - "8080:8080"
     depends_on:
       db:
         condition: service_healthy
+      ollama:
+        condition: service_healthy
 
   frontend:
     build: ./frontend
     env_file:
-      - env.development
+      - .env.development
     environment:
-      # Server-side calls go service-to-service; browser calls need a public URL
       BACKEND_URL: "http://backend:8080"
+      NEXT_PUBLIC_BACKEND_URL: "http://localhost:8080"
     ports:
       - "3000:3000"
     depends_on:
-      - backend
+      backend:
+        condition: service_started
 
 volumes:
   pgdata:
+  ollama_data:
