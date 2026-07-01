@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import Navbar from "@/components/Navbar";
-import { NavDrawer } from "@/components/NavDrawer";
+import Navbar from "@/components/Navbar/Navbar";
+import { NavDrawer } from "@/components/Navbar/NavDrawer";
 
 type AppShellProps = {
   children: React.ReactNode;
