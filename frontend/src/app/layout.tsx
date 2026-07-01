@@ -30,15 +30,15 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <ThemeProvider
-        attribute="data-theme"
-        defaultTheme="light"
-        enableSystem={false}
-      >
-        <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col">
+        <ThemeProvider
+          attribute="data-theme"
+          defaultTheme="light"
+          enableSystem={false}
+        >
           <AppShell>{children}</AppShell>
-        </body>
-      </ThemeProvider>
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
