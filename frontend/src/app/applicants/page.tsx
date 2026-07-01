@@ -13,11 +13,11 @@ export default function Applicants() {
           </div>
           <div className="flex gap-3">
             <button className="flex items-center gap-2 px-4 py-2 bg-surface-white border border-outline-variant rounded-lg">
-            <ListFilter size={16}/>
+              <ListFilter size={16} />
               Advanced Filters
             </button>
             <button className="flex items-center gap-2 px-4 py-2 bg-surface-white border border-outline-variant rounded-lg">
-              <ListOrdered size={16}/>
+              <ListOrdered size={16} />
               Sort: Higher System Score
             </button>
           </div>
@@ -50,7 +50,36 @@ export default function Applicants() {
             </span>
           </div>
           <div className="grid grid-cols-1 gap-4">
-            <ApplicantCard />
+            <ApplicantCard
+              name="Sarah Jenkins"
+              institute="BSc Computer Science • 3 Years Exp"
+              grades={[
+                { subject: "Maths", mark: 88 },
+                { subject: "Prog", mark: 92 },
+                { subject: "IT", mark: 79 },
+              ]}
+              systemScore={86.3}
+            />
+             <ApplicantCard
+              name="Neo Rankapole"
+              institute="BSc Computer Science • 1 Years Exp"
+              grades={[
+                { subject: "Maths", mark: 97 },
+                { subject: "Prog", mark: 99 },
+                { subject: "IT", mark: 99 },
+              ]}
+              systemScore={86.3}
+            />
+             <ApplicantCard
+              name="Jake Benkins"
+              institute="BSc Computer Science • 3 Years Exp"
+              grades={[
+                { subject: "Maths", mark: 83 },
+                { subject: "Prog", mark: 78 },
+                { subject: "IT", mark: 60 },
+              ]}
+              systemScore={86.3}
+            />
           </div>
         </section>
 
@@ -64,7 +93,16 @@ export default function Applicants() {
             </span>
           </div>
           <div className="grid grid-cols-1 gap-4">
-            <ApplicantCard />
+            <ApplicantCard
+              name="Sarah Jenkins"
+              institute="BSc Computer Science • 3 Years Exp"
+              grades={[
+                { subject: "Maths", mark: 88 },
+                { subject: "Prog", mark: 92 },
+                { subject: "IT", mark: 79 },
+              ]}
+              systemScore={86.3}
+            />
             <div className="flex items-center justify-center py-8 border-2 border-dashed border-outline-variant rounded-xl text-on-surface-variant font-medium hover:bg-surface-container-low transition-colors cursor-pointer">
               Load 11 More Applicants
             </div>
