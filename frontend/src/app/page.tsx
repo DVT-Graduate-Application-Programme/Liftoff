@@ -1,15 +1,10 @@
 import Image from "next/image";
-import { ModeToggle } from "@/components/mode-toggle";
-import { SidebarNav } from "@/components/sidebarnav";
 
 export default function Home() {
   return (
-    <SidebarNav>
+    <>
       <div className="flex flex-1 flex-col items-center justify-center bg-background font-sans">
         <main className="relative flex w-full max-w-3xl flex-1 flex-col items-center justify-between rounded-xl bg-card px-16 py-32 sm:items-start">
-          <div className="absolute top-6 right-6">
-            <ModeToggle />
-          </div>
           <Image
             className="dark:invert"
             src="/next.svg"
@@ -67,6 +62,7 @@ export default function Home() {
           </div>
         </main>
       </div>
-    </SidebarNav>
+    </>
+    // </SidebarNav>
   );
 }
