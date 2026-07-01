@@ -1,15 +1,12 @@
 "use client";
 
-import * as React from "react";
-import { Cross, Minus, Plus, X } from "lucide-react";
+import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerClose,
   DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
@@ -22,12 +19,6 @@ export function NavDrawer({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const [goal, setGoal] = React.useState(350);
-
-  function onClick(adjustment: number) {
-    setGoal((prevGoal) => Math.max(200, Math.min(400, prevGoal + adjustment)));
-  }
-
   return (
     <Drawer open={open} onOpenChange={onOpenChange} direction="left">
       <DrawerContent>
