@@ -1,20 +1,16 @@
-import { History, LayoutDashboard, Rocket, Users } from "lucide-react";
-
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
+  Bell,
+  History,
+  LayoutDashboard,
+  Rocket,
+  Settings,
+  Users,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
@@ -22,9 +18,10 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarRail,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { NavSearchBar } from "./NavSearchBar";
+import { Button } from "./ui/button";
 
 type NavItem = {
   label: string;
@@ -92,7 +89,7 @@ const SidebarLogo = ({ branding }: { branding: SidebarData["branding"] }) => {
 const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
   return (
     <Sidebar {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="py-8">
         <SidebarLogo branding={sidebarData.branding} />
       </SidebarHeader>
       <SidebarContent>
@@ -130,23 +127,18 @@ const SidebarNav = ({ className, children }: SidebarProps) => {
     <SidebarProvider className={cn(className)}>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator
-            orientation="vertical"
-            className="mr-2 data-[orientation=vertical]:h-4"
-          />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="#">Overview</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Dashboard</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+        <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4 bg-white">
+          <div>
+            <NavSearchBar />
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="icon" aria-label="Notifications">
+              <Bell />
+            </Button>
+            <Button variant="outline" size="icon" aria-label="Settings">
+              <Settings />
+            </Button>
+          </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
       </SidebarInset>
