@@ -1,4 +1,6 @@
 import ApplicantCard from "./components/applicant-card";
+import { ListFilter, ListOrdered } from "lucide-react";
+
 export default function Applicants() {
   return (
     <>
@@ -11,11 +13,11 @@ export default function Applicants() {
           </div>
           <div className="flex gap-3">
             <button className="flex items-center gap-2 px-4 py-2 bg-surface-white border border-outline-variant rounded-lg">
-              <span className="text-sm">filter_icon</span>
+            <ListFilter size={16}/>
               Advanced Filters
             </button>
             <button className="flex items-center gap-2 px-4 py-2 bg-surface-white border border-outline-variant rounded-lg">
-              <span className="text-sm">sort_icon</span>
+              <ListOrdered size={16}/>
               Sort: Higher System Score
             </button>
           </div>
