@@ -1,6 +1,8 @@
+import ApplicantCard from "./components/applicant-card";
 export default function Applicants() {
   return (
     <>
+      {/* Heading + Filters */}
       <section className="flex flex-col gap-6 mb-8">
         <div className="flex justify-between items-end">
           <div>
@@ -34,6 +36,39 @@ export default function Applicants() {
           </button>
         </div>
       </section>
+
+      <div className="space-y-section-gap">
+        {/* Today section */}
+        <section>
+          <div className="flex items-center gap-4 mb-4">
+            <h3 className="text-on-surface-variant uppercase">Today</h3>
+            <div className="h-[1px] flex-1 bg-outline-variant/30"></div>
+            <span className="text-[12px] text-on-surface-variant font-medium">
+              3 New Applicants
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-4">
+            <ApplicantCard />
+          </div>
+        </section>
+
+        {/* Week section */}
+        <section>
+          <div className="flex items-center gap-4 mb-4">
+            <h3 className="text-on-surface-variant uppercase">This Week</h3>
+            <div className="h-[1px] flex-1 bg-outline-variant/30"></div>
+            <span className="text-[12px] text-on-surface-variant font-medium">
+              12 Applicants
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-4">
+            <ApplicantCard />
+            <div className="flex items-center justify-center py-8 border-2 border-dashed border-outline-variant rounded-xl text-on-surface-variant font-medium hover:bg-surface-container-low transition-colors cursor-pointer">
+              Load 11 More Applicants
+            </div>
+          </div>
+        </section>
+      </div>
     </>
   );
 }
