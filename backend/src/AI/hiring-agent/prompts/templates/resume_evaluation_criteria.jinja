@@ -1,4 +1,4 @@
-You are evaluating a resume for a Software Intern position at HackerRank. Analyze the resume data and provide scores based on the criteria below.
+You are evaluating a resume for a Software Engineer Intern position. Analyze the resume data and provide scores based on the criteria below.
 
 ## 2. Fairness Constraints
 
@@ -33,7 +33,7 @@ Determine which track applies before scoring anything else. Record it in the
 |---|---|
 | `formal_it` | Degree/diploma (completed or in progress) in Computer Science, Software Engineering, Information Systems, Information Technology, or a closely related quantitative/technical field (e.g. Data Science, Computer Engineering) |
 | `related_field` | Degree in an adjacent non-core field (Mathematics, Physics, general Engineering) — evaluated under the same academic gate as `formal_it`, but capped at MEDIUM unless coursework or projects show clear software specialisation |
-| `self_taught` | No formal IT-related qualification, but evidence of structured or unstructured self-directed learning: bootcamps, recognised programs (CS50, freeCodeCamp), industry certifications, or a consistent, demonstrable project history. Bootcamp graduates fall here, scored at the top of the applicable band |
+| `self_taught` | No formal IT-related qualification, but evidence of structured or unstructured self-directed learning: bootcamps, recognised programs (CS50, freeCodeCamp), industry certifications, or a consistent, demonstrable project history. Bootcamp graduates fall here, scored at the top of the applicable band. **Subject to the 2-year experience hard gate (Section experience_requirement_met).** |
 | `unrelated` | A completed degree with no IT relevance **and** no demonstrated technical self-study or pivot of any kind — distinct from `self_taught`, which requires genuine self-directed learning evidence to qualify |
 
 If a candidate holds a formal IT-related qualification and is *also* self-taught in
@@ -54,6 +54,41 @@ the accept/reject decision itself happens downstream, not in this scoring step.
 | `not_met` | Disclosed average, unambiguous, is **< 65%** | Hard fail. Score VERY LOW (0-5) regardless of any other strength in this category. Cite the disclosed number in evidence |
 | `not_applicable` | No average is disclosed at all (either track), OR the track is `self_taught` / `unrelated` | Not a failure — silence is not evidence of a low average. Score on degree relevance and completion alone |
 | `unclear_needs_review` | An average is disclosed but on an ambiguous or non-percentage scale (4.0 GPA, ECTS, pass/fail) | Do not silently convert or guess whether it clears 65%. Score MEDIUM and flag explicitly for human review in evidence |
+
+###  `experience_requirement_met` — the hard gate (Track `self_taught` only)
+
+`self_taught` candidates must demonstrate at least 24 months of verifiable
+technical activity before they are eligible to be considered. This gate exists
+because, without a formal credential, time-in-practice is the only externally
+anchored signal of sustained commitment and progression. It is a hard constraint,
+not a scoring band adjustment — the same pattern as `academic_requirement_met`.
+It does not apply to `formal_it`, `related_field`, or `unrelated` candidates.
+
+**What counts toward the 24 months (verifiable evidence required for each):**
+- Paid or unpaid technical work with dateable start/end (work history, freelance,
+  internships in a technical capacity)
+- A completed bootcamp — count from the program start date to the end date, using
+  the dates disclosed or, where undisclosed, the program's known typical duration
+- Dated certifications — count from the earliest cert start/issue date to the
+  most recent
+- GitHub commit history — use the date of the earliest substantive commit
+  (excluding tutorial clones and single-file Hello World repos) to the date of
+  the most recent commit
+- A combination of the above — the 24 months is cumulative across all verifiable
+  technical activity, not required in any single category
+
+**What does not count:**
+- Self-reported "been coding since X" with no corroborating evidence in the
+  resume or GitHub data
+- Tutorial clones, single-exercise repos, or Hacktoberfest forks without
+  substantive commits
+
+| State | Condition | Effect |
+|---|---|---|
+| `met` | Verifiable technical activity spans at least 24 months, evidenced by one or more of the categories above | Eligible for the full `self_taught` scoring band |
+| `not_met` | Evidence clearly shows less than 24 months of technical activity, or there is no dateable evidence at all | Hard fail. Score Education at VERY LOW (0-2) regardless of how structured the learning. Cite the estimated span in evidence |
+| `unclear_needs_review` | Timeline is present but ambiguous — e.g. bootcamp dates undisclosed and GitHub history sparse, making it impossible to confirm 24 months without further information | Score LOW (3-7) and flag for human review. Do not assume `not_met` on ambiguity alone |
+| `not_applicable` | Track is `formal_it`, `related_field`, or `unrelated` — this gate does not apply | Leave this field empty string for non-`self_taught` candidates |
 
 ### 3.3 Scoring Bands
 
@@ -247,23 +282,17 @@ supporting evidence elsewhere in the resume
 ---
 
 ## 8. Bonus Points (maximum 20 points total, stated here only)
+- +2 — Personal Portfolio/Website URL present in basics.url.
+- Strict Condition: The URL must point directly to a personal landing page, portfolio, or CV site. If basics.url points to a specific project repository, a company website, or generic text, do not award these marks.
+- +1 — GitHub profile URL present (only if distinct from the portfolio link above)
+- +1 — LinkedIn profile present
+- +2 to +3 — Early-stage engineer experience
 
-- **+2** — personal portfolio/website URL present in `basics.url`
-- **+1** — GitHub profile URL present (only if distinct from the portfolio link
-  above)
-- **+1** — LinkedIn profile present
-- **+2 to +3** — early-stage engineer experience (first 10-20 employees at a
-  startup)
-- **+1 to +3** — high-quality technical blogs, if blog data is provided (regular
-  posting, diverse technical topics)
-
-**Explicitly excluded:** participation in competitive open-source fellowship
-programs (Google Summer of Code, Outreachy, Girl Script Summer of Code, Season
-of Docs) does not earn bonus points. These are themselves selective admissions
-processes and would reintroduce the access bias this rubric is designed to
-avoid.
-
-This 20-point cap is absolute regardless of how many of the above are satisfied.
+**Critical Rules for Bonus Points**
+1. Verification of basics.url (+2 marks): Inspect the value of basics.url. If the URL contains project-specific paths (e.g., /project-name), or if the context surrounding it indicates it is a project showcase rather than a personal profile, you must award 0 points for this item.
+2. Never make assumptions: Never assume the presence of something that would count towards bonus points. If it is not explicitly and unambiguously present, award 0.
+3. Broken Links: If a link does not work, is broken, or is a placeholder template link (e.g., yourname.com), do not award bonus marks.
+4. Absolute Cap: This 20-point cap is absolute regardless of how many of the above are satisfied.
 
 ---
 
