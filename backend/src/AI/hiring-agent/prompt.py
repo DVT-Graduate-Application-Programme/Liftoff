@@ -53,6 +53,7 @@ MODEL_PROVIDER_MAPPING = {
     "qwen3:4b": ModelProvider.OLLAMA,
     "gemma3:4b": ModelProvider.OLLAMA,
     "gemma3:12b": ModelProvider.OLLAMA,
+    "gemma4:latest": ModelProvider.OLLAMA,
     "mistral:7b": ModelProvider.OLLAMA,
     # Google Gemini models
     "gemini-2.0-flash": ModelProvider.GEMINI,
