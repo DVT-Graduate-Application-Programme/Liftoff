@@ -4,6 +4,8 @@ import json
 import time
 import logging
 import pymupdf
+import hashlib
+import requests
 
 from models import (
     JSONResume,
@@ -36,6 +38,53 @@ from injection_scan import scan_pdf_for_structural_injection, StructuralScanResu
 logger = logging.getLogger(__name__)
 
 
+def download_pdf(url: str) -> str:
+    """Download a PDF from a URL to a local cache directory and return the path."""
+    cache_dir = "cache"
+    os.makedirs(cache_dir, exist_ok=True)
+
+    url_hash = hashlib.md5(url.encode("utf-8")).hexdigest()
+
+    parsed_filename = os.path.basename(url.split("?")[0])
+    if parsed_filename.lower().endswith(".pdf"):
+        safe_name = "".join(
+            [c if c.isalnum() or c in "._-" else "_" for c in parsed_filename]
+        )
+        local_filename = f"downloaded_{url_hash}_{safe_name}"
+    else:
+        local_filename = f"downloaded_{url_hash}.pdf"
+
+    local_path = os.path.join(cache_dir, local_filename)
+
+    if os.path.exists(local_path):
+        logger.info(f"Using cached PDF download: {local_path}")
+        return local_path
+
+    logger.info(f"Downloading PDF from URL: {url}")
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+        }
+        response = requests.get(url, headers=headers, timeout=30)
+        response.raise_for_status()
+
+        with open(local_path, "wb") as f:
+            f.write(response.content)
+
+        logger.info(
+            f"Successfully downloaded PDF to {local_path} ({len(response.content)} bytes)"
+        )
+        return local_path
+    except Exception as e:
+        logger.error(f"Failed to download PDF from {url}: {e}")
+        if os.path.exists(local_path):
+            try:
+                os.remove(local_path)
+            except Exception:
+                pass
+        raise
+
+
 class PDFHandler:
     def __init__(self):
         self.template_manager = TemplateManager()
@@ -47,6 +96,9 @@ class PDFHandler:
 
     def extract_text_from_pdf(self, pdf_path: str) -> Optional[str]:
         try:
+            if pdf_path.startswith(("http://", "https://")):
+                pdf_path = download_pdf(pdf_path)
+
             if not os.path.exists(pdf_path):
                 raise FileNotFoundError(f"PDF file not found: {pdf_path}")
 
@@ -192,8 +244,10 @@ class PDFHandler:
 
     def extract_json_from_text(self, resume_text: str) -> Optional[JSONResume]:
         no_pdf_scan = StructuralScanResult(
-            suspected=False, flags=[], skipped=True,
-            skip_reason="extract_json_from_text has no PDF file to scan"
+            suspected=False,
+            flags=[],
+            skipped=True,
+            skip_reason="extract_json_from_text has no PDF file to scan",
         )
         try:
             return self._extract_all_sections_separately(resume_text, no_pdf_scan)
@@ -204,6 +258,9 @@ class PDFHandler:
     def extract_json_from_pdf(self, pdf_path: str) -> Optional[JSONResume]:
         try:
             logger.debug(f"📄 Extracting text from PDF: {pdf_path}")
+            if pdf_path.startswith(("http://", "https://")):
+                pdf_path = download_pdf(pdf_path)
+
             text_content = self.extract_text_from_pdf(pdf_path)
 
             if not text_content:
@@ -216,14 +273,15 @@ class PDFHandler:
 
             structural_scan = scan_pdf_for_structural_injection(pdf_path)
             if structural_scan.skipped:
-                logger.warning(f"⚠️ Structural scan skipped for {pdf_path}: {structural_scan.skip_reason}")
+                logger.warning(
+                    f"⚠️ Structural scan skipped for {pdf_path}: {structural_scan.skip_reason}"
+                )
             elif structural_scan.suspected:
                 logger.warning(
                     f"⚠️ Structural injection indicators in {pdf_path}: "
                     f"{len(structural_scan.flags)} flag(s) — "
                     f"{[f.flag_type for f in structural_scan.flags]}"
                 )
- 
 
             logger.debug("🔄 Extracting all sections separately...")
             return self._extract_all_sections_separately(text_content, structural_scan)
@@ -278,17 +336,18 @@ class PDFHandler:
             return complete_resume
 
         return None
-    
+
     def _extract_all_sections_separately(
         self,
         text_content: str,
         structural_scan: Optional[StructuralScanResult] = None,
     ) -> Optional["JSONResume"]:
         import time
+
         start_time = time.time()
- 
+
         sections = ["basics", "work", "education", "skills", "projects", "awards"]
- 
+
         complete_resume = {
             "basics": None,
             "work": None,
@@ -316,40 +375,50 @@ class PDFHandler:
                 "aggregate_evidence": [],
             },
         }
- 
+
         if structural_scan is not None:
-            complete_resume["injection_flags"]["structural_scan_skipped"] = structural_scan.skipped
-            complete_resume["injection_flags"]["structural_scan_skip_reason"] = structural_scan.skip_reason
+            complete_resume["injection_flags"][
+                "structural_scan_skipped"
+            ] = structural_scan.skipped
+            complete_resume["injection_flags"][
+                "structural_scan_skip_reason"
+            ] = structural_scan.skip_reason
             if structural_scan.suspected:
                 complete_resume["injection_flags"]["structural_suspected"] = True
                 complete_resume["injection_flags"]["structural_evidence"] = [
-                    f"[{f.flag_type}/{f.confidence}] page {f.page_number}: {f.detail} — \"{f.snippet[:120]}\""
+                    f'[{f.flag_type}/{f.confidence}] page {f.page_number}: {f.detail} — "{f.snippet[:120]}"'
                     for f in structural_scan.flags
                 ]
- 
+
         for section_name in sections:
             section_data = self._extract_section_data(text_content, section_name)
- 
+
             if section_data:
                 complete_resume.update(section_data)
                 logger.debug(f"✅ Successfully extracted {section_name} section")
             else:
-                complete_resume["formatting_issue"] = "One or more sections failed to extract"
+                complete_resume["formatting_issue"] = (
+                    "One or more sections failed to extract"
+                )
                 complete_resume["failed_sections"].append(section_name)
                 logger.warning(f"⚠️ Failed to extract {section_name} section")
- 
+
         try:
-            if complete_resume.get("basics") and isinstance(complete_resume["basics"], dict):
+            if complete_resume.get("basics") and isinstance(
+                complete_resume["basics"], dict
+            ):
                 try:
                     from models import Basics
+
                     complete_resume["basics"] = Basics(**complete_resume["basics"])
                 except Exception as e:
                     logger.error(f"❌ Error creating Basics object: {e}")
                     complete_resume["basics"] = None
- 
+
             from models import JSONResume
+
             json_resume = JSONResume(**complete_resume)
- 
+
             end_time = time.time()
             logger.info(
                 f"⏱️ Total time for separate section extraction: {end_time - start_time:.2f} seconds"
