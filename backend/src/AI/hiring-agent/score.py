@@ -18,6 +18,12 @@ from transform import (
 )
 from config import DEVELOPMENT_MODE
 
+
+
+
+from backend_client import get_resume, get_all_resumes
+
+
 logger = logging.getLogger(__name__)
 
 logging.basicConfig(
@@ -392,15 +398,20 @@ def main(pdf_path):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python score.py <pdf_path_or_url>")
-        exit(1)
-    pdf_path = sys.argv[1]
+    # if len(sys.argv) < 2:
+    #     print("Usage: python score.py <pdf_path_or_url>")
+    #     exit(1)
+    # pdf_path = sys.argv[1]
 
+    
+    resume = get_all_resumes()
+    pdf_path = resume[0].document_url
+
+    print(f"the path is : {resume}")
     is_url = pdf_path.startswith(("http://", "https://"))
 
-    if not is_url and not os.path.exists(pdf_path):
-        print(f"Error: File '{pdf_path}' does not exist.")
-        exit(1)
+    # if not is_url and not os.path.exists(pdf_path):
+    #     print(f"Error: File '{pdf_path}' does not exist.")
+    #     exit(1)
 
     main(pdf_path)

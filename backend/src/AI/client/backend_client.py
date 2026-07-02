@@ -1,9 +1,28 @@
 import os
 import httpx
-from models.resume import Resume
+import sys
+from pathlib import Path
+
+from pydantic import BaseModel
 
 BACKEND_BASE_URL = os.environ.get("BACKEND_BASE_URL", "http://localhost:5000")
 
+
+class Resume(BaseModel):
+    id: int
+    candidate_name: str
+    document_url: str
+
+    class Config:
+        # Maps .NET's camelCase JSON keys to Python snake_case fields
+        alias_generator = lambda field: (
+            field[0].lower() + ''.join(
+                c.upper() if field[i-1] == '_' else c
+                for i, c in enumerate(field)
+                if c != '_'
+            )
+        )
+        populate_by_name = True
 
 def get_resume(resume_id: int) -> Resume:
     """
