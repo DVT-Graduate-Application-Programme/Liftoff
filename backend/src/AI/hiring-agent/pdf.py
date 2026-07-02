@@ -31,6 +31,7 @@ from prompt import (
 )
 from prompts.template_manager import TemplateManager
 from transform import transform_parsed_data
+from injection_scan import scan_pdf_for_structural_injection, StructuralScanResult
 
 logger = logging.getLogger(__name__)
 
@@ -190,8 +191,12 @@ class PDFHandler:
         return self._call_llm_for_section("awards", resume_text, prompt, AwardsSection)
 
     def extract_json_from_text(self, resume_text: str) -> Optional[JSONResume]:
+        no_pdf_scan = StructuralScanResult(
+            suspected=False, flags=[], skipped=True,
+            skip_reason="extract_json_from_text has no PDF file to scan"
+        )
         try:
-            return self._extract_all_sections_separately(resume_text)
+            return self._extract_all_sections_separately(resume_text, no_pdf_scan)
         except Exception as e:
             logger.error(f"Error calling Ollama: {e}")
             return None
@@ -209,8 +214,19 @@ class PDFHandler:
                 f"✅ Successfully extracted {len(text_content)} characters from PDF"
             )
 
+            structural_scan = scan_pdf_for_structural_injection(pdf_path)
+            if structural_scan.skipped:
+                logger.warning(f"⚠️ Structural scan skipped for {pdf_path}: {structural_scan.skip_reason}")
+            elif structural_scan.suspected:
+                logger.warning(
+                    f"⚠️ Structural injection indicators in {pdf_path}: "
+                    f"{len(structural_scan.flags)} flag(s) — "
+                    f"{[f.flag_type for f in structural_scan.flags]}"
+                )
+ 
+
             logger.debug("🔄 Extracting all sections separately...")
-            return self._extract_all_sections_separately(text_content)
+            return self._extract_all_sections_separately(text_content, structural_scan)
 
         except Exception as e:
             logger.error(f"❌ Error during PDF to JSON extraction: {e}")
@@ -262,14 +278,17 @@ class PDFHandler:
             return complete_resume
 
         return None
-
+    
     def _extract_all_sections_separately(
-        self, text_content: str
-    ) -> Optional[JSONResume]:
+        self,
+        text_content: str,
+        structural_scan: Optional[StructuralScanResult] = None,
+    ) -> Optional["JSONResume"]:
+        import time
         start_time = time.time()
-
+ 
         sections = ["basics", "work", "education", "skills", "projects", "awards"]
-
+ 
         complete_resume = {
             "basics": None,
             "work": None,
@@ -284,40 +303,57 @@ class PDFHandler:
             "references": None,
             "projects": None,
             "meta": None,
+            # Genuine parsing/formatting problems only. No injection
+            # inference lives in this field anymore.
             "formatting_issue": None,
+            "failed_sections": [],
+            "injection_flags": {
+                "structural_suspected": False,
+                "structural_evidence": [],
+                "structural_scan_skipped": False,
+                "structural_scan_skip_reason": None,
+                "aggregate_detected": False,
+                "aggregate_evidence": [],
+            },
         }
-
+ 
+        if structural_scan is not None:
+            complete_resume["injection_flags"]["structural_scan_skipped"] = structural_scan.skipped
+            complete_resume["injection_flags"]["structural_scan_skip_reason"] = structural_scan.skip_reason
+            if structural_scan.suspected:
+                complete_resume["injection_flags"]["structural_suspected"] = True
+                complete_resume["injection_flags"]["structural_evidence"] = [
+                    f"[{f.flag_type}/{f.confidence}] page {f.page_number}: {f.detail} — \"{f.snippet[:120]}\""
+                    for f in structural_scan.flags
+                ]
+ 
         for section_name in sections:
             section_data = self._extract_section_data(text_content, section_name)
-
+ 
             if section_data:
                 complete_resume.update(section_data)
                 logger.debug(f"✅ Successfully extracted {section_name} section")
             else:
-                # logger.error(
-                #     f"⚠️ Failed to extract {section_name} section. Aborting extraction to prevent partial/invalid resume data."
-                # )
-                complete_resume.update({"formatting_issue": "Formatting issue or possible prompt injection detected"})
-                # return None
-
+                complete_resume["formatting_issue"] = "One or more sections failed to extract"
+                complete_resume["failed_sections"].append(section_name)
+                logger.warning(f"⚠️ Failed to extract {section_name} section")
+ 
         try:
-            if complete_resume.get("basics") and isinstance(
-                complete_resume["basics"], dict
-            ):
+            if complete_resume.get("basics") and isinstance(complete_resume["basics"], dict):
                 try:
+                    from models import Basics
                     complete_resume["basics"] = Basics(**complete_resume["basics"])
                 except Exception as e:
                     logger.error(f"❌ Error creating Basics object: {e}")
                     complete_resume["basics"] = None
-
+ 
+            from models import JSONResume
             json_resume = JSONResume(**complete_resume)
-
+ 
             end_time = time.time()
-            total_time = end_time - start_time
             logger.info(
-                f"⏱️ Total time for separate section extraction: {total_time:.2f} seconds"
+                f"⏱️ Total time for separate section extraction: {end_time - start_time:.2f} seconds"
             )
-
             return json_resume
 
         except Exception as e:

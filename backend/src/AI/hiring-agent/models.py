@@ -80,7 +80,14 @@ class Volunteer(BaseModel):
 
 
 class Education(BaseModel):
-    """Education information for JSON Resume format."""
+    """Education information for JSON Resume format.
+
+    NOTE: this is the JSON-Resume-standard *history entry* model (one row
+    per institution attended, used by the section-extraction pipeline in
+    pdf.py). It is unrelated to EducationScore below, which is the scoring
+    agent's evaluation of that history against the intern rubric. Kept the
+    name collision-free deliberately -- do not conflate the two.
+    """
 
     institution: Optional[str] = None
     url: Optional[str] = None
@@ -198,6 +205,37 @@ class AwardsSection(BaseModel):
     awards: Optional[List[Award]] = None
 
 
+class InjectionFlags(BaseModel):
+    """Prompt-injection suspicion, tracked across every pipeline stage that
+    can detect it. Populated incrementally:
+
+    - structural_* : set in pdf.py, from scan_pdf_for_structural_injection()
+      (Stage 0 -- deterministic, PDF rendering metadata, no LLM). Always
+      populated (or explicitly marked skipped) by the time JSONResume is
+      constructed.
+    - extraction_* : set in pdf.py, from the per-section extraction LLM
+      calls, IF those prompts have been hardened to report it (Stage 1 --
+      not yet wired up as of this version; defaults reflect "not checked",
+      not "checked, found nothing").
+    - aggregate_* : computed AFTER the scoring agent (Stage 2, EvaluationData
+      below) has also run, via aggregate_injection_signal(). Not populated
+      at JSONResume-construction time -- left at defaults until that step.
+
+    See spec.md sections 11-12 for the full design and current limitations.
+    """
+
+    structural_suspected: bool = False
+    structural_evidence: List[str] = Field(default_factory=list)
+    structural_scan_skipped: bool = False
+    structural_scan_skip_reason: Optional[str] = None
+
+    extraction_suspected: bool = False
+    extraction_evidence: List[str] = Field(default_factory=list)
+
+    aggregate_detected: bool = False
+    aggregate_evidence: List[str] = Field(default_factory=list)
+
+
 class JSONResume(BaseModel):
     """Complete JSON Resume format model."""
 
@@ -213,6 +251,12 @@ class JSONResume(BaseModel):
     interests: Optional[List[Interest]] = None
     references: Optional[List[Reference]] = None
     projects: Optional[List[Project]] = None
+    # --- new fields below ---
+    # Genuine section-parsing failure only. No longer implies injection --
+    # see spec.md §12 for why conflating the two was actively harmful.
+    formatting_issue: Optional[str] = None
+    failed_sections: List[str] = Field(default_factory=list)
+    injection_flags: InjectionFlags = Field(default_factory=InjectionFlags)
 
 
 class CategoryScore(BaseModel):
@@ -221,7 +265,50 @@ class CategoryScore(BaseModel):
     evidence: str = Field(min_length=1, description="Evidence supporting the score")
 
 
+class EducationTrack(str, Enum):
+    """Matches the `track` enum in both resume_scoring_*.jinja prompts
+    exactly. str-mixin used (unlike ModelProvider above) so these serialize
+    as plain strings for clean round-tripping against LLM JSON output."""
+
+    FORMAL_IT = "formal_it"
+    RELATED_FIELD = "related_field"
+    SELF_TAUGHT = "self_taught"
+    UNRELATED = "unrelated"
+
+
+class AcademicRequirementStatus(str, Enum):
+    """Matches `academic_requirement_met` in the jinja prompts (Section 3.2
+    -- the 65% hard gate, formal_it/related_field only)."""
+
+    MET = "met"
+    NOT_MET = "not_met"
+    NOT_APPLICABLE = "not_applicable"
+    UNCLEAR_NEEDS_REVIEW = "unclear_needs_review"
+
+
+class ExperienceRequirementStatus(str, Enum):
+    """Matches `experience_requirement_met` in the jinja prompts (Section
+    3.3 -- the 24-month gate, self_taught only). NOT_APPLICABLE is always a
+    literal string value here, never an empty string -- both jinja prompts
+    were fixed to be explicit about this after an earlier inconsistency."""
+
+    MET = "met"
+    NOT_MET = "not_met"
+    UNCLEAR_NEEDS_REVIEW = "unclear_needs_review"
+    NOT_APPLICABLE = "not_applicable"
+
+
+class EducationScore(CategoryScore):
+    """Extends CategoryScore with the two hard-gate fields and track
+    classification that Education carries and no other category does."""
+
+    track: EducationTrack
+    academic_requirement_met: AcademicRequirementStatus
+    experience_requirement_met: ExperienceRequirementStatus
+
+
 class Scores(BaseModel):
+    education: EducationScore
     open_source: CategoryScore
     self_projects: CategoryScore
     production: CategoryScore
@@ -233,20 +320,42 @@ class BonusPoints(BaseModel):
     breakdown: str = Field(description="Breakdown of bonus points")
 
 
-class Deductions(BaseModel):
-    total: float = Field(
-        ge=0,
-        description="Total deduction points (stored as positive, applied as negative)",
-    )
-    reasons: str = Field(description="Reasons for deductions")
+# Deductions removed. Link/tutorial/CRUD penalties are now resolved entirely
+# inside the Self Projects category score (jinja Section 5.3) -- a separate
+# top-level deductions object would reintroduce the exact double-counting
+# problem that restructure eliminated. If EvaluationData validation starts
+# failing on an unexpected `deductions` key, that means an old, unrestructured
+# prompt is still in use somewhere -- fix the prompt, not this model.
 
 
 class EvaluationData(BaseModel):
     scores: Scores
-    #bonus_points: BonusPoints
-    deductions: Deductions
+    bonus_points: BonusPoints
+    prompt_injection_detected: bool = Field(
+        description="Whether the scoring agent detected an injection attempt "
+        "in the resume content — see the Data / Instruction Boundary section "
+        "of the scoring prompt"
+    )
+    prompt_injection_evidence: str = Field(
+        description="Description of what was found; empty string if nothing detected"
+    )
     key_strengths: List[str] = Field(min_items=1, max_items=5)
-    areas_for_improvement: List[str] = Field(min_items=1, max_items=5)
+    # NOTE: was max_items=5, which was looser than the prompt's own stated
+    # 1-3 range for areas_for_improvement -- tightened to match. A model
+    # that's more permissive than the prompt it validates doesn't catch a
+    # prompt violation if the LLM ever ignores the 1-3 instruction.
+    areas_for_improvement: List[str] = Field(min_items=1, max_items=3)
+
+
+# OPEN QUESTION, not resolved here: resume_scoring_recruiter.jinja's JSON
+# output includes a top-level `candidate_name` field; resume_scoring_
+# structured.jinja's does not, and neither does EvaluationData above. If
+# both prompts' output are ever validated against this same model, the
+# recruiter variant's candidate_name is silently dropped by Pydantic's
+# default extra='ignore' behavior -- no error, just quiet data loss. Add a
+# `candidate_name: Optional[str] = None` field here if that data is meant
+# to survive, or confirm the recruiter prompt's output never actually
+# reaches this model if it's tracked separately.
 
 
 class GitHubProfile(BaseModel):
