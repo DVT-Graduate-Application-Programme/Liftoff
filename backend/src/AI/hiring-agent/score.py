@@ -404,8 +404,8 @@ if __name__ == "__main__":
     # pdf_path = sys.argv[1]
 
     
-    resume = get_all_resumes()
-    pdf_path = resume[0].document_url
+    resume = get_resume(1)
+    pdf_path = resume.document_url
 
     print(f"the path is : {resume}")
     is_url = pdf_path.startswith(("http://", "https://"))

@@ -21,7 +21,7 @@ def get_resume(resume_id: int) -> Resume:
     Fetches a single ResumeDto from the .NET API and returns it
     as a typed Resume object, ready to pass to the hiring agent.
     """
-    url = f"{BACKEND_BASE_URL}/api/resumes/{resume_id}/document"
+    url = f"{BACKEND_BASE_URL}/api/resumes/{resume_id}"
 
     with httpx.Client() as client:
         response = client.get(url)
