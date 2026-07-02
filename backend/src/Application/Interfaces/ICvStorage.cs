@@ -1,3 +1,4 @@
+using Backend.Application.Queries.GetCandidate;
 using Backend.Application.Queries.GetResumeDocument;
 using Backend.Application.Queries.GetResumes;
 
@@ -9,6 +10,10 @@ public interface IResumeStorage
         CancellationToken cancellationToken);
 
     Task<ResumeDocumentDto?> GetDocumentAsync(
+    int id,
+    CancellationToken cancellationToken);
+
+    Task<CandidateDto?> GetCandidateAsync(
     int id,
     CancellationToken cancellationToken);
 }

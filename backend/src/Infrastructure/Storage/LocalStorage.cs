@@ -1,4 +1,5 @@
 using Backend.Application.Interfaces;
+using Backend.Application.Queries.GetCandidate;
 using Backend.Application.Queries.GetResumeDocument;
 using Backend.Application.Queries.GetResumes;
 using Microsoft.AspNetCore.Hosting;
@@ -67,5 +68,33 @@ public class LocalResumeStorage : IResumeStorage
             FileName = Path.GetFileName(file),
             ContentType = "application/pdf"
         });
+    }
+
+    public Task<CandidateDto?> GetCandidateAsync(
+    int id,
+    CancellationToken cancellationToken)
+    {
+        var folder = Path.Combine(
+            _environment.ContentRootPath,
+            "Internal",
+            "SampleData",
+            "data");
+
+        var files = Directory.GetFiles(folder, "*.pdf");
+
+        if (id < 1 || id > files.Length)
+            return Task.FromResult<CandidateDto?>(null);
+
+        var file = files[id - 1];
+
+        var candidate = new CandidateDto
+        {
+            Id = id,
+            CandidateName = Path.GetFileNameWithoutExtension(file),
+            FileName = Path.GetFileName(file),
+            DocumentUrl = $"/api/resumes/{id}/document"
+        };
+
+        return Task.FromResult<CandidateDto?>(candidate);
     }
 }

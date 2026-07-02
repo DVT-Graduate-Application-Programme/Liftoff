@@ -1,4 +1,5 @@
 using Backend.Application.Features.Resumes.Queries.GetResumeDocument;
+using Backend.Application.Queries.GetCandidate;
 using Backend.Application.Queries.GetResumes;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -43,5 +44,20 @@ public class ResumeController : ControllerBase
             document.Content,
             document.ContentType,
             document.FileName);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetCandidate(
+    int id,
+    CancellationToken cancellationToken)
+    {
+        var candidate = await _mediator.Send(
+            new GetCandidateQuery(id),
+            cancellationToken);
+
+        if (candidate is null)
+            return NotFound();
+
+        return Ok(candidate);
     }
 }
