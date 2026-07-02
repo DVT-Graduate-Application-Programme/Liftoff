@@ -27,6 +27,7 @@ const eslintConfig = defineConfig([
   {
     files: ["**/*.{js,jsx,ts,tsx}"],
     plugins: { "check-file": checkFile },
+    ignores: ["**/api/**"],
     rules: {
       "check-file/filename-naming-convention": [
         "error",
