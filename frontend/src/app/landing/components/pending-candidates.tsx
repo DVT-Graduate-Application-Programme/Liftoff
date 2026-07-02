@@ -50,7 +50,7 @@ const PendingCandidates = () => {
             <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
               Today
             </h3>
-            <div className="h-[1px] flex-1 bg-border"></div>
+            <div className="h-px flex-1 bg-border"></div>
             <span className="text-[12px] text-muted-foreground font-medium">
               3 New Applicants
             </span>
@@ -95,7 +95,7 @@ const PendingCandidates = () => {
             <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
               This Week
             </h3>
-            <div className="h-[1px] flex-1 bg-border"></div>
+            <div className="h-px flex-1 bg-border"></div>
             <span className="text-[12px] text-muted-foreground font-medium">
               12 Applicants
             </span>
