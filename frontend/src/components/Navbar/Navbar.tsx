@@ -1,7 +1,7 @@
 import { Bell, Menu, Settings } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
-import { NavSearchBar } from "./NavSearchBar";
 import { Button } from "@/components/ui/button";
+import { NavSearchBar } from "./nav-search-bar";
 
 function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
   return (

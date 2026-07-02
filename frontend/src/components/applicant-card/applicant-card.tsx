@@ -40,7 +40,7 @@ export default function ApplicantCard({
   return (
     <div
       className={`group flex items-center gap-6 p-6 bg-card rounded-xl border border-border border-l-4 shadow-sm transition-all hover:shadow-md cursor-pointer ${getScoreBorderColor(
-        systemScore
+        systemScore,
       )}`}
     >
       <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
@@ -62,7 +62,7 @@ export default function ApplicantCard({
           </div>
         ))}
       </div>
-      <div className="flex items-center gap-4 min-w-[120px] justify-end">
+      <div className="flex items-center gap-4 min-w-30 justify-end">
         <div className="text-right mr-4">
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
             System Score

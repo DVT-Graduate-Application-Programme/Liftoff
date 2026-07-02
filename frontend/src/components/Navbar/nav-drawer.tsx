@@ -10,7 +10,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { NavMenu } from "./NavMenu";
+import { NavMenu } from "./nav-menu";
 
 export function NavDrawer({
   open,
@@ -35,7 +35,7 @@ export function NavDrawer({
             <div className="w-full">
               <NavMenu />
             </div>
-            <div className="mt-3 h-[120px]"></div>
+            <div className="mt-3 h-30"></div>
           </div>
         </div>
       </DrawerContent>

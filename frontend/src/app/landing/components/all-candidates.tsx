@@ -1,6 +1,6 @@
 import React from "react";
-import CandidateCard from "../candidateCard/CandidateCard";
 import type { CandidateApplication } from "@/types/candidate";
+import CandidateCard from "./candidate-card";
 
 //got this from api contract on wiki
 const mockApplications: CandidateApplication[] = [

@@ -1,8 +1,9 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PendingCandidates from "@/components/pendingCandidates/PendingCandidates";
-import AllCandidates from "@/components/allCandidates/AllCandidates";
+
 import { Input } from "@/components/ui/input";
+import AllCandidates from "./components/all-candidates";
+import PendingCandidates from "./components/pending-candidates";
 
 const page = () => {
   return (

@@ -1,4 +1,4 @@
-import ApplicantCard from "@/app/applicants/components/applicant-card";
+import ApplicantCard from "@/components/applicant-card/applicant-card";
 import { ListFilter, ListOrdered, X } from "lucide-react";
 import React from "react";
 
