@@ -212,165 +212,194 @@ def find_profile(profiles, network):
 
 
 def main(pdf_path):
-    # Create cache filename based on PDF path
-    cache_filename = (
-        f"cache/resumecache_{os.path.basename(pdf_path).replace('.pdf', '')}.json"
-    )
-    github_cache_filename = (
-        f"cache/githubcache_{os.path.basename(pdf_path).replace('.pdf', '')}.json"
-    )
-
-    resume_data = None
-    cache_loaded = False
-
-    # Check if cache exists and we're in development mode
-    if DEVELOPMENT_MODE and os.path.exists(cache_filename):
-        print(f"Loading cached data from {cache_filename}")
+    is_url = pdf_path.startswith(("http://", "https://"))
+    downloaded_path = None
+    if is_url:
         try:
-            cached_data = json.loads(Path(cache_filename).read_text(encoding="utf-8"))
-            loaded_resume = JSONResume(**cached_data)
-            if not is_valid_resume_data(loaded_resume):
-                raise ValueError("Cached resume data contains no core content")
-            resume_data = loaded_resume
-            cache_loaded = True
+            from pdf import download_pdf
+
+            pdf_path = download_pdf(pdf_path)
+            downloaded_path = pdf_path
         except Exception as e:
-            print(f"⚠️ Warning: Invalid cache file {cache_filename}: {e}")
-            print("Ignoring cache and reprocessing PDF...")
-            try:
-                os.remove(cache_filename)
-            except Exception as delete_err:
-                print(
-                    f"Failed to delete invalid cache file {cache_filename}: {delete_err}"
-                )
-
-    if not cache_loaded:
-        logger.debug(
-            f"Extracting data from PDF"
-            + (" and caching to " + cache_filename if DEVELOPMENT_MODE else "")
-        )
-        pdf_handler = PDFHandler()
-        resume_data = pdf_handler.extract_json_from_pdf(pdf_path)
-
-        if resume_data == None:
+            logger.error(f"Error downloading PDF from URL: {e}")
             return None
 
-        if DEVELOPMENT_MODE:
-            if is_valid_resume_data(resume_data):
-                os.makedirs(os.path.dirname(cache_filename), exist_ok=True)
-                Path(cache_filename).write_text(
-                    json.dumps(resume_data.model_dump(), indent=2, ensure_ascii=False),
-                    encoding="utf-8",
-                )
-            else:
-                logger.warning(
-                    "Newly extracted resume data is empty/invalid. Skipping cache write."
-                )
-
-    # Check if cache exists and we're in development mode
-    github_data = {}
-    github_cache_loaded = False
-    if DEVELOPMENT_MODE and os.path.exists(github_cache_filename):
-        print(f"Loading cached data from {github_cache_filename}")
-        try:
-            loaded_github = json.loads(
-                Path(github_cache_filename).read_text(encoding="utf-8")
-            )
-            if (
-                not isinstance(loaded_github, dict)
-                or not loaded_github
-                or "profile" not in loaded_github
-            ):
-                raise ValueError("Cached GitHub data is invalid or empty")
-            github_data = loaded_github
-            github_cache_loaded = True
-        except Exception as e:
-            print(f"⚠️ Warning: Invalid GitHub cache file {github_cache_filename}: {e}")
-            print("Ignoring GitHub cache and refetching...")
-            try:
-                os.remove(github_cache_filename)
-            except Exception as delete_err:
-                print(
-                    f"Failed to delete invalid GitHub cache file {github_cache_filename}: {delete_err}"
-                )
-
-    if not github_cache_loaded:
-        # Add validation to handle None values
-        profiles = []
-        if resume_data and hasattr(resume_data, "basics") and resume_data.basics:
-            profiles = resume_data.basics.profiles or []
-        github_profile = find_profile(profiles, "Github")
-
-        # if github_profile:
-        #     print(
-        #         f"Fetching GitHub data"
-        #         + (
-        #             " and caching to " + github_cache_filename
-        #             if DEVELOPMENT_MODE
-        #             else ""
-        #         )
-        #     )
-        #     github_data = fetch_and_display_github_info(github_profile.url)
-
-        #     if (
-        #         DEVELOPMENT_MODE
-        #         and github_data
-        #         and isinstance(github_data, dict)
-        #         and "profile" in github_data
-        #     ):
-        #         os.makedirs(os.path.dirname(github_cache_filename), exist_ok=True)
-        #         Path(github_cache_filename).write_text(
-        #             json.dumps(github_data, indent=2, ensure_ascii=False),
-        #             encoding="utf-8",
-        #         )
-
-    score = _evaluate_resume(resume_data, github_data)
-
-    # Get candidate name for display
-    candidate_name = os.path.basename(pdf_path).replace(".pdf", "")
-    if (
-        resume_data
-        and hasattr(resume_data, "basics")
-        and resume_data.basics
-        and resume_data.basics.name
-    ):
-        candidate_name = resume_data.basics.name
-
-    # Print evaluation results in readable format
-    print_evaluation_results(score, candidate_name)
-
-    if DEVELOPMENT_MODE:
-        csv_row = transform_evaluation_response(
-            file_name=os.path.basename(pdf_path),
-            evaluation=score,
-            resume_data=resume_data,
-            github_data=github_data,
+    try:
+        # Create cache filename based on PDF path
+        cache_filename = (
+            f"cache/resumecache_{os.path.basename(pdf_path).replace('.pdf', '')}.json"
+        )
+        github_cache_filename = (
+            f"cache/githubcache_{os.path.basename(pdf_path).replace('.pdf', '')}.json"
         )
 
-        # Write CSV row to file
-        csv_path = "resume_evaluations.csv"
-        file_exists = os.path.exists(csv_path)
+        resume_data = None
+        cache_loaded = False
 
-        with open(csv_path, "a", newline="", encoding="utf-8") as csvfile:
-            fieldnames = list(csv_row.keys())
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        # Check if cache exists and we're in development mode
+        if DEVELOPMENT_MODE and os.path.exists(cache_filename):
+            print(f"Loading cached data from {cache_filename}")
+            try:
+                cached_data = json.loads(
+                    Path(cache_filename).read_text(encoding="utf-8")
+                )
+                loaded_resume = JSONResume(**cached_data)
+                if not is_valid_resume_data(loaded_resume):
+                    raise ValueError("Cached resume data contains no core content")
+                resume_data = loaded_resume
+                cache_loaded = True
+            except Exception as e:
+                print(f"⚠️ Warning: Invalid cache file {cache_filename}: {e}")
+                print("Ignoring cache and reprocessing PDF...")
+                try:
+                    os.remove(cache_filename)
+                except Exception as delete_err:
+                    print(
+                        f"Failed to delete invalid cache file {cache_filename}: {delete_err}"
+                    )
 
-            # Write headers if file doesn't exist
-            if not file_exists:
-                writer.writeheader()
+        if not cache_loaded:
+            logger.debug(
+                f"Extracting data from PDF"
+                + (" and caching to " + cache_filename if DEVELOPMENT_MODE else "")
+            )
+            pdf_handler = PDFHandler()
+            resume_data = pdf_handler.extract_json_from_pdf(pdf_path)
 
-            # Write the row
-            writer.writerow(csv_row)
+            if resume_data == None:
+                return None
 
-    return score
+            if DEVELOPMENT_MODE:
+                if is_valid_resume_data(resume_data):
+                    os.makedirs(os.path.dirname(cache_filename), exist_ok=True)
+                    Path(cache_filename).write_text(
+                        json.dumps(
+                            resume_data.model_dump(), indent=2, ensure_ascii=False
+                        ),
+                        encoding="utf-8",
+                    )
+                else:
+                    logger.warning(
+                        "Newly extracted resume data is empty/invalid. Skipping cache write."
+                    )
+
+        # Check if cache exists and we're in development mode
+        github_data = {}
+        github_cache_loaded = False
+        if DEVELOPMENT_MODE and os.path.exists(github_cache_filename):
+            print(f"Loading cached data from {github_cache_filename}")
+            try:
+                loaded_github = json.loads(
+                    Path(github_cache_filename).read_text(encoding="utf-8")
+                )
+                if (
+                    not isinstance(loaded_github, dict)
+                    or not loaded_github
+                    or "profile" not in loaded_github
+                ):
+                    raise ValueError("Cached GitHub data is invalid or empty")
+                github_data = loaded_github
+                github_cache_loaded = True
+            except Exception as e:
+                print(
+                    f"⚠️ Warning: Invalid GitHub cache file {github_cache_filename}: {e}"
+                )
+                print("Ignoring GitHub cache and refetching...")
+                try:
+                    os.remove(github_cache_filename)
+                except Exception as delete_err:
+                    print(
+                        f"Failed to delete invalid GitHub cache file {github_cache_filename}: {delete_err}"
+                    )
+
+        if not github_cache_loaded:
+            # Add validation to handle None values
+            profiles = []
+            if resume_data and hasattr(resume_data, "basics") and resume_data.basics:
+                profiles = resume_data.basics.profiles or []
+            github_profile = find_profile(profiles, "Github")
+
+            # if github_profile:
+            #     print(
+            #         f"Fetching GitHub data"
+            #         + (
+            #             " and caching to " + github_cache_filename
+            #             if DEVELOPMENT_MODE
+            #             else ""
+            #         )
+            #     )
+            #     github_data = fetch_and_display_github_info(github_profile.url)
+
+            #     if (
+            #         DEVELOPMENT_MODE
+            #         and github_data
+            #         and isinstance(github_data, dict)
+            #         and "profile" in github_data
+            #     ):
+            #         os.makedirs(os.path.dirname(github_cache_filename), exist_ok=True)
+            #         Path(github_cache_filename).write_text(
+            #             json.dumps(github_data, indent=2, ensure_ascii=False),
+            #             encoding="utf-8",
+            #         )
+
+        score = _evaluate_resume(resume_data, github_data)
+
+        # Get candidate name for display
+        candidate_name = os.path.basename(pdf_path).replace(".pdf", "")
+        if (
+            resume_data
+            and hasattr(resume_data, "basics")
+            and resume_data.basics
+            and resume_data.basics.name
+        ):
+            candidate_name = resume_data.basics.name
+
+        # Print evaluation results in readable format
+        print_evaluation_results(score, candidate_name)
+
+        if DEVELOPMENT_MODE:
+            csv_row = transform_evaluation_response(
+                file_name=os.path.basename(pdf_path),
+                evaluation=score,
+                resume_data=resume_data,
+                github_data=github_data,
+            )
+
+            # Write CSV row to file
+            csv_path = "resume_evaluations.csv"
+            file_exists = os.path.exists(csv_path)
+
+            with open(csv_path, "a", newline="", encoding="utf-8") as csvfile:
+                fieldnames = list(csv_row.keys())
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+                # Write headers if file doesn't exist
+                if not file_exists:
+                    writer.writeheader()
+
+                # Write the row
+                writer.writerow(csv_row)
+
+        return score
+    finally:
+        if downloaded_path and not DEVELOPMENT_MODE and os.path.exists(downloaded_path):
+            try:
+                os.remove(downloaded_path)
+            except Exception as e:
+                logger.warning(
+                    f"Failed to clean up downloaded PDF {downloaded_path}: {e}"
+                )
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python score.py <pdf_path>")
+        print("Usage: python score.py <pdf_path_or_url>")
         exit(1)
     pdf_path = sys.argv[1]
 
-    if not os.path.exists(pdf_path):
+    is_url = pdf_path.startswith(("http://", "https://"))
+
+    if not is_url and not os.path.exists(pdf_path):
         print(f"Error: File '{pdf_path}' does not exist.")
         exit(1)
 
