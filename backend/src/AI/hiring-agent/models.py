@@ -505,13 +505,20 @@ class YearAverage(BaseModel):
     average: float
 
 
+class ModuleMark(BaseModel):
+    year: int
+    name: str
+    mark: float
+
+
 class TranscriptData(BaseModel):
     degree_name: str
     nqf_level: int
     minimum_years: int
     start_year: int
     graduation_year: int
-    year_averages: List[YearAverage]
+    year_averages: Optional[List[YearAverage]] = None
+    modules: Optional[List[ModuleMark]] = None
 
 
 class TranscriptValidationResult(BaseModel):

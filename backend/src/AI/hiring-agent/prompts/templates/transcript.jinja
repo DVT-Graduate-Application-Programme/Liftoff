@@ -14,10 +14,18 @@ Return ONLY a JSON object with the following structure:
   "start_year": 2020, // The year the candidate started the degree (as an integer)
   "graduation_year": 2023, // The year the candidate completed/graduated the degree (as an integer). May be multiple graduation years if multiple degrees
   "year_averages": [
-    // List of year averages. DO NOT include module-level marks. Only year averages.
+    // List of year averages. Leave this field out or empty if year averages are NOT explicitly stated in the transcript.
     {
       "year": 1, // Year number (e.g. 1 for first year, 2 for second year)
       "average": 68.5 // The academic average percentage for this year
+    }
+  ],
+  "modules": [
+    // List of individual module/subject marks. Populate this field especially if year averages are NOT explicitly given in the transcript text.
+    {
+      "year": 1, // The academic year this module was taken (e.g. 1 for 1st year, 2 for 2nd year)
+      "name": "Introduction to Computer Science", // The module name
+      "mark": 72.0 // The final mark/grade obtained (as a float percentage, e.g. 72.0)
     }
   ]
 }

@@ -219,10 +219,42 @@ def find_profile(profiles, network):
 
 def validate_transcript(transcript_data: TranscriptData) -> TranscriptValidationResult:
     """Validate transcript data against academic requirement gates."""
-    if not transcript_data or not transcript_data.year_averages:
+    if not transcript_data:
         return TranscriptValidationResult(
             passed=False,
-            reason="No year averages found in the academic transcript.",
+            reason="No transcript data found.",
+            extracted_data=transcript_data
+        )
+
+    from models import YearAverage
+
+    # Calculate year averages if they are not explicitly provided but modules are
+    if not transcript_data.year_averages or len(transcript_data.year_averages) == 0:
+        if transcript_data.modules and len(transcript_data.modules) > 0:
+            from collections import defaultdict
+            year_to_marks = defaultdict(list)
+            for m in transcript_data.modules:
+                year_to_marks[m.year].append(m.mark)
+            
+            calculated_averages = []
+            for y, marks in year_to_marks.items():
+                if len(marks) > 0:
+                    calculated_averages.append(YearAverage(year=y, average=sum(marks) / len(marks)))
+            
+            calculated_averages.sort(key=lambda ya: ya.year)
+            transcript_data.year_averages = calculated_averages
+            print(f"INFO: Calculated year averages from individual module marks: {[f'Year {ya.year}: {ya.average:.2f}%' for ya in calculated_averages]}")
+        else:
+            return TranscriptValidationResult(
+                passed=False,
+                reason="No year averages or module marks found in the academic transcript.",
+                extracted_data=transcript_data
+            )
+
+    if not transcript_data.year_averages:
+        return TranscriptValidationResult(
+            passed=False,
+            reason="No year averages could be found or calculated.",
             extracted_data=transcript_data
         )
 
