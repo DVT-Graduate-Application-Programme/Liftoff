@@ -62,6 +62,13 @@ export default function DetailedApplicantInfo() {
               <option value="Weak">Weak</option>
             </select>
           </div>
+
+          <div>
+            <h5>Notes:</h5>
+            <textarea></textarea>
+          </div>
+
+          <button>Submit</button>
         </section>
       </div>
     </div>
