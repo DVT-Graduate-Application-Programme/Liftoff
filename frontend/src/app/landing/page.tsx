@@ -7,6 +7,7 @@ import PendingCandidates from "./components/pending-candidates";
 import AcceptedCandidates from "./components/accepted-candidates";
 import { ApplicantDetailsSidebar } from "./components/applicant-details/applicant-details-sidebar";
 import { OpenApplicantDetailsSidebarButton } from "./components/applicant-details/applicant-details-sidebar-controls";
+import { mockApplicantDetails } from "./components/applicant-details/mock-applicant-details";
 
 const page = () => {
   return (
@@ -39,7 +40,10 @@ const page = () => {
               </Tabs>
             </div>
           </SidebarInset>
-          <ApplicantDetailsSidebar />
+          <ApplicantDetailsSidebar
+            candidateName="Alex Morgan"
+            evaluation={mockApplicantDetails}
+          />
         </div>
       </SidebarProvider>
     </div>

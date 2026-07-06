@@ -1,8 +1,35 @@
-import { Sidebar, SidebarContent, SidebarGroup } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Sidebar, SidebarContent, SidebarGroup } from "@/components/ui/sidebar";
+import type { ApplicantDetailsEvaluation } from "./mock-applicant-details";
 import { CloseApplicantDetailsSidebarButton } from "./applicant-details-sidebar-controls";
+import { SCORE_CATEGORIES } from "./constants";
 
-export function ApplicantDetailsSidebar() {
+type ApplicantDetailsSidebarProps = {
+  candidateName: string;
+  evaluation: ApplicantDetailsEvaluation;
+};
+
+function formatDecimal(value: number) {
+  return value.toFixed(1);
+}
+
+export function ApplicantDetailsSidebar({
+  candidateName,
+  evaluation,
+}: ApplicantDetailsSidebarProps) {
+  const scoreTotal = SCORE_CATEGORIES.reduce(
+    (total, { key }) => total + evaluation.scores[key].score,
+    0,
+  );
+  const scoreMax = SCORE_CATEGORIES.reduce(
+    (total, { key }) => total + evaluation.scores[key].max,
+    0,
+  );
+  const overallScore = Math.max(
+    0,
+    scoreTotal + evaluation.bonus_points.total - evaluation.deductions.total,
+  );
+
   return (
     <Sidebar
       side="right"
@@ -11,14 +38,14 @@ export function ApplicantDetailsSidebar() {
     >
       <SidebarContent className="py-2">
         <SidebarGroup className="flex h-full min-h-0 flex-1 flex-col p-5">
-          <div className="flex flex-1 flex-col justify-evenly gap-8">
+          <div className="flex flex-1 flex-col justify-start gap-8">
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-1">
                 <p className="font-heading text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                   Resume evaluation results for
                 </p>
                 <p className="font-heading text-2xl font-semibold text-sidebar-foreground leading-tight">
-                  Name
+                  {candidateName}
                 </p>
               </div>
               <CloseApplicantDetailsSidebarButton />
@@ -26,42 +53,62 @@ export function ApplicantDetailsSidebar() {
             <div className="space-y-4 rounded-md border border-sidebar-border bg-sidebar-accent/20 p-5 text-base">
               <p className="flex items-baseline justify-between gap-4">
                 <span className="font-medium">Overall Score</span>
-                <span className="font-mono text-lg font-semibold">
-                  71.0/100
+                <span className="font-mono text-sm font-semibold">
+                  {formatDecimal(overallScore)}/{scoreMax}
                 </span>
               </p>
+              {SCORE_CATEGORIES.map(({ key, label }) => {
+                const category = evaluation.scores[key];
+
+                return (
+                  <p
+                    key={key}
+                    className="flex items-baseline justify-between gap-4 text-sm"
+                  >
+                    <span className="font-medium">{label}</span>
+                    <span className="font-mono">
+                      {formatDecimal(category.score)}/{category.max}
+                    </span>
+                  </p>
+                );
+              })}
               <p className="flex items-baseline justify-between gap-4">
-                <span className="font-medium">Open Source</span>
-                <span className="font-mono">10.0/35</span>
+                <span className="font-medium text-sm">Bonus Points</span>
+                <span className="font-mono text-sm">
+                  {formatDecimal(evaluation.bonus_points.total)}
+                </span>
               </p>
-              <p className="flex items-baseline justify-between gap-4">
-                <span className="font-medium">Self Projects</span>
-                <span className="font-mono">28.0/30</span>
-              </p>
-              <p className="flex items-baseline justify-between gap-4">
-                <span className="font-medium">Production Experience</span>
-                <span className="font-mono">20.0/25</span>
-              </p>
-              <p className="flex items-baseline justify-between gap-4">
-                <span className="font-medium">Technical Skills</span>
-                <span className="font-mono">8.0/10</span>
-              </p>
-              <p className="flex items-baseline justify-between gap-4">
-                <span className="font-medium">Bonus Points</span>
-                <span className="font-mono">5.0</span>
-              </p>
+              {evaluation.deductions.total > 0 ? (
+                <p className="flex items-baseline justify-between gap-4">
+                  <span className="font-medium">Deductions</span>
+                  <span className="font-mono text-destructive">
+                    -{formatDecimal(evaluation.deductions.total)}
+                  </span>
+                </p>
+              ) : null}
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               <p className="font-heading text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                 Key strengths
               </p>
-              <ol className="list-decimal space-y-2 pl-5 text-base leading-7">
-                <li>Full-Stack Development Skills</li>
-                <li>Agile Development Experience</li>
-                <li>Database Design and API Development</li>
-                <li>React.js Expertise</li>
+              <ol className="list-decimal space-y-1.5 pl-5 text-sm leading-6">
+                {evaluation.key_strengths.map((strength) => (
+                  <li key={strength}>{strength}</li>
+                ))}
               </ol>
             </div>
+            {/* {evaluation.areas_for_improvement.length > 0 ? (
+              <div className="space-y-2">
+                <p className="font-heading text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                  Areas for improvement
+                </p>
+                <ul className="list-disc space-y-1.5 pl-5 text-sm leading-6">
+                  {evaluation.areas_for_improvement.map((improvement) => (
+                    <li key={improvement}>{improvement}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null} */}
           </div>
           <Button
             type="button"
