@@ -1,3 +1,4 @@
+using Api.EndPoints.Applications;
 using Backend.Application;
 using Backend.Application.Interfaces;
 using Backend.Application.Queries.GetResumes;
@@ -36,5 +37,6 @@ if (app.Environment.IsDevelopment())
 app.MapHealthChecks("/health");
 
 app.MapControllers();
+app.MapDashboardEndpoints();
 
 app.Run();
