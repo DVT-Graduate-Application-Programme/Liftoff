@@ -30,11 +30,11 @@ jobs:
       - run: dotnet build --no-restore -c Release
       - run: dotnet test --no-build -c Release
 
-  push:
+  push-to-dev:
     name: Docker Build · Push to ECR
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/development' && github.event_name == 'push'
 
     steps:
       - uses: actions/checkout@v4
@@ -54,18 +54,18 @@ jobs:
         env:
           REGISTRY: ${{ steps.ecr-login.outputs.registry }}
           REPOSITORY: ${{ secrets.ECR_BACKEND_REPOSITORY }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: dev-${{ github.sha }}
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./backend
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
           docker tag  $REGISTRY/$REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:latest
           docker push $REGISTRY/$REPOSITORY:latest
 
-  deploy:
+  deploy-to-dev:
     name: Deploy to ECS
-    needs: push
+    needs: push-to-dev
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/development' && github.event_name == 'push'
 
     steps:
       - name: Configure AWS credentials
