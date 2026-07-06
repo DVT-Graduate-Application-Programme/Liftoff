@@ -13,107 +13,113 @@ import { Textarea } from "@/components/ui/textarea";
 
 export default function DetailedApplicantInfo() {
   return (
-    <div className="w-full flex flex-col items-center gap-4 p-4">
-      <h1>Detailed Appplicant Info</h1>
-
-      {/* Document Viewer Container */}
-      <section>
-        <h3>View Documents</h3>
-        <div>
-          <button>CV</button>
-          <button>Transcript</button>
-        </div>
-        <div>
-          <p>Document</p>
-        </div>
-      </section>
-
-      {/*Candidate INFO Container*/}
-      <div className="flex w-full max-w-xl flex-col gap-4">
-
-        {/* Canidate Summary Section */}
-        <section className="flex flex-col gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="size-4" />
-                AI Summary
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm leading-relaxed">
-                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Rerum
-                fugit enim tempore, quibusdam ad facere officiis quas, sint
-                explicabo eum voluptatem placeat esse in dolor tempora et velit
-                vero consectetur!
+    <>
+      <h1 className="font-heading text-2xl font-semibold text-foreground">
+        Applicant Name
+      </h1>
+      <div className="w-full flex justify-center gap-10 pt-10">
+        {/* Document Viewer Container */}
+        <section className="flex w-full max-w-xl flex-col gap-3">
+         
+          <div className="flex gap-2 items-center justify-center">
+            <Button variant="default">CV</Button>
+            <Button variant="outline">Transcript</Button>
+          </div>
+          <Card className="flex-1 items-center justify-center">
+            <CardContent className="flex flex-1 items-center justify-center">
+              <p className="text-sm text-muted-foreground">
+                View Selected Document
               </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Key Strengths</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="flex flex-col gap-2">
-                {["Skill 1", "Skill 2", "Skill 3", "Skill 4"].map((skill) => (
-                  <li
-                    key={skill}
-                    className="flex items-center gap-2 text-sm"
-                  >
-                    <Check className="size-4 text-primary" />
-                    {skill}
-                  </li>
-                ))}
-              </ul>
             </CardContent>
           </Card>
         </section>
 
-        {/* Candidate Rating section*/}
-        <Card>
-          <CardHeader>
-            <CardTitle>Candidate Review</CardTitle>
-          </CardHeader>
+        {/*Candidate INFO Container*/}
+        <div className="flex w-full max-w-xl flex-col gap-4">
+          {/* Canidate Summary Section */}
+          <section className="flex flex-col gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="size-4" />
+                  AI Summary
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm leading-relaxed">
+                  Lorem ipsum dolor sit amet consectetur, adipisicing elit.
+                  Rerum fugit enim tempore, quibusdam ad facere officiis quas,
+                  sint explicabo eum voluptatem placeat esse in dolor tempora et
+                  velit vero consectetur!
+                </p>
+              </CardContent>
+            </Card>
 
-          <CardContent className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="potential-select">Potential Candidate</Label>
-              <Select name="potential">
-                <SelectTrigger id="potential-select" className="w-full">
-                  <SelectValue placeholder="Is this a potential candidate?" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Yes">Yes</SelectItem>
-                  <SelectItem value="Maybe">Maybe</SelectItem>
-                  <SelectItem value="No">No</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Key Strengths</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="flex flex-col gap-2">
+                  {["Skill 1", "Skill 2", "Skill 3", "Skill 4"].map((skill) => (
+                    <li key={skill} className="flex items-center gap-2 text-sm">
+                      <Check className="size-4 text-primary" />
+                      {skill}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </section>
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="strength-select">Candidate Strength</Label>
-              <Select name="strength">
-                <SelectTrigger id="strength-select" className="w-full">
-                  <SelectValue placeholder="Weigh strength of candidate" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Strong">Strong</SelectItem>
-                  <SelectItem value="Medium">Medium</SelectItem>
-                  <SelectItem value="Weak">Weak</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Candidate Rating section*/}
+          <Card>
+            <CardHeader>
+              <CardTitle>Candidate Review</CardTitle>
+            </CardHeader>
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea id="notes" placeholder="Add any additional notes..." />
-            </div>
+            <CardContent className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="potential-select">Potential Candidate</Label>
+                <Select name="potential">
+                  <SelectTrigger id="potential-select" className="w-full">
+                    <SelectValue placeholder="Is this a potential candidate?" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Yes">Yes</SelectItem>
+                    <SelectItem value="Maybe">Maybe</SelectItem>
+                    <SelectItem value="No">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <Button className="self-end">Submit</Button>
-          </CardContent>
-        </Card>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="strength-select">Candidate Strength</Label>
+                <Select name="strength">
+                  <SelectTrigger id="strength-select" className="w-full">
+                    <SelectValue placeholder="Weigh strength of candidate" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Strong">Strong</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="Weak">Weak</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Add any additional notes..."
+                />
+              </div>
+
+              <Button className="self-end">Submit</Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
