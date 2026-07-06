@@ -18,9 +18,9 @@ export default function DetailedApplicantInfo() {
       <h1 className="font-heading text-3xl font-semibold text-foreground">
         Applicant Name
       </h1>
-      <div className="w-full flex justify-center gap-10 pt-10">
+      <div className="w-full flex flex-col md:flex-row justify-center gap-10 pt-10">
         {/* Document Viewer Container */}
-        <section className="flex w-full max-w-xl flex-col gap-3">
+        <section className="flex w-full md:max-w-xl flex-col gap-3">
           <h2 className="font-heading text-xs font-semibold uppercase tracking-wide text-muted-foreground pl-2">
             Applicant documents
           </h2>
@@ -47,7 +47,7 @@ export default function DetailedApplicantInfo() {
         </section>
 
         {/*Candidate INFO Container*/}
-        <div className="flex w-full max-w-xl flex-col gap-4">
+        <div className="flex w-full md:max-w-xl flex-col gap-4">
           {/* Canidate Summary Section */}
           <section className="flex flex-col gap-4">
             <Card>
@@ -91,32 +91,34 @@ export default function DetailedApplicantInfo() {
             </CardHeader>
 
             <CardContent className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="potential-select">Potential Candidate</Label>
-                <Select name="potential">
-                  <SelectTrigger id="potential-select" className="w-full">
-                    <SelectValue placeholder="Is this a potential candidate?" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Yes">Yes</SelectItem>
-                    <SelectItem value="Maybe">Maybe</SelectItem>
-                    <SelectItem value="No">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="potential-select">Potential Candidate</Label>
+                  <Select name="potential">
+                    <SelectTrigger id="potential-select" className="w-full">
+                      <SelectValue placeholder="Is this a potential candidate?" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Yes">Yes</SelectItem>
+                      <SelectItem value="Maybe">Maybe</SelectItem>
+                      <SelectItem value="No">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="tier-select">Candidate Tier</Label>
-                <Select name="tier">
-                  <SelectTrigger id="tier-select" className="w-full">
-                    <SelectValue placeholder="Weigh the candidate by tier" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Strong">Strong</SelectItem>
-                    <SelectItem value="Borderline">Borderline</SelectItem>
-                    <SelectItem value="Weak">Weak</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="tier-select">Candidate Tier</Label>
+                  <Select name="tier">
+                    <SelectTrigger id="tier-select" className="w-full">
+                      <SelectValue placeholder="Weigh the candidate by tier" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Strong">Strong</SelectItem>
+                      <SelectItem value="Borderline">Borderline</SelectItem>
+                      <SelectItem value="Weak">Weak</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="flex flex-col gap-2">
@@ -127,7 +129,9 @@ export default function DetailedApplicantInfo() {
                 />
               </div>
 
-              <Button className="self-end">Submit</Button>
+              <div className="flex justify-end pt-2">
+                <Button>Submit</Button>
+              </div>
             </CardContent>
           </Card>
         </div>
