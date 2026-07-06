@@ -2,6 +2,7 @@ import { Check, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -23,15 +24,26 @@ export default function DetailedApplicantInfo() {
           <h2 className="font-heading text-xs font-semibold uppercase tracking-wide text-muted-foreground pl-2">
             Applicant documents
           </h2>
-          <div className="flex gap-2 items-center justify-center">
-            <Button variant="default">CV</Button>
-            <Button variant="outline">Transcript</Button>
-          </div>
-          <Card className="flex-1 items-center justify-center">
-            <CardContent className="flex flex-1 items-center justify-center">
-              <p className="text-sm text-muted-foreground">Selected Document</p>
-            </CardContent>
-          </Card>
+          <Tabs defaultValue="cv" className="flex-1 gap-3">
+            <TabsList className="self-center">
+              <TabsTrigger value="cv">CV</TabsTrigger>
+              <TabsTrigger value="transcript">Transcript</TabsTrigger>
+            </TabsList>
+            <TabsContent value="cv" className="flex-1">
+              <Card className="h-full items-center justify-center">
+                <CardContent className="flex flex-1 items-center justify-center">
+                  <p className="text-sm text-muted-foreground">CV</p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            <TabsContent value="transcript" className="flex-1">
+              <Card className="h-full items-center justify-center">
+                <CardContent className="flex flex-1 items-center justify-center">
+                  <p className="text-sm text-muted-foreground">Transcript</p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </section>
 
         {/*Candidate INFO Container*/}
