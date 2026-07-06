@@ -1,31 +1,47 @@
-import React from "react";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { Input } from "@/components/ui/input";
 import AllCandidates from "./components/all-candidates";
 import PendingCandidates from "./components/pending-candidates";
 import AcceptedCandidates from "./components/accepted-candidates";
+import { ApplicantDetailsSidebar } from "./components/applicant-details-sidebar";
+import { OpenApplicantDetailsSidebarButton } from "./components/applicant-details-sidebar-controls";
 
 const page = () => {
   return (
-    <div className="w-full flex flex-col items-center gap-4 p-4">
-      <Input className="w-1/2 border border-accent" />
-      <Tabs defaultValue="pending" className="w-full">
-        <TabsList className="self-center">
-          <TabsTrigger value="pending">Pending</TabsTrigger>
-          <TabsTrigger value="all">All Candidates</TabsTrigger>
-          <TabsTrigger value="accepted">Accepted Candidates</TabsTrigger>
-        </TabsList>
-        <TabsContent value="pending">
-          <PendingCandidates />
-        </TabsContent>
-        <TabsContent value="all">
-          <AllCandidates />
-        </TabsContent>
-        <TabsContent value="accepted">
-          <AcceptedCandidates />
-        </TabsContent>
-      </Tabs>
+    <div className="w-full overflow-hidden">
+      <SidebarProvider className="min-h-0 w-full">
+        <div className="flex h-full min-h-0 w-full overflow-hidden">
+          <SidebarInset className="min-w-0 flex-1 overflow-y-auto">
+            <div className="flex w-full flex-col gap-4 p-4">
+              <div className="flex items-center justify-center gap-2">
+                <Input className="w-full max-w-2xl border border-accent" />
+                <OpenApplicantDetailsSidebarButton />
+              </div>
+              <Tabs defaultValue="pending" className="w-full">
+                <TabsList className="self-center">
+                  <TabsTrigger value="pending">Pending</TabsTrigger>
+                  <TabsTrigger value="all">All Candidates</TabsTrigger>
+                  <TabsTrigger value="accepted">
+                    Accepted Candidates
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="pending">
+                  <PendingCandidates />
+                </TabsContent>
+                <TabsContent value="all">
+                  <AllCandidates />
+                </TabsContent>
+                <TabsContent value="accepted">
+                  <AcceptedCandidates />
+                </TabsContent>
+              </Tabs>
+            </div>
+          </SidebarInset>
+          <ApplicantDetailsSidebar />
+        </div>
+      </SidebarProvider>
     </div>
   );
 };
