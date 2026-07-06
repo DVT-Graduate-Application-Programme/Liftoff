@@ -1,8 +1,4 @@
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-} from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarGroup } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { CloseApplicantDetailsSidebarButton } from "./applicant-details-sidebar-controls";
 
@@ -30,7 +26,9 @@ export function ApplicantDetailsSidebar() {
             <div className="space-y-4 rounded-md border border-sidebar-border bg-sidebar-accent/20 p-5 text-base">
               <p className="flex items-baseline justify-between gap-4">
                 <span className="font-medium">Overall Score</span>
-                <span className="font-mono text-lg font-semibold">71.0/100</span>
+                <span className="font-mono text-lg font-semibold">
+                  71.0/100
+                </span>
               </p>
               <p className="flex items-baseline justify-between gap-4">
                 <span className="font-medium">Open Source</span>
@@ -65,7 +63,10 @@ export function ApplicantDetailsSidebar() {
               </ol>
             </div>
           </div>
-          <Button type="button" className="mt-6 h-11 w-full text-base font-medium">
+          <Button
+            type="button"
+            className="mt-6 h-11 w-full text-base font-medium"
+          >
             View CV and Transcript
           </Button>
         </SidebarGroup>
@@ -73,57 +74,3 @@ export function ApplicantDetailsSidebar() {
     </Sidebar>
   );
 }
-
-// ================================================================================
-
-// 📊 RESUME EVALUATION RESULTS FOR: Alex Morgan
-
-// ================================================================================
-
-// 🎯 OVERALL SCORE: 71.0/100
-
-// 📈 DETAILED SCORES:
-
-// ------------------------------------------------------------
-
-// 🌐 Open Source:          10.0/35
-
-//    Evidence: Contributed to personal GitHub projects (taskflow, weatherwise, budgetbuddy). No evidence of contributions to other people's open source projects.
-
-// 🚀 Self Projects:        28.0/30
-
-//    Evidence: Developed three complex projects: TaskFlow (collaborative task board with REST API and PostgreSQL), WeatherWise (responsive weather app consuming a public API), and Budget Buddy (personal finance tracker with command-line and web interfaces).  All projects have active GitHub links.
-
-// 🏢 Production Experience: 20.0/25
-
-//    Evidence: Internship at Brightleaf Technologies involved building and shipping features for an internal inventory management tool, fixing bugs, writing tests, and participating in Agile development practices.
-
-// 💻 Technical Skills:     8.0/10
-
-//    Evidence: Proficient in Python, JavaScript (ES6+), TypeScript, SQL, React, Node.js, Django, REST APIs, Git/GitHub, Docker (basic), CI/CD (GitHub Actions). Demonstrated knowledge of databases like PostgreSQL and MySQL.
-
-// ⭐ BONUS POINTS: 5.0
-
-// ------------------------------
-
-//    GSoC participation + GitHub portfolio
-
-// ✅ KEY STRENGTHS:
-
-// ------------------------------
-
-//   1. Full-Stack Development Skills
-
-//   2. Agile Development Experience
-
-//   3. Database Design and API Development
-
-//   4. React.js Expertise
-
-// 🔧 AREAS FOR IMPROVEMENT:
-
-// ------------------------------
-
-//   1. Limited Open Source Contributions
-
-//   2. Lack of Formal Certifications
