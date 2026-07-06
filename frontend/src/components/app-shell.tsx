@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { NavDrawer } from "./navbar/nav-drawer";
-import Navbar from "./navbar/Navbar";
+import Navbar from "./navbar/navbar";
 
 type AppShellProps = {
   children: React.ReactNode;
