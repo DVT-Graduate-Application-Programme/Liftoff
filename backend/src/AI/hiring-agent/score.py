@@ -228,28 +228,36 @@ def validate_transcript(transcript_data: TranscriptData) -> TranscriptValidation
 
     from models import YearAverage
 
-    # Calculate year averages if they are not explicitly provided but modules are
-    if not transcript_data.year_averages or len(transcript_data.year_averages) == 0:
-        if transcript_data.modules and len(transcript_data.modules) > 0:
-            from collections import defaultdict
-            year_to_marks = defaultdict(list)
-            for m in transcript_data.modules:
+    # Calculate year averages programmatically if modules are present,
+    # prioritizing exact python calculations over LLM math.
+    if transcript_data.modules and len(transcript_data.modules) > 0:
+        from collections import defaultdict
+        year_to_marks = defaultdict(list)
+        for m in transcript_data.modules:
+            if m.mark is not None and m.mark > 0.0:
                 year_to_marks[m.year].append(m.mark)
-            
-            calculated_averages = []
-            for y, marks in year_to_marks.items():
-                if len(marks) > 0:
-                    calculated_averages.append(YearAverage(year=y, average=sum(marks) / len(marks)))
-            
+        
+        calculated_averages = []
+        for y, marks in year_to_marks.items():
+            if len(marks) > 0:
+                calculated_averages.append(YearAverage(year=y, average=sum(marks) / len(marks)))
+        
+        if calculated_averages:
             calculated_averages.sort(key=lambda ya: ya.year)
             transcript_data.year_averages = calculated_averages
-            print(f"INFO: Calculated year averages from individual module marks: {[f'Year {ya.year}: {ya.average:.2f}%' for ya in calculated_averages]}")
+            print(f"INFO: Programmatically calculated year averages from individual module marks: {[f'Year {ya.year}: {ya.average:.2f}%' for ya in calculated_averages]}")
         else:
             return TranscriptValidationResult(
                 passed=False,
-                reason="No year averages or module marks found in the academic transcript.",
+                reason="No valid non-zero module marks found in the academic transcript.",
                 extracted_data=transcript_data
             )
+    elif not transcript_data.year_averages or len(transcript_data.year_averages) == 0:
+        return TranscriptValidationResult(
+            passed=False,
+            reason="No year averages or module marks found in the academic transcript.",
+            extracted_data=transcript_data
+        )
 
     if not transcript_data.year_averages:
         return TranscriptValidationResult(

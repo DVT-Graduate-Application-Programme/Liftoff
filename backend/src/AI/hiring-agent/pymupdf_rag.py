@@ -1164,7 +1164,7 @@ def to_markdown(
             if tessdata_path:
                 try:
                     print(f"INFO: Flat/scanned page detected. Activating OCR via Tesseract using tessdata: {tessdata_path}")
-                    parms.textpage = page.get_textpage_ocr(tessdata=tessdata_path, language="eng")
+                    parms.textpage = page.get_textpage_ocr(tessdata=tessdata_path, language="eng", dpi=300, full=True)
                 except Exception as ocr_err:
                     print(f"WARNING: PyMuPDF get_textpage_ocr failed: {ocr_err}. Falling back to standard extraction.")
                     parms.textpage = page.get_textpage(flags=textflags, clip=parms.clip)

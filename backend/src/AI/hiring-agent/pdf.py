@@ -103,11 +103,63 @@ class PDFHandler:
                 raise FileNotFoundError(f"PDF file not found: {pdf_path}")
 
             with pymupdf.open(pdf_path) as doc:
-                pages = range(doc.page_count)
-                resume_text = to_markdown(
-                    doc,
-                    pages=pages,
-                )
+                # Check if PDF is flat/scanned (first page has no selectable text)
+                is_scanned = True
+                if doc.page_count > 0:
+                    try:
+                        first_page_text = doc[0].get_text()
+                        if len(first_page_text.strip()) > 10:
+                            is_scanned = False
+                    except Exception as text_err:
+                        logger.warning(f"⚠️ Failed to get text from first page: {text_err}")
+
+                if is_scanned:
+                    logger.info("ℹ️ Flat/scanned PDF detected. Triggering binarized Tesseract OCR fallback...")
+                    
+                    import tempfile
+                    import subprocess
+                    from PIL import Image
+                    
+                    ocr_text_list = []
+                    for page in doc:
+                        try:
+                            # 1. Render page to high-quality image
+                            pix = page.get_pixmap(dpi=300)
+                            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tf:
+                                img_path = tf.name
+                            pix.save(img_path)
+                            
+                            # 2. Convert to grayscale and apply threshold to binarize (threshold = 127)
+                            img = Image.open(img_path).convert('L')
+                            bin_img = img.point(lambda p: 255 if p > 127 else 0)
+                            
+                            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tf:
+                                bin_path = tf.name
+                            bin_img.save(bin_path)
+                            
+                            # 3. Run Tesseract CLI on binarized image (PSM 3, DPI 300)
+                            cmd = f"tesseract {bin_path} stdout --psm 3 --dpi 300 2>/dev/null"
+                            out = subprocess.getoutput(cmd)
+                            ocr_text_list.append(out)
+                            
+                            # 4. Clean up temporary files
+                            os.remove(img_path)
+                            os.remove(bin_path)
+                        except Exception as ocr_err:
+                            logger.error(f"❌ Page binarized OCR failed: {ocr_err}")
+                            
+                    if ocr_text_list:
+                        resume_text = "\n\n".join(ocr_text_list)
+                        logger.info(f"✅ Binarized OCR extraction complete: {len(resume_text)} characters extracted.")
+                    else:
+                        resume_text = ""
+                else:
+                    pages = range(doc.page_count)
+                    resume_text = to_markdown(
+                        doc,
+                        pages=pages,
+                    )
+
                 logger.debug(
                     f"Extracted text from PDF: {len(resume_text) if resume_text else 0} characters"
                 )
