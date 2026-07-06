@@ -13,23 +13,23 @@ import { Textarea } from "@/components/ui/textarea";
 
 export default function DetailedApplicantInfo() {
   return (
-    <>
-      <h1 className="font-heading text-2xl font-semibold text-foreground">
+    <div className="flex flex-col items-center justify-center p-8">
+      <h1 className="font-heading text-3xl font-semibold text-foreground">
         Applicant Name
       </h1>
       <div className="w-full flex justify-center gap-10 pt-10">
         {/* Document Viewer Container */}
         <section className="flex w-full max-w-xl flex-col gap-3">
-         
+          <h2 className="font-heading text-xs font-semibold uppercase tracking-wide text-muted-foreground pl-2">
+            Applicant documents
+          </h2>
           <div className="flex gap-2 items-center justify-center">
             <Button variant="default">CV</Button>
             <Button variant="outline">Transcript</Button>
           </div>
           <Card className="flex-1 items-center justify-center">
             <CardContent className="flex flex-1 items-center justify-center">
-              <p className="text-sm text-muted-foreground">
-                View Selected Document
-              </p>
+              <p className="text-sm text-muted-foreground">Selected Document</p>
             </CardContent>
           </Card>
         </section>
@@ -94,14 +94,14 @@ export default function DetailedApplicantInfo() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="strength-select">Candidate Strength</Label>
-                <Select name="strength">
-                  <SelectTrigger id="strength-select" className="w-full">
-                    <SelectValue placeholder="Weigh strength of candidate" />
+                <Label htmlFor="tier-select">Candidate Tier</Label>
+                <Select name="tier">
+                  <SelectTrigger id="tier-select" className="w-full">
+                    <SelectValue placeholder="Weigh the candidate by tier" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Strong">Strong</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="Borderline">Borderline</SelectItem>
                     <SelectItem value="Weak">Weak</SelectItem>
                   </SelectContent>
                 </Select>
@@ -120,6 +120,6 @@ export default function DetailedApplicantInfo() {
           </Card>
         </div>
       </div>
-    </>
+    </div>
   );
 }
