@@ -16,7 +16,9 @@ export function OpenApplicantDetailsSidebarButton() {
       type="button"
       variant="outline"
       className="shrink-0"
-      onClick={() => setOpen(true)}
+      onClick={() => {
+        setOpen(true);
+      }}
     >
       <PanelRightOpen className="size-4" />
       Open applicant details
@@ -37,7 +39,9 @@ export function CloseApplicantDetailsSidebarButton() {
       variant="ghost"
       size="icon"
       aria-label="Close applicant details sidebar"
-      onClick={() => setOpen(false)}
+      onClick={() => {
+        setOpen(false);
+      }}
     >
       <X className="size-4" />
     </Button>
