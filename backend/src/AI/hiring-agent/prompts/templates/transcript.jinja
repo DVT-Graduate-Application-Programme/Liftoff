@@ -1,0 +1,25 @@
+Extract structured information from the following academic transcript.
+
+--- The input markdown starts here ---
+
+{{ text_content }}
+
+--- The input markdown ends here ---
+
+Return ONLY a JSON object with the following structure:
+{
+  "degree_name": "Name of the degree/qualification being obtained", // if multiple degrees then list them
+  "nqf_level": 7, // The NQF level as an integer (e.g. 7 for Bachelor's degree, 8 for Honours degree, etc. If not explicitly stated, infer the NQF level using standard regional guidelines: e.g. 3-year Bachelor degree is NQF 7, BEng or 4-year Honours degree is NQF 8)
+  "minimum_years": 3 or 4, // The minimum number of years required to complete this degree which is dependant on the university (e.g. 3 for a standard Bachelor's, 4 for an Honours or BEng)
+  "start_year": 2020, // The year the candidate started the degree (as an integer)
+  "graduation_year": 2023, // The year the candidate completed/graduated the degree (as an integer). May be multiple graduation years if multiple degrees
+  "year_averages": [
+    // List of year averages. DO NOT include module-level marks. Only year averages.
+    {
+      "year": 1, // Year number (e.g. 1 for first year, 2 for second year)
+      "average": 68.5 // The academic average percentage for this year
+    }
+  ]
+}
+
+**IMPORTANT**: Return ONLY valid JSON. Do not include any introductory or explanatory text.

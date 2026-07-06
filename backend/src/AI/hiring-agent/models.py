@@ -498,3 +498,23 @@ class GeminiProvider:
                     f"Retrying in {sleep_time}s..."
                 )
                 time.sleep(sleep_time)
+
+
+class YearAverage(BaseModel):
+    year: int
+    average: float
+
+
+class TranscriptData(BaseModel):
+    degree_name: str
+    nqf_level: int
+    minimum_years: int
+    start_year: int
+    graduation_year: int
+    year_averages: List[YearAverage]
+
+
+class TranscriptValidationResult(BaseModel):
+    passed: bool
+    reason: str
+    extracted_data: Optional[TranscriptData] = None

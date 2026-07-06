@@ -5,7 +5,7 @@ import logging
 import csv
 from pdf import PDFHandler
 from github import fetch_and_display_github_info
-from models import JSONResume, EvaluationData
+from models import JSONResume, EvaluationData, TranscriptData, TranscriptValidationResult
 from typing import List, Optional, Dict
 from evaluator import ResumeEvaluator
 from pathlib import Path
@@ -21,7 +21,7 @@ from config import DEVELOPMENT_MODE
 
 
 
-from backend_client import get_resume, get_all_resumes
+from backend_client import get_resume, get_all_resumes, BACKEND_BASE_URL
 
 
 logger = logging.getLogger(__name__)
@@ -217,7 +217,78 @@ def find_profile(profiles, network):
     )
 
 
-def main(pdf_path):
+def validate_transcript(transcript_data: TranscriptData) -> TranscriptValidationResult:
+    """Validate transcript data against academic requirement gates."""
+    if not transcript_data or not transcript_data.year_averages:
+        return TranscriptValidationResult(
+            passed=False,
+            reason="No year averages found in the academic transcript.",
+            extracted_data=transcript_data
+        )
+
+    # Compute the average of the year averages
+    avg_score = sum(ya.average for ya in transcript_data.year_averages) / len(transcript_data.year_averages)
+
+    # 1. Average above 65% (strict check)
+    if avg_score <= 65.0:
+        return TranscriptValidationResult(
+            passed=False,
+            reason=f"Average mark is {avg_score:.2f}%, which is not above 65%.",
+            extracted_data=transcript_data
+        )
+
+    # 2. NQF level of at least 7
+    if transcript_data.nqf_level < 7:
+        return TranscriptValidationResult(
+            passed=False,
+            reason=f"NQF level is {transcript_data.nqf_level}, which is below the minimum required level of 7.",
+            extracted_data=transcript_data
+        )
+
+    # 3. Take more than n+1 years to graduate (n is minimum_years)
+    n = transcript_data.minimum_years
+    actual_years = transcript_data.graduation_year - transcript_data.start_year
+    if actual_years > (n + 1):
+        return TranscriptValidationResult(
+            passed=False,
+            reason=f"Took {actual_years} years to graduate, which exceeds n+1 ({n + 1}) years for a {n}-year degree.",
+            extracted_data=transcript_data
+        )
+
+    return TranscriptValidationResult(
+        passed=True,
+        reason="Academic transcript meets all requirements.",
+        extracted_data=transcript_data
+    )
+
+
+def print_transcript_validation_results(validation: TranscriptValidationResult):
+    """Print transcript validation results in a readable format."""
+    print("\n" + "=" * 80)
+    print("🎓 ACADEMIC TRANSCRIPT VALIDATION RESULTS")
+    print("=" * 80)
+    if validation.passed:
+        print("✅ PASS: Academic transcript meets all requirements.")
+    else:
+        print(f"❌ FAIL/REJECT: {validation.reason}")
+
+    if validation.extracted_data:
+        data = validation.extracted_data
+        print(f"\nExtracted Details:")
+        print(f"  Degree:          {data.degree_name}")
+        print(f"  NQF Level:       {data.nqf_level} (Required: >= 7)")
+        print(f"  Duration (n):    {data.minimum_years} years")
+        print(f"  Timeline:        {data.start_year} - {data.graduation_year} ({data.graduation_year - data.start_year} years, Allowed: <= n+1 = {data.minimum_years + 1})")
+        if data.year_averages:
+            print(f"  Year Averages:")
+            for ya in data.year_averages:
+                print(f"    Year {ya.year}: {ya.average:.2f}%")
+            avg_score = sum(ya.average for ya in data.year_averages) / len(data.year_averages)
+            print(f"  Overall Average: {avg_score:.2f}% (Required: > 65%)")
+    print("=" * 80)
+
+
+def main(pdf_path, transcript_path=None):
     is_url = pdf_path.startswith(("http://", "https://"))
     downloaded_path = None
     if is_url:
@@ -229,6 +300,18 @@ def main(pdf_path):
         except Exception as e:
             logger.error(f"Error downloading PDF from URL: {e}")
             return None
+
+    downloaded_transcript_path = None
+    if transcript_path:
+        is_transcript_url = transcript_path.startswith(("http://", "https://"))
+        if is_transcript_url:
+            try:
+                from pdf import download_pdf
+                transcript_path = download_pdf(transcript_path)
+                downloaded_transcript_path = transcript_path
+            except Exception as e:
+                logger.error(f"Error downloading transcript PDF from URL: {e}")
+                return None
 
     try:
         # Create cache filename based on PDF path
@@ -325,29 +408,6 @@ def main(pdf_path):
                 profiles = resume_data.basics.profiles or []
             github_profile = find_profile(profiles, "Github")
 
-            # if github_profile:
-            #     print(
-            #         f"Fetching GitHub data"
-            #         + (
-            #             " and caching to " + github_cache_filename
-            #             if DEVELOPMENT_MODE
-            #             else ""
-            #         )
-            #     )
-            #     github_data = fetch_and_display_github_info(github_profile.url)
-
-            #     if (
-            #         DEVELOPMENT_MODE
-            #         and github_data
-            #         and isinstance(github_data, dict)
-            #         and "profile" in github_data
-            #     ):
-            #         os.makedirs(os.path.dirname(github_cache_filename), exist_ok=True)
-            #         Path(github_cache_filename).write_text(
-            #             json.dumps(github_data, indent=2, ensure_ascii=False),
-            #             encoding="utf-8",
-            #         )
-
         score = _evaluate_resume(resume_data, github_data)
 
         # Get candidate name for display
@@ -362,6 +422,29 @@ def main(pdf_path):
 
         # Print evaluation results in readable format
         print_evaluation_results(score, candidate_name)
+
+        # Process and validate transcript if provided
+        if transcript_path:
+            logger.debug(f"Processing transcript PDF: {transcript_path}")
+            pdf_handler = PDFHandler()
+            transcript_dict = pdf_handler.extract_transcript_data(transcript_path)
+            if transcript_dict:
+                try:
+                    transcript_data = TranscriptData(**transcript_dict)
+                    validation_res = validate_transcript(transcript_data)
+                    print_transcript_validation_results(validation_res)
+                except Exception as e:
+                    logger.error(f"Error parsing/validating transcript data: {e}")
+                    print_transcript_validation_results(TranscriptValidationResult(
+                        passed=False,
+                        reason=f"Failed to parse transcript structure: {e}"
+                    ))
+            else:
+                logger.error("Failed to extract transcript data using LLM.")
+                print_transcript_validation_results(TranscriptValidationResult(
+                    passed=False,
+                    reason="Failed to extract structured data from academic transcript."
+                ))
 
         if DEVELOPMENT_MODE:
             csv_row = transform_evaluation_response(
@@ -395,23 +478,42 @@ def main(pdf_path):
                 logger.warning(
                     f"Failed to clean up downloaded PDF {downloaded_path}: {e}"
                 )
+        if downloaded_transcript_path and not DEVELOPMENT_MODE and os.path.exists(downloaded_transcript_path):
+            try:
+                os.remove(downloaded_transcript_path)
+            except Exception as e:
+                logger.warning(
+                    f"Failed to clean up downloaded transcript PDF {downloaded_transcript_path}: {e}"
+                )
 
 
 if __name__ == "__main__":
-    # if len(sys.argv) < 2:
-    #     print("Usage: python score.py <pdf_path_or_url>")
-    #     exit(1)
-    # pdf_path = sys.argv[1]
+    pdf_path = None
+    transcript_path = None
 
-    
-    resume = get_resume(1)
-    pdf_path = resume.document_url
+    if len(sys.argv) >= 2:
+        pdf_path = sys.argv[1]
+        if len(sys.argv) >= 3:
+            transcript_path = sys.argv[2]
+    else:
+        # Fallback to querying C# API backend
+        try:
+            resume = get_resume(1)
+            pdf_path = resume.document_url
+            transcript_path = resume.transcript_url
+            print(f"Loaded candidate application: {resume}")
 
-    print(f"the path is : {resume}")
-    is_url = pdf_path.startswith(("http://", "https://"))
+            # Prepend backend base URL to relative URLs
+            if pdf_path and pdf_path.startswith("/api/"):
+                pdf_path = f"{BACKEND_BASE_URL}{pdf_path}"
+            if transcript_path and transcript_path.startswith("/api/"):
+                transcript_path = f"{BACKEND_BASE_URL}{transcript_path}"
+        except Exception as e:
+            print(f"Error fetching resume from C# API backend: {e}")
+            sys.exit(1)
 
-    # if not is_url and not os.path.exists(pdf_path):
-    #     print(f"Error: File '{pdf_path}' does not exist.")
-    #     exit(1)
+    if not pdf_path:
+        print("Error: No PDF path provided or found.")
+        sys.exit(1)
 
-    main(pdf_path)
+    main(pdf_path, transcript_path)

@@ -15,6 +15,7 @@ builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
 
 builder.Services.AddScoped<IResumeStorage, LocalResumeStorage>();
+builder.Services.AddScoped<IngestApplicationHandler>();
 
 builder.Services.AddMediatR(cfg =>
 {
@@ -36,5 +37,6 @@ if (app.Environment.IsDevelopment())
 app.MapHealthChecks("/health");
 
 app.MapControllers();
+app.MapIngestEndpoints();
 
 app.Run();

@@ -428,3 +428,29 @@ class PDFHandler:
         except Exception as e:
             logger.error(f"❌ Error creating JSONResume object: {e}")
             return None
+
+    def extract_transcript_data(self, pdf_path: str) -> Optional[Dict]:
+        try:
+            logger.debug(f"📄 Extracting text from transcript PDF: {pdf_path}")
+            if pdf_path.startswith(("http://", "https://")):
+                pdf_path = download_pdf(pdf_path)
+
+            text_content = self.extract_text_from_pdf(pdf_path)
+
+            if not text_content:
+                logger.error("❌ Failed to extract text from transcript PDF")
+                return None
+
+            prompt = self.template_manager.render_template(
+                "transcript", text_content=text_content
+            )
+            if not prompt:
+                logger.error("❌ Failed to render transcript template")
+                return None
+
+            from models import TranscriptData
+            return self._call_llm_for_section("transcript", text_content, prompt, TranscriptData)
+        except Exception as e:
+            logger.error(f"❌ Error during transcript PDF to JSON extraction: {e}")
+            return None
+
