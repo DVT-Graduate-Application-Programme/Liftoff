@@ -41,17 +41,13 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
                 attachment.ContentType, 
                 cancellationToken);
 
-            // In a complete implementation, upload `attachment.ContentBytes` to Azure Blob Storage here
-            // and get a URL back. For now, we simulate this.
-            var blobUrl = $"simulated-blob-url-for-{attachment.Name}";
-
             if (classification == "CV")
             {
-                applicationRecord.CvBlobUrl = blobUrl;
+                applicationRecord.CvAttachmentId = attachment.Id;
             }
             else if (classification == "Transcript")
             {
-                applicationRecord.TranscriptBlobUrl = blobUrl;
+                applicationRecord.TranscriptAttachmentId = attachment.Id;
             }
         }
 

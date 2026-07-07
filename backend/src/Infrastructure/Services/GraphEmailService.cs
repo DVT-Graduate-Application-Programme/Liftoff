@@ -38,7 +38,7 @@ public class GraphEmailService : IGraphEmailService
         var attachments = await _graphClient.Users[userId].Messages[messageId].Attachments
             .GetAsync(requestConfiguration => 
             {
-                requestConfiguration.QueryParameters.Select = new[] { "name", "contentType", "contentBytes" };
+                requestConfiguration.QueryParameters.Select = new[] { "id", "name", "contentType", "contentBytes" };
             }, cancellationToken);
 
         if (attachments?.Value != null)
@@ -49,6 +49,7 @@ public class GraphEmailService : IGraphEmailService
                 {
                     result.Add(new EmailAttachmentDto
                     {
+                        Id = fileAttachment.Id ?? string.Empty,
                         Name = fileAttachment.Name ?? string.Empty,
                         ContentType = fileAttachment.ContentType ?? "application/octet-stream",
                         ContentBytes = fileAttachment.ContentBytes
@@ -58,6 +59,28 @@ public class GraphEmailService : IGraphEmailService
         }
 
         return result;
+    }
+
+    public async Task<EmailAttachmentDto?> GetAttachmentByIdAsync(string userId, string messageId, string attachmentId, CancellationToken cancellationToken = default)
+    {
+        var attachment = await _graphClient.Users[userId].Messages[messageId].Attachments[attachmentId]
+            .GetAsync(requestConfiguration => 
+            {
+                requestConfiguration.QueryParameters.Select = new[] { "id", "name", "contentType", "contentBytes" };
+            }, cancellationToken);
+
+        if (attachment is FileAttachment fileAttachment && fileAttachment.ContentBytes != null)
+        {
+            return new EmailAttachmentDto
+            {
+                Id = fileAttachment.Id ?? string.Empty,
+                Name = fileAttachment.Name ?? string.Empty,
+                ContentType = fileAttachment.ContentType ?? "application/octet-stream",
+                ContentBytes = fileAttachment.ContentBytes
+            };
+        }
+
+        return null;
     }
 
     public async Task<List<EmailMessageDto>> GetUnreadMessagesAsync(string userId, int top = 10, CancellationToken cancellationToken = default)

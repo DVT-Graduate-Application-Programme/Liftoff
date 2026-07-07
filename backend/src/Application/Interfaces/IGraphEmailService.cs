@@ -6,6 +6,7 @@ namespace Application.Interfaces;
 
 public class EmailAttachmentDto
 {
+    public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string ContentType { get; set; } = string.Empty;
     public byte[] ContentBytes { get; set; } = System.Array.Empty<byte>();
@@ -22,6 +23,8 @@ public class EmailMessageDto
 public interface IGraphEmailService
 {
     Task<List<EmailAttachmentDto>> GetAttachmentsAsync(string userId, string messageId, CancellationToken cancellationToken = default);
+    
+    Task<EmailAttachmentDto?> GetAttachmentByIdAsync(string userId, string messageId, string attachmentId, CancellationToken cancellationToken = default);
     
     Task<List<EmailMessageDto>> GetUnreadMessagesAsync(string userId, int top = 10, CancellationToken cancellationToken = default);
     
