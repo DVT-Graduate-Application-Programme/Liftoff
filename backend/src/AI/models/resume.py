@@ -1,9 +1,11 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class Resume(BaseModel):
     id: int
     candidate_name: str
     document_url: str
+    transcript_url: Optional[str] = None
 
     class Config:
         # Maps .NET's camelCase JSON keys to Python snake_case fields
