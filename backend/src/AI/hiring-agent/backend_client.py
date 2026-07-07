@@ -33,6 +33,7 @@ class ResumeEvaluationPayload(BaseModel):
 
 class Resume(BaseModel):
     id: int
+    message_id: str
     candidate_name: str
     document_url: str
     transcript_url: Optional[str] = None
@@ -67,41 +68,42 @@ def get_all_resumes() -> list[Resume]:
     return [Resume.model_validate(item) for item in response.json()]
 
 
-def send_eval(eval_data: EvaluationData, messageId : str):
+def send_eval(eval_data: EvaluationData, message_id: str, prompt_version: str):
     """
-    After Ai has completed procesing, return results and post to API ingest layer
+    After AI has completed processing, return results and post to API ingest layer.
+    message_id must be the ID returned by the C# Ingest API when the PENDING record was created.
     """
-    url =  f"{BACKEND_BASE_URL}/api/resumes"
-
+    url = f"{BACKEND_BASE_URL}/api/resumes"
 
     payload = ResumeEvaluationPayload(
-        message_id = messageId,
-        evaluation = eval_data
+        message_id=message_id,
+        prompt_version=prompt_version,
+        evaluation=eval_data,
     )
 
-    ## TODO: add auth token  check on endpoint 
+    ## TODO: add auth token check on endpoint
 
-    with httpx.Client(timeout = REQUEST_TIMEOUT) as client:
+    with httpx.Client(timeout=REQUEST_TIMEOUT) as client:
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 response = client.post(
                     url,
-                    content =  payload
+                    json=payload.model_dump(),
                 )
 
                 if response.status_code < 300:
-                    ## "looks good" case
                     return response
-                
-                if response.staus_code in RetryStatusCodes and attempt < MAX_RETRIES:
-                    # Exponential backoff strategy for retry logic
-                    delay_time = BASE_BACKOFF_SECONDS * (2**(attempt-1))
+
+                if response.status_code in RetryStatusCodes and attempt < MAX_RETRIES:
+                    delay_time = BASE_BACKOFF_SECONDS * (2 ** (attempt - 1))
                     time.sleep(delay_time)
                     continue
-                
 
                 response.raise_for_status()
-            except httpx.HTTPStatusError as exec:
-                raise
+            except httpx.HTTPStatusError as exc:
+                raise RuntimeError(
+                    f"Backend rejected evaluation for message_id={message_id}: "
+                    f"{exc.response.status_code} {exc.response.text}"
+                ) from exc
 
     

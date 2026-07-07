@@ -50,7 +50,7 @@ public class ResumeController : ControllerBase
 
     [HttpGet("{id}/transcript")]
     public async Task<IActionResult> GetTranscript(
-        int id,
+        Guid id,
         CancellationToken cancellationToken)
     {
         var document = await _storage.GetTranscriptAsync(id, cancellationToken);

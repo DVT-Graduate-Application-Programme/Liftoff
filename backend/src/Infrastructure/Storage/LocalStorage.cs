@@ -48,7 +48,7 @@ public class LocalResumeStorage : IResumeStorage
     }
 
     public async Task<ResumeDocumentDto?> GetDocumentAsync(
-    int id,
+    Guid id,
     CancellationToken cancellationToken)
     {
         var folder = Path.Combine(
@@ -61,10 +61,9 @@ public class LocalResumeStorage : IResumeStorage
             .Where(f => !f.EndsWith("_transcript.pdf"))
             .ToArray();
 
-        if (id < 1 || id > files.Length)
-            return null;
+    
 
-        var file = files[id - 1];
+        var file = files.First();
 
         var stream = File.OpenRead(file);
 
@@ -77,7 +76,7 @@ public class LocalResumeStorage : IResumeStorage
     }
 
     public async Task<ResumeDocumentDto?> GetTranscriptAsync(
-    int id,
+    Guid id,
     CancellationToken cancellationToken)
     {
         var folder = Path.Combine(
@@ -90,10 +89,8 @@ public class LocalResumeStorage : IResumeStorage
             .Where(f => !f.EndsWith("_transcript.pdf"))
             .ToArray();
 
-        if (id < 1 || id > files.Length)
-            return null;
 
-        var cvFile = files[id - 1];
+        var cvFile = files.First();
         var transcriptFile = cvFile.Replace(".pdf", "_transcript.pdf");
 
         if (!File.Exists(transcriptFile))
@@ -110,7 +107,7 @@ public class LocalResumeStorage : IResumeStorage
     }
 
     public Task<CandidateDto?> GetCandidateAsync(
-    int id,
+    Guid id,
     CancellationToken cancellationToken)
     {
         var folder = Path.Combine(
@@ -120,13 +117,11 @@ public class LocalResumeStorage : IResumeStorage
             "data");
 
         var files = Directory.GetFiles(folder, "*.pdf")
-            .Where(f => !f.EndsWith("_transcript.pdf"))
+            .Where(f => !f.EndsWith("applicant.pdf"))
             .ToArray();
 
-        if (id < 1 || id > files.Length)
-            return Task.FromResult<CandidateDto?>(null);
 
-        var file = files[id - 1];
+        var file = files.FirstOrDefault();
 
         var candidate = new CandidateDto
         {
