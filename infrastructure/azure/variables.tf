@@ -1,7 +1,13 @@
+variable "location" {
+  description = "Azure region to deploy resources into."
+  type        = string
+  default     = "southafricanorth"
+}
+
 variable "project_name" {
   description = "Short project identifier used as a prefix on all resource names."
   type        = string
-  default     = "gradrecruit"
+  default     = "liftoff"
 }
 
 variable "environment" {
@@ -10,20 +16,44 @@ variable "environment" {
   default     = "dev"
 }
 
-variable "location" {
-  description = "Azure region to deploy resources into."
+# ── Database ──────────────────────────────────────────────────────────────────
+
+variable "db_name" {
+  description = "PostgreSQL database name — set in terraform.tfvars, never hardcode here."
   type        = string
-  default     = "southafricanorth"
+  sensitive   = true
 }
 
-variable "sql_admin_username" {
-  description = "Administrator username for the Azure SQL Server."
+variable "db_username" {
+  description = "PostgreSQL administrator username — set in terraform.tfvars, never hardcode here."
   type        = string
-  default     = "sqladmin"
+  sensitive   = true
 }
 
-variable "sql_admin_password" {
-  description = "Administrator password for the Azure SQL Server. Must meet Azure complexity requirements."
+variable "db_password" {
+  description = "PostgreSQL administrator password — set in terraform.tfvars, never hardcode here."
   type        = string
-  sensitive   = true # Prevents this value from being printed in tofu output/logs.
+  sensitive   = true
+}
+
+# ── Compute ───────────────────────────────────────────────────────────────────
+
+variable "backend_image" {
+  description = "Fully-qualified ACR image URI for the backend container."
+  type        = string
+  default     = ""
+}
+
+variable "frontend_image" {
+  description = "Fully-qualified ACR image URI for the frontend container."
+  type        = string
+  default     = ""
+}
+
+# ── Monitoring ────────────────────────────────────────────────────────────────
+
+variable "alert_email" {
+  description = "Email address to receive Azure Monitor alert notifications."
+  type        = string
+  default     = ""
 }
