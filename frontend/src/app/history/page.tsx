@@ -3,7 +3,6 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import {
-  Download,
   ChevronDown,
   Calendar,
   RotateCcw,
@@ -464,10 +463,6 @@ export default function HistoryPage() {
               rejected applicants across every hiring round.
             </p>
           </div>
-          <Button variant="outline" size="default" className="shrink-0 gap-1.5">
-            <Download className="size-4" />
-            Export Log
-          </Button>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 shadow-sm ring-1 ring-foreground/5">
