@@ -38,10 +38,7 @@ if (app.Environment.IsDevelopment())
 app.MapHealthChecks("/health");
 
 app.MapControllers();
-<<<<<<< feature/backend/extraction
 app.MapIngestEndpoints();
-=======
 app.MapDashboardEndpoints();
->>>>>>> feature/backend/stable
 
 app.Run();
