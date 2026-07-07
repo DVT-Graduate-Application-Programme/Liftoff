@@ -5,11 +5,12 @@ using Backend.Application.Queries.GetResumes;
 using Backend.Infrastructure.Storage;
 using MediatR;
 
+using Scalar.AspNetCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 builder.Services.AddControllers();
 
@@ -35,16 +36,13 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/openapi/v1.json", "v1"); 
-    });
+    app.MapScalarApiReference();
 }
 
 app.MapHealthChecks("/health");
 
 app.MapControllers();
 app.MapDashboardEndpoints();
+app.MapApplicationEndpoints();
 
 app.Run();
