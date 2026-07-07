@@ -13,6 +13,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 
@@ -197,37 +203,28 @@ function ScoreTag({ score }: { score: number }) {
 
 function DecisionBadge({
   decision,
-  layout = "inline",
 }: {
   decision: Decision;
-  layout?: "inline" | "stacked";
 }) {
   const { Icon, label, iconClass } = DECISION_STYLES[decision];
 
   return (
-    <span
-      aria-label={label}
-      title={label}
-      className={cn(
-        "select-none",
-        layout === "stacked"
-          ? "flex flex-col items-center justify-center gap-0.5"
-          : "inline-flex items-center gap-1.5 align-middle",
-        iconClass
-      )}
-    >
-      <Icon className="size-4 shrink-0" />
-      <span
-        className={cn(
-          "font-semibold leading-none",
-          layout === "stacked"
-            ? "text-[9px] uppercase tracking-wider"
-            : "text-xs"
-        )}
-      >
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span
+          aria-label={`Decision: ${label}`}
+          className={cn(
+            "inline-flex items-center justify-center align-middle select-none",
+            iconClass
+          )}
+        >
+          <Icon className="size-4 shrink-0" />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" sideOffset={6}>
         {label}
-      </span>
-    </span>
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -438,8 +435,11 @@ function CandidateHistoryCard({ candidate }: { candidate: Candidate }) {
           </div>
         </div>
 
-        <div className="flex w-12 shrink-0 items-center justify-center">
-          <DecisionBadge decision={candidate.decision} layout="stacked" />
+        <div className="flex w-12 shrink-0 flex-col items-center justify-center gap-0.5">
+          <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-medium">
+            Decision
+          </span>
+          <DecisionBadge decision={candidate.decision} />
         </div>
 
         <div className="hidden md:flex w-36 shrink-0 flex-col items-end gap-0.5">
@@ -497,42 +497,44 @@ function DateGroup({
 
 export default function HistoryPage() {
   return (
-    <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl space-y-6">
+    <TooltipProvider>
+      <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl space-y-6">
 
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              Review History
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground max-w-md">
-              An audit trail of all finalized candidate decisions — yes, no,
-              and maybe across every hiring round.
-            </p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">
+                Review History
+              </h1>
+              <p className="mt-1 text-sm text-muted-foreground max-w-md">
+                An audit trail of all finalized candidate decisions — yes, no,
+                and maybe across every hiring round.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 shadow-sm ring-1 ring-foreground/5">
+            <FilterDropdown label="All Decisions" />
+            <FilterDropdown
+              label="Date Range"
+              icon={<Calendar className="size-3.5" />}
+            />
+            <FilterDropdown label="System Score" />
+
+            <div className="flex-1" />
+
+            <Button variant="default" size="default" className="gap-1.5">
+              Apply
+            </Button>
+          </div>
+
+          <div className="flex flex-col gap-8">
+            {GROUPS.map(({ label, candidates }) => (
+              <DateGroup key={label} label={label} candidates={candidates} />
+            ))}
           </div>
         </div>
-
-        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 shadow-sm ring-1 ring-foreground/5">
-          <FilterDropdown label="All Decisions" />
-          <FilterDropdown
-            label="Date Range"
-            icon={<Calendar className="size-3.5" />}
-          />
-          <FilterDropdown label="System Score" />
-
-          <div className="flex-1" />
-
-          <Button variant="default" size="default" className="gap-1.5">
-            Apply
-          </Button>
-        </div>
-
-        <div className="flex flex-col gap-8">
-          {GROUPS.map(({ label, candidates }) => (
-            <DateGroup key={label} label={label} candidates={candidates} />
-          ))}
-        </div>
-      </div>
-    </main>
+      </main>
+    </TooltipProvider>
   );
 }
