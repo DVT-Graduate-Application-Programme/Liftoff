@@ -8,6 +8,7 @@ import {
   RotateCcw,
   CheckCircle2,
   XCircle,
+  CircleHelp,
   RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 
-type Decision = "accept" | "reject";
+type Decision = "yes" | "no" | "maybe";
 
 interface Candidate {
   id: string;
@@ -35,7 +36,7 @@ const TODAY_CANDIDATES: Candidate[] = [
     id: "1",
     name: "Alexander Sterling",
     role: "Software Engineer — Backend",
-    decision: "accept",
+    decision: "yes",
     systemScore: 91,
     systemScoreLabel: "Strong",
     academicAverage: 87,
@@ -47,7 +48,7 @@ const TODAY_CANDIDATES: Candidate[] = [
     id: "2",
     name: "Sophia Chen",
     role: "Data Analyst — Insights Team",
-    decision: "accept",
+    decision: "maybe",
     systemScore: 88,
     systemScoreLabel: "Strong",
     academicAverage: 82,
@@ -59,7 +60,7 @@ const TODAY_CANDIDATES: Candidate[] = [
     id: "3",
     name: "Marcus Thorne",
     role: "UX Designer — Product Design",
-    decision: "reject",
+    decision: "no",
     systemScore: 54,
     systemScoreLabel: "Weaker",
     academicAverage: 61,
@@ -74,7 +75,7 @@ const YESTERDAY_CANDIDATES: Candidate[] = [
     id: "4",
     name: "Priya Nair",
     role: "DevOps Engineer — Infrastructure",
-    decision: "accept",
+    decision: "yes",
     systemScore: 79,
     systemScoreLabel: "Good",
     academicAverage: 74,
@@ -86,7 +87,7 @@ const YESTERDAY_CANDIDATES: Candidate[] = [
     id: "5",
     name: "Ethan Voss",
     role: "Product Manager — Growth",
-    decision: "reject",
+    decision: "no",
     systemScore: 47,
     systemScoreLabel: "Weaker",
     academicAverage: 55,
@@ -98,7 +99,7 @@ const YESTERDAY_CANDIDATES: Candidate[] = [
     id: "6",
     name: "Lena Hoffmann",
     role: "Marketing Strategist",
-    decision: "accept",
+    decision: "maybe",
     systemScore: 83,
     systemScoreLabel: "Strong",
     academicAverage: 79,
@@ -113,7 +114,7 @@ const EARLIER_CANDIDATES: Candidate[] = [
     id: "7",
     name: "James Okafor",
     role: "Cybersecurity Analyst",
-    decision: "accept",
+    decision: "yes",
     systemScore: 95,
     systemScoreLabel: "Exceptional",
     academicAverage: 91,
@@ -125,7 +126,7 @@ const EARLIER_CANDIDATES: Candidate[] = [
     id: "8",
     name: "Amara Diallo",
     role: "Financial Analyst — Risk",
-    decision: "reject",
+    decision: "no",
     systemScore: 38,
     systemScoreLabel: "Weaker",
     academicAverage: 48,
@@ -140,6 +141,46 @@ const GROUPS = [
   { label: "Applied Yesterday", candidates: YESTERDAY_CANDIDATES },
   { label: "Earlier This Week", candidates: EARLIER_CANDIDATES },
 ];
+
+const DECISION_STYLES = {
+  yes: {
+    label: "Yes",
+    Icon: CheckCircle2,
+    badgeClass: "border-primary/20 bg-primary/12 text-primary",
+    iconClass: "text-primary",
+    borderClass: "border-l-primary",
+  },
+  no: {
+    label: "No",
+    Icon: XCircle,
+    badgeClass: "border-destructive/20 bg-destructive/10 text-destructive",
+    iconClass: "text-destructive",
+    borderClass: "border-l-destructive",
+  },
+  maybe: {
+    label: "Maybe",
+    Icon: CircleHelp,
+    badgeClass: "border-chart-4/30 bg-chart-4/15 text-chart-4",
+    iconClass: "text-chart-4",
+    borderClass: "border-l-chart-4",
+  },
+} satisfies Record<
+  Decision,
+  {
+    label: string;
+    Icon: React.ComponentType<{ className?: string }>;
+    badgeClass: string;
+    iconClass: string;
+    borderClass: string;
+  }
+>;
+
+const DECISION_ORDER: Decision[] = ["yes", "no", "maybe"];
+
+function getNextDecision(decision: Decision) {
+  const currentIndex = DECISION_ORDER.indexOf(decision);
+  return DECISION_ORDER[(currentIndex + 1) % DECISION_ORDER.length];
+}
 
 function ScoreTag({ score }: { score: number }) {
   const colorClass =
@@ -159,22 +200,17 @@ function ScoreTag({ score }: { score: number }) {
 }
 
 function DecisionBadge({ decision }: { decision: Decision }) {
-  const isAccepted = decision === "accept";
+  const { Icon, label, badgeClass } = DECISION_STYLES[decision];
+
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold tracking-wide select-none",
-        isAccepted
-          ? "bg-primary/12 text-primary border border-primary/20"
-          : "bg-destructive/10 text-destructive border border-destructive/20"
+        "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold tracking-wide select-none",
+        badgeClass
       )}
     >
-      {isAccepted ? (
-        <CheckCircle2 className="size-3.5 shrink-0" />
-      ) : (
-        <XCircle className="size-3.5 shrink-0" />
-      )}
-      {isAccepted ? "Accepted" : "Rejected"}
+      <Icon className="size-3.5 shrink-0" />
+      {label}
     </span>
   );
 }
@@ -241,8 +277,9 @@ function ChangeDecisionModal({
   candidate: Candidate;
   onClose: () => void;
 }) {
-  const newDecision = candidate.decision === "accept" ? "Reject" : "Accept";
-  const isFlipToAccept = candidate.decision === "reject";
+  const newDecision = getNextDecision(candidate.decision);
+  const nextDecisionStyle = DECISION_STYLES[newDecision];
+  const NextDecisionIcon = nextDecisionStyle.Icon;
 
   return (
     <div
@@ -259,13 +296,13 @@ function ChangeDecisionModal({
           <div
             className={cn(
               "flex size-10 items-center justify-center rounded-full",
-              isFlipToAccept ? "bg-primary/12" : "bg-destructive/10"
+              nextDecisionStyle.badgeClass
             )}
           >
             <RefreshCw
               className={cn(
                 "size-5",
-                isFlipToAccept ? "text-primary" : "text-destructive"
+                nextDecisionStyle.iconClass
               )}
             />
           </div>
@@ -283,18 +320,12 @@ function ChangeDecisionModal({
           <DecisionBadge decision={candidate.decision} /> to{" "}
           <span
             className={cn(
-              "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold",
-              isFlipToAccept
-                ? "bg-primary/12 text-primary"
-                : "bg-destructive/10 text-destructive"
+              "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+              nextDecisionStyle.badgeClass
             )}
           >
-            {isFlipToAccept ? (
-              <CheckCircle2 className="size-3.5" />
-            ) : (
-              <XCircle className="size-3.5" />
-            )}
-            {newDecision}ed
+            <NextDecisionIcon className="size-3.5" />
+            {nextDecisionStyle.label}
           </span>
           . This action will be logged in the audit trail.
         </p>
@@ -304,11 +335,11 @@ function ChangeDecisionModal({
             Cancel
           </Button>
           <Button
-            variant={isFlipToAccept ? "default" : "destructive"}
+            variant={newDecision === "no" ? "destructive" : "default"}
             size="sm"
             onClick={onClose}
           >
-            Confirm {newDecision}
+            Confirm {nextDecisionStyle.label}
           </Button>
         </div>
       </div>
@@ -319,7 +350,7 @@ function ChangeDecisionModal({
 function CandidateHistoryCard({ candidate }: { candidate: Candidate }) {
   const router = useRouter();
   const [showModal, setShowModal] = React.useState(false);
-  const isAccepted = candidate.decision === "accept";
+  const decisionStyle = DECISION_STYLES[candidate.decision];
 
   const handleCardClick = () => {
     router.push(`/applicants/${candidate.id}`);
@@ -353,9 +384,9 @@ function CandidateHistoryCard({ candidate }: { candidate: Candidate }) {
         }}
         className={cn(
           "group relative flex cursor-pointer items-center gap-4 rounded-xl border bg-card p-4",
-          "border-l-4 shadow-sm transition-all hover:shadow-md hover:-translate-y-px",
+          "border-l-4 transition-all hover:-translate-y-px",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-          isAccepted ? "border-l-primary" : "border-l-destructive",
+          decisionStyle.borderClass,
           "border-border"
         )}
       >
@@ -459,8 +490,8 @@ export default function HistoryPage() {
               Review History
             </h1>
             <p className="mt-1 text-sm text-muted-foreground max-w-md">
-              An audit trail of all finalized candidate decisions — accepted and
-              rejected applicants across every hiring round.
+              An audit trail of all finalized candidate decisions — yes, no,
+              and maybe across every hiring round.
             </p>
           </div>
         </div>
