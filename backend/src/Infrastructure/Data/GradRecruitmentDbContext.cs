@@ -24,16 +24,36 @@ public class GradRecruitmentDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
             entity.HasIndex(e => e.EmailMessageId).IsUnique();
+
+            // Ingest fields
             entity.Property(e => e.EmailMessageId).IsRequired().HasMaxLength(255);
             entity.Property(e => e.CandidateName).HasMaxLength(255);
             entity.Property(e => e.CandidateEmail).HasMaxLength(255);
+            entity.Property(e => e.CandidateGitHubUrl).HasMaxLength(2048);
             entity.Property(e => e.CvAttachmentId).HasMaxLength(2048);
             entity.Property(e => e.TranscriptAttachmentId).HasMaxLength(2048);
+
+            // Status and tier
             entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Tier).HasMaxLength(20);
+
+            // Hard gate
             entity.Property(e => e.HardGateReason).HasMaxLength(504);
+
+            // Hiring Agent summary
             entity.Property(e => e.HiringAgentTotalScore).HasColumnType("numeric(5,2)");
-            entity.Property(e => e.CandidateGitHubUrl).HasMaxLength(2048);
+            entity.Property(e => e.FlagsJson).HasColumnType("jsonb");
+
+            // Claim ownership
             entity.Property(e => e.ClaimedByRecruiterId).HasMaxLength(255);
+
+            // Shortlist ownership
+            entity.Property(e => e.ShortlistedByRecruiterId).HasMaxLength(255);
+
+            // Recruiter rating
+            entity.Property(e => e.RatedByRecruiterId).HasMaxLength(255);
+
+            // Timestamps
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
@@ -42,10 +62,14 @@ public class GradRecruitmentDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
+
+            entity.Property(e => e.InstitutionJson).HasColumnType("jsonb");
             entity.Property(e => e.CategoryScoresJson).HasColumnType("jsonb");
             entity.Property(e => e.EvidenceJson).HasColumnType("jsonb");
             entity.Property(e => e.BonusPointsJson).HasColumnType("jsonb");
             entity.Property(e => e.DeductionsJson).HasColumnType("jsonb");
+            entity.Property(e => e.KeyStrengthsJson).HasColumnType("jsonb");
+            entity.Property(e => e.AreasForImprovementJson).HasColumnType("jsonb");
             entity.Property(e => e.GitHubProfileDataJson).HasColumnType("jsonb");
             entity.Property(e => e.ProjectClassificationsJson).HasColumnType("jsonb");
             entity.Property(e => e.ProcessedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
