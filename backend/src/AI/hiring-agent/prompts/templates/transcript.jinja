@@ -1,0 +1,83 @@
+Extract structured information from the following academic transcript.
+
+--- The input markdown starts here ---
+
+{{ text_content }}
+
+--- The input markdown ends here ---
+
+Return ONLY a JSON object with the following structure:
+{
+  "degree_name": "Name of the first/primary undergraduate degree (e.g. Bachelor of Science in Computer Science)",
+  "nqf_level": 7, // The NQF level of the primary degree as an integer (e.g. 7)
+  "minimum_years": 3, // The minimum number of years required to complete the primary degree
+  "start_year": 2021, // The year the candidate started the primary degree (as an integer)
+  "graduation_year": 2024, // The year the candidate completed/graduated the primary degree (as an integer)
+  "year_averages": [
+    // List of year averages for the primary degree ONLY.
+    // Use term averages (weighted average for term) if explicitly stated in the transcript.
+    {
+      "year": 1,
+      "average": 61.08
+    }
+  ],
+  "modules": [
+    // List of individual module marks for the primary degree ONLY.
+    {
+      "year": 1,
+      "name": "Imperative programming",
+      "mark": 73.0
+    }
+  ],
+  "degrees": [
+    // List of ANY SUBSEQUENT/ADDITIONAL degrees (e.g. Honours, Master's) found in the transcript.
+    // Do NOT repeat the primary undergraduate degree here. Leave this list empty if there are no additional degrees.
+    {
+      "degree_name": "Bachelor of Science Honours in Computer Science",
+      "nqf_level": 8,
+      "minimum_years": 1,
+      "start_year": 2025,
+      "graduation_year": 2026,
+      "year_averages": [
+        {
+          "year": 1,
+          "average": 86.60
+        }
+      ],
+      "modules": [
+        {
+          "year": 1,
+          "name": "Computer and information security (I)",
+          "mark": 81.0
+        }
+      ]
+    }
+  ]
+}
+
+**INSTRUCTIONS FOR ACADEMIC YEARS AND CHRONOLOGICAL DEDUCTION**:
+1. Extract the final cumulative average for the degree. If there is more than one degree then extract both. (e.g. If you detect an undergraduate degree and an incomplete honours degree then extract only the cumulative average for the undergraduate degree and list the postgraduate degree as ongoing/incomplete.)
+2. **Mapping Calendar Years to Academic Years**: Transcripts often list courses by calendar year (e.g. 2011, 2012) or by semester. You MUST map these to sequential academic years starting from 1 (e.g., Year 1, Year 2, etc.).
+3. **Logical Timeline Deduction**: If the transcript represents a multi-year qualification (e.g., a "2 Year" or "3 Year" degree) but only some years are explicitly printed, you must logically deduce the timeline:
+   - Remember to be inclusive of that start year in the timeline. (e.g. 2023-2025 is a 3 year degree/timeline not a 2 year timeline)
+   - For a 2-year program completed/graduated in 2012, the start year is 2011. Courses listed *before/above* the "2012" divider belong to Year 1 (2011), and courses listed *after/below* the "2012" divider belong to Year 2 (2012).
+   - Carefully partition the courses into their respective academic years (Year 1, Year 2, etc.) in the "modules" list based on these dividers.
+   - **Crucial**: The actual number of years a candidate took to complete a degree may exceed the minimum years (e.g., taking 4 calendar years to complete a 3-year Bachelor's degree). You MUST fully extract all academic years of modules and year averages (e.g., Years 1, 2, 3, AND 4) for the degree. Do not truncate the extraction based on the minimum years of the qualification.
+4. **Course Code Heuristic**: Check the course codes (e.g., STRi05, VBN105, VBA206, JAV206). Typically, the first digit of the numerical part of the course code indicates the academic year:
+   - Codes with numbers starting with 1 (e.g., STRi05, VBN105, ECO105, SYS105, INS105, WPB125) belong to Year 1.
+   - Codes with numbers starting with 2 (e.g., VBA206, JAV206, ENW205, DBP206, BSD226, BSA216, WPA226, PLP206) belong to Year 2.
+   - Codes with numbers starting with 3 belong to Year 3.
+   Use this heuristic to verify and assign the correct academic year (e.g. 1 or 2) in the "modules" list!
+5. **Resolving OCR Discrepancies and Merging Passes**: When combining information from `TRANSCRIPT OCR PASS 1` and `TRANSCRIPT OCR PASS 2`:
+   - Match each course code (e.g. DBP206, BSD226, WPA226) across both passes.
+   - For each course, choose the clean numerical mark from either pass (e.g. if Pass 1 shows '--' or nothing for DBP206 but Pass 2 shows '68', use 68.0).
+   - If one pass shows a non-numerical status like 'FL' or 'Ti' but the other pass shows a numerical mark like '77' or '71', always prefer the numerical mark (e.g. 77.0, 71.0).
+   - Do not mix up or reuse marks from different lines. Assign each mark to its corresponding course code precisely.
+6. **No Mark Guessing or Duplication**: Do NOT duplicate or copy marks across different courses (e.g. if Business Systems Analysis has 64, do not copy 64 to Database Design and Development). If a course has no mark in either pass, or is marked as a dash/blank, output its mark as 0.0 unless a specific numerical mark is clearly aligned with it in one of the passes.
+7. **Multiple Degrees/Qualifications**: If the transcript contains multiple degrees (e.g., an undergraduate Bachelor of Science followed by a postgraduate Honours or Master's degree):
+   - Extract ONLY the subsequent/additional degrees (e.g., Honours, Master's) into the "degrees" array. Do NOT repeat the primary undergraduate degree here. If there are no subsequent degrees, leave the "degrees" array empty or null.
+   - For each subsequent degree, keep its modules, start/graduation years, and year averages separate. Do NOT mix modules from different degrees.
+   - Each degree's year numbers should be relative to *that specific degree* (e.g., Year 1 for Honours).
+   - In the top-level fields (such as "degree_name", "nqf_level", "modules", "year_averages", etc.), extract ONLY the FIRST/PRIMARY undergraduate degree. Do NOT mix Honours modules or averages into the top-level fields.
+
+**IMPORTANT**: Return ONLY valid JSON. Do not include any introductory or explanatory text.
