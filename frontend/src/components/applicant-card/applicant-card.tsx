@@ -1,14 +1,9 @@
 import { Check, X } from "lucide-react";
 
-type Grade = {
-  subject: string;
-  mark: number;
-};
-
 type ApplicantCardProps = {
   name: string;
   institute: string;
-  grades: Grade[];
+  academicAverage: number;
   systemScore: number;
 };
 
@@ -27,7 +22,7 @@ function getScoreBorderColor(score: number) {
 export default function ApplicantCard({
   name,
   institute,
-  grades,
+  academicAverage,
   systemScore,
 }: ApplicantCardProps) {
   const initials = name
@@ -50,17 +45,19 @@ export default function ApplicantCard({
         <h4 className="font-semibold text-foreground">{name}</h4>
         <p className="text-sm text-muted-foreground">{institute}</p>
       </div>
-      <div className="flex gap-8 px-8 border-x border-border">
-        {grades.map((grade) => (
-          <div className="text-center" key={grade.subject}>
-            <p className="text-[10px] uppercase tracking-tighter text-muted-foreground mb-1">
-              {grade.subject}
-            </p>
-            <p className={`font-bold ${getScoreColor(grade.mark)}`}>
-              {grade.mark}
-            </p>
-          </div>
-        ))}
+      <div className="flex w-28 justify-center px-8 border-x border-border">
+        <div className="text-center">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+            Acad. Avg
+          </p>
+          <p
+            className={`text-[24px] font-black leading-none tabular-nums ${getScoreColor(
+              academicAverage,
+            )}`}
+          >
+            {academicAverage}%
+          </p>
+        </div>
       </div>
       <div className="flex items-center gap-4 min-w-30 justify-end">
         <div className="text-right mr-4">

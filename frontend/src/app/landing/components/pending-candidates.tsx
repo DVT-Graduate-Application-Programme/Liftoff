@@ -2,6 +2,43 @@ import ApplicantCard from "@/components/applicant-card/applicant-card";
 import { ListFilter, ListOrdered, X } from "lucide-react";
 import React from "react";
 
+type PendingCandidate = {
+  name: string;
+  institute: string;
+  academicAverage: number;
+  systemScore: number;
+};
+
+const TODAY_CANDIDATES: PendingCandidate[] = [
+  {
+    name: "Sarah Jenkins",
+    institute: "BSc Computer Science • 3 Years Exp",
+    academicAverage: 86,
+    systemScore: 86.3,
+  },
+  {
+    name: "Neo Rankapole",
+    institute: "BSc Computer Science • 1 Years Exp",
+    academicAverage: 98,
+    systemScore: 99.65,
+  },
+  {
+    name: "Jake Benkins",
+    institute: "BSc Computer Science • 3 Years Exp",
+    academicAverage: 74,
+    systemScore: 86.3,
+  },
+];
+
+const WEEK_CANDIDATES: PendingCandidate[] = [
+  {
+    name: "Sarah Jenkins",
+    institute: "BSc Computer Science • 3 Years Exp",
+    academicAverage: 86,
+    systemScore: 86.3,
+  },
+];
+
 const PendingCandidates = () => {
   return (
     <>
@@ -56,36 +93,9 @@ const PendingCandidates = () => {
             </span>
           </div>
           <div className="grid grid-cols-1 gap-4">
-            <ApplicantCard
-              name="Sarah Jenkins"
-              institute="BSc Computer Science • 3 Years Exp"
-              grades={[
-                { subject: "Maths", mark: 88 },
-                { subject: "Prog", mark: 92 },
-                { subject: "IT", mark: 79 },
-              ]}
-              systemScore={86.3}
-            />
-            <ApplicantCard
-              name="Neo Rankapole"
-              institute="BSc Computer Science • 1 Years Exp"
-              grades={[
-                { subject: "Maths", mark: 97 },
-                { subject: "Prog", mark: 99 },
-                { subject: "IT", mark: 99 },
-              ]}
-              systemScore={99.65}
-            />
-            <ApplicantCard
-              name="Jake Benkins"
-              institute="BSc Computer Science • 3 Years Exp"
-              grades={[
-                { subject: "Maths", mark: 83 },
-                { subject: "Prog", mark: 78 },
-                { subject: "IT", mark: 60 },
-              ]}
-              systemScore={86.3}
-            />
+            {TODAY_CANDIDATES.map((candidate) => (
+              <ApplicantCard key={candidate.name} {...candidate} />
+            ))}
           </div>
         </section>
 
@@ -101,16 +111,9 @@ const PendingCandidates = () => {
             </span>
           </div>
           <div className="grid grid-cols-1 gap-4">
-            <ApplicantCard
-              name="Sarah Jenkins"
-              institute="BSc Computer Science • 3 Years Exp"
-              grades={[
-                { subject: "Maths", mark: 88 },
-                { subject: "Prog", mark: 92 },
-                { subject: "IT", mark: 79 },
-              ]}
-              systemScore={86.3}
-            />
+            {WEEK_CANDIDATES.map((candidate) => (
+              <ApplicantCard key={candidate.name} {...candidate} />
+            ))}
             <div className="flex items-center justify-center py-8 border-2 border-dashed border-border rounded-xl text-muted-foreground font-medium hover:bg-muted transition-colors cursor-pointer">
               Load 11 More Applicants
             </div>
