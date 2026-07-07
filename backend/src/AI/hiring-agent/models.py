@@ -511,14 +511,28 @@ class ModuleMark(BaseModel):
     mark: float
 
 
-class TranscriptData(BaseModel):
+class DegreeRecord(BaseModel):
     degree_name: str
-    nqf_level: int
-    minimum_years: int
-    start_year: int
-    graduation_year: int
+    nqf_level: Optional[int] = None
+    minimum_years: Optional[int] = None
+    start_year: Optional[int] = None
+    graduation_year: Optional[int] = None
     year_averages: Optional[List[YearAverage]] = None
     modules: Optional[List[ModuleMark]] = None
+
+
+class TranscriptData(BaseModel):
+    # Top-level fields (for backward compatibility and single-degree transcripts)
+    degree_name: Optional[str] = None
+    nqf_level: Optional[int] = None
+    minimum_years: Optional[int] = None
+    start_year: Optional[int] = None
+    graduation_year: Optional[int] = None
+    year_averages: Optional[List[YearAverage]] = None
+    modules: Optional[List[ModuleMark]] = None
+    
+    # List of all degrees found in the transcript
+    degrees: Optional[List[DegreeRecord]] = None
 
 
 class TranscriptValidationResult(BaseModel):

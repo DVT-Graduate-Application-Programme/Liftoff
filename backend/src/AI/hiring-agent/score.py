@@ -15,6 +15,7 @@ from transform import (
     convert_json_resume_to_text,
     convert_github_data_to_text,
     convert_blog_data_to_text,
+    convert_transcript_data_to_text,
 )
 from config import DEVELOPMENT_MODE
 
@@ -166,7 +167,7 @@ def print_evaluation_results(
 
 
 def _evaluate_resume(
-    resume_data: JSONResume, github_data: dict = None, blog_data: dict = None
+    resume_data: JSONResume, github_data: dict = None, blog_data: dict = None, transcript_data: TranscriptData = None
 ) -> Optional[EvaluationData]:
     """Evaluate the resume using AI and display results."""
 
@@ -185,6 +186,11 @@ def _evaluate_resume(
     if blog_data:
         blog_text = convert_blog_data_to_text(blog_data)
         resume_text += blog_text
+
+    # Add transcript data if available
+    if transcript_data:
+        transcript_text = convert_transcript_data_to_text(transcript_data)
+        resume_text += transcript_text
 
     # Evaluate the enhanced resume
     evaluation_result = evaluator.evaluate_resume(resume_text)
@@ -217,23 +223,18 @@ def find_profile(profiles, network):
     )
 
 
-def validate_transcript(transcript_data: TranscriptData) -> TranscriptValidationResult:
-    """Validate transcript data against academic requirement gates."""
-    if not transcript_data:
-        return TranscriptValidationResult(
-            passed=False,
-            reason="No transcript data found.",
-            extracted_data=transcript_data
-        )
-
+def get_or_calculate_averages(year_averages, modules):
     from models import YearAverage
-
-    # Calculate year averages programmatically if modules are present,
-    # prioritizing exact python calculations over LLM math.
-    if transcript_data.modules and len(transcript_data.modules) > 0:
+    
+    # If year_averages is not empty, use them directly (respecting credit-weighted averages from the transcript)
+    if year_averages and len(year_averages) > 0:
+        return sorted(year_averages, key=lambda ya: ya.year), False
+    
+    # Otherwise calculate programmatically from modules
+    if modules and len(modules) > 0:
         from collections import defaultdict
         year_to_marks = defaultdict(list)
-        for m in transcript_data.modules:
+        for m in modules:
             if m.mark is not None and m.mark > 0.0:
                 year_to_marks[m.year].append(m.mark)
         
@@ -243,61 +244,120 @@ def validate_transcript(transcript_data: TranscriptData) -> TranscriptValidation
                 calculated_averages.append(YearAverage(year=y, average=sum(marks) / len(marks)))
         
         if calculated_averages:
-            calculated_averages.sort(key=lambda ya: ya.year)
-            transcript_data.year_averages = calculated_averages
-            print(f"INFO: Programmatically calculated year averages from individual module marks: {[f'Year {ya.year}: {ya.average:.2f}%' for ya in calculated_averages]}")
+            return sorted(calculated_averages, key=lambda ya: ya.year), True
+            
+    return [], False
+
+
+def validate_transcript(transcript_data: TranscriptData) -> TranscriptValidationResult:
+    """Validate transcript data against academic requirement gates."""
+    if not transcript_data:
+        return TranscriptValidationResult(
+            passed=False,
+            reason="No transcript data found.",
+            extracted_data=transcript_data
+        )
+
+    # Populate/calculate averages for each degree in the degrees list if present
+    if transcript_data.degrees:
+        for deg in transcript_data.degrees:
+            averages, program_calc = get_or_calculate_averages(deg.year_averages, deg.modules)
+            deg.year_averages = averages
+            if program_calc:
+                print(f"INFO: Programmatically calculated year averages for {deg.degree_name}: {[f'Year {ya.year}: {ya.average:.2f}%' for ya in averages]}")
+
+    # Populate/calculate averages for the primary top-level degree
+    primary_averages, primary_program_calc = get_or_calculate_averages(transcript_data.year_averages, transcript_data.modules)
+    transcript_data.year_averages = primary_averages
+    if primary_program_calc:
+        print(f"INFO: Programmatically calculated year averages for primary degree {transcript_data.degree_name}: {[f'Year {ya.year}: {ya.average:.2f}%' for ya in primary_averages]}")
+
+    # Consolidate primary degree and subsequent degrees into one degrees list
+    from models import DegreeRecord
+    all_degrees = [
+        DegreeRecord(
+            degree_name=transcript_data.degree_name,
+            nqf_level=transcript_data.nqf_level,
+            minimum_years=transcript_data.minimum_years,
+            start_year=transcript_data.start_year,
+            graduation_year=transcript_data.graduation_year,
+            year_averages=transcript_data.year_averages,
+            modules=transcript_data.modules
+        )
+    ]
+    if transcript_data.degrees:
+        for deg in transcript_data.degrees:
+            # Avoid duplicating the primary degree if the LLM happened to repeat it
+            if deg.degree_name.lower() != transcript_data.degree_name.lower():
+                all_degrees.append(deg)
+    
+    transcript_data.degrees = all_degrees
+
+    def get_nqf_level(nqf, name):
+        if nqf is not None:
+            return nqf
+        name_lower = name.lower()
+        if "honours" in name_lower or "hons" in name_lower:
+            return 8
+        if "master" in name_lower or "msc" in name_lower or "meng" in name_lower:
+            return 9
+        if "diploma" in name_lower:
+            return 6
+        return 7
+
+    def get_minimum_years(min_yrs, name):
+        if min_yrs is not None:
+            return min_yrs
+        name_lower = name.lower()
+        if "honours" in name_lower or "hons" in name_lower:
+            return 1
+        if "master" in name_lower:
+            return 2
+        if "diploma" in name_lower:
+            return 2
+        return 3
+
+    # Validate each degree individually
+    reasons = []
+    overall_passed = True
+
+    for i, deg in enumerate(transcript_data.degrees):
+        deg_passed = True
+        deg_reasons = []
+        
+        if not deg.year_averages:
+            deg_passed = False
+            deg_reasons.append("No year averages could be found or calculated.")
         else:
-            return TranscriptValidationResult(
-                passed=False,
-                reason="No valid non-zero module marks found in the academic transcript.",
-                extracted_data=transcript_data
-            )
-    elif not transcript_data.year_averages or len(transcript_data.year_averages) == 0:
-        return TranscriptValidationResult(
-            passed=False,
-            reason="No year averages or module marks found in the academic transcript.",
-            extracted_data=transcript_data
-        )
+            avg_score = sum(ya.average for ya in deg.year_averages) / len(deg.year_averages)
+            if avg_score <= 65.0:
+                deg_passed = False
+                deg_reasons.append(f"Average mark is {avg_score:.2f}%, which is not above 65%.")
+        
+        nqf = get_nqf_level(deg.nqf_level, deg.degree_name)
+        if nqf < 7:
+            deg_passed = False
+            deg_reasons.append(f"NQF level is {nqf}, which is below the minimum required level of 7.")
+            
+        if deg.start_year is not None and deg.graduation_year is not None:
+            n = get_minimum_years(deg.minimum_years, deg.degree_name)
+            actual_years = deg.graduation_year - deg.start_year
+            if actual_years > (n + 1):
+                deg_passed = False
+                deg_reasons.append(f"Graduation timeline took {actual_years} years, exceeding n+1 ({n + 1}) years for a {n}-year degree.")
 
-    if not transcript_data.year_averages:
-        return TranscriptValidationResult(
-            passed=False,
-            reason="No year averages could be found or calculated.",
-            extracted_data=transcript_data
-        )
+        if not deg_passed:
+            # The overall pass/fail status is determined by the undergraduate (NQF 7, which is index 0) degree
+            if i == 0:
+                overall_passed = False
+            reasons.append(f"{deg.degree_name} failed: {'; '.join(deg_reasons)}")
+        else:
+            reasons.append(f"{deg.degree_name} met all requirements.")
 
-    # Compute the average of the year averages
-    avg_score = sum(ya.average for ya in transcript_data.year_averages) / len(transcript_data.year_averages)
-
-    # 1. Average above 65% (strict check)
-    if avg_score <= 65.0:
-        return TranscriptValidationResult(
-            passed=False,
-            reason=f"Average mark is {avg_score:.2f}%, which is not above 65%.",
-            extracted_data=transcript_data
-        )
-
-    # 2. NQF level of at least 7
-    if transcript_data.nqf_level < 7:
-        return TranscriptValidationResult(
-            passed=False,
-            reason=f"NQF level is {transcript_data.nqf_level}, which is below the minimum required level of 7.",
-            extracted_data=transcript_data
-        )
-
-    # 3. Take more than n+1 years to graduate (n is minimum_years)
-    n = transcript_data.minimum_years
-    actual_years = transcript_data.graduation_year - transcript_data.start_year
-    if actual_years > (n + 1):
-        return TranscriptValidationResult(
-            passed=False,
-            reason=f"Took {actual_years} years to graduate, which exceeds n+1 ({n + 1}) years for a {n}-year degree.",
-            extracted_data=transcript_data
-        )
-
+    reason_str = " | ".join(reasons)
     return TranscriptValidationResult(
-        passed=True,
-        reason="Academic transcript meets all requirements.",
+        passed=overall_passed,
+        reason=reason_str,
         extracted_data=transcript_data
     )
 
@@ -315,16 +375,69 @@ def print_transcript_validation_results(validation: TranscriptValidationResult):
     if validation.extracted_data:
         data = validation.extracted_data
         print(f"\nExtracted Details:")
-        print(f"  Degree:          {data.degree_name}")
-        print(f"  NQF Level:       {data.nqf_level} (Required: >= 7)")
-        print(f"  Duration (n):    {data.minimum_years} years")
-        print(f"  Timeline:        {data.start_year} - {data.graduation_year} ({data.graduation_year - data.start_year} years, Allowed: <= n+1 = {data.minimum_years + 1})")
-        if data.year_averages:
-            print(f"  Year Averages:")
-            for ya in data.year_averages:
-                print(f"    Year {ya.year}: {ya.average:.2f}%")
-            avg_score = sum(ya.average for ya in data.year_averages) / len(data.year_averages)
-            print(f"  Overall Average: {avg_score:.2f}% (Required: > 65%)")
+        
+        def get_nqf_level(nqf, name):
+            if nqf is not None:
+                return nqf
+            if name is None:
+                return 7
+            name_lower = name.lower()
+            if "honours" in name_lower or "hons" in name_lower:
+                return 8
+            if "master" in name_lower or "msc" in name_lower or "meng" in name_lower:
+                return 9
+            if "diploma" in name_lower:
+                return 6
+            return 7
+
+        def get_minimum_years(min_yrs, name):
+            if min_yrs is not None:
+                return min_yrs
+            if name is None:
+                return 3
+            name_lower = name.lower()
+            if "honours" in name_lower or "hons" in name_lower:
+                return 1
+            if "master" in name_lower:
+                return 2
+            if "diploma" in name_lower:
+                return 2
+            return 3
+
+        if data.degrees:
+            for i, deg in enumerate(data.degrees):
+                min_yrs = get_minimum_years(deg.minimum_years, deg.degree_name)
+                nqf = get_nqf_level(deg.nqf_level, deg.degree_name)
+                timeline_str = "N/A"
+                if deg.start_year is not None and deg.graduation_year is not None:
+                    timeline_str = f"{deg.start_year} - {deg.graduation_year} ({deg.graduation_year - deg.start_year} years, Allowed: <= n+1 = {min_yrs + 1})"
+                
+                print(f"\n  Degree #{i+1}:       {deg.degree_name}")
+                print(f"    NQF Level:     {nqf} (Required: >= 7)")
+                print(f"    Duration (n):  {deg.minimum_years if deg.minimum_years is not None else min_yrs} years")
+                print(f"    Timeline:      {timeline_str}")
+                if deg.year_averages:
+                    print(f"    Year Averages:")
+                    for ya in deg.year_averages:
+                        print(f"      Year {ya.year}: {ya.average:.2f}%")
+                    avg_score = sum(ya.average for ya in deg.year_averages) / len(deg.year_averages)
+                    print(f"    Overall Average: {avg_score:.2f}% (Required: > 65%)")
+        else:
+            min_yrs = get_minimum_years(data.minimum_years, data.degree_name)
+            nqf = get_nqf_level(data.nqf_level, data.degree_name)
+            timeline_str = "N/A"
+            if data.start_year is not None and data.graduation_year is not None:
+                timeline_str = f"{data.start_year} - {data.graduation_year} ({data.graduation_year - data.start_year} years, Allowed: <= n+1 = {min_yrs + 1})"
+            print(f"  Degree:          {data.degree_name}")
+            print(f"  NQF Level:       {nqf} (Required: >= 7)")
+            print(f"  Duration (n):    {data.minimum_years if data.minimum_years is not None else min_yrs} years")
+            print(f"  Timeline:        {timeline_str}")
+            if data.year_averages:
+                print(f"  Year Averages:")
+                for ya in data.year_averages:
+                    print(f"    Year {ya.year}: {ya.average:.2f}%")
+                avg_score = sum(ya.average for ya in data.year_averages) / len(data.year_averages)
+                print(f"  Overall Average: {avg_score:.2f}% (Required: > 65%)")
     print("=" * 80)
 
 
@@ -448,7 +561,31 @@ def main(pdf_path, transcript_path=None):
                 profiles = resume_data.basics.profiles or []
             github_profile = find_profile(profiles, "Github")
 
-        score = _evaluate_resume(resume_data, github_data)
+        # Process and validate transcript if provided
+        transcript_data = None
+        validation_res = None
+        if transcript_path:
+            logger.debug(f"Processing transcript PDF: {transcript_path}")
+            pdf_handler = PDFHandler()
+            transcript_dict = pdf_handler.extract_transcript_data(transcript_path)
+            if transcript_dict:
+                try:
+                    transcript_data = TranscriptData(**transcript_dict)
+                    validation_res = validate_transcript(transcript_data)
+                except Exception as e:
+                    logger.error(f"Error parsing/validating transcript data: {e}")
+                    validation_res = TranscriptValidationResult(
+                        passed=False,
+                        reason=f"Failed to parse transcript structure: {e}"
+                    )
+            else:
+                logger.error("Failed to extract transcript data using LLM.")
+                validation_res = TranscriptValidationResult(
+                    passed=False,
+                    reason="Failed to extract structured data from academic transcript."
+                )
+
+        score = _evaluate_resume(resume_data, github_data, transcript_data=transcript_data)
 
         # Get candidate name for display
         candidate_name = os.path.basename(pdf_path).replace(".pdf", "")
@@ -463,28 +600,9 @@ def main(pdf_path, transcript_path=None):
         # Print evaluation results in readable format
         print_evaluation_results(score, candidate_name)
 
-        # Process and validate transcript if provided
-        if transcript_path:
-            logger.debug(f"Processing transcript PDF: {transcript_path}")
-            pdf_handler = PDFHandler()
-            transcript_dict = pdf_handler.extract_transcript_data(transcript_path)
-            if transcript_dict:
-                try:
-                    transcript_data = TranscriptData(**transcript_dict)
-                    validation_res = validate_transcript(transcript_data)
-                    print_transcript_validation_results(validation_res)
-                except Exception as e:
-                    logger.error(f"Error parsing/validating transcript data: {e}")
-                    print_transcript_validation_results(TranscriptValidationResult(
-                        passed=False,
-                        reason=f"Failed to parse transcript structure: {e}"
-                    ))
-            else:
-                logger.error("Failed to extract transcript data using LLM.")
-                print_transcript_validation_results(TranscriptValidationResult(
-                    passed=False,
-                    reason="Failed to extract structured data from academic transcript."
-                ))
+        # Print validation results if processed
+        if transcript_path and validation_res:
+            print_transcript_validation_results(validation_res)
 
         if DEVELOPMENT_MODE:
             csv_row = transform_evaluation_response(
