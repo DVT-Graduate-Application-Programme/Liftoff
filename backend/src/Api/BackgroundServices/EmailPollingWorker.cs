@@ -25,7 +25,7 @@ public class EmailPollingWorker : BackgroundService
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
-        _pollingInbox = configuration["Graph:PollingInbox"] ?? "recruitment@example.com";
+        _pollingInbox = configuration["Graph:PollingInbox"] ;
         _pollingIntervalMinutes = configuration.GetValue<int>("Graph:PollingIntervalMinutes", 2);
     }
 
