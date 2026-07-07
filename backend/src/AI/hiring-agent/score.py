@@ -627,7 +627,7 @@ def main(pdf_path, transcript_path=None):
                 # Write the row
                 writer.writerow(csv_row)
 
-        return score
+        return {score, candidate_name}
     finally:
         if downloaded_path and not DEVELOPMENT_MODE and os.path.exists(downloaded_path):
             try:
