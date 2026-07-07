@@ -146,21 +146,18 @@ const DECISION_STYLES = {
   yes: {
     label: "Yes",
     Icon: CheckCircle2,
-    badgeClass: "border-primary/20 bg-primary/12 text-primary",
     iconClass: "text-primary",
     borderClass: "border-l-primary",
   },
   no: {
     label: "No",
     Icon: XCircle,
-    badgeClass: "border-destructive/20 bg-destructive/10 text-destructive",
     iconClass: "text-destructive",
     borderClass: "border-l-destructive",
   },
   maybe: {
     label: "Maybe",
     Icon: CircleHelp,
-    badgeClass: "border-chart-4/30 bg-chart-4/15 text-chart-4",
     iconClass: "text-chart-4",
     borderClass: "border-l-chart-4",
   },
@@ -169,7 +166,6 @@ const DECISION_STYLES = {
   {
     label: string;
     Icon: React.ComponentType<{ className?: string }>;
-    badgeClass: string;
     iconClass: string;
     borderClass: string;
   }
@@ -199,18 +195,38 @@ function ScoreTag({ score }: { score: number }) {
   );
 }
 
-function DecisionBadge({ decision }: { decision: Decision }) {
-  const { Icon, label, badgeClass } = DECISION_STYLES[decision];
+function DecisionBadge({
+  decision,
+  layout = "inline",
+}: {
+  decision: Decision;
+  layout?: "inline" | "stacked";
+}) {
+  const { Icon, label, iconClass } = DECISION_STYLES[decision];
 
   return (
     <span
+      aria-label={label}
+      title={label}
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold tracking-wide select-none",
-        badgeClass
+        "select-none",
+        layout === "stacked"
+          ? "flex flex-col items-center justify-center gap-0.5"
+          : "inline-flex items-center gap-1.5 align-middle",
+        iconClass
       )}
     >
-      <Icon className="size-3.5 shrink-0" />
-      {label}
+      <Icon className="size-4 shrink-0" />
+      <span
+        className={cn(
+          "font-semibold leading-none",
+          layout === "stacked"
+            ? "text-[9px] uppercase tracking-wider"
+            : "text-xs"
+        )}
+      >
+        {label}
+      </span>
     </span>
   );
 }
@@ -296,14 +312,11 @@ function ChangeDecisionModal({
           <div
             className={cn(
               "flex size-10 items-center justify-center rounded-full",
-              nextDecisionStyle.badgeClass
+              nextDecisionStyle.iconClass
             )}
           >
             <RefreshCw
-              className={cn(
-                "size-5",
-                nextDecisionStyle.iconClass
-              )}
+              className="size-5"
             />
           </div>
           <div>
@@ -319,12 +332,14 @@ function ChangeDecisionModal({
           <strong className="text-foreground">{candidate.name}</strong> from{" "}
           <DecisionBadge decision={candidate.decision} /> to{" "}
           <span
+            aria-label={nextDecisionStyle.label}
+            title={nextDecisionStyle.label}
             className={cn(
-              "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold",
-              nextDecisionStyle.badgeClass
+              "inline-flex items-center gap-1.5 align-middle text-xs font-semibold",
+              nextDecisionStyle.iconClass
             )}
           >
-            <NextDecisionIcon className="size-3.5" />
+            <NextDecisionIcon className="size-4" />
             {nextDecisionStyle.label}
           </span>
           . This action will be logged in the audit trail.
@@ -399,12 +414,9 @@ function CandidateHistoryCard({ candidate }: { candidate: Candidate }) {
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h4 className="font-semibold text-foreground leading-tight">
-              {candidate.name}
-            </h4>
-            <DecisionBadge decision={candidate.decision} />
-          </div>
+          <h4 className="font-semibold text-foreground leading-tight">
+            {candidate.name}
+          </h4>
           <p className="mt-0.5 text-xs text-muted-foreground truncate">
             {candidate.role}
           </p>
@@ -424,6 +436,10 @@ function CandidateHistoryCard({ candidate }: { candidate: Candidate }) {
             </span>
             <ScoreTag score={candidate.academicAverage} />
           </div>
+        </div>
+
+        <div className="flex w-12 shrink-0 items-center justify-center">
+          <DecisionBadge decision={candidate.decision} layout="stacked" />
         </div>
 
         <div className="hidden md:flex w-36 shrink-0 flex-col items-end gap-0.5">
