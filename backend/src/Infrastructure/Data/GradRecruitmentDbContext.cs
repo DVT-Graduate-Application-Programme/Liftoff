@@ -27,8 +27,8 @@ public class GradRecruitmentDbContext : DbContext
             entity.Property(e => e.EmailMessageId).IsRequired().HasMaxLength(255);
             entity.Property(e => e.CandidateName).HasMaxLength(255);
             entity.Property(e => e.CandidateEmail).HasMaxLength(255);
-            entity.Property(e => e.CvBlobUrl).HasMaxLength(2048);
-            entity.Property(e => e.TranscriptBlobUrl).HasMaxLength(2048);
+            entity.Property(e => e.CvAttachmentId).HasMaxLength(2048);
+            entity.Property(e => e.TranscriptAttachmentId).HasMaxLength(2048);
             entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
             entity.Property(e => e.HardGateReason).HasMaxLength(504);
             entity.Property(e => e.HiringAgentTotalScore).HasColumnType("numeric(5,2)");

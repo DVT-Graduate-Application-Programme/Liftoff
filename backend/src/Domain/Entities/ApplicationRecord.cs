@@ -9,8 +9,8 @@ public class ApplicationRecord
     public string EmailMessageId { get; set; } = string.Empty;
     public string? CandidateName { get; set; }
     public string? CandidateEmail { get; set; }
-    public string? CvBlobUrl { get; set; }
-    public string? TranscriptBlobUrl { get; set; }
+    public string? CvAttachmentId { get; set; }
+    public string? TranscriptAttachmentId { get; set; }
     public string Status { get; set; } = string.Empty;
     public bool? HardGatePassed { get; set; }
     public string? HardGateReason { get; set; }
