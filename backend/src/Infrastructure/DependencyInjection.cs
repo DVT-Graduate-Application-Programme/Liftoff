@@ -24,6 +24,7 @@ public static class DependencyInjection
         services.AddDbContext<GradRecruitmentDbContext>(options =>
             options.UseNpgsql(connectionString));
 
+        services.AddScoped<IApplicationRecordRepository, ApplicationRecordRepository>();
         services.AddScoped<IGraphEmailService, GraphEmailService>();
 
         return services;
