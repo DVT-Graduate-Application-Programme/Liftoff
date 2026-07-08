@@ -29,15 +29,14 @@ Application.DependencyInjection.AddApplication(builder.Services, builder.Configu
 Infrastructure.DependencyInjection.AddInfrastructure(builder.Services, builder.Configuration);
 
 // Register the Email Polling Background Worker
-builder.Services.AddHostedService<Api.BackgroundServices.EmailPollingWorker>();
+//builder.Services.AddHostedService<Api.BackgroundServices.EmailPollingWorker>();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
+
     app.MapOpenApi();
     app.MapScalarApiReference();
-}
+
 
 app.MapHealthChecks("/health");
 
