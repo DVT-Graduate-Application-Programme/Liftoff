@@ -19,6 +19,19 @@
       "Resource": "*"
     },
     {
+      "Sid": "CloudWatchLogsRead",
+      "Effect": "Allow",
+      "Action": [
+        "logs:GetLogEvents",
+        "logs:FilterLogEvents",
+        "logs:GetLogRecord",
+        "logs:StartQuery",
+        "logs:GetQueryResults",
+        "logs:StopQuery"
+      ],
+      "Resource": "arn:aws:logs:af-south-1:819004394075:log-group:/ecs/liftoff/*:*"
+    },
+    {
       "Sid": "ServiceLinkedRoles",
       "Effect": "Allow",
       "Action": "iam:CreateServiceLinkedRole",
