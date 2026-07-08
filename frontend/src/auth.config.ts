@@ -7,11 +7,14 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user
-      const isOnLanding = nextUrl.pathname.startsWith("/landing")
-      if (isOnLanding) {
-        return isLoggedIn
+      const publicPaths = ["/login", "/api/auth", "/api/health"]
+      const isPublic = publicPaths.some((path) =>
+        nextUrl.pathname.startsWith(path),
+      )
+      if (isPublic) {
+        return true
       }
-      return true
+      return isLoggedIn
     },
   },
   providers: []
