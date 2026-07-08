@@ -11,6 +11,9 @@ type NavItem = {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   href: string;
 };
+type NavMenuProps = {
+  onItemNavigate?: () => void;
+};
 
 const navItems: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/landing" },
@@ -18,7 +21,7 @@ const navItems: NavItem[] = [
   { label: "Review History", icon: History, href: "/history" },
 ];
 
-export function NavMenu() {
+export function NavMenu({ onItemNavigate }: NavMenuProps) {
   const pathname = usePathname();
 
   return (
@@ -30,6 +33,7 @@ export function NavMenu() {
             <li key={item.label} className="w-full">
               <Link
                 href={item.href}
+                onNavigate={onItemNavigate}
                 className={cn(
                   "block w-full text-primary rounded-md px-0 py-4 text-sm font-medium transition-colors hover:bg-muted",
                   isActive && "bg-muted",

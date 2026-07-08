@@ -33,7 +33,11 @@ export function NavDrawer({
               </Button>
             </DrawerClose>
             <div className="w-full">
-              <NavMenu />
+              <NavMenu
+                onItemNavigate={() => {
+                  onOpenChange(false);
+                }}
+              />
             </div>
             <div className="mt-3 h-30"></div>
           </div>
