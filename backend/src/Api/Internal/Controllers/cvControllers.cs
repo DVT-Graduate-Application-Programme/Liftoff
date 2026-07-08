@@ -32,7 +32,7 @@ public class ResumeController : ControllerBase
 
     [HttpGet("{id}/document")]
     public async Task<IActionResult> GetDocument(
-        int id,
+        Guid id,
         CancellationToken cancellationToken)
     {
         var document = await _mediator.Send(
@@ -66,7 +66,7 @@ public class ResumeController : ControllerBase
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetCandidate(
-    int id,
+    Guid id,
     CancellationToken cancellationToken)
     {
         var candidate = await _mediator.Send(
