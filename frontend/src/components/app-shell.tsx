@@ -14,7 +14,7 @@ export default function AppShell({ children }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
 
-  if (pathname?.startsWith("/login")) {
+  if (pathname.startsWith("/login")) {
     return <>{children}</>;
   }
 
