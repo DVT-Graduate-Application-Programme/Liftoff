@@ -22,7 +22,7 @@ summary — you are SCORING a resume for a job application.
 Analyze the structured resume data (basics, work, volunteer, projects, skills,
 etc.). If provided, use the GitHub data (`=== GITHUB DATA ===`) as additional
 context for Section 4, and blog data (`=== BLOG DATA ===`) to assess technical
-communication ability. Before concluding that a GitHub, portfolio, or LinkedIn
+communication ability. If provided, use the academic transcript data (`=== TRANSCRIPT DATA ===`) to verify academic credentials, courses, and marks, and to perform cross-referencing between the resume education history and the official transcript. Before concluding that a GitHub, portfolio, or LinkedIn
 profile is missing (which affects Sections 4, 5.3, and 8), check the structured
 `profiles` field first — only treat it as absent if it is genuinely missing from
 the structured data, not merely omitted from the prose summary.
@@ -87,19 +87,21 @@ state accurately; the accept/reject decision itself happens downstream, not in
 this scoring step.
 
 - **`met`** — a numeric average is disclosed, unambiguously a percentage (or
-  confidently convertible), and is 65% or higher. Eligible for the full HIGH
+  confidently convertible), and is 65% or higher (if transcript is available, use the official average/marks from transcript). Eligible for the full HIGH
   band (20-25).
-- **`not_met`** — a numeric average is disclosed, unambiguous, and is below 65%.
+- **`not_met`** — a numeric average is disclosed, unambiguous, and is below 65% (if transcript is available, use the official average/marks from transcript).
   Hard fail: score Education at 0-5 (VERY LOW) regardless of how strong the
   degree, coursework, or institution otherwise is. State the disclosed number
   explicitly in evidence.
-- **`not_applicable`** — no average is disclosed at all (either track), or the
+- **`not_applicable`** — no average is disclosed at all (either track) AND no transcript is provided, or the
   track is `self_taught`/`unrelated`. This is NOT a failure — silence is not
   evidence of a low average. Score on degree relevance and completion alone.
-- **`unclear_needs_review`** — an average is disclosed but on an ambiguous or
+- **`unclear_needs_review`** — an average is disclosed (or transcript is provided but marks/averages are ambiguous) on an ambiguous or
   non-percentage scale (4.0 GPA, ECTS, pass/fail). Do not guess a conversion.
   Score MEDIUM and flag explicitly for human review in evidence — a wrong silent
   conversion under a hard gate is worse than deferring to a person.
+
+If academic transcript data is available, you MUST determine `academic_requirement_met` based on the official transcript average or calculated averages. If the transcript indicates an average < 65%, the status must be marked as `not_met` and the score must be VERY LOW (0-5).
 
 ### 3.3 `experience_requirement_met` — the hard gate (Track `self_taught` only)
 
@@ -146,6 +148,7 @@ For **`formal_it` / `related_field`**, score 0-25:
   institution name alone. A `related_field` candidate may reach 20-22, but only
   with clear evidence of software specialisation — this is the exception for
   that track, not the default.
+- **Transcript performance (if transcript is available)**: High scores in this band require solid grades (marks >= 70% or equivalent) in core software development and programming modules (e.g. data structures, algorithms, databases). Poor performance in these core modules (marks < 50% or failing/supplementary marks) caps the Education score at MEDIUM (13-19) even if the overall average is >= 65%.
 - **13-19 (MEDIUM):** `related_field` without specialisation evidence, or either
   track with `academic_requirement_met = "unclear_needs_review"`.
 - **6-12 (LOW):** `unrelated` track, or incomplete/discontinued technical
@@ -175,6 +178,16 @@ track-agnostic). Requires `experience_requirement_met` to be evaluated first.
   technical activity spans less than 24 months, or no dateable evidence at all.
   Score here regardless of how structured or earnest the self-directed learning
   otherwise appears.
+
+### 3.5 CV and Transcript Cross-Referencing
+
+If transcript data is provided under `=== TRANSCRIPT DATA ===`, you must cross-reference the education details claimed on the CV with the official transcript:
+1. **Degree Match**: Ensure the degree program(s) claimed on the CV match the degree(s) listed on the transcript. If the candidate claims a degree on the CV that is not present on the transcript, flag this discrepancy.
+2. **Timeline Match**: Verify that the start year and graduation/completion year claimed on the CV match the transcript dates.
+3. **Grade/Average Match**: Cross-reference any average mark or grades claimed on the CV with the actual averages/marks on the transcript.
+4. **Scoring Adjustments for Discrepancies**:
+   - **Minor discrepancies** (e.g., minor year misalignment of 1 year due to graduation vs. final exam dates, or slightly different wording of degree name): Mention the discrepancy in the education evidence but do not penalize the score.
+   - **Major discrepancies** (e.g., CV claims an average of >= 65% but the transcript shows < 65%, or the CV claims a completed degree that does not appear on the transcript, or the CV claims a different track or major): Flag this clearly in the evidence. Reduce the Education score to the **LOW (6-12)** or **VERY LOW (0-5)** band depending on the severity of the inflation/discrepancy. Specifically, if the transcript shows the average is actually < 65% (while CV claimed >= 65%), set `academic_requirement_met` to `"not_met"` and score in the **VERY LOW (0-5)** band.
 
 ---
 

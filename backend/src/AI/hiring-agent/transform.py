@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 import pdb
-from models import JSONResume
+from models import JSONResume, TranscriptData
 
 
 def transform_parsed_data(parsed_data: Dict) -> Dict:
@@ -936,3 +936,46 @@ def convert_blog_data_to_text(blog_data: dict) -> str:
             blog_text += "\n"
 
     return blog_text
+
+
+def convert_transcript_data_to_text(transcript_data: TranscriptData) -> str:
+    if not transcript_data:
+        return ""
+
+    transcript_text = "\n\n=== TRANSCRIPT DATA ===\n"
+
+    degrees = transcript_data.degrees or []
+    # If degrees list is empty, but top-level fields are present, use them
+    if not degrees and transcript_data.degree_name:
+        from models import DegreeRecord
+        degrees = [
+            DegreeRecord(
+                degree_name=transcript_data.degree_name,
+                nqf_level=transcript_data.nqf_level,
+                minimum_years=transcript_data.minimum_years,
+                start_year=transcript_data.start_year,
+                graduation_year=transcript_data.graduation_year,
+                year_averages=transcript_data.year_averages,
+                modules=transcript_data.modules
+            )
+        ]
+
+    for i, deg in enumerate(degrees, 1):
+        transcript_text += f"Degree #{i}: {deg.degree_name or 'N/A'}\n"
+        transcript_text += f"- NQF Level: {deg.nqf_level or 'N/A'}\n"
+        transcript_text += f"- Minimum Years: {deg.minimum_years or 'N/A'}\n"
+        transcript_text += f"- Timeline: {deg.start_year or 'N/A'} - {deg.graduation_year or 'N/A'}\n"
+
+        if deg.year_averages:
+            transcript_text += "- Year Averages:\n"
+            for ya in deg.year_averages:
+                transcript_text += f"  * Year {ya.year}: {ya.average:.2f}%\n"
+
+        if deg.modules:
+            transcript_text += "- Modules:\n"
+            for m in deg.modules:
+                mark_str = f"{m.mark:.2f}%" if m.mark is not None else "N/A"
+                transcript_text += f"  * Year {m.year} - {m.name}: {mark_str}\n"
+        transcript_text += "\n"
+
+    return transcript_text
