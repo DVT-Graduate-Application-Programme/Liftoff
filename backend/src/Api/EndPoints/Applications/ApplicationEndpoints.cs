@@ -20,8 +20,7 @@ public static class ApplicationEndpoints
             var applications = await repo.GetAllAsync(ct);
             return Results.Ok(applications);
         })
-        .WithName("GetApplications")
-        .WithOpenApi();
+        .WithName("GetApplications");
 
         // GET /api/applications/{id}
         group.MapGet("/{id:guid}", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
@@ -29,8 +28,7 @@ public static class ApplicationEndpoints
             var application = await repo.GetByIdAsync(id, ct);
             return application is not null ? Results.Ok(application) : Results.NotFound();
         })
-        .WithName("GetApplication")
-        .WithOpenApi();
+        .WithName("GetApplication");
 
         // GET /api/applications/{id}/attachments/{attachmentId}
         group.MapGet("/{id:guid}/attachments/{attachmentId}", async (Guid id, string attachmentId, IApplicationRecordRepository repo, IGraphEmailService graph, IConfiguration config, CancellationToken ct) =>
@@ -46,7 +44,6 @@ public static class ApplicationEndpoints
 
             return Results.File(attachment.ContentBytes, attachment.ContentType, attachment.Name);
         })
-        .WithName("GetAttachmentById")
-        .WithOpenApi();
+        .WithName("GetAttachmentById");
     }
 }

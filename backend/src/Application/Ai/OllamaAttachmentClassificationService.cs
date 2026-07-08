@@ -53,8 +53,7 @@ Text:
 
         var requestBody = new
         {
-            model = "gemma3:4b", // As specified in docker-compose.yml
-            prompt = prompt,
+            model = "gemma3:4b", 
             stream = false
         };
 
@@ -78,7 +77,7 @@ Text:
 
     private string ExtractText(byte[] fileBytes, string mimeType)
     {
-        if (mimeType != "application/pdf")
+        if (mimeType != "application/pdf" && mimeType != "application/octet-stream")
         {
             // For now, only extract PDF. Word extraction could be added here (e.g. OpenXML).
             return string.Empty; 
