@@ -243,6 +243,7 @@ resource "aws_ecs_service" "frontend" {
   }
 
   depends_on = [aws_lb_listener.http]
+ # health_check_grace_period_seconds = 90
 }
 
 # ── Application Load Balancer ─────────────────────────────────────────────────
@@ -278,7 +279,7 @@ resource "aws_lb_target_group" "frontend" {
   target_type = "ip"
 
   health_check {
-    path                = "/"
+    path                = "/api/health"
     interval            = 30
     healthy_threshold   = 2
     unhealthy_threshold = 3
