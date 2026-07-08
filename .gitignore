@@ -491,8 +491,10 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
-# Spec docs
-BRD-graduate-recruitment-tool.md
-graduate-recruitment-research-feedback.md
-graduate-recruitment-tool-research.md
-sprint-plan-graduate-recruitment-tool.md
+# terraform
+terraform.tfvars
+*.tfstate
+*.tfstate.backup
+*.tfstate.lock.info
+.terraform/
+.terraform.lock.hcl
