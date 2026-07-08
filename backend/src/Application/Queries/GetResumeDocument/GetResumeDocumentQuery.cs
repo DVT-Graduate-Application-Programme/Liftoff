@@ -3,4 +3,4 @@ using MediatR;
 
 namespace Backend.Application.Features.Resumes.Queries.GetResumeDocument;
 
-public record GetResumeDocumentQuery(int Id) : IRequest<ResumeDocumentDto>;
+public record GetResumeDocumentQuery(Guid Id) : IRequest<ResumeDocumentDto>;
