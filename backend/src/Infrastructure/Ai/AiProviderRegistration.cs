@@ -7,7 +7,7 @@ public static class AiProviderRegistration
 {
     public static IServiceCollection AddAiProvider(this IServiceCollection services, IConfiguration config)
     {
-        var providerName = config["Ai:Provider"] ?? throw new InvalidOperationException("Ai:Provider not configured");
+        var providerName = config["Ai:Provider"] ?? "";
 
         // services.Configure<OllamaOptions>(config.GetSection("Ai:Ollama"));
 

@@ -1,3 +1,12 @@
+using System.Threading;
+using System.Threading.Tasks;
+using Application.Features.Ingestion;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace Api.EndPoints.Applications;
+
 public static class IngestEndpoints
 {
     public static IEndpointRouteBuilder MapIngestEndpoints(this IEndpointRouteBuilder app)
@@ -9,9 +18,9 @@ public static class IngestEndpoints
         return app;
     }
 
-    private static async Task<IResult> IngestAsync([Microsoft.AspNetCore.Mvc.FromForm] IngestApplicationRequest request, IngestApplicationHandler handler, CancellationToken ct)
+    private static async Task<IResult> IngestAsync(IngestApplicationRequest request, MediatR.IMediator mediator, CancellationToken ct)
     {
-        var result = await handler.HandleAsync(request, ct);
+        var result = await mediator.Send(request, ct);
         return Results.Accepted(value: result);   // 202 — Ingest API never waits on AI processing
     }
 
