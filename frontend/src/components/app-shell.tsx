@@ -13,7 +13,7 @@ export default function AppShell({ children }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const pathname = usePathname();
 
-  if (pathname?.startsWith("/login")) {
+  if (pathname.startsWith("/login")) {
     return <>{children}</>;
   }
 
