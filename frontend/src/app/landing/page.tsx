@@ -35,7 +35,7 @@ const LandingPage = () => {
       setError(null);
 
       try {
-        const response = await fetch("/api/dashboard/applications");
+        const response = await fetch("/api/applications");
 
         if (!response.ok) {
           throw new Error("Unable to load applications.");
