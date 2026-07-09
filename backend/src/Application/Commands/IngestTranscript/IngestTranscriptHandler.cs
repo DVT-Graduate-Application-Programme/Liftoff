@@ -25,7 +25,7 @@ public class IngestTranscriptHandler
         return Task.FromResult(new IngestTranscriptResult
         {
             Accepted = true,
-            Message = $"Transcript received for '{request.StartYear}' — persistence pending DB setup."
+            Message = $"Transcript received for '{request.DegreeName}' — persistence pending DB setup."
         });
     }
 }

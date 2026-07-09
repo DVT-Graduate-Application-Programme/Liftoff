@@ -34,5 +34,6 @@ app.MapControllers();
 app.MapIngestEndpoints();
 app.MapDashboardEndpoints();
 app.MapTranscriptEndpoints();
+app.MapEvaluationEndpoints();
 
 app.Run();
