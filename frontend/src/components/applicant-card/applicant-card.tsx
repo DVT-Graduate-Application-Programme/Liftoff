@@ -210,13 +210,13 @@ export default function ApplicantCard({
         </div>
       )}
 
-      {daysAgo !== null && daysAgo >= 2 && (
+      {daysAgo !== null && daysAgo >= 1 && (
         <div className="hidden w-40 shrink-0 flex-col items-center gap-0.5 pl-4 md:flex">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
             Applied
           </span>
           <span className="max-w-full truncate whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
-            {daysAgo} days ago
+            {daysAgo} day(s) ago
           </span>
         </div>
       )}
