@@ -26,14 +26,14 @@ const AllCandidates = ({
           name={application.candidateName}
           institute={application.cvSummary}
           systemScore={toScorePercent(application.hiringAgentTotalScore)}
-          scoreLabel="Overall Score"
+          scoreLabel="System Score"
           statusLabel={statusLabels[application.currentStatus]}
           statusTone={statusTones[application.currentStatus]}
           reviewedAt={formatDate(application.createdAt)}
           recruiterLabel="Recruiter"
           recruiterName={getRecruiterLabel(application)}
           candidateGitHubUrl={application.candidateGitHubUrl ?? undefined}
-          actionLabel="Details"
+          actionLabel="Show AI Review"
           onClick={() => {
             onSelectApplication(application);
           }}
