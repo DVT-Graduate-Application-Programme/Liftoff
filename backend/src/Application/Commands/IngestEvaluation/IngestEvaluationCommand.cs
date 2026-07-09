@@ -27,8 +27,20 @@ public class IngestEvaluationCommand : IRequest<IngestEvaluationResult>
     public List<string> AreasForImprovement { get; set; } = [];
 }
 
+public class TotalScoreDto
+{
+    [JsonPropertyName("score")]
+    public double Score { get; set; }
+
+    [JsonPropertyName("max")]
+    public int Max { get; set; }
+}
+
 public class EvaluationScoresDto
 {
+    [JsonPropertyName("total")]
+    public TotalScoreDto Total { get; set; } = new();
+    
     [JsonPropertyName("education")]
     public EducationScoreDto Education { get; set; } = new();
 

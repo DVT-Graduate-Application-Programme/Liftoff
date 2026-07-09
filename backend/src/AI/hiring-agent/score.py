@@ -626,7 +626,6 @@ def main(pdf_path, transcript_path=None):
 
                 # Write the row
                 writer.writerow(csv_row)
-
         return score
     finally:
         if downloaded_path and not DEVELOPMENT_MODE and os.path.exists(downloaded_path):
@@ -678,7 +677,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     resp = main(pdf_path, transcript_path)
-
+    print(resp)
     try:
         send_eval(resp, message_id, DEFAULT_MODEL)
     except Exception:
