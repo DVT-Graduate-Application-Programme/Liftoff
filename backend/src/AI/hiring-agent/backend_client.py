@@ -73,13 +73,15 @@ def send_eval(eval_data: EvaluationData, message_id: str, prompt_version: str):
     After AI has completed processing, return results and post to API ingest layer.
     message_id must be the ID returned by the C# Ingest API when the PENDING record was created.
     """
-    url = f"{BACKEND_BASE_URL}/internal/transcript"
+    url = f"{BACKEND_BASE_URL}/internal/evaluation"
 
-    payload = ResumeEvaluationPayload(
-        message_id=message_id,
-        prompt_version=prompt_version,
-        evaluation=eval_data,
-    )
+ 
+    eval_dict = eval_data.model_dump(mode="json")
+
+    final_payload = {
+        "application_id": message_id,
+        **eval_dict # This unpacks scores, bonus_points, key_strengths, etc. into the root
+    }
 
     ## TODO: add auth token check on endpoint
 
@@ -88,8 +90,11 @@ def send_eval(eval_data: EvaluationData, message_id: str, prompt_version: str):
             try:
                 response = client.post(
                     url,
-                    json=payload.model_dump(),
+                    json=final_payload,
                 )
+
+                if response.status_code == 400:
+                    print(f"Backend validation error: {response.text}")
 
                 if response.status_code < 300:
                     return response

@@ -48,10 +48,10 @@ public class EvaluationScoresDto
 public class ScoreCategoryDto
 {
     [JsonPropertyName("score")]
-    public int Score { get; set; }
+    public float Score { get; set; }
 
     [JsonPropertyName("max")]
-    public int Max { get; set; }
+    public float Max { get; set; }
 
     [JsonPropertyName("evidence")]
     public string Evidence { get; set; } = string.Empty;
@@ -72,7 +72,7 @@ public class EducationScoreDto : ScoreCategoryDto
 public class BonusPointsDto
 {
     [JsonPropertyName("total")]
-    public int Total { get; set; }
+    public float Total { get; set; }
 
     [JsonPropertyName("breakdown")]
     public string Breakdown { get; set; } = string.Empty;

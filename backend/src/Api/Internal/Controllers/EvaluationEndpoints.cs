@@ -17,6 +17,7 @@ public static class EvaluationEndpoints
             if (string.IsNullOrWhiteSpace(command.ApplicationId))
                 return Results.BadRequest("ApplicationId is required.");
 
+
             var result = await mediator.Send(command);
             return Results.Accepted("/internal/evaluation", result);
         })
