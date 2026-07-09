@@ -3,19 +3,60 @@ output "resource_group_name" {
   value       = azurerm_resource_group.main.name
 }
 
-output "web_app_url" {
-  description = "Public URL of the App Service."
-  value       = "https://${azurerm_linux_web_app.main.default_hostname}"
+output "frontend_url" {
+  description = "Public URL to access the frontend Container App."
+  value       = "https://${azurerm_container_app.frontend.latest_revision_fqdn}"
 }
 
-output "sql_server_fqdn" {
-  description = "Fully qualified domain name of the SQL Server."
-  value       = azurerm_mssql_server.main.fully_qualified_domain_name
+output "api_url" {
+  description = "Public URL to access the backend API."
+  value       = "https://${azurerm_container_app.backend.latest_revision_fqdn}"
 }
 
-output "sql_database_name" {
-  description = "Name of the SQL database."
-  value       = azurerm_mssql_database.main.name
+output "acr_login_server" {
+  description = "ACR login server — use as the registry URL for docker push/pull."
+  value       = azurerm_container_registry.main.login_server
+}
+
+output "acr_backend_repository" {
+  description = "Full ACR repository path for the backend image — use as ACR_BACKEND_REPOSITORY GitHub secret."
+  value       = "${azurerm_container_registry.main.login_server}/backend"
+}
+
+output "acr_frontend_repository" {
+  description = "Full ACR repository path for the frontend image — use as ACR_FRONTEND_REPOSITORY GitHub secret."
+  value       = "${azurerm_container_registry.main.login_server}/frontend"
+}
+
+output "container_app_environment_name" {
+  description = "Container Apps Environment name — use as CONTAINER_APP_ENV GitHub secret."
+  value       = azurerm_container_app_environment.main.name
+}
+
+output "backend_container_app_name" {
+  description = "Backend Container App name — use as BACKEND_CONTAINER_APP GitHub secret."
+  value       = azurerm_container_app.backend.name
+}
+
+output "frontend_container_app_name" {
+  description = "Frontend Container App name — use as FRONTEND_CONTAINER_APP GitHub secret."
+  value       = azurerm_container_app.frontend.name
+}
+
+output "postgresql_fqdn" {
+  description = "PostgreSQL Flexible Server FQDN."
+  value       = azurerm_postgresql_flexible_server.main.fqdn
+  sensitive   = true
+}
+
+output "key_vault_name" {
+  description = "Name of the Key Vault."
+  value       = azurerm_key_vault.main.name
+}
+
+output "key_vault_uri" {
+  description = "URI of the Key Vault — used by apps to fetch secrets at runtime."
+  value       = azurerm_key_vault.main.vault_uri
 }
 
 output "storage_account_name" {
@@ -28,12 +69,13 @@ output "servicebus_namespace" {
   value       = azurerm_servicebus_namespace.main.name
 }
 
-output "key_vault_name" {
-  description = "Name of the Key Vault."
-  value       = azurerm_key_vault.main.name
+output "log_analytics_workspace_id" {
+  description = "Log Analytics Workspace resource ID — for linking external diagnostic settings."
+  value       = azurerm_log_analytics_workspace.main.id
 }
 
-output "key_vault_uri" {
-  description = "URI of the Key Vault, used by apps to fetch secrets."
-  value       = azurerm_key_vault.main.vault_uri
+output "app_insights_connection_string" {
+  description = "Application Insights connection string — wire into app config."
+  value       = azurerm_application_insights.main.connection_string
+  sensitive   = true
 }
