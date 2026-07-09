@@ -59,6 +59,15 @@ public static class ApplicationEndpoints
         })
         .WithName("GetHiringAgentEvaluation");
 
+        // GET /api/applications/{id}/ownership
+        // Returns recruiter ownership, shortlist, and rating details for a given application
+        group.MapGet("/{id:guid}/ownership", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        {
+            var ownership = await repo.GetOwnershipAsync(id, ct);
+            return ownership is not null ? Results.Ok(ownership) : Results.NotFound();
+        })
+        .WithName("GetApplicationOwnership");
+
         // POST /api/applications/{id}/ownership/claim
         // Allows a recruiter to claim ownership of an application
         group.MapPost("/{id:guid}/ownership/claim", async (Guid id, ClaimOwnershipRequest request, IApplicationRecordRepository repo, CancellationToken ct) =>

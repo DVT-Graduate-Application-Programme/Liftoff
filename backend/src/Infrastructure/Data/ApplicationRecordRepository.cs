@@ -84,6 +84,25 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             .FirstOrDefaultAsync(cancellationToken);
     }
 
+    public Task<ApplicationOwnership?> GetOwnershipAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return _dbContext.ApplicationRecords
+            .Where(r => r.Id == id)
+            .Select(r => new ApplicationOwnership
+            {
+                ClaimedByRecruiterId = r.ClaimedByRecruiterId,
+                ClaimedAt = r.ClaimedAt,
+                ShortlistedByRecruiterId = r.ShortlistedByRecruiterId,
+                ShortlistedAt = r.ShortlistedAt,
+                RecruiterRating = r.RecruiterRating,
+                RecruiterRatingNote = r.RecruiterRatingNote,
+                RatedByRecruiterId = r.RatedByRecruiterId,
+                RatedAt = r.RatedAt
+            })
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<ApplicationOwnershipClaim?> ClaimOwnershipAsync(
         Guid id,
         string recruiterIdentity,
