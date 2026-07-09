@@ -1,4 +1,5 @@
-import { Check, X } from "lucide-react";
+import { Check, GitBranch, Link2, X } from "lucide-react";
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -9,9 +10,13 @@ type ApplicantCardProps = {
   institute: string;
   academicAverage?: number;
   systemScore: number;
+  scoreLabel?: string;
   statusLabel?: string;
   statusTone?: StatusTone;
   reviewedAt?: string;
+  recruiterLabel?: string;
+  recruiterName?: string;
+  candidateGitHubUrl?: string | null;
   actionLabel?: string;
   onClick?: () => void;
 };
@@ -62,14 +67,33 @@ function ScoreTag({ score }: { score: number }) {
   );
 }
 
+function InfoRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+      <span className="font-medium uppercase tracking-widest">{label}</span>
+      <span className="min-w-0 truncate text-foreground">{children}</span>
+    </div>
+  );
+}
+
 export default function ApplicantCard({
   name,
   institute,
   academicAverage,
   systemScore,
+  scoreLabel = "Sys Score",
   statusLabel = "Pending",
   statusTone,
   reviewedAt,
+  recruiterLabel,
+  recruiterName,
+  candidateGitHubUrl,
   actionLabel = "Review",
   onClick,
 }: ApplicantCardProps) {
@@ -110,12 +134,34 @@ export default function ApplicantCard({
         <p className="mt-0.5 truncate text-xs text-muted-foreground">
           {institute}
         </p>
+        {(recruiterName || candidateGitHubUrl) && (
+          <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
+            {recruiterName && (
+              <InfoRow label={recruiterLabel ?? "Recruiter"}>
+                {recruiterName}
+              </InfoRow>
+            )}
+            {candidateGitHubUrl && (
+              <a
+                href={candidateGitHubUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1 text-xs text-primary hover:underline"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <GitBranch className="size-3.5" />
+                GitHub
+                <Link2 className="size-3" />
+              </a>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="hidden w-[13rem] shrink-0 items-center justify-center gap-3 sm:flex">
         <div className="flex w-20 flex-col items-center gap-0.5">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-            Sys Score
+            {scoreLabel}
           </span>
           <ScoreTag score={systemScore} />
         </div>
