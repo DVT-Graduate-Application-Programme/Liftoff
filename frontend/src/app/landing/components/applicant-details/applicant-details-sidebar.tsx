@@ -97,18 +97,6 @@ export function ApplicantDetailsSidebar({
                 ))}
               </ol>
             </div>
-            {/* {evaluation.areasForImprovement.length > 0 ? (
-              <div className="space-y-2">
-                <p className="font-heading text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                  Areas for improvement
-                </p>
-                <ul className="list-disc space-y-1.5 pl-5 text-sm leading-6">
-                  {evaluation.areasForImprovement.map((improvement) => (
-                    <li key={improvement}>{improvement}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : null} */}
           </div>
           <Button
             type="button"
