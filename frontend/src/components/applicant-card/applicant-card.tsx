@@ -14,6 +14,8 @@ type ApplicantCardProps = {
   statusLabel?: string;
   statusTone?: StatusTone;
   reviewedAt?: string;
+  showReviewedAt?: boolean;
+  createdAt?: string;
   recruiterLabel?: string;
   recruiterName?: string;
   candidateGitHubUrl?: string | null;
@@ -67,13 +69,7 @@ function ScoreTag({ score }: { score: number }) {
   );
 }
 
-function InfoRow({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
+function InfoRow({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
       <span className="font-medium uppercase tracking-widest">{label}</span>
@@ -82,19 +78,32 @@ function InfoRow({
   );
 }
 
+function getDaysAgo(dateString: string): number | null {
+  const inputDate = new Date(dateString);
+  if (Number.isNaN(inputDate.getTime())) return null;
+  const today = new Date();
+
+  const millisecondsPerDay = 1000 * 60 * 60 * 24;
+  const difference = today.getTime() - inputDate.getTime();
+
+  return Math.max(0, Math.floor(difference / millisecondsPerDay));
+}
+
 export default function ApplicantCard({
   name,
   institute,
   academicAverage,
   systemScore,
-  scoreLabel = "Sys Score",
+  scoreLabel = "System Score",
   statusLabel = "Pending",
   statusTone,
   reviewedAt,
+  createdAt,
+  showReviewedAt = true,
   recruiterLabel,
   recruiterName,
   candidateGitHubUrl,
-  actionLabel = "Review",
+  actionLabel = "Show AI Review",
   onClick,
 }: ApplicantCardProps) {
   const initials = name
@@ -105,6 +114,7 @@ export default function ApplicantCard({
     .toUpperCase();
   const currentStatusTone = statusTone ?? getScoreTone(systemScore);
   const statusStyle = statusStyles[currentStatusTone];
+  const daysAgo = createdAt ? getDaysAgo(createdAt) : null;
 
   return (
     <div
@@ -158,7 +168,7 @@ export default function ApplicantCard({
         )}
       </div>
 
-      <div className="hidden w-[13rem] shrink-0 items-center justify-center gap-3 sm:flex">
+      <div className="hidden w-[13rem] shrink-0 items-center justify-center gap-4 sm:flex">
         <div className="flex w-20 flex-col items-center gap-0.5">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
             {scoreLabel}
@@ -178,22 +188,19 @@ export default function ApplicantCard({
         )}
       </div>
 
-      <div className="flex w-16 shrink-0 flex-col items-center justify-center gap-0.5">
+      <div className="flex w-20 shrink-0 flex-col items-center justify-center gap-0.5 sm:ml-1 md:ml-2">
         <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
           Status
         </span>
         <span
-          className={cn(
-            "max-w-full truncate text-xs font-semibold",
-            statusStyle.text,
-          )}
+          className={cn("max-w-full text-xs font-semibold", statusStyle.text)}
         >
           {statusLabel}
         </span>
       </div>
 
-      {reviewedAt && (
-        <div className="hidden w-36 shrink-0 flex-col items-end gap-0.5 md:flex">
+      {showReviewedAt && reviewedAt && (
+        <div className="hidden w-36 shrink-0 flex-col items-end gap-0.5 pl-4 md:flex">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
             Reviewed
           </span>
@@ -203,25 +210,18 @@ export default function ApplicantCard({
         </div>
       )}
 
-      <div className="flex shrink-0 items-center gap-2 pl-2">
-        <div className="hidden gap-1.5 lg:flex">
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label={`Accept ${name}`}
-            className="text-primary hover:bg-primary/10 hover:text-primary"
-          >
-            <Check className="size-3.5" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label={`Reject ${name}`}
-            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-          >
-            <X className="size-3.5" />
-          </Button>
+      {daysAgo !== null && daysAgo >= 1 && (
+        <div className="hidden w-40 shrink-0 flex-col items-center gap-0.5 pl-4 md:flex">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+            Applied
+          </span>
+          <span className="max-w-full truncate whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
+            {daysAgo} day(s) ago
+          </span>
         </div>
+      )}
+
+      <div className="flex shrink-0 items-center gap-2 pl-2">
         <Button variant="outline" size="sm" className="gap-1.5 text-xs">
           <span>{actionLabel}</span>
         </Button>

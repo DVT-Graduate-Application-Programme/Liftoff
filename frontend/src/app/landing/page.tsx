@@ -21,9 +21,8 @@ const LandingPage = () => {
   const [applications, setApplications] = useState<CandidateApplication[]>([]);
   const [selectedApplication, setSelectedApplication] =
     useState<CandidateApplication | null>(null);
-  const [evaluation, setEvaluation] = useState<ApplicantDetailsEvaluation | null>(
-    null,
-  );
+  const [evaluation, setEvaluation] =
+    useState<ApplicantDetailsEvaluation | null>(null);
   const [isLoadingApplications, setIsLoadingApplications] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,7 +49,9 @@ const LandingPage = () => {
       } catch (cause) {
         if (!isCurrent) return;
         setError(
-          cause instanceof Error ? cause.message : "Unable to load applications.",
+          cause instanceof Error
+            ? cause.message
+            : "Unable to load applications.",
         );
       } finally {
         if (isCurrent) setIsLoadingApplications(false);
@@ -123,7 +124,7 @@ const LandingPage = () => {
               </div>
               <Tabs defaultValue="pending" className="w-full">
                 <TabsList className="self-center">
-                  <TabsTrigger value="pending">Pending</TabsTrigger>
+                  <TabsTrigger value="pending">Pending Candidates</TabsTrigger>
                   <TabsTrigger value="all">All Candidates</TabsTrigger>
                   <TabsTrigger value="accepted">
                     Accepted Candidates

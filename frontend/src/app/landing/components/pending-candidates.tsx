@@ -19,9 +19,31 @@ const startOfToday = () => {
   date.setHours(0, 0, 0, 0);
   return date;
 };
+const getStartOfWeek = (date: Date) => {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  const day = start.getDay();
+  const daysSinceMonday = (day + 6) % 7;
+  start.setDate(start.getDate() - daysSinceMonday);
+  return start;
+};
 
-const isCreatedToday = (application: CandidateApplication) =>
-  new Date(application.createdAt) >= startOfToday();
+type DateBucket = "today" | "thisWeek" | "lastWeek" | "older";
+
+const getDateBucket = (createdAt: string): DateBucket => {
+  const createdDate = new Date(createdAt);
+  if (Number.isNaN(createdDate.getTime())) return "older";
+
+  const today = startOfToday();
+  const startOfThisWeek = getStartOfWeek(today);
+  const startOfLastWeek = new Date(startOfThisWeek);
+  startOfLastWeek.setDate(startOfThisWeek.getDate() - 7);
+
+  if (createdDate >= today) return "today";
+  if (createdDate >= startOfThisWeek) return "thisWeek";
+  if (createdDate >= startOfLastWeek) return "lastWeek";
+  return "older";
+};
 
 const renderCandidate = (
   application: CandidateApplication,
@@ -35,6 +57,8 @@ const renderCandidate = (
     statusLabel={statusLabels[application.currentStatus]}
     statusTone={statusTones[application.currentStatus]}
     reviewedAt={formatDate(application.createdAt)}
+    showReviewedAt={false}
+    createdAt={application.createdAt}
     onClick={() => {
       onSelectApplication(application);
     }}
@@ -45,9 +69,17 @@ const PendingCandidates = ({
   applications,
   onSelectApplication,
 }: PendingCandidatesProps) => {
-  const todayCandidates = applications.filter(isCreatedToday);
-  const olderCandidates = applications.filter(
-    (application) => !isCreatedToday(application),
+  const groupedCandidates = applications.reduce(
+    (groups, application) => {
+      groups[getDateBucket(application.createdAt)].push(application);
+      return groups;
+    },
+    {
+      today: [] as CandidateApplication[],
+      thisWeek: [] as CandidateApplication[],
+      lastWeek: [] as CandidateApplication[],
+      older: [] as CandidateApplication[],
+    },
   );
 
   return (
@@ -99,12 +131,12 @@ const PendingCandidates = ({
             </h3>
             <div className="h-px flex-1 bg-border"></div>
             <span className="text-[12px] text-muted-foreground font-medium">
-              {todayCandidates.length} New Applicants
+              {groupedCandidates.today.length} New Applicants
             </span>
           </div>
           <div className="grid grid-cols-1 gap-4">
-            {todayCandidates.length > 0 ? (
-              todayCandidates.map((application) =>
+            {groupedCandidates.today.length > 0 ? (
+              groupedCandidates.today.map((application) =>
                 renderCandidate(application, onSelectApplication),
               )
             ) : (
@@ -123,17 +155,65 @@ const PendingCandidates = ({
             </h3>
             <div className="h-px flex-1 bg-border"></div>
             <span className="text-[12px] text-muted-foreground font-medium">
-              {olderCandidates.length} Applicants
+              {groupedCandidates.thisWeek.length} Applicants
             </span>
           </div>
           <div className="grid grid-cols-1 gap-4">
-            {olderCandidates.length > 0 ? (
-              olderCandidates.map((application) =>
+            {groupedCandidates.thisWeek.length > 0 ? (
+              groupedCandidates.thisWeek.map((application) =>
                 renderCandidate(application, onSelectApplication),
               )
             ) : (
               <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                No earlier pending applicants.
+                No pending applicants from earlier this week.
+              </p>
+            )}
+          </div>
+        </section>
+
+        {/* Last week section */}
+        <section>
+          <div className="flex items-center gap-4 mb-4">
+            <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
+              Last Week
+            </h3>
+            <div className="h-px flex-1 bg-border"></div>
+            <span className="text-[12px] text-muted-foreground font-medium">
+              {groupedCandidates.lastWeek.length} Applicants
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-4">
+            {groupedCandidates.lastWeek.length > 0 ? (
+              groupedCandidates.lastWeek.map((application) =>
+                renderCandidate(application, onSelectApplication),
+              )
+            ) : (
+              <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                No pending applicants from last week.
+              </p>
+            )}
+          </div>
+        </section>
+
+        {/* Older section */}
+        <section>
+          <div className="flex items-center gap-4 mb-4">
+            <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
+              Older
+            </h3>
+            <div className="h-px flex-1 bg-border"></div>
+            <span className="text-[12px] text-muted-foreground font-medium">
+              {groupedCandidates.older.length} Applicants
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-4">
+            {groupedCandidates.older.length > 0 ? (
+              groupedCandidates.older.map((application) =>
+                renderCandidate(application, onSelectApplication),
+              )
+            ) : (
+              <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                No older pending applicants.
               </p>
             )}
           </div>
