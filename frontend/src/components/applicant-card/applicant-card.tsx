@@ -13,6 +13,7 @@ type ApplicantCardProps = {
   statusTone?: StatusTone;
   reviewedAt?: string;
   actionLabel?: string;
+  onClick?: () => void;
 };
 
 function getScoreColor(score: number) {
@@ -70,6 +71,7 @@ export default function ApplicantCard({
   statusTone,
   reviewedAt,
   actionLabel = "Review",
+  onClick,
 }: ApplicantCardProps) {
   const initials = name
     .split(" ")
@@ -85,6 +87,13 @@ export default function ApplicantCard({
       role="button"
       tabIndex={0}
       aria-label={`View details for ${name}`}
+      onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onClick?.();
+        }
+      }}
       className={cn(
         "group relative flex cursor-pointer items-center gap-4 rounded-xl border bg-card p-4",
         "border-l-4 border-border transition-all hover:-translate-y-px",

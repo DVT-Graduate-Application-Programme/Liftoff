@@ -1,45 +1,55 @@
 import ApplicantCard from "@/components/applicant-card/applicant-card";
+import type { CandidateApplication } from "@/types/candidate";
 import { ListFilter, ListOrdered, X } from "lucide-react";
 import React from "react";
+import {
+  formatDate,
+  statusLabels,
+  statusTones,
+  toScorePercent,
+} from "./candidate-list-utils";
 
-type PendingCandidate = {
-  name: string;
-  institute: string;
-  academicAverage: number;
-  systemScore: number;
+type PendingCandidatesProps = {
+  applications: CandidateApplication[];
+  onSelectApplication: (application: CandidateApplication) => void;
 };
 
-const TODAY_CANDIDATES: PendingCandidate[] = [
-  {
-    name: "Sarah Jenkins",
-    institute: "BSc Computer Science • 3 Years Exp",
-    academicAverage: 86,
-    systemScore: 86.3,
-  },
-  {
-    name: "Neo Rankapole",
-    institute: "BSc Computer Science • 1 Years Exp",
-    academicAverage: 98,
-    systemScore: 99.65,
-  },
-  {
-    name: "Jake Benkins",
-    institute: "BSc Computer Science • 3 Years Exp",
-    academicAverage: 74,
-    systemScore: 86.3,
-  },
-];
+const startOfToday = () => {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  return date;
+};
 
-const WEEK_CANDIDATES: PendingCandidate[] = [
-  {
-    name: "Sarah Jenkins",
-    institute: "BSc Computer Science • 3 Years Exp",
-    academicAverage: 86,
-    systemScore: 86.3,
-  },
-];
+const isCreatedToday = (application: CandidateApplication) =>
+  new Date(application.createdAt) >= startOfToday();
 
-const PendingCandidates = () => {
+const renderCandidate = (
+  application: CandidateApplication,
+  onSelectApplication: (application: CandidateApplication) => void,
+) => (
+  <ApplicantCard
+    key={application.applicationId}
+    name={application.candidateName}
+    institute={application.cvSummary}
+    systemScore={toScorePercent(application.hiringAgentTotalScore)}
+    statusLabel={statusLabels[application.currentStatus]}
+    statusTone={statusTones[application.currentStatus]}
+    reviewedAt={formatDate(application.createdAt)}
+    onClick={() => {
+      onSelectApplication(application);
+    }}
+  />
+);
+
+const PendingCandidates = ({
+  applications,
+  onSelectApplication,
+}: PendingCandidatesProps) => {
+  const todayCandidates = applications.filter(isCreatedToday);
+  const olderCandidates = applications.filter(
+    (application) => !isCreatedToday(application),
+  );
+
   return (
     <>
       <section className="flex flex-col gap-6 mb-8">
@@ -89,13 +99,19 @@ const PendingCandidates = () => {
             </h3>
             <div className="h-px flex-1 bg-border"></div>
             <span className="text-[12px] text-muted-foreground font-medium">
-              3 New Applicants
+              {todayCandidates.length} New Applicants
             </span>
           </div>
           <div className="grid grid-cols-1 gap-4">
-            {TODAY_CANDIDATES.map((candidate) => (
-              <ApplicantCard key={candidate.name} {...candidate} />
-            ))}
+            {todayCandidates.length > 0 ? (
+              todayCandidates.map((application) =>
+                renderCandidate(application, onSelectApplication),
+              )
+            ) : (
+              <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                No pending applicants received today.
+              </p>
+            )}
           </div>
         </section>
 
@@ -107,16 +123,19 @@ const PendingCandidates = () => {
             </h3>
             <div className="h-px flex-1 bg-border"></div>
             <span className="text-[12px] text-muted-foreground font-medium">
-              12 Applicants
+              {olderCandidates.length} Applicants
             </span>
           </div>
           <div className="grid grid-cols-1 gap-4">
-            {WEEK_CANDIDATES.map((candidate) => (
-              <ApplicantCard key={candidate.name} {...candidate} />
-            ))}
-            <div className="flex items-center justify-center py-8 border-2 border-dashed border-border rounded-xl text-muted-foreground font-medium hover:bg-muted transition-colors cursor-pointer">
-              Load 11 More Applicants
-            </div>
+            {olderCandidates.length > 0 ? (
+              olderCandidates.map((application) =>
+                renderCandidate(application, onSelectApplication),
+              )
+            ) : (
+              <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                No earlier pending applicants.
+              </p>
+            )}
           </div>
         </section>
       </div>
