@@ -84,6 +84,39 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             .FirstOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<ApplicationOwnershipClaim?> ClaimOwnershipAsync(
+        Guid id,
+        string recruiterIdentity,
+        CancellationToken cancellationToken = default)
+    {
+        var applicationRecord = await _dbContext.ApplicationRecords
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+
+        if (applicationRecord is null)
+        {
+            return null;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        applicationRecord.ClaimedByRecruiterId = recruiterIdentity;
+        applicationRecord.ClaimedAt = now;
+        applicationRecord.UpdatedAt = now;
+
+        await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
+        {
+            ApplicationRecordId = id,
+            RecruiterIdentity = recruiterIdentity,
+            ActionType = "CLAIM",
+            ActionedAt = now
+        }, cancellationToken);
+
+        return new ApplicationOwnershipClaim
+        {
+            ClaimedByRecruiterId = recruiterIdentity,
+            ClaimedAt = now
+        };
+    }
+
     public async Task<List<DashboardApplicationDto>> GetDashboardApplicationsAsync(
         GetDashboardApplicationsQuery query,
         CancellationToken cancellationToken = default)

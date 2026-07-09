@@ -59,6 +59,26 @@ public static class ApplicationEndpoints
         })
         .WithName("GetHiringAgentEvaluation");
 
+        // POST /api/applications/{id}/ownership/claim
+        // Allows a recruiter to claim ownership of an application
+        group.MapPost("/{id:guid}/ownership/claim", async (Guid id, ClaimOwnershipRequest request, IApplicationRecordRepository repo, CancellationToken ct) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.RecruiterIdentity))
+            {
+                return Results.BadRequest("RecruiterIdentity is required.");
+            }
+
+            var claim = await repo.ClaimOwnershipAsync(id, request.RecruiterIdentity, ct);
+            if (claim is null)
+            {
+                return Results.NotFound();
+            }
+
+            await repo.SaveChangesAsync(ct);
+            return Results.Ok(claim);
+        })
+        .WithName("ClaimApplicationOwnership");
+
         // GET /api/applications/{id}/{attachmentId}
         // Downloads a specific email attachment from Microsoft Graph for a given application
         group.MapGet("/{id:guid}/{attachmentId}", async (Guid id, string attachmentId, IApplicationRecordRepository repo, IGraphEmailService graph, IConfiguration config, CancellationToken ct) =>
@@ -75,5 +95,10 @@ public static class ApplicationEndpoints
             return Results.File(attachment.ContentBytes, attachment.ContentType, attachment.Name);
         })
         .WithName("GetAttachmentById");
+    }
+
+    public class ClaimOwnershipRequest
+    {
+        public string RecruiterIdentity { get; set; } = string.Empty;
     }
 }
