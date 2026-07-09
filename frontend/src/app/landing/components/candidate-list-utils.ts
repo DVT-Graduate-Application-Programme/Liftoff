@@ -11,9 +11,9 @@ export const statusTones: Record<
   CandidateApplication["currentStatus"],
   "positive" | "warning" | "negative" | "neutral"
 > = {
-  PROCESSING: "warning",
+  PROCESSING: "positive",
   SHORTLISTED: "positive",
-  REJECTED: "negative",
+  REJECTED: "positive",
   HIRED: "positive",
 };
 
