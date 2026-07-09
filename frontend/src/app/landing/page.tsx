@@ -121,12 +121,10 @@ const LandingPage = () => {
                 <OpenApplicantDetailsSidebarButton />
               </div>
               <Tabs defaultValue="pending" className="w-full">
-                <TabsList className="self-center">
+                <TabsList className="self-center">        {/*  For underlined tab <TabsList className="self-center" variant="line"></TabsList> */}
                   <TabsTrigger value="pending">Pending Candidates</TabsTrigger>
                   <TabsTrigger value="all">All Candidates</TabsTrigger>
-                  <TabsTrigger value="accepted">
-                    Accepted Candidates
-                  </TabsTrigger>
+                  <TabsTrigger value="accepted">Accepted Candidates</TabsTrigger>
                 </TabsList>
                 <TabsContent value="pending">
                   {isLoadingApplications ? (
