@@ -498,3 +498,44 @@ class GeminiProvider:
                     f"Retrying in {sleep_time}s..."
                 )
                 time.sleep(sleep_time)
+
+
+class YearAverage(BaseModel):
+    year: int
+    average: float
+
+
+class ModuleMark(BaseModel):
+    year: int
+    name: str
+    mark: float
+
+
+class DegreeRecord(BaseModel):
+    degree_name: str
+    nqf_level: Optional[int] = None
+    minimum_years: Optional[int] = None
+    start_year: Optional[int] = None
+    graduation_year: Optional[int] = None
+    year_averages: Optional[List[YearAverage]] = None
+    modules: Optional[List[ModuleMark]] = None
+
+
+class TranscriptData(BaseModel):
+    # Top-level fields (for backward compatibility and single-degree transcripts)
+    degree_name: Optional[str] = None
+    nqf_level: Optional[int] = None
+    minimum_years: Optional[int] = None
+    start_year: Optional[int] = None
+    graduation_year: Optional[int] = None
+    year_averages: Optional[List[YearAverage]] = None
+    modules: Optional[List[ModuleMark]] = None
+    
+    # List of all degrees found in the transcript
+    degrees: Optional[List[DegreeRecord]] = None
+
+
+class TranscriptValidationResult(BaseModel):
+    passed: bool
+    reason: str
+    extracted_data: Optional[TranscriptData] = None

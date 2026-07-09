@@ -1108,10 +1108,6 @@ def to_markdown(
         parms.graphics = []
         parms.words = []
         parms.line_rects = []
-        parms.accept_invisible = (
-            page_is_ocr(page) or ignore_alpha
-        )  # accept invisible text
-
         # determine background color
         parms.bg_color = None if not DETECT_BG_COLOR else get_bg_color(page)
 
@@ -1125,7 +1121,60 @@ def to_markdown(
         parms.annot_rects = [a.rect for a in page.annots()]
 
         # make a TextPage for all later extractions
-        parms.textpage = page.get_textpage(flags=textflags, clip=parms.clip)
+        is_scanned = True
+        try:
+            temp_tp = page.get_textpage(flags=textflags, clip=parms.clip)
+            if len(temp_tp.extractText().strip()) > 10:
+                is_scanned = False
+                parms.textpage = temp_tp
+        except:
+            pass
+
+        if is_scanned:
+            tessdata_path = None
+            # 1. Check environment variable
+            env_path = os.environ.get("TESSDATA_PREFIX")
+            if env_path and os.path.exists(env_path):
+                if os.path.exists(os.path.join(env_path, "tessdata")):
+                    tessdata_path = os.path.join(env_path, "tessdata")
+                else:
+                    tessdata_path = env_path
+
+            # 2. Check common paths
+            if not tessdata_path:
+                common_paths = [
+                    "/opt/homebrew/share/tessdata",
+                    "/usr/local/share/tessdata",
+                    "/usr/share/tesseract-ocr/5/tessdata",
+                    "/usr/share/tesseract-ocr/tessdata",
+                    "/usr/share/tessdata",
+                ]
+                for path in common_paths:
+                    if os.path.exists(path):
+                        tessdata_path = path
+                        break
+
+            # 3. Check glob Cellar paths on macOS
+            if not tessdata_path:
+                import glob
+                mac_cellar_paths = glob.glob("/opt/homebrew/Cellar/tesseract/*/share/tessdata")
+                if mac_cellar_paths:
+                    tessdata_path = mac_cellar_paths[0]
+
+            if tessdata_path:
+                try:
+                    print(f"INFO: Flat/scanned page detected. Activating OCR via Tesseract using tessdata: {tessdata_path}")
+                    parms.textpage = page.get_textpage_ocr(tessdata=tessdata_path, language="eng", dpi=300, full=True)
+                except Exception as ocr_err:
+                    print(f"WARNING: PyMuPDF get_textpage_ocr failed: {ocr_err}. Falling back to standard extraction.")
+                    parms.textpage = page.get_textpage(flags=textflags, clip=parms.clip)
+            else:
+                print("WARNING: Flat/scanned page detected but no tessdata directory found. Falling back to standard extraction.")
+                parms.textpage = page.get_textpage(flags=textflags, clip=parms.clip)
+
+        parms.accept_invisible = (
+            is_scanned or page_is_ocr(page) or ignore_alpha
+        )  # accept invisible text
 
         # extract images on page
         if not IGNORE_IMAGES:

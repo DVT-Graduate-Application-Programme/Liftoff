@@ -11,10 +11,12 @@ namespace Backend.Api.Controllers;
 public class ResumeController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly Backend.Application.Interfaces.IResumeStorage _storage;
 
-    public ResumeController(IMediator mediator)
+    public ResumeController(IMediator mediator, Backend.Application.Interfaces.IResumeStorage storage)
     {
         _mediator = mediator;
+        _storage = storage;
     }
 
     [HttpGet]
@@ -36,6 +38,22 @@ public class ResumeController : ControllerBase
         var document = await _mediator.Send(
             new GetResumeDocumentQuery(id),
             cancellationToken);
+
+        if (document is null)
+            return NotFound();
+
+        return File(
+            document.Content,
+            document.ContentType,
+            document.FileName);
+    }
+
+    [HttpGet("{id}/transcript")]
+    public async Task<IActionResult> GetTranscript(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var document = await _storage.GetTranscriptAsync(id, cancellationToken);
 
         if (document is null)
             return NotFound();

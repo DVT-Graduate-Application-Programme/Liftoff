@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 from pydantic import BaseModel
+from typing import Optional
 
 BACKEND_BASE_URL = os.environ.get("BACKEND_BASE_URL", "http://localhost:5000")
 
@@ -12,6 +13,7 @@ class Resume(BaseModel):
     id: int
     candidate_name: str
     document_url: str
+    transcript_url: Optional[str] = None
 
     class Config:
         # Maps .NET's camelCase JSON keys to Python snake_case fields

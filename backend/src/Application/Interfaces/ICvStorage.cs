@@ -13,6 +13,10 @@ public interface IResumeStorage
     int id,
     CancellationToken cancellationToken);
 
+    Task<ResumeDocumentDto?> GetTranscriptAsync(
+    int id,
+    CancellationToken cancellationToken);
+
     Task<CandidateDto?> GetCandidateAsync(
     int id,
     CancellationToken cancellationToken);

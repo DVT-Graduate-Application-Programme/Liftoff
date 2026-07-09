@@ -9,4 +9,6 @@ public class CandidateDto
     public string FileName { get; set; } = string.Empty;
 
     public string DocumentUrl { get; set; } = string.Empty;
+
+    public string? TranscriptUrl { get; set; }
 }
