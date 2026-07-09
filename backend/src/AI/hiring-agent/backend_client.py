@@ -32,7 +32,7 @@ class ResumeEvaluationPayload(BaseModel):
     evaluation: EvaluationData
 
 class Resume(BaseModel):
-    id: int
+    id: str
     message_id: str
     candidate_name: str
     document_url: str
@@ -73,7 +73,7 @@ def send_eval(eval_data: EvaluationData, message_id: str, prompt_version: str):
     After AI has completed processing, return results and post to API ingest layer.
     message_id must be the ID returned by the C# Ingest API when the PENDING record was created.
     """
-    url = f"{BACKEND_BASE_URL}/api/resumes"
+    url = f"{BACKEND_BASE_URL}/internal/transcript"
 
     payload = ResumeEvaluationPayload(
         message_id=message_id,

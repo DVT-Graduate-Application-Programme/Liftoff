@@ -653,6 +653,8 @@ if __name__ == "__main__":
         pdf_path = sys.argv[1]
         if len(sys.argv) >= 3:
             transcript_path = sys.argv[2]
+        
+        message_id = "Test3n1vroment"
     else:
         # Fallback to querying C# API backend
         try:
