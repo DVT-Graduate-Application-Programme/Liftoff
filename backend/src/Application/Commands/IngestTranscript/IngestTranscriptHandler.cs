@@ -1,4 +1,7 @@
+using Application.Interfaces;
+using Domain.Entities;
 using MediatR;
+using System.Text.Json;
 
 namespace Application.Commands.IngestTranscript;
 
@@ -11,21 +14,31 @@ public class IngestTranscriptResult
 public class IngestTranscriptHandler
     : IRequestHandler<IngestTranscriptCommand, IngestTranscriptResult>
 {
-    // TODO: inject IApplicationRepository (or DbContext) here when the DB is ready
-    // private readonly IApplicationRepository _repository;
-    // public IngestTranscriptHandler(IApplicationRepository repository) => _repository = repository;
+    private readonly IApplicationRecordRepository _repository;
 
-    public Task<IngestTranscriptResult> Handle(
+    public IngestTranscriptHandler(IApplicationRecordRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task<IngestTranscriptResult> Handle(
         IngestTranscriptCommand request,
         CancellationToken cancellationToken)
     {
-        // TODO: replace this stub with the real DB write, e.g.:
-        // await _repository.SaveTranscriptAsync(request, cancellationToken);
+        await _repository.AddAuditLogAsync(new AuditLog
+        {
+            SourceService = "TranscriptIngestion",
+            LogLevel = "Information",
+            Message = JsonSerializer.Serialize(request),
+            Timestamp = DateTimeOffset.UtcNow
+        }, cancellationToken);
 
-        return Task.FromResult(new IngestTranscriptResult
+        await _repository.SaveChangesAsync(cancellationToken);
+
+        return new IngestTranscriptResult
         {
             Accepted = true,
-            Message = $"Transcript received for '{request.DegreeName}' — persistence pending DB setup."
-        });
+            Message = $"Transcript received for '{request.DegreeName}' and saved."
+        };
     }
 }
