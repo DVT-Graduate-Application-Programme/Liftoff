@@ -25,7 +25,7 @@ export type ApplicantDetailsEvaluation = {
       evidence: string;
     };
   };
-  bonus_points: {
+  bonusPoints: {
     total: number;
     breakdown: Record<string, number>;
   };
@@ -33,8 +33,8 @@ export type ApplicantDetailsEvaluation = {
     total: number;
     reasons: string[];
   };
-  key_strengths: string[];
-  areas_for_improvement: string[];
+  keyStrengths: string[];
+  areasForImprovement: string[];
 };
 
 export const mockApplicantDetails: ApplicantDetailsEvaluation = {
@@ -68,7 +68,7 @@ export const mockApplicantDetails: ApplicantDetailsEvaluation = {
         "Demonstrated breadth across multiple modern stacks: Backend (.NET Core, C#, Web API), Frontend (Angular 21, React, TypeScript), Testing (xUnit, Moq, TDD), and Algorithms & Forensics (Python, Autopsy). Strong emphasis on SOLID principles and software architecture.",
     },
   },
-  bonus_points: {
+  bonusPoints: {
     total: 3,
     breakdown: {
       linkedin_profile: 1,
@@ -79,13 +79,13 @@ export const mockApplicantDetails: ApplicantDetailsEvaluation = {
     total: 0,
     reasons: [],
   },
-  key_strengths: [
+  keyStrengths: [
     "Deep understanding of software architecture principles (SOLID, Clean Architecture)",
     "Proven ability to build complex full-stack applications demonstrating high technical proficiency",
     "Experience in enterprise development environments and agile methodologies",
     "Strong commitment to quality assurance through Test-Driven Development (TDD) and code reviews",
   ],
-  areas_for_improvement: [
+  areasForImprovement: [
     "Contribute to established open-source projects to demonstrate community involvement.",
     "Provide live demos or deployed versions of self-projects where possible.",
     "Expand professional experience beyond internships to demonstrate sustained industry impact.",

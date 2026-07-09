@@ -1,9 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { badRequest, conflict, simulateLatency } from "../_lib/helpers";
+import { applications } from "../_lib/mockData";
 
 // Track email message IDs seen this dev-server session so a repeat POST
 // naturally produces a 409, without needing a special test value.
 const seenEmailMessageIds = new Set<string>();
+
+export async function GET() {
+  await simulateLatency();
+
+  return NextResponse.json({
+    applications: applications.map((application) => ({
+      applicationId: application.applicationId,
+      candidateName: application.applicant.candidateName,
+      currentStatus: application.currentStatus,
+      tier: application.tier,
+      hardGatePassed: application.screening.hardGatePassed,
+      hiringAgentTotalScore: application.evaluation?.hiringAgentTotalScore ?? 0,
+      cvSummary: application.cvSummary,
+      flags: application.flags,
+      candidateGitHubUrl: application.applicant.candidateGitHubUrl,
+      claimedByRecruiterId: application.ownership.claimedByRecruiterId,
+      shortlistedByRecruiterId: application.ownership.shortlistedByRecruiterId,
+      createdAt: application.createdAt,
+    })),
+  });
+}
 
 export async function POST(req: NextRequest) {
   await simulateLatency();
