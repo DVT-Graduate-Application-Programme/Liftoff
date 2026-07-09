@@ -8,7 +8,7 @@ import {
 
 export function NavSearchBar() {
   return (
-    <InputGroup className="max-w-xs">
+    <InputGroup className="w-full max-w-2xl border border-accent">
       <InputGroupInput placeholder="Search applicants..." />
       <InputGroupAddon>
         <Search />
