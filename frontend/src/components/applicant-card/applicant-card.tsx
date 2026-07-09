@@ -168,7 +168,7 @@ export default function ApplicantCard({
         )}
       </div>
 
-      <div className="hidden w-[13rem] shrink-0 items-center justify-center gap-3 sm:flex">
+      <div className="hidden w-[13rem] shrink-0 items-center justify-center gap-4 sm:flex">
         <div className="flex w-20 flex-col items-center gap-0.5">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
             {scoreLabel}
@@ -188,7 +188,7 @@ export default function ApplicantCard({
         )}
       </div>
 
-      <div className="flex w-16 shrink-0 flex-col items-center justify-center gap-0.5">
+      <div className="flex w-20 shrink-0 flex-col items-center justify-center gap-0.5 sm:ml-1 md:ml-2">
         <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
           Status
         </span>
@@ -200,7 +200,7 @@ export default function ApplicantCard({
       </div>
 
       {showReviewedAt && reviewedAt && (
-        <div className="hidden w-36 shrink-0 flex-col items-end gap-0.5 md:flex">
+        <div className="hidden w-36 shrink-0 flex-col items-end gap-0.5 pl-4 md:flex">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
             Reviewed
           </span>
@@ -211,7 +211,7 @@ export default function ApplicantCard({
       )}
 
       {daysAgo !== null && daysAgo >= 2 && (
-        <div className="hidden w-36 shrink-0 flex-col items-end gap-0.5 md:flex">
+        <div className="hidden w-40 shrink-0 flex-col items-center gap-0.5 pl-4 md:flex">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
             Applied
           </span>
