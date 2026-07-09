@@ -136,6 +136,48 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         };
     }
 
+    public async Task<ApplicationOwnershipShortlist?> ShortlistAsync(
+        Guid id,
+        string recruiterIdentity,
+        string? reason,
+        CancellationToken cancellationToken = default)
+    {
+        var applicationRecord = await _dbContext.ApplicationRecords
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+
+        if (applicationRecord is null)
+        {
+            return null;
+        }
+
+        const string shortlistedStatus = "SHORTLISTED";
+        var now = DateTimeOffset.UtcNow;
+        var previousStatus = applicationRecord.Status;
+
+        applicationRecord.ShortlistedByRecruiterId = recruiterIdentity;
+        applicationRecord.ShortlistedAt = now;
+        applicationRecord.Status = shortlistedStatus;
+        applicationRecord.UpdatedAt = now;
+
+        await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
+        {
+            ApplicationRecordId = id,
+            RecruiterIdentity = recruiterIdentity,
+            ActionType = "SHORTLIST",
+            PreviousStatus = previousStatus,
+            NewStatus = shortlistedStatus,
+            Reason = reason,
+            ActionedAt = now
+        }, cancellationToken);
+
+        return new ApplicationOwnershipShortlist
+        {
+            ShortlistedByRecruiterId = recruiterIdentity,
+            ShortlistedAt = now,
+            UpdatedStatus = shortlistedStatus
+        };
+    }
+
     public async Task<List<DashboardApplicationDto>> GetDashboardApplicationsAsync(
         GetDashboardApplicationsQuery query,
         CancellationToken cancellationToken = default)

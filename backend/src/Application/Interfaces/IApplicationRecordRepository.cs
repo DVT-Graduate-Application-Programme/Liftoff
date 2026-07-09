@@ -19,6 +19,7 @@ public interface IApplicationRecordRepository
     Task<HiringAgentEvaluation?> GetHardGateEvaluationByApplicationIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<ApplicationOwnership?> GetOwnershipAsync(Guid id, CancellationToken cancellationToken = default);
     Task<ApplicationOwnershipClaim?> ClaimOwnershipAsync(Guid id, string recruiterIdentity, CancellationToken cancellationToken = default);
+    Task<ApplicationOwnershipShortlist?> ShortlistAsync(Guid id, string recruiterIdentity, string? reason, CancellationToken cancellationToken = default);
     Task<List<DashboardApplicationDto>> GetDashboardApplicationsAsync(GetDashboardApplicationsQuery query, CancellationToken cancellationToken = default);
     Task<DashboardMetricsDto> GetDashboardMetricsAsync(CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(string emailMessageId, CancellationToken cancellationToken = default);

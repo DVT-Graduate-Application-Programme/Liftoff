@@ -82,6 +82,13 @@ public class ApplicationOwnershipClaim
     public DateTimeOffset ClaimedAt { get; set; }
 }
 
+public class ApplicationOwnershipShortlist
+{
+    public string ShortlistedByRecruiterId { get; set; } = string.Empty;
+    public DateTimeOffset ShortlistedAt { get; set; }
+    public string UpdatedStatus { get; set; } = string.Empty;
+}
+
 public class ApplicationOwnership
 {
     public string? ClaimedByRecruiterId { get; set; }

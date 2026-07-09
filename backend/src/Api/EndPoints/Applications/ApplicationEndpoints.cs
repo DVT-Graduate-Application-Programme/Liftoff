@@ -88,6 +88,26 @@ public static class ApplicationEndpoints
         })
         .WithName("ClaimApplicationOwnership");
 
+        // POST /api/applications/{id}/ownership/shortlist
+        // Allows a recruiter to shortlist an application and progress its status
+        group.MapPost("/{id:guid}/ownership/shortlist", async (Guid id, ShortlistOwnershipRequest request, IApplicationRecordRepository repo, CancellationToken ct) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.RecruiterIdentity))
+            {
+                return Results.BadRequest("RecruiterIdentity is required.");
+            }
+
+            var shortlist = await repo.ShortlistAsync(id, request.RecruiterIdentity, request.Reason, ct);
+            if (shortlist is null)
+            {
+                return Results.NotFound();
+            }
+
+            await repo.SaveChangesAsync(ct);
+            return Results.Ok(shortlist);
+        })
+        .WithName("ShortlistApplicationOwnership");
+
         // GET /api/applications/{id}/{attachmentId}
         // Downloads a specific email attachment from Microsoft Graph for a given application
         group.MapGet("/{id:guid}/{attachmentId}", async (Guid id, string attachmentId, IApplicationRecordRepository repo, IGraphEmailService graph, IConfiguration config, CancellationToken ct) =>
@@ -109,5 +129,11 @@ public static class ApplicationEndpoints
     public class ClaimOwnershipRequest
     {
         public string RecruiterIdentity { get; set; } = string.Empty;
+    }
+
+    public class ShortlistOwnershipRequest
+    {
+        public string RecruiterIdentity { get; set; } = string.Empty;
+        public string? Reason { get; set; }
     }
 }
