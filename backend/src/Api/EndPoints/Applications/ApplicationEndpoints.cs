@@ -15,6 +15,7 @@ public static class ApplicationEndpoints
         var group = app.MapGroup("/api/applications").WithTags("Applications");
 
         // GET /api/applications
+        // Returns a list of all application records
         group.MapGet("/", async (IApplicationRecordRepository repo, CancellationToken ct) =>
         {
             var applications = await repo.GetAllAsync(ct);
@@ -23,37 +24,43 @@ public static class ApplicationEndpoints
         .WithName("GetApplications");
 
         // GET /api/applications/{id}
+        // Returns the full application details for a given application ID
         group.MapGet("/{id:guid}", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
         {
             var application = await repo.GetApplicationDetailsAsync(id, ct);
             return application is not null ? Results.Ok(application) : Results.NotFound();
         })
-        .WithName("GetApplicationStatuses");
+        .WithName("GetApplicationDetails");
 
         // GET /api/applications/{id}/applicant
-        group.MapGet("/{id:guid}/applicant ", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        // Returns the applicant's personal information for a given application ID
+        group.MapGet("/{id:guid}/applicant", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
         {
             var applicant = await repo.GetApplicantByApplicationIdAsync(id, ct);
             return applicant is not null ? Results.Ok(applicant) : Results.NotFound();
         })
         .WithName("GetApplicantInformation");
 
+        // GET /api/applications/{id}/screening
+        // Returns the hard gate screening result for a given application ID
+        group.MapGet("/{id:guid}/screening", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        {
+            var screening = await repo.GetHardGateScreeningByApplicationIdAsync(id, ct);
+            return screening is not null ? Results.Ok(screening) : Results.NotFound();
+        })
+        .WithName("GetHardGateScreening");
+
         // GET /api/applications/{id}/evaluation
-        group.MapGet("/{id:guid}/screening ", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        // Returns the hiring agent evaluation for a given application ID
+        group.MapGet("/{id:guid}/evaluation", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
         {
-            var evaluation = await repo.GetHardGateScreeningByApplicationIdAsync(id, ct);
+            var evaluation = await repo.GetHardGateEvaluationByApplicationIdAsync(id, ct);
             return evaluation is not null ? Results.Ok(evaluation) : Results.NotFound();
         })
-        .WithName("GetHardGateScreening");
+        .WithName("GetHiringAgentEvaluation");
 
-        group.MapGet("/{id:guid}/evaluation ", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
-        {
-            var evaluation = await repo.GetHardGateScreeningByApplicationIdAsync(id, ct);
-            return evaluation is not null ? Results.Ok(evaluation) : Results.NotFound();
-        })
-        .WithName("GetHardGateScreening");
-
-        // GET /api/applications/{id}/attachments/{attachmentId}
+        // GET /api/applications/{id}/{attachmentId}
+        // Downloads a specific email attachment from Microsoft Graph for a given application
         group.MapGet("/{id:guid}/{attachmentId}", async (Guid id, string attachmentId, IApplicationRecordRepository repo, IGraphEmailService graph, IConfiguration config, CancellationToken ct) =>
         {
             var application = await repo.GetByIdAsync(id, ct);
