@@ -15,7 +15,7 @@ const page = () => {
       <SidebarProvider defaultOpen={false} className="min-h-0 w-full">
         <div className="flex h-full min-h-0 w-full overflow-hidden">
           <SidebarInset className="flex-1 overflow-y-auto min-w-1/3">
-            <div className="flex w-full flex-col gap-4 p-4">
+            <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-4">
               <div className="flex items-center justify-center gap-2">
                 <Input className="w-full max-w-2xl border border-accent" />
                 <OpenApplicantDetailsSidebarButton />
