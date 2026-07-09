@@ -25,3 +25,8 @@ export const formatDate = (isoDate: string) =>
   });
 
 export const toScorePercent = (score: number) => Math.round(score * 20);
+
+export const getRecruiterLabel = (application: CandidateApplication) =>
+  application.shortlistedByRecruiterId ??
+  application.claimedByRecruiterId ??
+  "Unassigned";

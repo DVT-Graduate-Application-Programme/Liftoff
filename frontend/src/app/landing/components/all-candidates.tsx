@@ -2,6 +2,7 @@ import React from "react";
 import ApplicantCard from "@/components/applicant-card/applicant-card";
 import type { CandidateApplication } from "@/types/candidate";
 import {
+  getRecruiterLabel,
   formatDate,
   statusLabels,
   statusTones,
@@ -25,9 +26,13 @@ const AllCandidates = ({
           name={application.candidateName}
           institute={application.cvSummary}
           systemScore={toScorePercent(application.hiringAgentTotalScore)}
+          scoreLabel="Overall Score"
           statusLabel={statusLabels[application.currentStatus]}
           statusTone={statusTones[application.currentStatus]}
           reviewedAt={formatDate(application.createdAt)}
+          recruiterLabel="Recruiter"
+          recruiterName={getRecruiterLabel(application)}
+          candidateGitHubUrl={application.candidateGitHubUrl ?? undefined}
           actionLabel="Details"
           onClick={() => {
             onSelectApplication(application);
