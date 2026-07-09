@@ -67,13 +67,7 @@ function ScoreTag({ score }: { score: number }) {
   );
 }
 
-function InfoRow({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
+function InfoRow({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
       <span className="font-medium uppercase tracking-widest">{label}</span>
@@ -94,7 +88,7 @@ export default function ApplicantCard({
   recruiterLabel,
   recruiterName,
   candidateGitHubUrl,
-  actionLabel = "Review",
+  actionLabel = "Show AI Review",
   onClick,
 }: ApplicantCardProps) {
   const initials = name
@@ -204,24 +198,6 @@ export default function ApplicantCard({
       )}
 
       <div className="flex shrink-0 items-center gap-2 pl-2">
-        <div className="hidden gap-1.5 lg:flex">
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label={`Accept ${name}`}
-            className="text-primary hover:bg-primary/10 hover:text-primary"
-          >
-            <Check className="size-3.5" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label={`Reject ${name}`}
-            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-          >
-            <X className="size-3.5" />
-          </Button>
-        </div>
         <Button variant="outline" size="sm" className="gap-1.5 text-xs">
           <span>{actionLabel}</span>
         </Button>
