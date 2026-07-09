@@ -53,3 +53,25 @@ public class ApplicationRecord
     public ICollection<RecruiterAction> RecruiterActions { get; set; } = new List<RecruiterAction>();
     public ICollection<AuditLog> AuditLogs { get; set; } = new List<AuditLog>();
 }
+
+public class Applicant
+{
+    public string? CandidateName { get; set; }
+    public string? CandidateEmail { get; set; }
+    public string? CandidateGitHubUrl { get; set; }
+}
+
+public class ApplicationDetails
+{
+    public Guid Id { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string? Tier { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
+}
+
+public class ApplicationHardGateScreening
+{
+    public bool? HardGatePassed { get; set; }
+    public string? HardGateReason { get; set; }
+}

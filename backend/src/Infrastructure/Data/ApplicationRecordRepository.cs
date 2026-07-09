@@ -30,6 +30,57 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
     }
 
+    public Task<ApplicationDetails?> GetApplicationDetailsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return _dbContext.ApplicationRecords
+            .Where(r => r.Id == id)
+            .Select(r => new ApplicationDetails
+            {
+                Id = r.Id,
+                Status = r.Status,
+                Tier = r.Tier,
+                CreatedAt = r.CreatedAt,
+                UpdatedAt = r.UpdatedAt
+            })
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public Task<Applicant?> GetApplicantByApplicationIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return _dbContext.ApplicationRecords
+            .Where(r => r.Id == id)
+            .Select(r => new Applicant
+            {
+                CandidateName = r.CandidateName,
+                CandidateEmail = r.CandidateEmail,
+                CandidateGitHubUrl = r.CandidateGitHubUrl
+            })
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public Task<ApplicationHardGateScreening?> GetHardGateScreeningByApplicationIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return _dbContext.ApplicationRecords
+            .Where(r => r.Id == id)
+            .Select(r => new ApplicationHardGateScreening
+            {
+                HardGatePassed = r.HardGatePassed,
+                HardGateReason = r.HardGateReason
+            })
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public Task<HiringAgentEvaluation?> GetHardGateEvaluationByApplicationIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return _dbContext.HiringAgentEvaluations
+            .Where(e => e.ApplicationRecordId == id)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<bool> ExistsAsync(string emailMessageId, CancellationToken cancellationToken = default)
     {
         return await _dbContext.ApplicationRecords

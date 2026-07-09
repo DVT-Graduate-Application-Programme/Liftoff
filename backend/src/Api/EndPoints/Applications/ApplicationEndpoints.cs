@@ -25,13 +25,36 @@ public static class ApplicationEndpoints
         // GET /api/applications/{id}
         group.MapGet("/{id:guid}", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
         {
-            var application = await repo.GetByIdAsync(id, ct);
+            var application = await repo.GetApplicationDetailsAsync(id, ct);
             return application is not null ? Results.Ok(application) : Results.NotFound();
         })
-        .WithName("GetApplication");
+        .WithName("GetApplicationStatuses");
+
+        // GET /api/applications/{id}/applicant
+        group.MapGet("/{id:guid}/applicant ", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        {
+            var applicant = await repo.GetApplicantByApplicationIdAsync(id, ct);
+            return applicant is not null ? Results.Ok(applicant) : Results.NotFound();
+        })
+        .WithName("GetApplicantInformation");
+
+        // GET /api/applications/{id}/evaluation
+        group.MapGet("/{id:guid}/screening ", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        {
+            var evaluation = await repo.GetHardGateScreeningByApplicationIdAsync(id, ct);
+            return evaluation is not null ? Results.Ok(evaluation) : Results.NotFound();
+        })
+        .WithName("GetHardGateScreening");
+
+        group.MapGet("/{id:guid}/evaluation ", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        {
+            var evaluation = await repo.GetHardGateScreeningByApplicationIdAsync(id, ct);
+            return evaluation is not null ? Results.Ok(evaluation) : Results.NotFound();
+        })
+        .WithName("GetHardGateScreening");
 
         // GET /api/applications/{id}/attachments/{attachmentId}
-        group.MapGet("/{id:guid}/attachments/{attachmentId}", async (Guid id, string attachmentId, IApplicationRecordRepository repo, IGraphEmailService graph, IConfiguration config, CancellationToken ct) =>
+        group.MapGet("/{id:guid}/{attachmentId}", async (Guid id, string attachmentId, IApplicationRecordRepository repo, IGraphEmailService graph, IConfiguration config, CancellationToken ct) =>
         {
             var application = await repo.GetByIdAsync(id, ct);
             if (application is null) return Results.NotFound("Application not found.");
