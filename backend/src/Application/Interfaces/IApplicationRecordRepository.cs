@@ -29,6 +29,7 @@ public interface IApplicationRecordRepository
         HiringAgentEvaluation evaluation,
         string status,
         decimal totalScore,
+        string tier,
         string? cvSummary,
         JsonDocument? flagsJson,
         CancellationToken cancellationToken = default);

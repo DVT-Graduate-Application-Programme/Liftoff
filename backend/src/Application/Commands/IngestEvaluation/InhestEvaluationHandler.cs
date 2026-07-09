@@ -54,11 +54,13 @@ public class IngestEvaluationHandler
             : [];
 
         var status = request.PromptInjectionDetected ? "MANUAL_REVIEW" : "VALID";
+        var tier = DeriveTier(request.Scores.Total.Score, request.Scores.Total.Max);
         var saved = await _repository.AddEvaluationAsync(
             applicationId,
             evaluation,
             status,
             (decimal)request.Scores.Total.Score,
+            tier,
             BuildSummary(request),
             ToJsonDocument(flags),
             cancellationToken);
@@ -114,5 +116,22 @@ public class IngestEvaluationHandler
             : string.Join("; ", request.AreasForImprovement);
 
         return $"Total score: {request.Scores.Total.Score}/{request.Scores.Total.Max}. Strengths: {strengths}. Improvements: {improvements}.";
+    }
+
+    private static string DeriveTier(double score, int maxScore)
+    {
+        if (score <= 0 || maxScore <= 0)
+        {
+            return "INVALID";
+        }
+
+        var percentage = score / maxScore * 100;
+
+        return percentage switch
+        {
+            >= 50 => "STRONG",
+            >= 35 => "BORDERLINE",
+            _ => "WEAK"
+        };
     }
 }

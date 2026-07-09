@@ -304,6 +304,7 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         HiringAgentEvaluation evaluation,
         string status,
         decimal totalScore,
+        string tier,
         string? cvSummary,
         JsonDocument? flagsJson,
         CancellationToken cancellationToken = default)
@@ -319,6 +320,7 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         evaluation.ApplicationRecordId = applicationId;
 
         applicationRecord.Status = status;
+        applicationRecord.Tier = tier;
         applicationRecord.HiringAgentTotalScore = totalScore;
         applicationRecord.CvSummary = cvSummary;
         applicationRecord.FlagsJson = flagsJson;
