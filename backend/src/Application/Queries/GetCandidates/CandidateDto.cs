@@ -2,7 +2,7 @@ namespace Backend.Application.Queries.GetCandidate;
 
 public class CandidateDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
 
     public string CandidateName { get; set; } = string.Empty;
 

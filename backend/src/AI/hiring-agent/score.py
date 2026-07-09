@@ -22,7 +22,7 @@ from config import DEVELOPMENT_MODE
 
 
 
-from backend_client import get_resume, get_all_resumes, BACKEND_BASE_URL
+from backend_client import get_resume, BACKEND_BASE_URL, send_eval
 
 
 logger = logging.getLogger(__name__)
@@ -626,7 +626,6 @@ def main(pdf_path, transcript_path=None):
 
                 # Write the row
                 writer.writerow(csv_row)
-
         return score
     finally:
         if downloaded_path and not DEVELOPMENT_MODE and os.path.exists(downloaded_path):
@@ -653,12 +652,15 @@ if __name__ == "__main__":
         pdf_path = sys.argv[1]
         if len(sys.argv) >= 3:
             transcript_path = sys.argv[2]
+        
+        message_id = "Test3n1vroment"
     else:
         # Fallback to querying C# API backend
         try:
-            resume = get_resume(1)
+            resume = get_resume(1) # should be called using Guid amd not Int
             pdf_path = resume.document_url
             transcript_path = resume.transcript_url
+            message_id = resume.id
             print(f"Loaded candidate application: {resume}")
 
             # Prepend backend base URL to relative URLs
@@ -674,4 +676,9 @@ if __name__ == "__main__":
         print("Error: No PDF path provided or found.")
         sys.exit(1)
 
-    main(pdf_path, transcript_path)
+    resp = main(pdf_path, transcript_path)
+    print(resp)
+    try:
+        send_eval(resp, message_id, DEFAULT_MODEL)
+    except Exception:
+        raise

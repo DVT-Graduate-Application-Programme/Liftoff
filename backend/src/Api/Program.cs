@@ -32,8 +32,10 @@ Infrastructure.DependencyInjection.AddInfrastructure(builder.Services, builder.C
 var app = builder.Build();
 
 
+
     app.MapOpenApi();
     app.MapScalarApiReference();
+
 
 
 app.MapHealthChecks("/health");
@@ -41,7 +43,10 @@ app.MapHealthChecks("/health");
 app.MapControllers();
 app.MapIngestEndpoints();
 app.MapDashboardEndpoints();
-app.MapTranscriptEndpoints();
+
+app.MapEvaluationEndpoints();
+
 app.MapApplicationEndpoints();
+
 
 app.Run();
