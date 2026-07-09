@@ -1,6 +1,6 @@
 import React from "react";
+import ApplicantCard from "@/components/applicant-card/applicant-card";
 import type { CandidateApplication } from "@/types/candidate";
-import CandidateCard from "./candidate-card";
 
 //got this from api contract on wiki
 const mockApplications: CandidateApplication[] = [
@@ -21,11 +21,44 @@ const mockApplications: CandidateApplication[] = [
   },
 ];
 
+const statusLabels: Record<CandidateApplication["currentStatus"], string> = {
+  PROCESSING: "Pending",
+  SHORTLISTED: "Shortlisted",
+  REJECTED: "Rejected",
+  HIRED: "Hired",
+};
+
+const statusTones: Record<
+  CandidateApplication["currentStatus"],
+  "positive" | "warning" | "negative" | "neutral"
+> = {
+  PROCESSING: "warning",
+  SHORTLISTED: "positive",
+  REJECTED: "negative",
+  HIRED: "positive",
+};
+
+const formatDate = (isoDate: string) =>
+  new Date(isoDate).toLocaleDateString("en-ZA", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
 const AllCandidates = () => {
   return (
     <div className="flex flex-col gap-2">
       {mockApplications.map((application) => (
-        <CandidateCard key={application.applicationId} {...application} />
+        <ApplicantCard
+          key={application.applicationId}
+          name={application.candidateName}
+          institute={application.cvSummary}
+          systemScore={Math.round(application.hiringAgentTotalScore * 20)}
+          statusLabel={statusLabels[application.currentStatus]}
+          statusTone={statusTones[application.currentStatus]}
+          reviewedAt={formatDate(application.createdAt)}
+          actionLabel="Details"
+        />
       ))}
     </div>
   );
