@@ -205,6 +205,35 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         await _dbContext.ApplicationRecords.AddAsync(record, cancellationToken);
     }
 
+    public async Task<bool> AddEvaluationAsync(
+        Guid applicationId,
+        HiringAgentEvaluation evaluation,
+        string status,
+        decimal totalScore,
+        string? cvSummary,
+        JsonDocument? flagsJson,
+        CancellationToken cancellationToken = default)
+    {
+        var applicationRecord = await _dbContext.ApplicationRecords
+            .FirstOrDefaultAsync(r => r.Id == applicationId, cancellationToken);
+
+        if (applicationRecord is null)
+        {
+            return false;
+        }
+
+        evaluation.ApplicationRecordId = applicationId;
+
+        applicationRecord.Status = status;
+        applicationRecord.HiringAgentTotalScore = totalScore;
+        applicationRecord.CvSummary = cvSummary;
+        applicationRecord.FlagsJson = flagsJson;
+        applicationRecord.UpdatedAt = DateTimeOffset.UtcNow;
+
+        await _dbContext.HiringAgentEvaluations.AddAsync(evaluation, cancellationToken);
+        return true;
+    }
+
     public async Task AddAuditLogAsync(AuditLog auditLog, CancellationToken cancellationToken = default)
     {
         await _dbContext.AuditLogs.AddAsync(auditLog, cancellationToken);

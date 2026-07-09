@@ -3,6 +3,7 @@ using Application.Queries.GetDashboardApplications;
 using Application.Queries.GetDashboardMetrics;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,6 +21,14 @@ public interface IApplicationRecordRepository
     Task<DashboardMetricsDto> GetDashboardMetricsAsync(CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(string emailMessageId, CancellationToken cancellationToken = default);
     Task AddAsync(ApplicationRecord record, CancellationToken cancellationToken = default);
+    Task<bool> AddEvaluationAsync(
+        Guid applicationId,
+        HiringAgentEvaluation evaluation,
+        string status,
+        decimal totalScore,
+        string? cvSummary,
+        JsonDocument? flagsJson,
+        CancellationToken cancellationToken = default);
     Task AddAuditLogAsync(AuditLog auditLog, CancellationToken cancellationToken = default);
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }

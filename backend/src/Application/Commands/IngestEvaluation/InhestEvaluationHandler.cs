@@ -1,4 +1,7 @@
+using Application.Interfaces;
+using Domain.Entities;
 using MediatR;
+using System.Text.Json;
 
 namespace Application.Commands.IngestEvaluation;
 
@@ -11,41 +14,105 @@ public class IngestEvaluationResult
 public class IngestEvaluationHandler
     : IRequestHandler<IngestEvaluationCommand, IngestEvaluationResult>
 {
-    // TODO: inject DbContext here when the DB is ready
-    // private readonly GradRecruitmentDbContext _db;
-    // public IngestEvaluationHandler(GradRecruitmentDbContext db) => _db = db;
+    private readonly IApplicationRecordRepository _repository;
 
-    public Task<IngestEvaluationResult> Handle(
+    public IngestEvaluationHandler(IApplicationRecordRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task<IngestEvaluationResult> Handle(
         IngestEvaluationCommand request,
         CancellationToken cancellationToken)
     {
-        // TODO: replace this stub with the real DB write, e.g.:
-        //
-        // var record = await _db.ApplicationRecords
-        //     .FirstOrDefaultAsync(a => a.Id == Guid.Parse(request.ApplicationId), cancellationToken)
-        //     ?? throw new NotFoundException(request.ApplicationId);
-        //
-        // var evaluation = new HiringAgentEvaluation
-        // {
-        //     Id                      = Guid.NewGuid(),
-        //     ApplicationRecordId     = record.Id,
-        //     CategoryScoresJson      = JsonSerializer.Serialize(request.Scores),
-        //     BonusPointsJson         = JsonSerializer.Serialize(request.BonusPoints),
-        //     KeyStrengthsJson        = JsonSerializer.Serialize(request.KeyStrengths),
-        //     AreasForImprovementJson = JsonSerializer.Serialize(request.AreasForImprovement),
-        //     ProcessedAt             = DateTime.UtcNow
-        // };
-        //
-        // record.Status    = request.PromptInjectionDetected ? "MANUAL_REVIEW" : "VALID";
-        // record.UpdatedAt = DateTime.UtcNow;
-        //
-        // _db.HiringAgentEvaluations.Add(evaluation);
-        // await _db.SaveChangesAsync(cancellationToken);
-        
-        return Task.FromResult(new IngestEvaluationResult
+        if (!Guid.TryParse(request.ApplicationId, out var applicationId))
+        {
+            return new IngestEvaluationResult
+            {
+                Accepted = false,
+                Message = $"ApplicationId '{request.ApplicationId}' is not a valid GUID."
+            };
+        }
+
+        var evaluation = new HiringAgentEvaluation
+        {
+            CategoryScoresJson = ToJsonDocument(request.Scores),
+            EvidenceJson = ToJsonDocument(BuildEvidence(request.Scores)),
+            BonusPointsJson = ToJsonDocument(request.BonusPoints),
+            DeductionsJson = ToJsonDocument(new
+            {
+                promptInjectionDetected = request.PromptInjectionDetected,
+                promptInjectionEvidence = request.PromptInjectionEvidence
+            }),
+            KeyStrengthsJson = ToJsonDocument(request.KeyStrengths),
+            AreasForImprovementJson = ToJsonDocument(request.AreasForImprovement),
+            ProcessedAt = DateTimeOffset.UtcNow
+        };
+
+        var flags = request.PromptInjectionDetected
+            ? new[] { "Prompt injection detected" }
+            : [];
+
+        var status = request.PromptInjectionDetected ? "MANUAL_REVIEW" : "VALID";
+        var saved = await _repository.AddEvaluationAsync(
+            applicationId,
+            evaluation,
+            status,
+            (decimal)request.Scores.Total.Score,
+            BuildSummary(request),
+            ToJsonDocument(flags),
+            cancellationToken);
+
+        if (!saved)
+        {
+            return new IngestEvaluationResult
+            {
+                Accepted = false,
+                Message = $"Application '{request.ApplicationId}' was not found."
+            };
+        }
+
+        await _repository.SaveChangesAsync(cancellationToken);
+
+        return new IngestEvaluationResult
         {
             Accepted = true,
-            Message = $"Evaluation received for application '{request.ApplicationId}' — persistence pending DB setup."
-        });
+            Message = $"Evaluation received and saved for application '{request.ApplicationId}'."
+        };
+    }
+
+    private static JsonDocument ToJsonDocument<T>(T value)
+    {
+        return JsonDocument.Parse(JsonSerializer.Serialize(value));
+    }
+
+    private static object BuildEvidence(EvaluationScoresDto scores)
+    {
+        return new
+        {
+            education = scores.Education.Evidence,
+            openSource = scores.OpenSource.Evidence,
+            selfProjects = scores.SelfProjects.Evidence,
+            production = scores.Production.Evidence,
+            technicalSkills = scores.TechnicalSkills.Evidence
+        };
+    }
+
+    private static string BuildSummary(IngestEvaluationCommand request)
+    {
+        if (request.KeyStrengths.Count == 0 && request.AreasForImprovement.Count == 0)
+        {
+            return $"Total score: {request.Scores.Total.Score}/{request.Scores.Total.Max}.";
+        }
+
+        var strengths = request.KeyStrengths.Count == 0
+            ? "No key strengths supplied"
+            : string.Join("; ", request.KeyStrengths);
+
+        var improvements = request.AreasForImprovement.Count == 0
+            ? "No improvement areas supplied"
+            : string.Join("; ", request.AreasForImprovement);
+
+        return $"Total score: {request.Scores.Total.Score}/{request.Scores.Total.Max}. Strengths: {strengths}. Improvements: {improvements}.";
     }
 }
