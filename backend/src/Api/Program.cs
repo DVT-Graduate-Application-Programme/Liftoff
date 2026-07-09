@@ -5,8 +5,6 @@ using Backend.Application.Queries.GetResumes;
 using Backend.Infrastructure.Storage;
 using Scalar.AspNetCore;
 
-using Scalar.AspNetCore;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
