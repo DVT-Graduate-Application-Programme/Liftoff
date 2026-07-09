@@ -1,10 +1,9 @@
 name: Deploy AWS (development)
 
 on:
-  workflow_run:
-    workflows: ["Backend", "Frontend"]
+  push:
     branches: [development]
-    types: [completed]
+    paths: ['backend/**', 'frontend/**', '.github/workflows/development-deploy-aws.yml']
 
 env:
   AWS_REGION: af-south-1
@@ -13,12 +12,9 @@ jobs:
   deploy:
     name: Docker Build · Push to ECR · Deploy to ECS
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'success'
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -35,7 +31,7 @@ jobs:
         env:
           REGISTRY: ${{ steps.ecr-login.outputs.registry }}
           REPOSITORY: ${{ secrets.ECR_BACKEND_REPOSITORY }}
-          IMAGE_TAG: dev-${{ github.event.workflow_run.head_sha }}
+          IMAGE_TAG: dev-${{ github.sha }}
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./backend
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
@@ -46,7 +42,7 @@ jobs:
         env:
           REGISTRY: ${{ steps.ecr-login.outputs.registry }}
           REPOSITORY: ${{ secrets.ECR_FRONTEND_REPOSITORY }}
-          IMAGE_TAG: dev-${{ github.event.workflow_run.head_sha }}
+          IMAGE_TAG: dev-${{ github.sha }}
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./frontend
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
