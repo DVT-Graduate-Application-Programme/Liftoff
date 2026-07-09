@@ -1,21 +1,17 @@
 name: Deploy Azure (development)
 
 on:
-  workflow_run:
-    workflows: ["Backend", "Frontend"]
+  push:
     branches: [development]
-    types: [completed]
+    paths: ['backend/**', 'frontend/**', '.github/workflows/development-deploy-azure.yml']
 
 jobs:
   deploy:
     name: Docker Build · Push to ACR · Deploy to Container Apps
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'success'
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Log in to Azure
         uses: azure/login@v2
@@ -31,7 +27,7 @@ jobs:
         env:
           # ACR_BACKEND_REPOSITORY is the full repo path, e.g. myacr.azurecr.io/backend
           REPOSITORY: ${{ secrets.ACR_BACKEND_REPOSITORY }}
-          IMAGE_TAG: dev-${{ github.event.workflow_run.head_sha }}
+          IMAGE_TAG: dev-${{ github.sha }}
         run: |
           docker build -t $REPOSITORY:$IMAGE_TAG ./backend
           docker push $REPOSITORY:$IMAGE_TAG
@@ -42,7 +38,7 @@ jobs:
         env:
           # ACR_FRONTEND_REPOSITORY is the full repo path, e.g. myacr.azurecr.io/frontend
           REPOSITORY: ${{ secrets.ACR_FRONTEND_REPOSITORY }}
-          IMAGE_TAG: dev-${{ github.event.workflow_run.head_sha }}
+          IMAGE_TAG: dev-${{ github.sha }}
         run: |
           docker build -t $REPOSITORY:$IMAGE_TAG ./frontend
           docker push $REPOSITORY:$IMAGE_TAG
@@ -54,11 +50,11 @@ jobs:
           az containerapp update \
             --name ${{ secrets.BACKEND_CONTAINER_APP }} \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --image ${{ secrets.ACR_BACKEND_REPOSITORY }}:dev-${{ github.event.workflow_run.head_sha }}
+            --image ${{ secrets.ACR_BACKEND_REPOSITORY }}:dev-${{ github.sha }}
 
       - name: Update frontend Container App
         run: |
           az containerapp update \
             --name ${{ secrets.FRONTEND_CONTAINER_APP }} \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --image ${{ secrets.ACR_FRONTEND_REPOSITORY }}:dev-${{ github.event.workflow_run.head_sha }}
+            --image ${{ secrets.ACR_FRONTEND_REPOSITORY }}:dev-${{ github.sha }}
