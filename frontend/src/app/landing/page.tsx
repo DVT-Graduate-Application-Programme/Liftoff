@@ -1,15 +1,116 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { Input } from "@/components/ui/input";
+import type { CandidateApplication } from "@/types/candidate";
 import AllCandidates from "./components/all-candidates";
 import PendingCandidates from "./components/pending-candidates";
 import AcceptedCandidates from "./components/accepted-candidates";
 import { ApplicantDetailsSidebar } from "./components/applicant-details/applicant-details-sidebar";
 import { OpenApplicantDetailsSidebarButton } from "./components/applicant-details/applicant-details-sidebar-controls";
-import { mockApplicantDetails } from "./components/applicant-details/mock-applicant-details";
+import type { ApplicantDetailsEvaluation } from "./components/applicant-details/mock-applicant-details";
 
-const page = () => {
+type DashboardApplicationsResponse = {
+  applications: CandidateApplication[];
+};
+
+const LandingPage = () => {
+  const [applications, setApplications] = useState<CandidateApplication[]>([]);
+  const [selectedApplication, setSelectedApplication] =
+    useState<CandidateApplication | null>(null);
+  const [evaluation, setEvaluation] = useState<ApplicantDetailsEvaluation | null>(
+    null,
+  );
+  const [isLoadingApplications, setIsLoadingApplications] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    const fetchApplications = async () => {
+      setIsLoadingApplications(true);
+      setError(null);
+
+      try {
+        const response = await fetch("/api/dashboard/applications");
+
+        if (!response.ok) {
+          throw new Error("Unable to load applications.");
+        }
+
+        const data = (await response.json()) as DashboardApplicationsResponse;
+
+        if (!isCurrent) return;
+
+        setApplications(data.applications);
+        setSelectedApplication(data.applications[0] ?? null);
+      } catch (cause) {
+        if (!isCurrent) return;
+        setError(
+          cause instanceof Error ? cause.message : "Unable to load applications.",
+        );
+      } finally {
+        if (isCurrent) setIsLoadingApplications(false);
+      }
+    };
+
+    void fetchApplications();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    const fetchEvaluation = async () => {
+      if (!selectedApplication) {
+        setEvaluation(null);
+        return;
+      }
+
+      setEvaluation(null);
+
+      const response = await fetch(
+        `/api/applications/${selectedApplication.applicationId}/evaluation`,
+      );
+
+      if (!isCurrent) return;
+
+      if (!response.ok) {
+        return;
+      }
+
+      setEvaluation((await response.json()) as ApplicantDetailsEvaluation);
+    };
+
+    void fetchEvaluation();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [selectedApplication]);
+
+  const pendingApplications = useMemo(
+    () =>
+      applications.filter(
+        (application) => application.currentStatus === "PROCESSING",
+      ),
+    [applications],
+  );
+
+  const acceptedApplications = useMemo(
+    () =>
+      applications.filter((application) =>
+        ["SHORTLISTED", "HIRED"].includes(application.currentStatus),
+      ),
+    [applications],
+  );
+
   return (
     <div className="w-full overflow-hidden">
       <SidebarProvider defaultOpen={false} className="min-h-0 w-full">
@@ -29,25 +130,46 @@ const page = () => {
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="pending">
-                  <PendingCandidates />
+                  {isLoadingApplications ? (
+                    <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                      Loading applicants...
+                    </p>
+                  ) : error ? (
+                    <p className="rounded-lg border border-dashed border-destructive/40 p-6 text-center text-sm text-destructive">
+                      {error}
+                    </p>
+                  ) : (
+                    <PendingCandidates
+                      applications={pendingApplications}
+                      onSelectApplication={setSelectedApplication}
+                    />
+                  )}
                 </TabsContent>
                 <TabsContent value="all">
-                  <AllCandidates />
+                  <AllCandidates
+                    applications={applications}
+                    onSelectApplication={setSelectedApplication}
+                  />
                 </TabsContent>
                 <TabsContent value="accepted">
-                  <AcceptedCandidates />
+                  <AcceptedCandidates
+                    applications={acceptedApplications}
+                    onSelectApplication={setSelectedApplication}
+                  />
                 </TabsContent>
               </Tabs>
             </div>
           </SidebarInset>
-          <ApplicantDetailsSidebar
-            candidateName="Alex Morgan"
-            evaluation={mockApplicantDetails}
-          />
+          {selectedApplication && evaluation ? (
+            <ApplicantDetailsSidebar
+              candidateName={selectedApplication.candidateName}
+              evaluation={evaluation}
+            />
+          ) : null}
         </div>
       </SidebarProvider>
     </div>
   );
 };
 
-export default page;
+export default LandingPage;
