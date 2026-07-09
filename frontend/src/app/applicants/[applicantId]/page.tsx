@@ -1,3 +1,7 @@
+"use client";
+
+import { useParams } from "next/navigation";
+import Link from "next/link";
 import {
   AlertTriangle,
   Award,
@@ -30,11 +34,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { findApplication } from "@/app/api/_lib/mockData";
-import { notFound } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ApiError } from "@/lib/api-client";
+import { useApplicationDetail } from "@/hooks/use-application-detail";
+import { useApplicant } from "@/hooks/use-applicant";
+import { useEvaluation } from "@/hooks/use-evaluation";
+import { useDocuments } from "@/hooks/use-documents";
+import type { Evaluation } from "@/types/api";
 
-type Evaluation = NonNullable<ReturnType<typeof findApplication>>["evaluation"];
-type Scores = NonNullable<Evaluation>["scores"];
+type Scores = Evaluation["scores"];
 type ScoreCategory = Scores[keyof Scores];
 
 const scoreCategoryMeta: Record<
@@ -83,33 +93,50 @@ function ScoreCategoryRow({
   );
 }
 
-export default async function DetailedApplicantInfo({
-  params,
+function DocumentTab({
+  document,
+  label,
+  isLoading,
 }: {
-  params: Promise<{ applicantId: string }>;
+  document: { url: string; filename: string } | null | undefined;
+  label: string;
+  isLoading: boolean;
 }) {
-  const { applicantId } = await params;
-  const application = findApplication(applicantId);
-
-  if (!application) {
-    notFound();
-  }
-
-  const { applicant, evaluation } = application;
-
-  if (!evaluation) {
+  if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 p-8">
-        <h1 className="font-heading text-3xl font-semibold text-foreground">
-          {applicant.candidateName}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          No AI evaluation is available for this applicant yet.
-        </p>
-      </div>
+      <Card className="h-full">
+        <CardContent className="flex flex-1 items-center justify-center py-16">
+          <Skeleton className="h-6 w-32" />
+        </CardContent>
+      </Card>
     );
   }
 
+  if (!document) {
+    return (
+      <Card className="h-full items-center justify-center">
+        <CardContent className="flex flex-1 items-center justify-center">
+          <p className="text-sm text-muted-foreground">No {label.toLowerCase()} on file</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="h-full items-center justify-center">
+      <CardContent className="flex flex-1 flex-col items-center justify-center gap-2">
+        <p className="text-sm text-muted-foreground">{document.filename}</p>
+        <Button asChild variant="outline" size="sm">
+          <a href={document.url} target="_blank" rel="noopener noreferrer">
+            Open {label}
+          </a>
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function EvaluationSummary({ evaluation }: { evaluation: Evaluation }) {
   const totalScore = Object.values(evaluation.scores).reduce(
     (sum, category) => sum + category.score,
     0,
@@ -124,13 +151,154 @@ export default async function DetailedApplicantInfo({
   );
 
   return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Sparkles className="size-4" />
+          AI Summary
+        </CardTitle>
+        <CardAction className="flex flex-col items-end gap-1">
+          Overall Score
+          <span className="text-base font-semibold text-foreground">
+            {overallScore.toFixed(1)}
+            <span className="text-xs font-normal text-muted-foreground">
+              {" "}
+              / {maxScore}
+            </span>
+          </span>
+        </CardAction>
+      </CardHeader>
+      <Separator />
+      <CardContent className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4">
+          {(Object.keys(evaluation.scores) as Array<keyof Scores>).map((key) => (
+            <ScoreCategoryRow
+              key={key}
+              label={scoreCategoryMeta[key].label}
+              icon={scoreCategoryMeta[key].icon}
+              category={evaluation.scores[key]}
+            />
+          ))}
+        </div>
+
+        <Separator />
+
+        <div className="flex flex-col gap-2">
+          <span className="flex items-center gap-2 text-sm font-medium">
+            <Award className="size-4 text-muted-foreground" />
+            Bonus Points
+            <Badge variant="secondary" className="ml-auto">
+              +{evaluation.bonusPoints.total.toFixed(1)}
+            </Badge>
+          </span>
+          <ul className="flex flex-col gap-1 pl-6 text-xs text-muted-foreground">
+            {Object.entries(evaluation.bonusPoints.breakdown).map(([key, value]) => (
+              <li key={key}>
+                {formatBreakdownLabel(key)}: +{value}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {evaluation.deductions.reasons.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <span className="flex items-center gap-2 text-sm font-medium">
+              <MinusCircle className="size-4 text-muted-foreground" />
+              Deductions
+              <Badge variant="secondary" className="ml-auto">
+                -{evaluation.deductions.total.toFixed(1)}
+              </Badge>
+            </span>
+            <ul className="flex flex-col gap-1 pl-6 text-xs text-muted-foreground">
+              {evaluation.deductions.reasons.map((reason) => (
+                <li key={reason}>{reason}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <Separator />
+
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium">Key Strengths</span>
+          <ul className="flex flex-col gap-2">
+            {evaluation.keyStrengths.map((strength) => (
+              <li key={strength} className="flex items-center gap-2 text-sm">
+                <CheckCircle2 className="size-4 shrink-0 text-primary" />
+                {strength}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium">Areas for Improvement</span>
+          <ul className="flex flex-col gap-2">
+            {evaluation.areasForImprovement.map((area) => (
+              <li key={area} className="flex items-center gap-2 text-sm">
+                <AlertTriangle className="size-4 shrink-0 text-muted-foreground" />
+                {area}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function DetailedApplicantInfo() {
+  const params = useParams<{ applicantId: string }>();
+  const applicantId = params.applicantId;
+
+  const detailQuery = useApplicationDetail(applicantId);
+  const applicantQuery = useApplicant(applicantId);
+  const evaluationQuery = useEvaluation(applicantId);
+  const documentsQuery = useDocuments(applicantId);
+
+  if (detailQuery.isError) {
+    const error = detailQuery.error;
+    if (error instanceof ApiError && error.status === 404) {
+      return (
+        <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-lg">
+            <EmptyState
+              title="Applicant not found"
+              description="This application may have been removed."
+              action={
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/history">Back to history</Link>
+                </Button>
+              }
+            />
+          </div>
+        </main>
+      );
+    }
+
+    return (
+      <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-lg">
+          <ErrorState message="Couldn't load this applicant." onRetry={() => { void detailQuery.refetch(); }} />
+        </div>
+      </main>
+    );
+  }
+
+  const candidateName = detailQuery.isLoading || applicantQuery.isLoading ? undefined : applicantQuery.data?.candidateName;
+
+  return (
     <div className="flex flex-col items-center justify-center p-8">
-      <h1 className="font-heading text-3xl font-semibold text-foreground">
-        {applicant.candidateName}
-      </h1>
-      <p className="text-sm text-muted-foreground">
-        {evaluation.institution.degreeName} · {evaluation.institution.name}
-      </p>
+      {detailQuery.isLoading || applicantQuery.isLoading ? (
+        <Skeleton className="h-9 w-64" />
+      ) : (
+        <h1 className="font-heading text-3xl font-semibold text-foreground">{candidateName ?? "Applicant"}</h1>
+      )}
+      {evaluationQuery.data && (
+        <p className="text-sm text-muted-foreground">
+          {evaluationQuery.data.institution.degreeName} · {evaluationQuery.data.institution.name}
+        </p>
+      )}
       <div className="w-full flex flex-col md:flex-row justify-center gap-10 pt-10">
         {/* Document Viewer Container */}
         <section className="flex w-full md:max-w-xl flex-col gap-3">
@@ -143,131 +311,43 @@ export default async function DetailedApplicantInfo({
               <TabsTrigger value="transcript">Transcript</TabsTrigger>
             </TabsList>
             <TabsContent value="cv" className="flex-1">
-              <Card className="h-full items-center justify-center">
-                <CardContent className="flex flex-1 items-center justify-center">
-                  <p className="text-sm text-muted-foreground">CV</p>
-                </CardContent>
-              </Card>
+              <DocumentTab
+                document={documentsQuery.data?.cvDocument}
+                label="CV"
+                isLoading={documentsQuery.isLoading}
+              />
             </TabsContent>
             <TabsContent value="transcript" className="flex-1">
-              <Card className="h-full items-center justify-center">
-                <CardContent className="flex flex-1 items-center justify-center">
-                  <p className="text-sm text-muted-foreground">Transcript</p>
-                </CardContent>
-              </Card>
+              <DocumentTab
+                document={documentsQuery.data?.transcriptDocument}
+                label="Transcript"
+                isLoading={documentsQuery.isLoading}
+              />
             </TabsContent>
           </Tabs>
         </section>
 
         {/*Candidate INFO Container*/}
         <div className="flex w-full md:max-w-xl flex-col gap-4">
-          {/* Canidate Summary Section */}
+          {/* Candidate Summary Section */}
           <section className="flex flex-col gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="size-4" />
-                  AI Summary
-                </CardTitle>
-                <CardAction className="flex flex-col items-end gap-1">
-                  Overall Score
-                  <span className="text-base font-semibold text-foreground">
-                    {overallScore.toFixed(1)}
-                    <span className="text-xs font-normal text-muted-foreground">
-                      {" "}
-                      / {maxScore}
-                    </span>
-                  </span>
-                </CardAction>
-              </CardHeader>
-              <Separator />
-              <CardContent className="flex flex-col gap-5">
-                <div className="flex flex-col gap-4">
-                  {(Object.keys(evaluation.scores) as Array<keyof Scores>).map(
-                    (key) => (
-                      <ScoreCategoryRow
-                        key={key}
-                        label={scoreCategoryMeta[key].label}
-                        icon={scoreCategoryMeta[key].icon}
-                        category={evaluation.scores[key]}
-                      />
-                    ),
-                  )}
-                </div>
-
-                <Separator />
-
-                <div className="flex flex-col gap-2">
-                  <span className="flex items-center gap-2 text-sm font-medium">
-                    <Award className="size-4 text-muted-foreground" />
-                    Bonus Points
-                    <Badge variant="secondary" className="ml-auto">
-                      +{evaluation.bonusPoints.total.toFixed(1)}
-                    </Badge>
-                  </span>
-                  <ul className="flex flex-col gap-1 pl-6 text-xs text-muted-foreground">
-                    {Object.entries(evaluation.bonusPoints.breakdown).map(
-                      ([key, value]) => (
-                        <li key={key}>
-                          {formatBreakdownLabel(key)}: +{value}
-                        </li>
-                      ),
-                    )}
-                  </ul>
-                </div>
-
-                {evaluation.deductions.reasons.length > 0 && (
-                  <div className="flex flex-col gap-2">
-                    <span className="flex items-center gap-2 text-sm font-medium">
-                      <MinusCircle className="size-4 text-muted-foreground" />
-                      Deductions
-                      <Badge variant="secondary" className="ml-auto">
-                        -{evaluation.deductions.total.toFixed(1)}
-                      </Badge>
-                    </span>
-                    <ul className="flex flex-col gap-1 pl-6 text-xs text-muted-foreground">
-                      {evaluation.deductions.reasons.map((reason) => (
-                        <li key={reason}>{reason}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <Separator />
-
-                <div className="flex flex-col gap-2">
-                  <span className="text-sm font-medium">Key Strengths</span>
-                  <ul className="flex flex-col gap-2">
-                    {evaluation.keyStrengths.map((strength) => (
-                      <li
-                        key={strength}
-                        className="flex items-center gap-2 text-sm"
-                      >
-                        <CheckCircle2 className="size-4 shrink-0 text-primary" />
-                        {strength}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <span className="text-sm font-medium">
-                    Areas for Improvement
-                  </span>
-                  <ul className="flex flex-col gap-2">
-                    {evaluation.areasForImprovement.map((area) => (
-                      <li
-                        key={area}
-                        className="flex items-center gap-2 text-sm"
-                      >
-                        <AlertTriangle className="size-4 shrink-0 text-muted-foreground" />
-                        {area}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
+            {evaluationQuery.isLoading ? (
+              <Card>
+                <CardContent className="flex flex-col gap-2 py-6">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </CardContent>
+              </Card>
+            ) : evaluationQuery.isError ? (
+              <ErrorState message="Couldn't load evaluation." onRetry={() => { void evaluationQuery.refetch(); }} />
+            ) : !evaluationQuery.data ? (
+              <EmptyState
+                title="Not yet evaluated"
+                description="This candidate has not been evaluated by the Hiring Agent yet."
+              />
+            ) : (
+              <EvaluationSummary evaluation={evaluationQuery.data} />
+            )}
           </section>
 
           {/* Candidate Rating section*/}
@@ -309,10 +389,7 @@ export default async function DetailedApplicantInfo({
 
               <div className="flex flex-col gap-2">
                 <Label htmlFor="notes">Notes</Label>
-                <Textarea
-                  id="notes"
-                  placeholder="Add any additional notes..."
-                />
+                <Textarea id="notes" placeholder="Add any additional notes..." />
               </div>
 
               <div className="flex justify-end pt-2">
