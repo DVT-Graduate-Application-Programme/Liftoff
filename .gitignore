@@ -6,6 +6,16 @@
 # dotenv files
 .env.**
 
+# OpenTofu / Terraform — never commit real variable values
+infrastructure/**/*.tfvars
+infrastructure/**/*.tfvars.example
+infrastructure/**/.terraform/*
+infrastructure/**/.terraform.lock.hcl
+infrastructure/**/terraform.tfstate
+infrastructure/**/terraform.tfstate.backup
+!infrastructure/**/*.tfvars.example
+
+
 # User-specific files
 *.rsuser
 *.suo
@@ -480,3 +490,11 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# terraform
+terraform.tfvars
+*.tfstate
+*.tfstate.backup
+*.tfstate.lock.info
+.terraform/
+.terraform.lock.hcl
