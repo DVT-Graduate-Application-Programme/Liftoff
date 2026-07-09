@@ -27,7 +27,7 @@ export function ApplicantDetailsSidebar({
   );
   const overallScore = Math.max(
     0,
-    scoreTotal + evaluation.bonus_points.total - evaluation.deductions.total,
+    scoreTotal + evaluation.bonusPoints.total - evaluation.deductions.total,
   );
 
   return (
@@ -75,7 +75,7 @@ export function ApplicantDetailsSidebar({
               <p className="flex items-baseline justify-between gap-4">
                 <span className="font-medium text-sm">Bonus Points</span>
                 <span className="font-mono text-sm">
-                  {formatDecimal(evaluation.bonus_points.total)}
+                  {formatDecimal(evaluation.bonusPoints.total)}
                 </span>
               </p>
               {evaluation.deductions.total > 0 ? (
@@ -92,18 +92,18 @@ export function ApplicantDetailsSidebar({
                 Key strengths
               </p>
               <ol className="list-decimal space-y-1.5 pl-5 text-sm leading-6">
-                {evaluation.key_strengths.map((strength) => (
+                {evaluation.keyStrengths.map((strength) => (
                   <li key={strength}>{strength}</li>
                 ))}
               </ol>
             </div>
-            {/* {evaluation.areas_for_improvement.length > 0 ? (
+            {/* {evaluation.areasForImprovement.length > 0 ? (
               <div className="space-y-2">
                 <p className="font-heading text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                   Areas for improvement
                 </p>
                 <ul className="list-disc space-y-1.5 pl-5 text-sm leading-6">
-                  {evaluation.areas_for_improvement.map((improvement) => (
+                  {evaluation.areasForImprovement.map((improvement) => (
                     <li key={improvement}>{improvement}</li>
                   ))}
                 </ul>
