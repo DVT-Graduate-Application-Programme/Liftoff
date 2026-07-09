@@ -36,6 +36,32 @@ variable "db_password" {
   sensitive   = true
 }
 
+# ── Auth (frontend) ───────────────────────────────────────────────────────────
+
+variable "auth_secret" {
+  description = "NextAuth AUTH_SECRET — set in terraform.tfvars, never hardcode here."
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_microsoft_entra_id_id" {
+  description = "Microsoft Entra ID application (client) ID — set in terraform.tfvars, never hardcode here."
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_microsoft_entra_id_secret" {
+  description = "Microsoft Entra ID client secret — set in terraform.tfvars, never hardcode here."
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_microsoft_entra_id_issuer" {
+  description = "Microsoft Entra ID issuer URL — set in terraform.tfvars, never hardcode here."
+  type        = string
+  sensitive   = true
+}
+
 # ── Compute ───────────────────────────────────────────────────────────────────
 
 variable "backend_image" {
