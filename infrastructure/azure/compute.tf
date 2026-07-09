@@ -133,7 +133,7 @@ resource "azurerm_container_app" "backend" {
         port                    = 8080
         transport               = "HTTP"
         initial_delay           = 60
-        period_seconds          = 30
+        interval_seconds        = 30
         failure_count_threshold = 3
       }
     }
@@ -157,6 +157,26 @@ resource "azurerm_container_app" "frontend" {
   registry {
     server   = azurerm_container_registry.main.login_server
     identity = azurerm_user_assigned_identity.container_apps.id
+  }
+
+  secret {
+    name  = "auth-secret"
+    value = var.auth_secret
+  }
+
+  secret {
+    name  = "auth-microsoft-entra-id-id"
+    value = var.auth_microsoft_entra_id_id
+  }
+
+  secret {
+    name  = "auth-microsoft-entra-id-secret"
+    value = var.auth_microsoft_entra_id_secret
+  }
+
+  secret {
+    name  = "auth-microsoft-entra-id-issuer"
+    value = var.auth_microsoft_entra_id_issuer
   }
 
   ingress {
@@ -187,6 +207,41 @@ resource "azurerm_container_app" "frontend" {
       env {
         name  = "NEXT_PUBLIC_BACKEND_URL"
         value = "https://${azurerm_container_app.backend.latest_revision_fqdn}"
+      }
+
+      env {
+        name  = "HOSTNAME"
+        value = "0.0.0.0"
+      }
+
+      env {
+        name  = "AUTH_URL"
+        value = "https://ca-${local.prefix}-frontend.${azurerm_container_app_environment.main.default_domain}"
+      }
+
+      env {
+        name  = "AUTH_TRUST_HOST"
+        value = "true"
+      }
+
+      env {
+        name        = "AUTH_SECRET"
+        secret_name = "auth-secret"
+      }
+
+      env {
+        name        = "AUTH_MICROSOFT_ENTRA_ID_ID"
+        secret_name = "auth-microsoft-entra-id-id"
+      }
+
+      env {
+        name        = "AUTH_MICROSOFT_ENTRA_ID_SECRET"
+        secret_name = "auth-microsoft-entra-id-secret"
+      }
+
+      env {
+        name        = "AUTH_MICROSOFT_ENTRA_ID_ISSUER"
+        secret_name = "auth-microsoft-entra-id-issuer"
       }
     }
   }
