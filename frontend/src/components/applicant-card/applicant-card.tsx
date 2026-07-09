@@ -14,6 +14,8 @@ type ApplicantCardProps = {
   statusLabel?: string;
   statusTone?: StatusTone;
   reviewedAt?: string;
+  showReviewedAt?: boolean;
+  createdAt?: string;
   recruiterLabel?: string;
   recruiterName?: string;
   candidateGitHubUrl?: string | null;
@@ -76,15 +78,28 @@ function InfoRow({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
+function getDaysAgo(dateString: string): number | null {
+  const inputDate = new Date(dateString);
+  if (Number.isNaN(inputDate.getTime())) return null;
+  const today = new Date();
+
+  const millisecondsPerDay = 1000 * 60 * 60 * 24;
+  const difference = today.getTime() - inputDate.getTime();
+
+  return Math.max(0, Math.floor(difference / millisecondsPerDay));
+}
+
 export default function ApplicantCard({
   name,
   institute,
   academicAverage,
   systemScore,
-  scoreLabel = "Sys Score",
+  scoreLabel = "System Score",
   statusLabel = "Pending",
   statusTone,
   reviewedAt,
+  createdAt,
+  showReviewedAt = true,
   recruiterLabel,
   recruiterName,
   candidateGitHubUrl,
@@ -99,6 +114,7 @@ export default function ApplicantCard({
     .toUpperCase();
   const currentStatusTone = statusTone ?? getScoreTone(systemScore);
   const statusStyle = statusStyles[currentStatusTone];
+  const daysAgo = createdAt ? getDaysAgo(createdAt) : null;
 
   return (
     <div
@@ -177,22 +193,30 @@ export default function ApplicantCard({
           Status
         </span>
         <span
-          className={cn(
-            "max-w-full truncate text-xs font-semibold",
-            statusStyle.text,
-          )}
+          className={cn("max-w-full text-xs font-semibold", statusStyle.text)}
         >
           {statusLabel}
         </span>
       </div>
 
-      {reviewedAt && (
+      {showReviewedAt && reviewedAt && (
         <div className="hidden w-36 shrink-0 flex-col items-end gap-0.5 md:flex">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
             Reviewed
           </span>
           <span className="max-w-full truncate whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
             {reviewedAt}
+          </span>
+        </div>
+      )}
+
+      {daysAgo !== null && daysAgo >= 2 && (
+        <div className="hidden w-36 shrink-0 flex-col items-end gap-0.5 md:flex">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+            Applied
+          </span>
+          <span className="max-w-full truncate whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
+            {daysAgo} days ago
           </span>
         </div>
       )}
