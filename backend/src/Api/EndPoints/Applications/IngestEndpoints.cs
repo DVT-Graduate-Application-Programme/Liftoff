@@ -41,7 +41,7 @@ public static class IngestEndpoints
             // call python
             try
             {
-                NotifyHiringAgent(result.ApplicationId);
+               await NotifyHiringAgent(result.ApplicationId);
             }
             catch (System.Exception)
             {
@@ -58,7 +58,7 @@ public static class IngestEndpoints
 
     private static async Task NotifyHiringAgent(Guid applicationId)
     {
-        const string fastApiBaseUrl = "http://localhost:8001";
+        const string fastApiBaseUrl = "http://host.docker.internal:8001"; // because backend runs on docker and not locally like fatsapi
         try
         {
             var payload = new { candidate_id = applicationId };
