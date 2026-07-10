@@ -6,7 +6,7 @@ namespace Domain.Entities;
 
 public class ApplicationRecord
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
 
     // Ingest fields
     public string EmailMessageId { get; set; } = string.Empty;

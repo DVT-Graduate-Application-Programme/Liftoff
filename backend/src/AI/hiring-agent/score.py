@@ -657,7 +657,7 @@ if __name__ == "__main__":
     else:
         # Fallback to querying C# API backend
         try:
-            resume = get_resume(1) # should be called using Guid amd not Int
+            resume = get_resume(1) # should be called using Guid amd not Int, # call from queue
             pdf_path = resume.document_url
             transcript_path = resume.transcript_url
             message_id = resume.id
