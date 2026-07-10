@@ -115,6 +115,7 @@ public static class ApplicationEndpoints
         {
             var possiblePaths = new[]
             {
+                Path.Combine(AppContext.BaseDirectory, "Data", "SeedDocuments"),
                 Path.Combine(Directory.GetCurrentDirectory(), "src", "Infrastructure", "Data", "SeedDocuments"),
                 Path.Combine(Directory.GetCurrentDirectory(), "..", "Infrastructure", "Data", "SeedDocuments")
             };
@@ -135,6 +136,7 @@ public static class ApplicationEndpoints
         {
             var possiblePaths = new[]
             {
+                Path.Combine(AppContext.BaseDirectory, "Data", "SeedDocuments"),
                 Path.Combine(Directory.GetCurrentDirectory(), "src", "Infrastructure", "Data", "SeedDocuments"),
                 Path.Combine(Directory.GetCurrentDirectory(), "..", "Infrastructure", "Data", "SeedDocuments")
             };
