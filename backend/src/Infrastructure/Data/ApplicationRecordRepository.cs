@@ -189,6 +189,112 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         };
     }
 
+    public async Task<ApplicationStatusUpdate?> AcceptAsync(Guid id, string recruiterIdentity, string? reason, CancellationToken cancellationToken = default)
+    {
+        return await UpdateStatusAsync(id, recruiterIdentity, "ACCEPTED", reason, cancellationToken);
+    }
+
+    public async Task<ApplicationStatusUpdate?> RejectAsync(Guid id, string recruiterIdentity, string? reason, CancellationToken cancellationToken = default)
+    {
+        return await UpdateStatusAsync(id, recruiterIdentity, "REJECTED", reason, cancellationToken);
+    }
+
+    private async Task<ApplicationStatusUpdate?> UpdateStatusAsync(Guid id, string recruiterIdentity, string newStatus, string? reason, CancellationToken cancellationToken)
+    {
+        var applicationRecord = await _dbContext.ApplicationRecords.FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+        if (applicationRecord is null) return null;
+
+        var now = DateTimeOffset.UtcNow;
+        var previousStatus = applicationRecord.Status;
+
+        applicationRecord.Status = newStatus;
+        applicationRecord.UpdatedAt = now;
+
+        await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
+        {
+            ApplicationRecordId = id,
+            RecruiterIdentity = recruiterIdentity,
+            ActionType = "STATUS_OVERRIDE",
+            PreviousStatus = previousStatus,
+            NewStatus = newStatus,
+            Reason = reason,
+            ActionedAt = now
+        }, cancellationToken);
+
+        return new ApplicationStatusUpdate
+        {
+            ActionedByRecruiterId = recruiterIdentity,
+            ActionedAt = now,
+            UpdatedStatus = newStatus
+        };
+    }
+
+    public async Task<ApplicationRatingUpdate?> RateAsync(Guid id, string recruiterIdentity, short rating, string? notes, CancellationToken cancellationToken = default)
+    {
+        var applicationRecord = await _dbContext.ApplicationRecords.FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+        if (applicationRecord is null) return null;
+
+        var now = DateTimeOffset.UtcNow;
+
+        applicationRecord.RecruiterRating = rating;
+        if (notes is null && applicationRecord.RecruiterRatingNote is not null) {
+            // keep old notes
+        } else {
+            applicationRecord.RecruiterRatingNote = notes;
+        }
+        applicationRecord.RatedByRecruiterId = recruiterIdentity;
+        applicationRecord.RatedAt = now;
+        applicationRecord.UpdatedAt = now;
+
+        await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
+        {
+            ApplicationRecordId = id,
+            RecruiterIdentity = recruiterIdentity,
+            ActionType = "RATING",
+            RatingValue = rating,
+            Reason = notes,
+            ActionedAt = now
+        }, cancellationToken);
+
+        return new ApplicationRatingUpdate
+        {
+            RatedByRecruiterId = recruiterIdentity,
+            RatedAt = now,
+            RecruiterRating = applicationRecord.RecruiterRating,
+            RecruiterRatingNote = applicationRecord.RecruiterRatingNote
+        };
+    }
+
+    public async Task<ApplicationRatingUpdate?> AddNotesAsync(Guid id, string recruiterIdentity, string notes, CancellationToken cancellationToken = default)
+    {
+        var applicationRecord = await _dbContext.ApplicationRecords.FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+        if (applicationRecord is null) return null;
+
+        var now = DateTimeOffset.UtcNow;
+
+        applicationRecord.RecruiterRatingNote = notes;
+        applicationRecord.UpdatedAt = now;
+
+        await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
+        {
+            ApplicationRecordId = id,
+            RecruiterIdentity = recruiterIdentity,
+            ActionType = "RATING",
+            RatingValue = applicationRecord.RecruiterRating,
+            Reason = notes,
+            ActionedAt = now
+        }, cancellationToken);
+
+        return new ApplicationRatingUpdate
+        {
+            RatedByRecruiterId = applicationRecord.RatedByRecruiterId ?? string.Empty,
+            RatedAt = applicationRecord.RatedAt ?? now,
+            RecruiterRating = applicationRecord.RecruiterRating,
+            RecruiterRatingNote = notes
+        };
+    }
+
+
     public async Task<List<DashboardApplicationDto>> GetDashboardApplicationsAsync(
         GetDashboardApplicationsQuery query,
         CancellationToken cancellationToken = default)
