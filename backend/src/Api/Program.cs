@@ -8,6 +8,7 @@ using Scalar.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
@@ -18,15 +19,22 @@ builder.Services.AddScoped<IngestApplicationHandler>();
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(GetResumesQuery).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(Application.Features.Ingestion.IngestApplicationRequest).Assembly);
 });
+
+// Register Application and Infrastructure DI extensions
+Application.DependencyInjection.AddApplication(builder.Services, builder.Configuration);
+Infrastructure.DependencyInjection.AddInfrastructure(builder.Services, builder.Configuration);
+
+// Register the Email Polling Background Worker
+//builder.Services.AddHostedService<Api.BackgroundServices.EmailPollingWorker>();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
+
     app.MapOpenApi();
     app.MapScalarApiReference();
-}
+
 
 app.MapHealthChecks("/health");
 
@@ -34,5 +42,6 @@ app.MapControllers();
 app.MapIngestEndpoints();
 app.MapDashboardEndpoints();
 app.MapTranscriptEndpoints();
+app.MapApplicationEndpoints();
 
 app.Run();
