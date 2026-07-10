@@ -12,9 +12,15 @@ public static class GradRecruitmentSchemaInitializer
 
         await dbContext.Database.ExecuteSqlRawAsync("""
             ALTER TABLE public."ApplicationRecords"
+                ADD COLUMN IF NOT EXISTS "Id" UUID DEFAULT gen_random_uuid(),
+                ADD COLUMN IF NOT EXISTS "EmailMessageId" VARCHAR(255) NULL,
+                ADD COLUMN IF NOT EXISTS "CandidateName" VARCHAR(255) NULL,
+                ADD COLUMN IF NOT EXISTS "CandidateEmail" VARCHAR(255) NULL,
+                ADD COLUMN IF NOT EXISTS "CandidateGitHubUrl" VARCHAR(2048) NULL,
                 ADD COLUMN IF NOT EXISTS "CvAttachmentId" VARCHAR(2048) NULL,
                 ADD COLUMN IF NOT EXISTS "TranscriptAttachmentId" VARCHAR(2048) NULL,
-                ADD COLUMN IF NOT EXISTS "CandidateGitHubUrl" VARCHAR(2048) NULL,
+                ADD COLUMN IF NOT EXISTS "Status" VARCHAR(50) NULL,
+                ADD COLUMN IF NOT EXISTS "Tier" VARCHAR(20) NULL,
                 ADD COLUMN IF NOT EXISTS "HardGatePassed" BOOLEAN NULL,
                 ADD COLUMN IF NOT EXISTS "HardGateReason" VARCHAR(504) NULL,
                 ADD COLUMN IF NOT EXISTS "HiringAgentTotalScore" NUMERIC(5,2) NULL,
@@ -28,7 +34,9 @@ public static class GradRecruitmentSchemaInitializer
                 ADD COLUMN IF NOT EXISTS "RecruiterRating" SMALLINT NULL,
                 ADD COLUMN IF NOT EXISTS "RecruiterRatingNote" TEXT NULL,
                 ADD COLUMN IF NOT EXISTS "RatedByRecruiterId" VARCHAR(255) NULL,
-                ADD COLUMN IF NOT EXISTS "RatedAt" TIMESTAMPTZ NULL;
+                ADD COLUMN IF NOT EXISTS "RatedAt" TIMESTAMPTZ NULL,
+                ADD COLUMN IF NOT EXISTS "CreatedAt" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                ADD COLUMN IF NOT EXISTS "UpdatedAt" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP;
             """);
     }
 }
