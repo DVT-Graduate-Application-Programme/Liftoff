@@ -132,24 +132,24 @@ export default async function DetailedApplicantInfo({
       <p className="text-sm text-muted-foreground">
         {evaluation.institution.degreeName} · {evaluation.institution.name}
       </p>
-      <div className="w-full flex flex-col md:flex-row justify-center gap-10 pt-10">
+      <div className="w-full flex flex-col md:flex-row items-start justify-center gap-10 pt-10">
         {/* Document Viewer Container */}
-        <section className="flex w-full md:max-w-xl flex-col gap-3">
+        <section className="flex w-full md:max-w-xl md:h-[calc(100vh_-_10rem)] flex-col gap-3">
           <h2 className="font-heading text-xs font-semibold uppercase tracking-wide text-muted-foreground pl-2">
             Applicant documents
           </h2>
-          <Tabs defaultValue="cv" className="flex-1 gap-3">
+          <Tabs defaultValue="cv" className="flex-1 min-h-0 gap-3">
             <TabsList className="self-center">
               <TabsTrigger value="cv">CV</TabsTrigger>
               <TabsTrigger value="transcript">Transcript</TabsTrigger>
             </TabsList>
-            <TabsContent value="cv" className="flex-1">
+            <TabsContent value="cv" className="flex-1 min-h-0">
               <DocumentViewer
                 url={application.documents.cvDocument.url}
                 label="CV"
               />
             </TabsContent>
-            <TabsContent value="transcript" className="flex-1">
+            <TabsContent value="transcript" className="flex-1 min-h-0">
               <DocumentViewer
                 url={application.documents.transcriptDocument?.url ?? null}
                 label="Transcript"

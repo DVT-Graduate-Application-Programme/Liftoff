@@ -17,7 +17,7 @@ const MIN_SCALE = 1;
 const MAX_SCALE = 2.5;
 const SCALE_STEP = 0.25;
 const DEFAULT_SCALE = 1;
-const CONTAINER_PADDING = 16; // matches p-4 (16px) on both sides
+const CONTAINER_PADDING = 16; // matches p-4 (8px) on both sides
 
 export type PdfLoadStatus = "loading" | "ready" | "error";
 
