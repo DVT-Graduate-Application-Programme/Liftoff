@@ -1,8 +1,87 @@
 import ApplicantCard from "@/components/applicant-card/applicant-card";
+import type { CandidateApplication } from "@/types/candidate";
 import { ListFilter, ListOrdered, X } from "lucide-react";
 import React from "react";
+import {
+  formatDate,
+  statusLabels,
+  statusTones,
+  toScorePercent,
+} from "./candidate-list-utils";
 
-const PendingCandidates = () => {
+type PendingCandidatesProps = {
+  applications: CandidateApplication[];
+  onSelectApplication: (application: CandidateApplication) => void;
+};
+
+const startOfToday = () => {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  return date;
+};
+const getStartOfWeek = (date: Date) => {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  const day = start.getDay();
+  const daysSinceMonday = (day + 6) % 7;
+  start.setDate(start.getDate() - daysSinceMonday);
+  return start;
+};
+
+type DateBucket = "today" | "thisWeek" | "lastWeek" | "older";
+
+const getDateBucket = (createdAt: string): DateBucket => {
+  const createdDate = new Date(createdAt);
+  if (Number.isNaN(createdDate.getTime())) return "older";
+
+  const today = startOfToday();
+  const startOfThisWeek = getStartOfWeek(today);
+  const startOfLastWeek = new Date(startOfThisWeek);
+  startOfLastWeek.setDate(startOfThisWeek.getDate() - 7);
+
+  if (createdDate >= today) return "today";
+  if (createdDate >= startOfThisWeek) return "thisWeek";
+  if (createdDate >= startOfLastWeek) return "lastWeek";
+  return "older";
+};
+
+const renderCandidate = (
+  application: CandidateApplication,
+  onSelectApplication: (application: CandidateApplication) => void,
+) => (
+  <ApplicantCard
+    key={application.applicationId}
+    name={application.candidateName}
+    institute={application.cvSummary}
+    systemScore={toScorePercent(application.hiringAgentTotalScore)}
+    statusLabel={statusLabels[application.currentStatus]}
+    statusTone={statusTones[application.currentStatus]}
+    reviewedAt={formatDate(application.createdAt)}
+    showReviewedAt={false}
+    createdAt={application.createdAt}
+    onClick={() => {
+      onSelectApplication(application);
+    }}
+  />
+);
+
+const PendingCandidates = ({
+  applications,
+  onSelectApplication,
+}: PendingCandidatesProps) => {
+  const groupedCandidates = applications.reduce(
+    (groups, application) => {
+      groups[getDateBucket(application.createdAt)].push(application);
+      return groups;
+    },
+    {
+      today: [] as CandidateApplication[],
+      thisWeek: [] as CandidateApplication[],
+      lastWeek: [] as CandidateApplication[],
+      older: [] as CandidateApplication[],
+    },
+  );
+
   return (
     <>
       <section className="flex flex-col gap-6 mb-8">
@@ -52,40 +131,19 @@ const PendingCandidates = () => {
             </h3>
             <div className="h-px flex-1 bg-border"></div>
             <span className="text-[12px] text-muted-foreground font-medium">
-              3 New Applicants
+              {groupedCandidates.today.length} New Applicants
             </span>
           </div>
           <div className="grid grid-cols-1 gap-4">
-            <ApplicantCard
-              name="Sarah Jenkins"
-              institute="BSc Computer Science • 3 Years Exp"
-              grades={[
-                { subject: "Maths", mark: 88 },
-                { subject: "Prog", mark: 92 },
-                { subject: "IT", mark: 79 },
-              ]}
-              systemScore={86.3}
-            />
-            <ApplicantCard
-              name="Neo Rankapole"
-              institute="BSc Computer Science • 1 Years Exp"
-              grades={[
-                { subject: "Maths", mark: 97 },
-                { subject: "Prog", mark: 99 },
-                { subject: "IT", mark: 99 },
-              ]}
-              systemScore={99.65}
-            />
-            <ApplicantCard
-              name="Jake Benkins"
-              institute="BSc Computer Science • 3 Years Exp"
-              grades={[
-                { subject: "Maths", mark: 83 },
-                { subject: "Prog", mark: 78 },
-                { subject: "IT", mark: 60 },
-              ]}
-              systemScore={86.3}
-            />
+            {groupedCandidates.today.length > 0 ? (
+              groupedCandidates.today.map((application) =>
+                renderCandidate(application, onSelectApplication),
+              )
+            ) : (
+              <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                No pending applicants received today.
+              </p>
+            )}
           </div>
         </section>
 
@@ -97,23 +155,67 @@ const PendingCandidates = () => {
             </h3>
             <div className="h-px flex-1 bg-border"></div>
             <span className="text-[12px] text-muted-foreground font-medium">
-              12 Applicants
+              {groupedCandidates.thisWeek.length} Applicants
             </span>
           </div>
           <div className="grid grid-cols-1 gap-4">
-            <ApplicantCard
-              name="Sarah Jenkins"
-              institute="BSc Computer Science • 3 Years Exp"
-              grades={[
-                { subject: "Maths", mark: 88 },
-                { subject: "Prog", mark: 92 },
-                { subject: "IT", mark: 79 },
-              ]}
-              systemScore={86.3}
-            />
-            <div className="flex items-center justify-center py-8 border-2 border-dashed border-border rounded-xl text-muted-foreground font-medium hover:bg-muted transition-colors cursor-pointer">
-              Load 11 More Applicants
-            </div>
+            {groupedCandidates.thisWeek.length > 0 ? (
+              groupedCandidates.thisWeek.map((application) =>
+                renderCandidate(application, onSelectApplication),
+              )
+            ) : (
+              <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                No pending applicants from earlier this week.
+              </p>
+            )}
+          </div>
+        </section>
+
+        {/* Last week section */}
+        <section>
+          <div className="flex items-center gap-4 mb-4">
+            <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
+              Last Week
+            </h3>
+            <div className="h-px flex-1 bg-border"></div>
+            <span className="text-[12px] text-muted-foreground font-medium">
+              {groupedCandidates.lastWeek.length} Applicants
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-4">
+            {groupedCandidates.lastWeek.length > 0 ? (
+              groupedCandidates.lastWeek.map((application) =>
+                renderCandidate(application, onSelectApplication),
+              )
+            ) : (
+              <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                No pending applicants from last week.
+              </p>
+            )}
+          </div>
+        </section>
+
+        {/* Older section */}
+        <section>
+          <div className="flex items-center gap-4 mb-4">
+            <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
+              Older
+            </h3>
+            <div className="h-px flex-1 bg-border"></div>
+            <span className="text-[12px] text-muted-foreground font-medium">
+              {groupedCandidates.older.length} Applicants
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-4">
+            {groupedCandidates.older.length > 0 ? (
+              groupedCandidates.older.map((application) =>
+                renderCandidate(application, onSelectApplication),
+              )
+            ) : (
+              <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                No older pending applicants.
+              </p>
+            )}
           </div>
         </section>
       </div>

@@ -18,8 +18,8 @@ function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
         <div>
           <h1 className="text-primary font-extrabold text-3xl">DVT</h1>
         </div>
-        <NavSearchBar />
       </div>
+      <NavSearchBar />
       <div className="flex gap-2">
         <Button variant="ghost" size="icon" aria-label="Notifications">
           <Bell />

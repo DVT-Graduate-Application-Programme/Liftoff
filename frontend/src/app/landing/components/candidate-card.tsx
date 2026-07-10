@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertTriangle, GitBranch, ShieldAlert, UserCheck } from "lucide-react";
+import { AlertTriangle, ShieldAlert, UserCheck } from "lucide-react";
 import {
   Card,
   CardAction,
@@ -54,7 +54,6 @@ const CandidateCard = ({
   hiringAgentTotalScore,
   cvSummary,
   flags,
-  candidateGitHubUrl,
   claimedByRecruiterId,
   shortlistedByRecruiterId,
   createdAt,
@@ -107,17 +106,6 @@ const CandidateCard = ({
 
       <CardFooter className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
         <div className="flex items-center gap-3">
-          {candidateGitHubUrl && (
-            <a
-              href={candidateGitHubUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1 hover:text-foreground"
-            >
-              <GitBranch className="size-3.5" />
-              GitHub
-            </a>
-          )}
           {(shortlistedByRecruiterId || claimedByRecruiterId) && (
             <span className="flex items-center gap-1">
               <UserCheck className="size-3.5" />
