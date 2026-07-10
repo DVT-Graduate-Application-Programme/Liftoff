@@ -30,6 +30,8 @@ public interface IApplicationRecordRepository
         string status,
         decimal totalScore,
         string tier,
+        bool hardGatePassed,
+        string hardGateReason,
         string? cvSummary,
         JsonDocument? flagsJson,
         CancellationToken cancellationToken = default);

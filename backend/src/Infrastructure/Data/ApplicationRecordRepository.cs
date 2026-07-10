@@ -305,6 +305,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         string status,
         decimal totalScore,
         string tier,
+        bool hardGatePassed,
+        string hardGateReason,
         string? cvSummary,
         JsonDocument? flagsJson,
         CancellationToken cancellationToken = default)
@@ -321,7 +323,10 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
 
         applicationRecord.Status = status;
         applicationRecord.Tier = tier;
+        applicationRecord.HardGatePassed = hardGatePassed;
+        applicationRecord.HardGateReason = hardGateReason;
         applicationRecord.HiringAgentTotalScore = totalScore;
+        applicationRecord.HiringAgentExplanation = cvSummary;
         applicationRecord.CvSummary = cvSummary;
         applicationRecord.FlagsJson = flagsJson;
         applicationRecord.UpdatedAt = DateTimeOffset.UtcNow;

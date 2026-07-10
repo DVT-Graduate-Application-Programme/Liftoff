@@ -34,6 +34,8 @@ public class IngestEvaluationHandler
             };
         }
 
+        var totalScore = DeriveTotalScore(request.Scores);
+
         var evaluation = new HiringAgentEvaluation
         {
             CategoryScoresJson = ToJsonDocument(request.Scores),
@@ -54,14 +56,18 @@ public class IngestEvaluationHandler
             : [];
 
         var status = request.PromptInjectionDetected ? "MANUAL_REVIEW" : "VALID";
-        var tier = DeriveTier(request.Scores.Total.Score, request.Scores.Total.Max);
+        var tier = DeriveTier(totalScore.Score, totalScore.Max);
+        var hardGate = DeriveHardGate(request.Scores.Education);
+        var summary = BuildSummary(request, totalScore);
         var saved = await _repository.AddEvaluationAsync(
             applicationId,
             evaluation,
             status,
-            (decimal)request.Scores.Total.Score,
+            (decimal)totalScore.Score,
             tier,
-            BuildSummary(request),
+            hardGate.Passed,
+            hardGate.Reason,
+            summary,
             ToJsonDocument(flags),
             cancellationToken);
 
@@ -100,11 +106,11 @@ public class IngestEvaluationHandler
         };
     }
 
-    private static string BuildSummary(IngestEvaluationCommand request)
+    private static string BuildSummary(IngestEvaluationCommand request, DerivedTotalScore totalScore)
     {
         if (request.KeyStrengths.Count == 0 && request.AreasForImprovement.Count == 0)
         {
-            return $"Total score: {request.Scores.Total.Score}/{request.Scores.Total.Max}.";
+            return $"Total score: {totalScore.Score}/{totalScore.Max}.";
         }
 
         var strengths = request.KeyStrengths.Count == 0
@@ -115,10 +121,26 @@ public class IngestEvaluationHandler
             ? "No improvement areas supplied"
             : string.Join("; ", request.AreasForImprovement);
 
-        return $"Total score: {request.Scores.Total.Score}/{request.Scores.Total.Max}. Strengths: {strengths}. Improvements: {improvements}.";
+        return $"Total score: {totalScore.Score}/{totalScore.Max}. Strengths: {strengths}. Improvements: {improvements}.";
     }
 
-    private static string DeriveTier(double score, int maxScore)
+    private static DerivedTotalScore DeriveTotalScore(EvaluationScoresDto scores)
+    {
+        var categories = new ScoreCategoryDto[]
+        {
+            scores.Education,
+            scores.OpenSource,
+            scores.SelfProjects,
+            scores.Production,
+            scores.TechnicalSkills
+        };
+
+        return new DerivedTotalScore(
+            categories.Sum(category => category.Score),
+            categories.Sum(category => category.Max));
+    }
+
+    private static string DeriveTier(double score, double maxScore)
     {
         if (score <= 0 || maxScore <= 0)
         {
@@ -134,4 +156,40 @@ public class IngestEvaluationHandler
             _ => "WEAK"
         };
     }
+
+    private static HardGateResult DeriveHardGate(EducationScoreDto education)
+    {
+        var track = Normalize(education.Track);
+        var academicRequirement = Normalize(education.AcademicRequirementMet);
+        var experienceRequirement = Normalize(education.ExperienceRequirementMet);
+
+        return track switch
+        {
+            "formal_it" or "related_field" when academicRequirement == "met" =>
+                new HardGateResult(true, "Academic requirement met."),
+            "formal_it" or "related_field" when academicRequirement == "unclear_needs_review" =>
+                new HardGateResult(false, "Academic requirement unclear; needs review."),
+            "formal_it" or "related_field" =>
+                new HardGateResult(false, "Academic requirement not met."),
+            "self_taught" when experienceRequirement == "met" =>
+                new HardGateResult(true, "Experience requirement met."),
+            "self_taught" when experienceRequirement == "unclear_needs_review" =>
+                new HardGateResult(false, "Experience requirement unclear; needs review."),
+            "self_taught" =>
+                new HardGateResult(false, "Experience requirement not met."),
+            "unrelated" =>
+                new HardGateResult(false, "Education track is unrelated."),
+            _ =>
+                new HardGateResult(false, "Education track unclear; needs review.")
+        };
+    }
+
+    private static string Normalize(string value)
+    {
+        return value.Trim().ToLowerInvariant();
+    }
+
+    private sealed record DerivedTotalScore(float Score, float Max);
+
+    private sealed record HardGateResult(bool Passed, string Reason);
 }
