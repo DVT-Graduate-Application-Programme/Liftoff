@@ -2,5 +2,5 @@ using MediatR;
 
 namespace Backend.Application.Queries.GetCandidate;
 
-public record GetCandidateQuery(int Id)
+public record GetCandidateQuery(Guid Id)
     : IRequest<CandidateDto?>;
