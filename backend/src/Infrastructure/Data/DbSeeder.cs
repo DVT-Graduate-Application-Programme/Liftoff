@@ -79,7 +79,7 @@ public static class DbSeeder
         {
             Id = Eval1Id,
             ApplicationRecordId = App1Id,
-            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
+            AiSummary = "AI Summary: A standout profile with a solid foundation in modern full-stack frameworks and scalable architectures. Demonstrated leadership in academic projects.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 23.0, "max": 25 },
@@ -138,7 +138,7 @@ public static class DbSeeder
         {
             Id = Eval2Id,
             ApplicationRecordId = App2Id,
-            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
+            AiSummary = "AI Summary: Profile lacks substantial evidence of practical coding experience beyond basic coursework. Assessment scores were significantly below the required threshold.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 20.0, "max": 25 },
@@ -199,7 +199,7 @@ public static class DbSeeder
         {
             Id = Eval3Id,
             ApplicationRecordId = App3Id,
-            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
+            AiSummary = "AI Summary: Shows promise with front-end technologies, but backend experience is limited. Might need additional ramp-up time compared to top-tier candidates.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 23.0, "max": 25 },
@@ -259,7 +259,7 @@ public static class DbSeeder
         {
             Id = Eval4Id,
             ApplicationRecordId = App4Id,
-            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
+            AiSummary = "AI Summary: Exceptional open-source contributions and deep understanding of cloud infrastructure. A highly competitive candidate with proven production-level skills.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 25.0, "max": 25 },
@@ -317,7 +317,7 @@ public static class DbSeeder
         {
             Id = Eval5Id,
             ApplicationRecordId = App5Id,
-            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
+            AiSummary = "AI Summary: Possesses good foundational knowledge and communication skills, though technical portfolio lacks complexity. Could be a fit with the right mentorship.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 21.0, "max": 25 },
@@ -362,7 +362,7 @@ public static class DbSeeder
             CandidateEmail = "chloe.bennett@example.com",
             CandidateGitHubUrl = null,
             Status = "rejected",
-            Tier = "D",
+            Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "Degree not in a qualifying IT or STEM discipline. Bootcamp HTML/CSS training is insufficient to compensate for the missing academic requirement.",
             HiringAgentTotalScore = 38.0m,
@@ -376,7 +376,7 @@ public static class DbSeeder
         {
             Id = Eval6Id,
             ApplicationRecordId = App6Id,
-            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
+            AiSummary = "AI Summary: Did not pass the initial hard-gate screening due to insufficient graduation credentials and low technical scoring across the board.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score":  8.0, "max": 25 },
@@ -436,7 +436,7 @@ public static class DbSeeder
         {
             Id = Eval7Id,
             ApplicationRecordId = App7Id,
-            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
+            AiSummary = "AI Summary: Outstanding academic record combined with relevant internship experience. Strong problem-solving capabilities evidenced by their algorithmic project work.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 24.0, "max": 25 },
@@ -494,7 +494,7 @@ public static class DbSeeder
         {
             Id = Eval8Id,
             ApplicationRecordId = App8Id,
-            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
+            AiSummary = "AI Summary: The candidate's technical skills appear very rudimentary. Minimal project history and poor performance in the technical evaluation phase.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 16.0, "max": 25 },
@@ -552,7 +552,7 @@ public static class DbSeeder
         {
             Id = Eval9Id,
             ApplicationRecordId = App9Id,
-            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
+            AiSummary = "AI Summary: While showing enthusiasm, the candidate currently lacks the necessary practical experience and core competencies required for this role.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 15.0, "max": 25 },
@@ -597,7 +597,7 @@ public static class DbSeeder
             CandidateEmail = "tomas.reyes@example.com",
             CandidateGitHubUrl = null,
             Status = "rejected",
-            Tier = "D",
+            Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "Degree is in Culinary Arts – not an IT, Computer Science, or STEM discipline. No evidence of self-taught programming or compensating technical experience.",
             HiringAgentTotalScore = 12.0m,
@@ -611,7 +611,7 @@ public static class DbSeeder
         {
             Id = Eval10Id,
             ApplicationRecordId = App10Id,
-            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
+            AiSummary = "AI Summary: Fails to meet the baseline technical requirements. Limited exposure to our required tech stack and no significant project work demonstrated.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score":  0.0, "max": 25 },
@@ -656,7 +656,7 @@ public static class DbSeeder
             CandidateEmail = "harriet.langley@example.com",
             CandidateGitHubUrl = null,
             Status = "rejected",
-            Tier = "D",
+            Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "MBA is a postgraduate business qualification, not an IT or STEM degree. Undergraduate degree is in History. No compensating technical background identified.",
             HiringAgentTotalScore = 8.0m,
@@ -670,7 +670,7 @@ public static class DbSeeder
         {
             Id = Eval11Id,
             ApplicationRecordId = App11Id,
-            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
+            AiSummary = "AI Summary: Profile does not align with our engineering standards. Missing key technical skills and practical application experience.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score":  0.0, "max": 25 },
@@ -715,7 +715,7 @@ public static class DbSeeder
             CandidateEmail = "derek.hobson@example.com",
             CandidateGitHubUrl = null,
             Status = "rejected",
-            Tier = "D",
+            Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "Degree is in Physical Geography – not an IT or STEM computing discipline. Attempted prompt injection detected in CV; application automatically rejected.",
             HiringAgentTotalScore = 5.0m,
@@ -729,7 +729,7 @@ public static class DbSeeder
         {
             Id = Eval12Id,
             ApplicationRecordId = App12Id,
-            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
+            AiSummary = "AI Summary: Candidate did not demonstrate sufficient proficiency in required languages or frameworks. Overall evaluation score is too low to proceed.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score":  0.0, "max": 25 },
