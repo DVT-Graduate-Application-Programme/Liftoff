@@ -16,6 +16,11 @@ import type { ApplicantDetailsEvaluation } from "./components/applicant-details/
 type DashboardApplicationsResponse = {
   applications: CandidateApplication[];
 };
+type ClaimOwnershipResponse = {
+  claimedByRecruiterId: string | null;
+};
+
+const ACTIVE_RECRUITER_ID = "recruiter1@company.com";
 
 const LandingPage = () => {
   const [applications, setApplications] = useState<CandidateApplication[]>([]);
@@ -25,6 +30,9 @@ const LandingPage = () => {
     useState<ApplicantDetailsEvaluation | null>(null);
   const [isLoadingApplications, setIsLoadingApplications] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [claimingApplicationId, setClaimingApplicationId] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     let isCurrent = true;
@@ -112,6 +120,62 @@ const LandingPage = () => {
     [applications],
   );
 
+  const handleClaimApplication = async (application: CandidateApplication) => {
+    if (
+      application.claimedByRecruiterId === ACTIVE_RECRUITER_ID ||
+      claimingApplicationId === application.applicationId
+    ) {
+      return;
+    }
+
+    setClaimingApplicationId(application.applicationId);
+
+    try {
+      const response = await fetch(
+        `/api/applications/${application.applicationId}/ownership/claim`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            recruiterIdentity: ACTIVE_RECRUITER_ID,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Unable to claim candidate for review.");
+      }
+
+      const data = (await response.json()) as ClaimOwnershipResponse;
+      const claimedByRecruiterId =
+        data.claimedByRecruiterId ?? ACTIVE_RECRUITER_ID;
+
+      setApplications((currentApplications) =>
+        currentApplications.map((currentApplication) =>
+          currentApplication.applicationId === application.applicationId
+            ? { ...currentApplication, claimedByRecruiterId }
+            : currentApplication,
+        ),
+      );
+
+      setSelectedApplication((currentSelection) =>
+        currentSelection?.applicationId === application.applicationId
+          ? { ...currentSelection, claimedByRecruiterId }
+          : currentSelection,
+      );
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Unable to claim candidate for review.",
+      );
+    } finally {
+      setClaimingApplicationId(null);
+    }
+  };
+
   return (
     <div className="w-full overflow-hidden">
       <SidebarProvider defaultOpen={false} className="min-h-0 w-full">
@@ -150,6 +214,9 @@ const LandingPage = () => {
                   <AllCandidates
                     applications={applications}
                     onSelectApplication={setSelectedApplication}
+                    onClaimApplication={handleClaimApplication}
+                    claimingApplicationId={claimingApplicationId}
+                    activeRecruiterId={ACTIVE_RECRUITER_ID}
                   />
                 </TabsContent>
                 <TabsContent value="accepted">

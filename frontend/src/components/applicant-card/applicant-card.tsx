@@ -1,4 +1,3 @@
-import { Check, GitBranch, Link2, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -13,14 +12,18 @@ type ApplicantCardProps = {
   scoreLabel?: string;
   statusLabel?: string;
   statusTone?: StatusTone;
+  showInstitute?: boolean;
   reviewedAt?: string;
   showReviewedAt?: boolean;
   createdAt?: string;
   recruiterLabel?: string;
   recruiterName?: string;
-  candidateGitHubUrl?: string | null;
   actionLabel?: string;
   onClick?: () => void;
+  secondaryActionLabel?: string;
+  onSecondaryActionClick?: () => void;
+  isSecondaryActionDisabled?: boolean;
+  isSecondaryActionLoading?: boolean;
 };
 
 function getScoreColor(score: number) {
@@ -48,12 +51,6 @@ const statusStyles = {
   },
 } satisfies Record<StatusTone, { border: string; text: string }>;
 
-function getScoreTone(score: number): StatusTone {
-  if (score >= 80) return "positive";
-  if (score >= 65) return "warning";
-  return "negative";
-}
-
 function ScoreTag({ score }: { score: number }) {
   return (
     <div className="flex min-w-12 justify-center">
@@ -72,8 +69,10 @@ function ScoreTag({ score }: { score: number }) {
 function InfoRow({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      <span className="font-medium uppercase tracking-widest">{label}</span>
-      <span className="min-w-0 truncate text-foreground">{children}</span>
+      <span className="font-medium tracking-widest">{label}</span>
+      <span className="min-w-0 flex-1 truncate text-foreground">
+        {children}
+      </span>
     </div>
   );
 }
@@ -97,14 +96,18 @@ export default function ApplicantCard({
   scoreLabel = "System Score",
   statusLabel = "Pending",
   statusTone,
+  showInstitute = true,
   reviewedAt,
   createdAt,
   showReviewedAt = true,
   recruiterLabel,
   recruiterName,
-  candidateGitHubUrl,
   actionLabel = "Show AI Review",
   onClick,
+  secondaryActionLabel,
+  onSecondaryActionClick,
+  isSecondaryActionDisabled = false,
+  isSecondaryActionLoading = false,
 }: ApplicantCardProps) {
   const initials = name
     .split(" ")
@@ -112,7 +115,7 @@ export default function ApplicantCard({
     .join("")
     .slice(0, 2)
     .toUpperCase();
-  const currentStatusTone = statusTone ?? getScoreTone(systemScore);
+  const currentStatusTone = statusTone ?? "positive";
   const statusStyle = statusStyles[currentStatusTone];
   const daysAgo = createdAt ? getDaysAgo(createdAt) : null;
 
@@ -129,7 +132,7 @@ export default function ApplicantCard({
         }
       }}
       className={cn(
-        "group relative flex cursor-pointer items-center gap-4 rounded-xl border bg-card p-4",
+        "group relative flex cursor-pointer items-center gap-3 rounded-xl border bg-card p-4",
         "border-l-4 border-border transition-all hover:-translate-y-px",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
         statusStyle.border,
@@ -141,34 +144,21 @@ export default function ApplicantCard({
 
       <div className="min-w-0 flex-1">
         <h4 className="font-semibold leading-tight text-foreground">{name}</h4>
-        <p className="mt-0.5 truncate text-xs text-muted-foreground">
-          {institute}
-        </p>
-        {(recruiterName || candidateGitHubUrl) && (
+        {showInstitute && (
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+            {institute}
+          </p>
+        )}
+        {recruiterName && (
           <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
-            {recruiterName && (
-              <InfoRow label={recruiterLabel ?? "Recruiter"}>
-                {recruiterName}
-              </InfoRow>
-            )}
-            {candidateGitHubUrl && (
-              <a
-                href={candidateGitHubUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1 text-xs text-primary hover:underline"
-                onClick={(event) => event.stopPropagation()}
-              >
-                <GitBranch className="size-3.5" />
-                GitHub
-                <Link2 className="size-3" />
-              </a>
-            )}
+            <InfoRow label={recruiterLabel ?? "Recruiter"}>
+              {recruiterName}
+            </InfoRow>
           </div>
         )}
       </div>
 
-      <div className="hidden w-[13rem] shrink-0 items-center justify-center gap-4 sm:flex">
+      <div className="hidden w-[10rem] shrink-0 items-center justify-center gap-2 sm:flex">
         <div className="flex w-20 flex-col items-center gap-0.5">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
             {scoreLabel}
@@ -188,7 +178,7 @@ export default function ApplicantCard({
         )}
       </div>
 
-      <div className="flex w-20 shrink-0 flex-col items-center justify-center gap-0.5 sm:ml-1 md:ml-2">
+      <div className="flex w-16 shrink-0 flex-col items-center justify-center gap-0.5 sm:ml-0 md:ml-1">
         <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
           Status
         </span>
@@ -200,7 +190,7 @@ export default function ApplicantCard({
       </div>
 
       {showReviewedAt && reviewedAt && (
-        <div className="hidden w-36 shrink-0 flex-col items-end gap-0.5 pl-4 md:flex">
+        <div className="hidden w-28 shrink-0 flex-col items-end gap-0.5 pl-2 md:flex">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
             Reviewed
           </span>
@@ -211,7 +201,7 @@ export default function ApplicantCard({
       )}
 
       {daysAgo !== null && daysAgo >= 1 && (
-        <div className="hidden w-40 shrink-0 flex-col items-center gap-0.5 pl-4 md:flex">
+        <div className="hidden w-32 shrink-0 flex-col items-center gap-0.5 pl-2 md:flex">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
             Applied
           </span>
@@ -222,7 +212,36 @@ export default function ApplicantCard({
       )}
 
       <div className="flex shrink-0 items-center gap-2 pl-2">
-        <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+        {secondaryActionLabel ? (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="w-32 justify-center gap-1.5 text-xs"
+            disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
+            onClick={(event) => {
+              event.stopPropagation();
+              onSecondaryActionClick?.();
+            }}
+          >
+            <span>
+              {isSecondaryActionLoading ? "Claiming..." : secondaryActionLabel}
+            </span>
+          </Button>
+        ) : null}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className={cn(
+            "gap-1.5 text-xs",
+            secondaryActionLabel ? "w-32 justify-center" : undefined,
+          )}
+          onClick={(event) => {
+            event.stopPropagation();
+            onClick?.();
+          }}
+        >
           <span>{actionLabel}</span>
         </Button>
       </div>
