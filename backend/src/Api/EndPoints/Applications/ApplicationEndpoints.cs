@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.IO;
 using System.Threading;
 
 namespace Api.EndPoints.Applications;
@@ -108,22 +109,68 @@ public static class ApplicationEndpoints
         })
         .WithName("ShortlistApplicationOwnership");
 
-        // GET /api/applications/{id}/{attachmentId}
-        // Downloads a specific email attachment from Microsoft Graph for a given application
-        group.MapGet("/{id:guid}/{attachmentId}", async (Guid id, string attachmentId, IApplicationRecordRepository repo, IGraphEmailService graph, IConfiguration config, CancellationToken ct) =>
+        // GET /api/applications/{id}/cv
+        // Serves the seeded PDF CV for the given candidate.
+        group.MapGet("/{id:guid}/cv", (Guid id) =>
         {
-            var application = await repo.GetByIdAsync(id, ct);
-            if (application is null) return Results.NotFound("Application not found.");
+            var possiblePaths = new[]
+            {
+                Path.Combine(Directory.GetCurrentDirectory(), "src", "Infrastructure", "Data", "SeedDocuments"),
+                Path.Combine(Directory.GetCurrentDirectory(), "..", "Infrastructure", "Data", "SeedDocuments")
+            };
+            string folder = possiblePaths.FirstOrDefault(Directory.Exists) ?? possiblePaths[0];
+            var filePath = Path.Combine(folder, $"{id}_cv.pdf");
 
-            var pollingInbox = config["Graph:PollingInbox"];
-            if (string.IsNullOrEmpty(pollingInbox)) return Results.Problem("Graph:PollingInbox is not configured on the server.");
-
-            var attachment = await graph.GetAttachmentByIdAsync(pollingInbox, application.EmailMessageId, attachmentId, ct);
-            if (attachment is null) return Results.NotFound("Attachment not found in Microsoft Graph.");
-
-            return Results.File(attachment.ContentBytes, attachment.ContentType, attachment.Name);
+            if (!File.Exists(filePath))
+            {
+                return Results.NotFound("CV not found.");
+            }
+            return Results.File(filePath, "application/pdf", $"{id}_cv.pdf");
         })
-        .WithName("GetAttachmentById");
+        .WithName("GetApplicationCv");
+
+        // GET /api/applications/{id}/transcript
+        // Serves the seeded PDF transcript for the given candidate.
+        group.MapGet("/{id:guid}/transcript", (Guid id) =>
+        {
+            var possiblePaths = new[]
+            {
+                Path.Combine(Directory.GetCurrentDirectory(), "src", "Infrastructure", "Data", "SeedDocuments"),
+                Path.Combine(Directory.GetCurrentDirectory(), "..", "Infrastructure", "Data", "SeedDocuments")
+            };
+            string folder = possiblePaths.FirstOrDefault(Directory.Exists) ?? possiblePaths[0];
+            var filePath = Path.Combine(folder, $"{id}_transcript.pdf");
+
+            if (!File.Exists(filePath))
+            {
+                return Results.NotFound("Transcript not found.");
+            }
+            return Results.File(filePath, "application/pdf", $"{id}_transcript.pdf");
+        })
+        .WithName("GetApplicationTranscript");
+
+        // ── Graph attachment endpoint – disabled for POC ──
+        // Fetches a CV/transcript attachment directly from Microsoft Graph using the email
+        // message ID stored on the application record. Requires Graph:PollingInbox config.
+        //
+        // group.MapGet("/{id:guid}/{attachmentId}", async (Guid id, string attachmentId,
+        //     IApplicationRecordRepository repo, IGraphEmailService graph,
+        //     IConfiguration config, CancellationToken ct) =>
+        // {
+        //     var application = await repo.GetByIdAsync(id, ct);
+        //     if (application is null) return Results.NotFound("Application not found.");
+        //
+        //     var pollingInbox = config["Graph:PollingInbox"];
+        //     if (string.IsNullOrEmpty(pollingInbox))
+        //         return Results.Problem("Graph:PollingInbox is not configured on the server.");
+        //
+        //     var attachment = await graph.GetAttachmentByIdAsync(
+        //         pollingInbox, application.EmailMessageId, attachmentId, ct);
+        //     if (attachment is null) return Results.NotFound("Attachment not found in Microsoft Graph.");
+        //
+        //     return Results.File(attachment.ContentBytes, attachment.ContentType, attachment.Name);
+        // })
+        // .WithName("GetAttachmentById");
     }
 
     public class ClaimOwnershipRequest
