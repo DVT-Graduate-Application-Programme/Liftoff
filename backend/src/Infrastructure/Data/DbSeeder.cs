@@ -65,7 +65,7 @@ public static class DbSeeder
             CandidateEmail = "joseph@example.com",
             CandidateGitHubUrl = "https://github.com/joseph-dev-grad",
             Status = "evaluated",
-            Tier = "A",
+            Tier = "Strong",
             HardGatePassed = true,
             HardGateReason = null,
             HiringAgentTotalScore = 77.0m,
@@ -79,6 +79,7 @@ public static class DbSeeder
         {
             Id = Eval1Id,
             ApplicationRecordId = App1Id,
+            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 23.0, "max": 25 },
@@ -123,7 +124,7 @@ public static class DbSeeder
             CandidateEmail = "alex.turner@example.com",
             CandidateGitHubUrl = null,
             Status = "evaluated",
-            Tier = "C",
+            Tier = "Weak",
             HardGatePassed = true,
             HardGateReason = null,
             HiringAgentTotalScore = 56.0m,
@@ -137,6 +138,7 @@ public static class DbSeeder
         {
             Id = Eval2Id,
             ApplicationRecordId = App2Id,
+            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 20.0, "max": 25 },
@@ -181,7 +183,7 @@ public static class DbSeeder
             CandidateEmail = "priya.sharma@example.com",
             CandidateGitHubUrl = "https://github.com/josephexample-dev",
             Status = "shortlisted",
-            Tier = "B",
+            Tier = "Borderline",
             HardGatePassed = true,
             HardGateReason = null,
             HiringAgentTotalScore = 75.0m,
@@ -197,6 +199,7 @@ public static class DbSeeder
         {
             Id = Eval3Id,
             ApplicationRecordId = App3Id,
+            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 23.0, "max": 25 },
@@ -241,7 +244,7 @@ public static class DbSeeder
             CandidateEmail = "liam.obrien@example.com",
             CandidateGitHubUrl = "https://github.com/liam-obrien-dev",
             Status = "forwarded",
-            Tier = "A",
+            Tier = "Strong",
             HardGatePassed = true,
             HiringAgentTotalScore = 91.0m,
             HiringAgentExplanation = "Exceptional full-stack candidate. Ships production-grade React + Node.js apps, has two SWE internships, and maintains an open-source React form library with thousands of weekly downloads.",
@@ -256,6 +259,7 @@ public static class DbSeeder
         {
             Id = Eval4Id,
             ApplicationRecordId = App4Id,
+            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 25.0, "max": 25 },
@@ -300,7 +304,7 @@ public static class DbSeeder
             CandidateEmail = "amara.diallo@example.com",
             CandidateGitHubUrl = "https://github.com/amara-fullstack",
             Status = "evaluated",
-            Tier = "B",
+            Tier = "Borderline",
             HardGatePassed = true,
             HiringAgentTotalScore = 69.0m,
             HiringAgentExplanation = "Solid full-stack candidate with a well-rounded Vue/Django skill set and a meaningful 12-month placement year. GitHub is consistent but no external OSS contributions.",
@@ -313,6 +317,7 @@ public static class DbSeeder
         {
             Id = Eval5Id,
             ApplicationRecordId = App5Id,
+            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 21.0, "max": 25 },
@@ -371,6 +376,7 @@ public static class DbSeeder
         {
             Id = Eval6Id,
             ApplicationRecordId = App6Id,
+            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score":  8.0, "max": 25 },
@@ -415,7 +421,7 @@ public static class DbSeeder
             CandidateEmail = "ravi.nair@example.com",
             CandidateGitHubUrl = "https://github.com/ravi-builds",
             Status = "shortlisted",
-            Tier = "A",
+            Tier = "Strong",
             HardGatePassed = true,
             HiringAgentTotalScore = 80.0m,
             HiringAgentExplanation = "Strong full-stack profile with React/Spring Boot experience, a 6-month ThoughtWorks internship, and well-tested deployed projects. Comfortable across the entire stack.",
@@ -430,6 +436,7 @@ public static class DbSeeder
         {
             Id = Eval7Id,
             ApplicationRecordId = App7Id,
+            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 24.0, "max": 25 },
@@ -474,7 +481,7 @@ public static class DbSeeder
             CandidateEmail = "sophie.walsh@example.com",
             CandidateGitHubUrl = "https://github.com/sophiewalsh-dev",
             Status = "evaluated",
-            Tier = "C",
+            Tier = "Weak",
             HardGatePassed = true,
             HiringAgentTotalScore = 54.0m,
             HiringAgentExplanation = "Some interest in full-stack development but projects are predominantly static front-end. The only backend work is a tutorial-level Express server with no database. No production software experience.",
@@ -487,6 +494,7 @@ public static class DbSeeder
         {
             Id = Eval8Id,
             ApplicationRecordId = App8Id,
+            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 16.0, "max": 25 },
@@ -531,7 +539,7 @@ public static class DbSeeder
             CandidateEmail = "marcus.okafor@example.com",
             CandidateGitHubUrl = null,
             Status = "evaluated",
-            Tier = "C",
+            Tier = "Weak",
             HardGatePassed = true,
             HiringAgentTotalScore = 44.0m,
             HiringAgentExplanation = "Meets the minimum academic requirement but cannot demonstrate any meaningful full-stack capability. No GitHub, no deployed project, no relevant work experience in software.",
@@ -544,6 +552,7 @@ public static class DbSeeder
         {
             Id = Eval9Id,
             ApplicationRecordId = App9Id,
+            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 15.0, "max": 25 },
@@ -602,6 +611,7 @@ public static class DbSeeder
         {
             Id = Eval10Id,
             ApplicationRecordId = App10Id,
+            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score":  0.0, "max": 25 },
@@ -660,6 +670,7 @@ public static class DbSeeder
         {
             Id = Eval11Id,
             ApplicationRecordId = App11Id,
+            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score":  0.0, "max": 25 },
@@ -718,6 +729,7 @@ public static class DbSeeder
         {
             Id = Eval12Id,
             ApplicationRecordId = App12Id,
+            AiSummary = "AI Summary: The candidate demonstrates clear strengths in technical execution and problem solving, but may require some mentoring in advanced architecture patterns.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score":  0.0, "max": 25 },
