@@ -21,12 +21,15 @@ export function PdfViewer({
   className?: string;
 }) {
   const {
+    containerRef,
     status,
     numPages,
     pageNumber,
     scale,
+    renderScale,
     onDocumentLoadSuccess,
     onDocumentLoadError,
+    onPageLoadSuccess,
     goToPrevPage,
     goToNextPage,
     zoomIn,
@@ -57,9 +60,10 @@ export function PdfViewer({
         />
       )}
       <CardContent
+        ref={containerRef}
         className={cn(
-          "flex flex-1 items-center justify-center overflow-auto p-4",
-          status !== "ready" && "min-h-64",
+          "flex-1 overflow-auto p-2",
+          status !== "ready" && "flex min-h-64 items-center justify-center",
         )}
       >
         {status === "error" ? (
@@ -74,10 +78,16 @@ export function PdfViewer({
             file={resolvedUrl}
             onLoadSuccess={onDocumentLoadSuccess}
             onLoadError={onDocumentLoadError}
-            loading={<Skeleton className="h-96 w-full" />}
+            loading={<Skeleton className="aspect-[8.5/11] w-full max-w-md" />}
             error={null}
+            className="mx-auto w-fit"
           >
-            <Page pageNumber={pageNumber} scale={scale} />
+            <Page
+              pageNumber={pageNumber}
+              scale={renderScale}
+              onLoadSuccess={onPageLoadSuccess}
+              className="shadow-sm ring-0.5 ring-border"
+            />
           </Document>
         )}
       </CardContent>

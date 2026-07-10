@@ -1,8 +1,11 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { pdfjs } from "react-pdf";
-import type { DocumentCallback } from "react-pdf/dist/shared/types.js";
+import type {
+  DocumentCallback,
+  PageCallback,
+} from "react-pdf/dist/shared/types.js";
 
 // Configured once when app loads
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -14,14 +17,31 @@ const MIN_SCALE = 1;
 const MAX_SCALE = 2.5;
 const SCALE_STEP = 0.25;
 const DEFAULT_SCALE = 1;
+const CONTAINER_PADDING = 16; // matches p-4 (16px) on both sides
 
 export type PdfLoadStatus = "loading" | "ready" | "error";
 
 export function usePdfDocuments() {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [pageWidth, setPageWidth] = useState(0);
+
   const [status, setStatus] = useState<PdfLoadStatus>("loading");
   const [numPages, setNumPages] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
   const [scale, setScale] = useState(DEFAULT_SCALE);
+
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width ?? 0;
+      setContainerWidth(Math.max(0, width - CONTAINER_PADDING));
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   const onDocumentLoadSuccess = useCallback((pdf: DocumentCallback) => {
     setStatus("ready");
@@ -32,6 +52,10 @@ export function usePdfDocuments() {
 
   const onDocumentLoadError = useCallback(() => {
     setStatus("error");
+  }, []);
+
+  const onPageLoadSuccess = useCallback((page: PageCallback) => {
+    setPageWidth(page.originalWidth);
   }, []);
 
   const goToPrevPage = useCallback(() => {
@@ -54,14 +78,21 @@ export function usePdfDocuments() {
     setScale(DEFAULT_SCALE);
   }, []);
 
+ 
+  const fitScale = containerWidth > 0 && pageWidth > 0 ? containerWidth / pageWidth : 1;
+  const renderScale = fitScale * scale;
+
   return useMemo(
     () => ({
+      containerRef,
       status,
       numPages,
       pageNumber,
       scale,
+      renderScale,
       onDocumentLoadSuccess,
       onDocumentLoadError,
+      onPageLoadSuccess,
       goToPrevPage,
       goToNextPage,
       zoomIn,
@@ -77,8 +108,10 @@ export function usePdfDocuments() {
       numPages,
       pageNumber,
       scale,
+      renderScale,
       onDocumentLoadSuccess,
       onDocumentLoadError,
+      onPageLoadSuccess,
       goToPrevPage,
       goToNextPage,
       zoomIn,
