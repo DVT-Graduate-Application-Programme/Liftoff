@@ -24,7 +24,7 @@ Returns a list of all parsed candidate applications, including their evaluation 
     "candidateEmail": "sarah.chen@example.com",
     "candidateGitHubUrl": "https://github.com/sarahc",
     "status": "evaluated",
-    "tier": "A",
+    "tier": "Strong",
     "hardGatePassed": true,
     "hiringAgentTotalScore": 92.5,
     "hiringAgentExplanation": "Exceptional full-stack candidate...",
@@ -48,7 +48,7 @@ Returns the high-level status and details of a specific application.
 {
   "id": "a1000000-0000-0000-0000-000000000001",
   "status": "evaluated",
-  "tier": "A",
+  "tier": "Strong",
   "createdAt": "2026-07-06T10:00:00Z",
   "updatedAt": "2026-07-06T10:00:00Z"
 }
@@ -97,9 +97,10 @@ Returns the detailed breakdown of the AI agent's evaluation, including specific 
 {
   "id": "e1000000-...",
   "applicationRecordId": "a1000000-...",
-  "tier": "A",
+  "tier": "Strong",
   "totalScore": 92.5,
   "explanation": "Exceptional full-stack candidate...",
+  "aiSummary": "AI Summary: The candidate demonstrates clear strengths in technical execution...",
   "cvSummary": "BSc Computer Science...",
   "flagsJson": ["Strong cloud experience", "Internship at AWS"],
   "educationJson": { "degree": "BSc", "university": "Imperial College London" },
@@ -180,7 +181,55 @@ Allows a recruiter to shortlist an application for the next phase.
 
 ---
 
-## 9. Rate Application
+## 9. Accept Application
+**Endpoint:** `POST /{id}/ownership/accept`
+
+Allows a recruiter to formally accept an application.
+
+**Request Body:**
+```json
+{
+  "recruiterIdentity": "recruiter-123",
+  "reason": "Passed final review"
+}
+```
+
+**Response:**
+```json
+{
+  "actionedByRecruiterId": "recruiter-123",
+  "actionedAt": "2026-07-10T10:00:00Z",
+  "updatedStatus": "ACCEPTED"
+}
+```
+
+---
+
+## 10. Reject Application
+**Endpoint:** `POST /{id}/ownership/reject`
+
+Allows a recruiter to reject an application.
+
+**Request Body:**
+```json
+{
+  "recruiterIdentity": "recruiter-123",
+  "reason": "Lacks required experience"
+}
+```
+
+**Response:**
+```json
+{
+  "actionedByRecruiterId": "recruiter-123",
+  "actionedAt": "2026-07-10T10:00:00Z",
+  "updatedStatus": "REJECTED"
+}
+```
+
+---
+
+## 11. Rate Application
 **Endpoint:** `POST /{id}/ownership/rate`
 
 Allows a recruiter to leave a 1-5 star rating and notes on a candidate.
@@ -206,7 +255,32 @@ Allows a recruiter to leave a 1-5 star rating and notes on a candidate.
 
 ---
 
-## 10. View Candidate CV (PDF)
+## 12. Add Recruiter Notes
+**Endpoint:** `POST /{id}/ownership/notes`
+
+Allows a recruiter to add notes to an application without changing the 1-5 star rating.
+
+**Request Body:**
+```json
+{
+  "recruiterIdentity": "recruiter-123",
+  "notes": "Candidate requested relocation assistance."
+}
+```
+
+**Response:**
+```json
+{
+  "recruiterRating": null,
+  "recruiterRatingNote": "Candidate requested relocation assistance.",
+  "ratedByRecruiterId": "recruiter-123",
+  "ratedAt": "2026-07-10T10:00:00Z"
+}
+```
+
+---
+
+## 13. View Candidate CV (PDF)
 **Endpoint:** `GET /{id}/cv`
 
 Returns the original PDF file of the candidate's Resume/CV. 
@@ -216,7 +290,7 @@ Returns the original PDF file of the candidate's Resume/CV.
 
 ---
 
-## 11. View Candidate Transcript (PDF)
+## 14. View Candidate Transcript (PDF)
 **Endpoint:** `GET /{id}/transcript`
 
 Returns the original PDF file of the candidate's Academic Transcript.
