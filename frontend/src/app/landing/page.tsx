@@ -3,13 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 
 import type { CandidateApplication } from "@/types/candidate";
 import AllCandidates from "./components/all-candidates";
 import PendingCandidates from "./components/pending-candidates";
 import AcceptedCandidates from "./components/accepted-candidates";
 import { ApplicantDetailsSidebar } from "./components/applicant-details/applicant-details-sidebar";
-import { OpenApplicantDetailsSidebarButton } from "./components/applicant-details/applicant-details-sidebar-controls";
 import type { ApplicantDetailsEvaluation } from "./components/applicant-details/mock-applicant-details";
 
 type DashboardApplicationsResponse = {
@@ -181,8 +181,8 @@ const LandingPage = () => {
         <div className="flex h-full min-h-0 w-full overflow-hidden">
           <SidebarInset className="flex-1 overflow-y-auto min-w-1/3">
             <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-4">
-              <div className="flex items-center justify-end">
-                <OpenApplicantDetailsSidebarButton />
+              <div className="flex items-center justify-center gap-2">
+                <Input className="w-full max-w-2xl border border-accent" />
               </div>
               <Tabs defaultValue="pending" className="w-full">
                 <TabsList className="mb-3 flex w-full justify-between gap-2">

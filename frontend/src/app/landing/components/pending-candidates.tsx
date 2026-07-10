@@ -1,4 +1,5 @@
 import ApplicantCard from "@/components/applicant-card/applicant-card";
+import { useSidebar } from "@/components/ui/sidebar";
 import type { CandidateApplication } from "@/types/candidate";
 import { ListFilter, ListOrdered, X } from "lucide-react";
 import React from "react";
@@ -48,6 +49,7 @@ const getDateBucket = (createdAt: string): DateBucket => {
 const renderCandidate = (
   application: CandidateApplication,
   onSelectApplication: (application: CandidateApplication) => void,
+  onOpenSummary: (application: CandidateApplication) => void,
 ) => (
   <ApplicantCard
     key={application.applicationId}
@@ -59,6 +61,10 @@ const renderCandidate = (
     reviewedAt={formatDate(application.createdAt)}
     showReviewedAt={false}
     createdAt={application.createdAt}
+    actionLabel="Show AI Summary"
+    onActionClick={() => {
+      onOpenSummary(application);
+    }}
     onClick={() => {
       onSelectApplication(application);
     }}
@@ -69,6 +75,12 @@ const PendingCandidates = ({
   applications,
   onSelectApplication,
 }: PendingCandidatesProps) => {
+  const { setOpen } = useSidebar();
+
+  const handleOpenSummary = (application: CandidateApplication) => {
+    onSelectApplication(application);
+    setOpen(true);
+  };
   const groupedCandidates = applications.reduce(
     (groups, application) => {
       groups[getDateBucket(application.createdAt)].push(application);
@@ -137,7 +149,11 @@ const PendingCandidates = ({
           <div className="grid grid-cols-1 gap-4">
             {groupedCandidates.today.length > 0 ? (
               groupedCandidates.today.map((application) =>
-                renderCandidate(application, onSelectApplication),
+                renderCandidate(
+                  application,
+                  onSelectApplication,
+                  handleOpenSummary,
+                ),
               )
             ) : (
               <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
@@ -161,7 +177,11 @@ const PendingCandidates = ({
           <div className="grid grid-cols-1 gap-4">
             {groupedCandidates.thisWeek.length > 0 ? (
               groupedCandidates.thisWeek.map((application) =>
-                renderCandidate(application, onSelectApplication),
+                renderCandidate(
+                  application,
+                  onSelectApplication,
+                  handleOpenSummary,
+                ),
               )
             ) : (
               <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
@@ -185,7 +205,11 @@ const PendingCandidates = ({
           <div className="grid grid-cols-1 gap-4">
             {groupedCandidates.lastWeek.length > 0 ? (
               groupedCandidates.lastWeek.map((application) =>
-                renderCandidate(application, onSelectApplication),
+                renderCandidate(
+                  application,
+                  onSelectApplication,
+                  handleOpenSummary,
+                ),
               )
             ) : (
               <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
@@ -209,7 +233,11 @@ const PendingCandidates = ({
           <div className="grid grid-cols-1 gap-4">
             {groupedCandidates.older.length > 0 ? (
               groupedCandidates.older.map((application) =>
-                renderCandidate(application, onSelectApplication),
+                renderCandidate(
+                  application,
+                  onSelectApplication,
+                  handleOpenSummary,
+                ),
               )
             ) : (
               <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
