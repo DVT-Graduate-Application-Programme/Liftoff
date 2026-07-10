@@ -99,15 +99,55 @@ public static class ApplicationEndpoints
             }
 
             var shortlist = await repo.ShortlistAsync(id, request.RecruiterIdentity, request.Reason, ct);
-            if (shortlist is null)
-            {
-                return Results.NotFound();
-            }
+            if (shortlist is null) return Results.NotFound();
 
             await repo.SaveChangesAsync(ct);
             return Results.Ok(shortlist);
         })
         .WithName("ShortlistApplicationOwnership");
+
+        group.MapPost("/{id:guid}/ownership/accept", async (Guid id, AcceptApplicationRequest request, IApplicationRecordRepository repo, CancellationToken ct) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.RecruiterIdentity)) return Results.BadRequest("RecruiterIdentity is required.");
+            var result = await repo.AcceptAsync(id, request.RecruiterIdentity, request.Reason, ct);
+            if (result is null) return Results.NotFound();
+            await repo.SaveChangesAsync(ct);
+            return Results.Ok(result);
+        })
+        .WithName("AcceptApplication");
+
+        group.MapPost("/{id:guid}/ownership/reject", async (Guid id, RejectApplicationRequest request, IApplicationRecordRepository repo, CancellationToken ct) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.RecruiterIdentity)) return Results.BadRequest("RecruiterIdentity is required.");
+            var result = await repo.RejectAsync(id, request.RecruiterIdentity, request.Reason, ct);
+            if (result is null) return Results.NotFound();
+            await repo.SaveChangesAsync(ct);
+            return Results.Ok(result);
+        })
+        .WithName("RejectApplication");
+
+        group.MapPost("/{id:guid}/ownership/rate", async (Guid id, RateApplicationRequest request, IApplicationRecordRepository repo, CancellationToken ct) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.RecruiterIdentity)) return Results.BadRequest("RecruiterIdentity is required.");
+            if (request.Rating < 1 || request.Rating > 5) return Results.BadRequest("Rating must be between 1 and 5.");
+            var result = await repo.RateAsync(id, request.RecruiterIdentity, request.Rating, request.Notes, ct);
+            if (result is null) return Results.NotFound();
+            await repo.SaveChangesAsync(ct);
+            return Results.Ok(result);
+        })
+        .WithName("RateApplication");
+
+        group.MapPost("/{id:guid}/ownership/notes", async (Guid id, AddNotesRequest request, IApplicationRecordRepository repo, CancellationToken ct) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.RecruiterIdentity)) return Results.BadRequest("RecruiterIdentity is required.");
+            if (string.IsNullOrWhiteSpace(request.Notes)) return Results.BadRequest("Notes are required.");
+            var result = await repo.AddNotesAsync(id, request.RecruiterIdentity, request.Notes, ct);
+            if (result is null) return Results.NotFound();
+            await repo.SaveChangesAsync(ct);
+            return Results.Ok(result);
+        })
+        .WithName("AddApplicationNotes");
+
 
         // GET /api/applications/{id}/cv
         // Serves the seeded PDF CV for the given candidate.
@@ -184,5 +224,30 @@ public static class ApplicationEndpoints
     {
         public string RecruiterIdentity { get; set; } = string.Empty;
         public string? Reason { get; set; }
+    }
+
+    public class AcceptApplicationRequest
+    {
+        public string RecruiterIdentity { get; set; } = string.Empty;
+        public string? Reason { get; set; }
+    }
+
+    public class RejectApplicationRequest
+    {
+        public string RecruiterIdentity { get; set; } = string.Empty;
+        public string? Reason { get; set; }
+    }
+
+    public class RateApplicationRequest
+    {
+        public string RecruiterIdentity { get; set; } = string.Empty;
+        public short Rating { get; set; }
+        public string? Notes { get; set; }
+    }
+
+    public class AddNotesRequest
+    {
+        public string RecruiterIdentity { get; set; } = string.Empty;
+        public string Notes { get; set; } = string.Empty;
     }
 }
