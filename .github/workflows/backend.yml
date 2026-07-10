@@ -1,24 +1,27 @@
 name: Backend
+
 on:
   push:
-    branches: [main]
+    branches: [main, development]
     paths: ['backend/**', '.github/workflows/backend.yml']
   pull_request:
+    branches: [main, development]
     paths: ['backend/**', '.github/workflows/backend.yml']
 
 jobs:
   build:
+    name: Restore · Build · Test
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: backend
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 9.0.x
+          dotnet-version: 10.0.x
+
       - run: dotnet restore
       - run: dotnet build --no-restore -c Release
       - run: dotnet test --no-build -c Release
-      - name: Docker build
-        run: docker build -t backend:${{ github.sha }} .

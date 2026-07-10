@@ -17,6 +17,6 @@ WORKDIR /app
 RUN useradd --no-create-home --shell /bin/false appuser
 COPY --from=build /app/publish .
 USER appuser
-EXPOSE 8080
-ENV ASPNETCORE_URLS=http://+:8080 ASPNETCORE_ENVIRONMENT=Production
+EXPOSE 5000
+ENV ASPNETCORE_URLS=http://+:5000 ASPNETCORE_ENVIRONMENT=Development
 ENTRYPOINT ["dotnet", "Api.dll"]
