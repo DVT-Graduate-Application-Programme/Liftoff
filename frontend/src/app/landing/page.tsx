@@ -27,6 +27,10 @@ const LandingPage = () => {
     useState<CandidateApplication | null>(null);
   const [evaluation, setEvaluation] =
     useState<ApplicantDetailsEvaluation | null>(null);
+  const [isLoadingEvaluation, setIsLoadingEvaluation] = useState(false);
+  const [evaluationMessage, setEvaluationMessage] = useState<string | null>(
+    null,
+  );
   const [isLoadingApplications, setIsLoadingApplications] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [claimingApplicationId, setClaimingApplicationId] = useState<
@@ -78,22 +82,39 @@ const LandingPage = () => {
     const fetchEvaluation = async () => {
       if (!selectedApplication) {
         setEvaluation(null);
+        setEvaluationMessage(null);
+        setIsLoadingEvaluation(false);
         return;
       }
 
       setEvaluation(null);
+      setEvaluationMessage(null);
+      setIsLoadingEvaluation(true);
 
-      const response = await fetch(
-        `/api/applications/${selectedApplication.applicationId}/evaluation`,
-      );
+      try {
+        const response = await fetch(
+          `/api/applications/${selectedApplication.applicationId}/evaluation`,
+        );
 
-      if (!isCurrent) return;
+        if (!isCurrent) return;
 
-      if (!response.ok) {
-        return;
+        if (response.status === 404) {
+          setEvaluationMessage("No evaluation available for this applicant yet.");
+          return;
+        }
+
+        if (!response.ok) {
+          setEvaluationMessage("Unable to load evaluation results.");
+          return;
+        }
+
+        setEvaluation((await response.json()) as ApplicantDetailsEvaluation);
+      } catch {
+        if (!isCurrent) return;
+        setEvaluationMessage("Unable to load evaluation results.");
+      } finally {
+        if (isCurrent) setIsLoadingEvaluation(false);
       }
-
-      setEvaluation((await response.json()) as ApplicantDetailsEvaluation);
     };
 
     void fetchEvaluation();
@@ -239,10 +260,12 @@ const LandingPage = () => {
               </Tabs>
             </div>
           </SidebarInset>
-          {selectedApplication && evaluation ? (
+          {selectedApplication ? (
             <ApplicantDetailsSidebar
               candidateName={selectedApplication.candidateName}
               evaluation={evaluation}
+              isLoadingEvaluation={isLoadingEvaluation}
+              evaluationMessage={evaluationMessage}
             />
           ) : null}
         </div>
