@@ -30,6 +30,16 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
 
     public async Task<bool> Handle(IngestApplicationRequest request, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(request.MessageId))
+        {
+            throw new ArgumentException("MessageId is required to ingest an application.", nameof(request));
+        }
+
+        if (string.IsNullOrWhiteSpace(request.From))
+        {
+            throw new ArgumentException("Sender email is required to ingest an application.", nameof(request));
+        }
+
         // Guard: skip if already processed (idempotency)
         if (await _repository.ExistsAsync(request.MessageId, cancellationToken))
         {
@@ -37,11 +47,14 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
             return true;
         }
 
+        var now = DateTimeOffset.UtcNow;
         var applicationRecord = new ApplicationRecord
         {
             EmailMessageId = request.MessageId,
             CandidateEmail = request.From,
-            Status = "PENDING"
+            Status = "PENDING",
+            CreatedAt = now,
+            UpdatedAt = now
         };
 
         // 1. Fetch attachments from Microsoft Graph
@@ -72,7 +85,10 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
         await _repository.AddAsync(applicationRecord, cancellationToken);
         await _repository.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("ApplicationRecord saved for MessageId {MessageId}.", request.MessageId);
+        _logger.LogInformation(
+            "ApplicationRecord saved for MessageId {MessageId} with Id {ApplicationId}.",
+            request.MessageId,
+            applicationRecord.Id);
 
         return true;
     }

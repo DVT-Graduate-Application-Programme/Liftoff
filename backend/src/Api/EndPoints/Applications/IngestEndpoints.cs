@@ -11,17 +11,25 @@ public static class IngestEndpoints
 {
     public static IEndpointRouteBuilder MapIngestEndpoints(this IEndpointRouteBuilder app)
     {
-           app.MapGroup("/api/applications")
-            .MapPost("/ingest", IngestAsync)
-            .WithName("IngestApplication");
+        app.MapGroup("/api/applications")
+         .MapPost("/ingest", IngestAsync)
+         .WithName("IngestApplication")
+         .DisableAntiforgery();
 
         return app;
     }
 
-    private static async Task<IResult> IngestAsync(IngestApplicationRequest request, MediatR.IMediator mediator, CancellationToken ct)
+    private static async Task<IResult> IngestAsync(global::IngestApplicationRequest request, MediatR.IMediator mediator, CancellationToken ct)
     {
-        var result = await mediator.Send(request, ct);
-        return Results.Accepted(value: result);   // 202 — Ingest API never waits on AI processing
-    }
+        var command = new IngestManualApplicationCommand
+        {
+            CandidateName = request.CandidateName,
+            CandidateEmail = request.CandidateEmail,
+            HasCvFile = request.CvFile is not null,
+            HasTranscriptFile = request.TranscriptFile is not null
+        };
 
+        var result = await mediator.Send(command, ct);
+        return Results.Accepted(value: result);
+    }
 }
