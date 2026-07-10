@@ -18,7 +18,7 @@ from transform import (
     convert_transcript_data_to_text,
 )
 from config import DEVELOPMENT_MODE
-
+from uuid import UUID
 
 
 
@@ -643,6 +643,33 @@ def main(pdf_path, transcript_path=None):
                     f"Failed to clean up downloaded transcript PDF {downloaded_transcript_path}: {e}"
                 )
 
+def process_candidate(candidate_id) -> dict:
+    """
+    Given an applicant_id, fetches resume details from the C# backend
+    and runs the full evaluation pipeline. Same logic previously inline
+    in the __main__ fallback branch.
+    """
+    try:
+        resume = get_resume(candidate_id)   # HTTP call — GET /api/candidates/{id}
+        pdf_path = resume.document_url
+        transcript_path = resume.transcript_url
+        message_id = resume.id
+        print(f"Loaded candidate application: {resume}")
+
+        if pdf_path and pdf_path.startswith("/api/"):
+            pdf_path = f"{BACKEND_BASE_URL}{pdf_path}"
+        if transcript_path and transcript_path.startswith("/api/"):
+            transcript_path = f"{BACKEND_BASE_URL}{transcript_path}"
+    except Exception as e:
+        print(f"Error fetching resume from C# API backend: {e}")
+        raise
+
+    if not pdf_path:
+        raise ValueError("No PDF path found for candidate.")
+
+    resp = main(pdf_path, transcript_path)
+    send_eval(resp, message_id, DEFAULT_MODEL)
+    return resp
 
 if __name__ == "__main__":
     pdf_path = None
@@ -657,7 +684,7 @@ if __name__ == "__main__":
     else:
         # Fallback to querying C# API backend
         try:
-            resume = get_resume(1) # should be called using Guid amd not Int, # call from queue
+            resume = process_candidate(1)
             pdf_path = resume.document_url
             transcript_path = resume.transcript_url
             message_id = resume.id

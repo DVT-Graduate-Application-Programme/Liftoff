@@ -62,25 +62,21 @@ public static class IngestEndpoints
     }
 
 
-    private async static void NotifyHiringAgent(Guid guid)
+    private static async Task NotifyHiringAgent(Guid applicationId)
     {
-        const string fastAPI = "localhost:1000";
+        const string fastApiBaseUrl = "http://localhost:8001";
         try
         {
-            const string queueUrl = $"{fastAPI}/applications/new";
-            HttpResponseMessage response = await Client.PostAsJsonAsync(queueUrl, guid);
-
-            // Ensure we get a successful status code (200-299)
+            var payload = new { candidate_id = applicationId };
+            HttpResponseMessage response = await Client.PostAsJsonAsync($"{fastApiBaseUrl}/notify", payload);
             response.EnsureSuccessStatusCode();
-
-            // Read the response content as a string
             string responseBody = await response.Content.ReadAsStringAsync();
-            Console.WriteLine("Application received:");            
+            Console.WriteLine($"Hiring agent notified: {responseBody}");
         }
-        catch (System.Exception)
+        catch (Exception ex)
         {
-        
-            throw;
+            Console.WriteLine($"Failed to notify hiring agent: {ex.Message}");
+            // swallow — don't let a notify failure crash ingest
         }
     }
 
