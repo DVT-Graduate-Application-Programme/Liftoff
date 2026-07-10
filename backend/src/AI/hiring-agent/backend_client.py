@@ -8,7 +8,7 @@ from typing import Optional
 from models import  EvaluationData
 from uuid import UUID
 
-BACKEND_BASE_URL = os.environ.get("BACKEND_BASE_URL", "http://localhost:5000")
+BACKEND_BASE_URL = os.environ.get("BACKEND_BASE_URL", "http://localhost:8080")
 
 from pydantic.alias_generators import to_camel
 
@@ -43,7 +43,7 @@ class Resume(BaseModel):
 
 
 def get_resume(candidate_id: UUID) -> Resume:
-    url = f"{BACKEND_BASE_URL}/api/candidates/{candidate_id}"
+    url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}"
     with httpx.Client() as client:
         response = client.get(url)
         response.raise_for_status()
