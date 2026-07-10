@@ -100,3 +100,18 @@ public class ApplicationOwnership
     public string? RatedByRecruiterId { get; set; }
     public DateTimeOffset? RatedAt { get; set; }
 }
+
+public class ApplicationStatusUpdate
+{
+    public string ActionedByRecruiterId { get; set; } = string.Empty;
+    public DateTimeOffset ActionedAt { get; set; }
+    public string UpdatedStatus { get; set; } = string.Empty;
+}
+
+public class ApplicationRatingUpdate
+{
+    public string RatedByRecruiterId { get; set; } = string.Empty;
+    public DateTimeOffset RatedAt { get; set; }
+    public short? RecruiterRating { get; set; }
+    public string? RecruiterRatingNote { get; set; }
+}
