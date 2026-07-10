@@ -21,24 +21,26 @@ export function ApplicantDetailsSidebar({
   isLoadingEvaluation = false,
   evaluationMessage = null,
 }: ApplicantDetailsSidebarProps) {
-  const hasEvaluation = Boolean(evaluation);
-  const scoreTotal = evaluation
+  const categoryScores: Partial<
+    ApplicantDetailsEvaluation["categoryScoresJson"]
+  > | null = evaluation?.categoryScoresJson ?? null;
+  const hasEvaluation = Boolean(categoryScores);
+  const bonusTotal = evaluation?.bonusPointsJson?.total ?? 0;
+  const keyStrengths = evaluation?.keyStrengthsJson ?? [];
+  const scoreTotal = categoryScores
     ? SCORE_CATEGORIES.reduce(
-        (total, { key }) => total + evaluation.scores[key].score,
+        (total, { key }) => total + (categoryScores[key]?.score ?? 0),
         0,
       )
     : 0;
-  const scoreMax = evaluation
+  const scoreMax = categoryScores
     ? SCORE_CATEGORIES.reduce(
-        (total, { key }) => total + evaluation.scores[key].max,
+        (total, { key }) => total + (categoryScores[key]?.max ?? 0),
         0,
       )
     : 0;
-  const overallScore = evaluation
-    ? Math.max(
-        0,
-        scoreTotal + evaluation.bonusPoints.total - evaluation.deductions.total,
-      )
+  const overallScore = categoryScores
+    ? Math.max(0, scoreTotal + bonusTotal)
     : 0;
 
   return (
@@ -65,7 +67,7 @@ export function ApplicantDetailsSidebar({
               <div className="rounded-md border border-sidebar-border bg-sidebar-accent/20 p-5 text-sm text-muted-foreground">
                 Loading evaluation summary...
               </div>
-            ) : hasEvaluation && evaluation ? (
+            ) : hasEvaluation && categoryScores ? (
               <>
                 <div className="space-y-4 rounded-md border border-sidebar-border bg-sidebar-accent/20 p-5 text-base">
                   <p className="flex items-baseline justify-between gap-4">
@@ -75,7 +77,10 @@ export function ApplicantDetailsSidebar({
                     </span>
                   </p>
                   {SCORE_CATEGORIES.map(({ key, label }) => {
-                    const category = evaluation.scores[key];
+                    const category = categoryScores[key];
+                    if (!category) {
+                      return null;
+                    }
 
                     return (
                       <p
@@ -92,28 +97,22 @@ export function ApplicantDetailsSidebar({
                   <p className="flex items-baseline justify-between gap-4">
                     <span className="font-medium text-sm">Bonus Points</span>
                     <span className="font-mono text-sm">
-                      {formatDecimal(evaluation.bonusPoints.total)}
+                      {formatDecimal(bonusTotal)}
                     </span>
                   </p>
-                  {evaluation.deductions.total > 0 ? (
-                    <p className="flex items-baseline justify-between gap-4">
-                      <span className="font-medium">Deductions</span>
-                      <span className="font-mono text-destructive">
-                        -{formatDecimal(evaluation.deductions.total)}
-                      </span>
+                </div>
+                {keyStrengths.length > 0 ? (
+                  <div className="space-y-2">
+                    <p className="font-heading text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                      Key strengths
                     </p>
-                  ) : null}
-                </div>
-                <div className="space-y-2">
-                  <p className="font-heading text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                    Key strengths
-                  </p>
-                  <ol className="list-decimal space-y-1.5 pl-5 text-sm leading-6">
-                    {evaluation.keyStrengths.map((strength) => (
-                      <li key={strength}>{strength}</li>
-                    ))}
-                  </ol>
-                </div>
+                    <ol className="list-decimal space-y-1.5 pl-5 text-sm leading-6">
+                      {keyStrengths.map((strength) => (
+                        <li key={strength}>{strength}</li>
+                      ))}
+                    </ol>
+                  </div>
+                ) : null}
               </>
             ) : (
               <div className="rounded-md border border-sidebar-border bg-sidebar-accent/20 p-5 text-sm text-muted-foreground">
