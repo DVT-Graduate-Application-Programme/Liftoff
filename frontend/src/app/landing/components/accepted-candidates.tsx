@@ -1,5 +1,6 @@
 import React from "react";
 import ApplicantCard from "@/components/applicant-card/applicant-card";
+import { useSidebar } from "@/components/ui/sidebar";
 import type { CandidateApplication } from "@/types/candidate";
 import {
   formatDate,
@@ -17,6 +18,12 @@ function AcceptedCandidates({
   applications,
   onSelectApplication,
 }: AcceptedCandidatesProps) {
+  const { setOpen } = useSidebar();
+
+  const handleOpenSummary = (application: CandidateApplication) => {
+    onSelectApplication(application);
+    setOpen(true);
+  };
   if (applications.length === 0) {
     return (
       <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
@@ -36,7 +43,10 @@ function AcceptedCandidates({
           statusLabel={statusLabels[application.currentStatus]}
           statusTone={statusTones[application.currentStatus]}
           reviewedAt={formatDate(application.createdAt)}
-          actionLabel="Details"
+          actionLabel="Show AI Summary"
+          onActionClick={() => {
+            handleOpenSummary(application);
+          }}
           onClick={() => {
             onSelectApplication(application);
           }}

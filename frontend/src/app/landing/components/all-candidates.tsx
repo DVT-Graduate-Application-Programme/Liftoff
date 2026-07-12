@@ -1,6 +1,7 @@
 import React from "react";
 import { ListFilter, ListOrdered, X } from "lucide-react";
 import ApplicantCard from "@/components/applicant-card/applicant-card";
+import { useSidebar } from "@/components/ui/sidebar";
 import type { CandidateApplication } from "@/types/candidate";
 import {
   getRecruiterLabel,
@@ -25,6 +26,12 @@ const AllCandidates = ({
   claimingApplicationId,
   activeRecruiterId,
 }: AllCandidatesProps) => {
+  const { setOpen } = useSidebar();
+
+  const handleOpenSummary = (application: CandidateApplication) => {
+    onSelectApplication(application);
+    setOpen(true);
+  };
   return (
     <>
       <section className="mb-8 flex flex-col gap-6">
@@ -79,9 +86,12 @@ const AllCandidates = ({
               statusLabel={statusLabels[application.currentStatus]}
               statusTone={statusTones[application.currentStatus]}
               reviewedAt={formatDate(application.createdAt)}
-              recruiterLabel="Recruiter:"
+              recruiterLabel="recruiter"
               recruiterName={getRecruiterLabel(application)}
-              actionLabel="Show AI Review"
+              actionLabel="Show AI Summary"
+              onActionClick={() => {
+                handleOpenSummary(application);
+              }}
               secondaryActionLabel={
                 isClaimedByActiveRecruiter ? "Claimed" : "Claim for review"
               }

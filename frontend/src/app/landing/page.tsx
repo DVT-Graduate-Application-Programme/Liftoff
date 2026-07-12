@@ -3,13 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 
 import type { CandidateApplication } from "@/types/candidate";
 import AllCandidates from "./components/all-candidates";
 import PendingCandidates from "./components/pending-candidates";
 import AcceptedCandidates from "./components/accepted-candidates";
 import { ApplicantDetailsSidebar } from "./components/applicant-details/applicant-details-sidebar";
-import { OpenApplicantDetailsSidebarButton } from "./components/applicant-details/applicant-details-sidebar-controls";
 import type { ApplicantDetailsEvaluation } from "./components/applicant-details/mock-applicant-details";
 
 type DashboardApplicationsResponse = {
@@ -27,6 +27,10 @@ const LandingPage = () => {
     useState<CandidateApplication | null>(null);
   const [evaluation, setEvaluation] =
     useState<ApplicantDetailsEvaluation | null>(null);
+  const [isLoadingEvaluation, setIsLoadingEvaluation] = useState(false);
+  const [evaluationMessage, setEvaluationMessage] = useState<string | null>(
+    null,
+  );
   const [isLoadingApplications, setIsLoadingApplications] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [claimingApplicationId, setClaimingApplicationId] = useState<
@@ -78,22 +82,39 @@ const LandingPage = () => {
     const fetchEvaluation = async () => {
       if (!selectedApplication) {
         setEvaluation(null);
+        setEvaluationMessage(null);
+        setIsLoadingEvaluation(false);
         return;
       }
 
       setEvaluation(null);
+      setEvaluationMessage(null);
+      setIsLoadingEvaluation(true);
 
-      const response = await fetch(
-        `/api/applications/${selectedApplication.applicationId}/evaluation`,
-      );
+      try {
+        const response = await fetch(
+          `/api/applications/${selectedApplication.applicationId}/evaluation`,
+        );
 
-      if (!isCurrent) return;
+        if (!isCurrent) return;
 
-      if (!response.ok) {
-        return;
+        if (response.status === 404) {
+          setEvaluationMessage("No evaluation available for this applicant yet.");
+          return;
+        }
+
+        if (!response.ok) {
+          setEvaluationMessage("Unable to load evaluation results.");
+          return;
+        }
+
+        setEvaluation((await response.json()) as ApplicantDetailsEvaluation);
+      } catch {
+        if (!isCurrent) return;
+        setEvaluationMessage("Unable to load evaluation results.");
+      } finally {
+        if (isCurrent) setIsLoadingEvaluation(false);
       }
-
-      setEvaluation((await response.json()) as ApplicantDetailsEvaluation);
     };
 
     void fetchEvaluation();
@@ -181,8 +202,8 @@ const LandingPage = () => {
         <div className="flex h-full min-h-0 w-full overflow-hidden">
           <SidebarInset className="flex-1 overflow-y-auto min-w-1/3">
             <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-4">
-              <div className="flex items-center justify-end">
-                <OpenApplicantDetailsSidebarButton />
+              <div className="flex items-center justify-center gap-2">
+                <Input className="w-full max-w-2xl border border-accent" />
               </div>
               <Tabs defaultValue="pending" className="w-full">
                 <TabsList className="mb-3 flex w-full justify-between gap-2">
@@ -239,10 +260,12 @@ const LandingPage = () => {
               </Tabs>
             </div>
           </SidebarInset>
-          {selectedApplication && evaluation ? (
+          {selectedApplication ? (
             <ApplicantDetailsSidebar
               candidateName={selectedApplication.candidateName}
               evaluation={evaluation}
+              isLoadingEvaluation={isLoadingEvaluation}
+              evaluationMessage={evaluationMessage}
             />
           ) : null}
         </div>
