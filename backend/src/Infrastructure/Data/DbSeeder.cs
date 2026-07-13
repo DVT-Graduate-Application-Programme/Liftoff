@@ -99,7 +99,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of London", "degreeName": "BSc (Hons) Computer Science", "classification": "First Class" }
+                { "name": "University of London", "degreeName": "BSc (Hons) Computer Science", "academic_average": 78.3 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -157,7 +157,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Salford", "degreeName": "BSc Computer Science", "classification": "2:2" }
+                { "name": "University of Salford", "degreeName": "BSc Computer Science", "academic_average": 66.7 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -217,7 +217,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Manchester", "degreeName": "BSc (Hons) Computer Science", "classification": "2:1" }
+                { "name": "University of Manchester", "degreeName": "BSc (Hons) Computer Science", "academic_average": 85.0 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 2.0, "breakdown": "Personal Portfolio Website URL: +2" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -276,7 +276,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Edinburgh", "degreeName": "BSc (Hons) Computer Science", "classification": "First Class" }
+                { "name": "University of Edinburgh", "degreeName": "BSc (Hons) Computer Science", "academic_average": 76.0 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 3.0, "breakdown": "Published npm package with verifiable downloads: +3" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -333,7 +333,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Leeds", "degreeName": "BSc Computer Science", "classification": "2:1" }
+                { "name": "University of Leeds", "degreeName": "BSc Computer Science", "academic_average": 66.3 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -391,7 +391,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Bedfordshire", "degreeName": "BA Media Studies", "classification": "2:2" }
+                { "name": "University of Bedfordshire", "degreeName": "BA Media Studies", "academic_average": 55.0 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -450,7 +450,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Warwick", "degreeName": "BSc (Hons) Software Engineering", "classification": "First Class" }
+                { "name": "University of Warwick", "degreeName": "BSc (Hons) Software Engineering", "academic_average": 75.0 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -507,7 +507,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Hertfordshire", "degreeName": "BSc Computer Science", "classification": "2:2" }
+                { "name": "University of Hertfordshire", "degreeName": "BSc Computer Science", "academic_average": 57.7 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -564,7 +564,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Northampton", "degreeName": "BSc Information Technology", "classification": "2:2" }
+                { "name": "University of Northampton", "degreeName": "BSc Information Technology", "academic_average": 55.3 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -622,7 +622,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "Westminster Kingsway College", "degreeName": "Level 5 Diploma in Professional Culinary Arts", "classification": "Distinction" }
+                { "name": "Westminster Kingsway College", "degreeName": "Level 5 Diploma in Professional Culinary Arts", "academic_average": 65.0 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -680,7 +680,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "London Business School", "degreeName": "MBA (Digital Business)", "classification": "Distinction" }
+                { "name": "London Business School", "degreeName": "MBA (Digital Business)", "academic_average": 83.3 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -738,7 +738,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Plymouth", "degreeName": "BSc Physical Geography", "classification": "2:2" }
+                { "name": "University of Plymouth", "degreeName": "BSc Physical Geography", "academic_average": 56.0 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
