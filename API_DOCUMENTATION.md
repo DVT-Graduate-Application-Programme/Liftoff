@@ -114,7 +114,30 @@ Returns the detailed breakdown of the AI agent's evaluation, including specific 
 
 ---
 
-## 6. Get Application Ownership
+## 6. Get Application Logs
+**Endpoint:** `GET /{id}/logs`
+
+Returns the recruiter action logs and history for a given application.
+
+**Response:**
+```json
+[
+  {
+    "id": "e1000000-...",
+    "recruiterIdentity": "recruiter-123",
+    "actionType": "SHORTLIST",
+    "previousStatus": "EVALUATED",
+    "newStatus": "SHORTLISTED",
+    "reason": "Progressing to interview",
+    "ratingValue": null,
+    "actionedAt": "2026-07-10T10:00:00Z"
+  }
+]
+```
+
+---
+
+## 7. Get Application Ownership
 **Endpoint:** `GET /{id}/ownership`
 
 Returns the recruiter ownership state, shortlist status, and rating details.
