@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   Code2,
   GitBranch,
+  GraduationCap,
   MinusCircle,
   Rocket,
   Sparkles,
@@ -42,27 +43,17 @@ import { useApplicationDetail } from "@/hooks/use-application-detail";
 import { useApplicant } from "@/hooks/use-applicant";
 import { useEvaluation } from "@/hooks/use-evaluation";
 import { useDocuments } from "@/hooks/use-documents";
-import type { Evaluation } from "@/types/api";
+import type { Evaluation, EvaluationCategoryScores, EvaluationScore } from "@/types/api";
+import { SCORE_CATEGORIES } from "@/app/landing/components/applicant-details/constants";
+import { DocumentViewer } from "./components/document-viewer/document-viewer";
 
-type Scores = Evaluation["scores"];
-type ScoreCategory = Scores[keyof Scores];
-
-const scoreCategoryMeta: Record<
-  keyof Scores,
-  { label: string; icon: typeof GitBranch }
-> = {
-  open_source: { label: "Open Source", icon: GitBranch },
-  self_projects: { label: "Self Projects", icon: Rocket },
-  production: { label: "Production Experience", icon: Building2 },
-  technical_skills: { label: "Technical Skills", icon: Code2 },
+const scoreCategoryMeta: Record<keyof EvaluationCategoryScores, { icon: typeof GitBranch }> = {
+  education: { icon: GraduationCap },
+  open_source: { icon: GitBranch },
+  self_projects: { icon: Rocket },
+  production: { icon: Building2 },
+  technical_skills: { icon: Code2 },
 };
-
-function formatBreakdownLabel(key: string) {
-  return key
-    .split("_")
-    .map((word) => word[0].toUpperCase() + word.slice(1))
-    .join(" ");
-}
 
 function ScoreCategoryRow({
   label,
@@ -71,7 +62,7 @@ function ScoreCategoryRow({
 }: {
   label: string;
   icon: typeof GitBranch;
-  category: ScoreCategory;
+  category: EvaluationScore;
 }) {
   return (
     <div className="flex flex-col gap-2">
@@ -112,43 +103,24 @@ function DocumentTab({
     );
   }
 
-  if (!document) {
-    return (
-      <Card className="h-full items-center justify-center">
-        <CardContent className="flex flex-1 items-center justify-center">
-          <p className="text-sm text-muted-foreground">No {label.toLowerCase()} on file</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="h-full items-center justify-center">
-      <CardContent className="flex flex-1 flex-col items-center justify-center gap-2">
-        <p className="text-sm text-muted-foreground">{document.filename}</p>
-        <Button asChild variant="outline" size="sm">
-          <a href={document.url} target="_blank" rel="noopener noreferrer">
-            Open {label}
-          </a>
-        </Button>
-      </CardContent>
-    </Card>
-  );
+  return <DocumentViewer url={document?.url ?? null} label={label} className="h-full min-h-64" />;
 }
 
 function EvaluationSummary({ evaluation }: { evaluation: Evaluation }) {
-  const totalScore = Object.values(evaluation.scores).reduce(
-    (sum, category) => sum + category.score,
+  const categoryScores = evaluation.categoryScoresJson;
+  const bonusTotal = evaluation.bonusPointsJson?.total ?? 0;
+  const keyStrengths = evaluation.keyStrengthsJson ?? [];
+  const areasForImprovement = evaluation.areasForImprovementJson ?? [];
+
+  const totalScore = SCORE_CATEGORIES.reduce(
+    (sum, { key }) => sum + (categoryScores[key]?.score ?? 0),
     0,
   );
-  const maxScore = Object.values(evaluation.scores).reduce(
-    (sum, category) => sum + category.max,
+  const maxScore = SCORE_CATEGORIES.reduce(
+    (sum, { key }) => sum + (categoryScores[key]?.max ?? 0),
     0,
   );
-  const overallScore = Math.max(
-    0,
-    totalScore + evaluation.bonusPoints.total - evaluation.deductions.total,
-  );
+  const overallScore = Math.max(0, totalScore + bonusTotal);
 
   return (
     <Card>
@@ -171,14 +143,19 @@ function EvaluationSummary({ evaluation }: { evaluation: Evaluation }) {
       <Separator />
       <CardContent className="flex flex-col gap-5">
         <div className="flex flex-col gap-4">
-          {(Object.keys(evaluation.scores) as Array<keyof Scores>).map((key) => (
-            <ScoreCategoryRow
-              key={key}
-              label={scoreCategoryMeta[key].label}
-              icon={scoreCategoryMeta[key].icon}
-              category={evaluation.scores[key]}
-            />
-          ))}
+          {SCORE_CATEGORIES.map(({ key, label }) => {
+            const category = categoryScores[key];
+            if (!category) return null;
+
+            return (
+              <ScoreCategoryRow
+                key={key}
+                label={label}
+                icon={scoreCategoryMeta[key].icon}
+                category={category}
+              />
+            );
+          })}
         </div>
 
         <Separator />
@@ -188,32 +165,25 @@ function EvaluationSummary({ evaluation }: { evaluation: Evaluation }) {
             <Award className="size-4 text-muted-foreground" />
             Bonus Points
             <Badge variant="secondary" className="ml-auto">
-              +{evaluation.bonusPoints.total.toFixed(1)}
+              +{bonusTotal.toFixed(1)}
             </Badge>
           </span>
-          <ul className="flex flex-col gap-1 pl-6 text-xs text-muted-foreground">
-            {Object.entries(evaluation.bonusPoints.breakdown).map(([key, value]) => (
-              <li key={key}>
-                {formatBreakdownLabel(key)}: +{value}
-              </li>
-            ))}
-          </ul>
+          {evaluation.bonusPointsJson?.breakdown && (
+            <p className="pl-6 text-xs text-muted-foreground">
+              {evaluation.bonusPointsJson.breakdown}
+            </p>
+          )}
         </div>
 
-        {evaluation.deductions.reasons.length > 0 && (
+        {evaluation.deductionsJson?.promptInjectionDetected && (
           <div className="flex flex-col gap-2">
             <span className="flex items-center gap-2 text-sm font-medium">
               <MinusCircle className="size-4 text-muted-foreground" />
-              Deductions
-              <Badge variant="secondary" className="ml-auto">
-                -{evaluation.deductions.total.toFixed(1)}
-              </Badge>
+              Prompt Injection Detected
             </span>
-            <ul className="flex flex-col gap-1 pl-6 text-xs text-muted-foreground">
-              {evaluation.deductions.reasons.map((reason) => (
-                <li key={reason}>{reason}</li>
-              ))}
-            </ul>
+            <p className="pl-6 text-xs text-muted-foreground">
+              {evaluation.deductionsJson.promptInjectionEvidence}
+            </p>
           </div>
         )}
 
@@ -222,7 +192,7 @@ function EvaluationSummary({ evaluation }: { evaluation: Evaluation }) {
         <div className="flex flex-col gap-2">
           <span className="text-sm font-medium">Key Strengths</span>
           <ul className="flex flex-col gap-2">
-            {evaluation.keyStrengths.map((strength) => (
+            {keyStrengths.map((strength) => (
               <li key={strength} className="flex items-center gap-2 text-sm">
                 <CheckCircle2 className="size-4 shrink-0 text-primary" />
                 {strength}
@@ -234,7 +204,7 @@ function EvaluationSummary({ evaluation }: { evaluation: Evaluation }) {
         <div className="flex flex-col gap-2">
           <span className="text-sm font-medium">Areas for Improvement</span>
           <ul className="flex flex-col gap-2">
-            {evaluation.areasForImprovement.map((area) => (
+            {areasForImprovement.map((area) => (
               <li key={area} className="flex items-center gap-2 text-sm">
                 <AlertTriangle className="size-4 shrink-0 text-muted-foreground" />
                 {area}
@@ -294,30 +264,30 @@ export default function DetailedApplicantInfo() {
       ) : (
         <h1 className="font-heading text-3xl font-semibold text-foreground">{candidateName ?? "Applicant"}</h1>
       )}
-      {evaluationQuery.data && (
+      {evaluationQuery.data?.institutionJson && (
         <p className="text-sm text-muted-foreground">
-          {evaluationQuery.data.institution.degreeName} · {evaluationQuery.data.institution.name}
+          {evaluationQuery.data.institutionJson.degreeName} · {evaluationQuery.data.institutionJson.name}
         </p>
       )}
-      <div className="w-full flex flex-col md:flex-row justify-center gap-10 pt-10">
+      <div className="w-full flex flex-col md:flex-row items-start justify-center gap-10 pt-10">
         {/* Document Viewer Container */}
-        <section className="flex w-full md:max-w-xl flex-col gap-3">
+        <section className="flex w-full md:max-w-xl md:h-[calc(100vh_-_10rem)] flex-col gap-3">
           <h2 className="font-heading text-xs font-semibold uppercase tracking-wide text-muted-foreground pl-2">
             Applicant documents
           </h2>
-          <Tabs defaultValue="cv" className="flex-1 gap-3">
+          <Tabs defaultValue="cv" className="flex-1 min-h-0 gap-3">
             <TabsList className="self-center">
               <TabsTrigger value="cv">CV</TabsTrigger>
               <TabsTrigger value="transcript">Transcript</TabsTrigger>
             </TabsList>
-            <TabsContent value="cv" className="flex-1">
+            <TabsContent value="cv" className="flex-1 min-h-0">
               <DocumentTab
                 document={documentsQuery.data?.cvDocument}
                 label="CV"
                 isLoading={documentsQuery.isLoading}
               />
             </TabsContent>
-            <TabsContent value="transcript" className="flex-1">
+            <TabsContent value="transcript" className="flex-1 min-h-0">
               <DocumentTab
                 document={documentsQuery.data?.transcriptDocument}
                 label="Transcript"

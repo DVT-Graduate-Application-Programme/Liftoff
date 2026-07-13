@@ -10,17 +10,25 @@ vi.mock("next/navigation", () => ({
 const detail = { applicationId: "app-1", currentStatus: "VALID", tier: "STRONG", createdAt: "", updatedAt: "" };
 const applicant = { candidateName: "Ada Lovelace", candidateEmail: "ada@example.com", candidateGitHubUrl: null };
 const evaluation = {
-  institution: { name: "MIT", degreeName: "BSc" },
-  scores: {
+  id: "eval-1",
+  applicationRecordId: "app-1",
+  institutionJson: { name: "MIT", degreeName: "BSc" },
+  categoryScoresJson: {
+    education: { score: 1, max: 5, evidence: "" },
     open_source: { score: 1, max: 5, evidence: "" },
     self_projects: { score: 1, max: 5, evidence: "" },
     production: { score: 1, max: 5, evidence: "" },
     technical_skills: { score: 1, max: 5, evidence: "" },
   },
-  bonusPoints: { total: 0, breakdown: {} },
-  deductions: { total: 0, reasons: [] },
-  keyStrengths: ["Great communicator"],
-  areasForImprovement: ["More testing"],
+  evidenceJson: null,
+  bonusPointsJson: { total: 0, breakdown: "" },
+  deductionsJson: { promptInjectionDetected: false, promptInjectionEvidence: "" },
+  keyStrengthsJson: ["Great communicator"],
+  areasForImprovementJson: ["More testing"],
+  gitHubProfileDataJson: null,
+  projectClassificationsJson: null,
+  processedAt: "",
+  applicationRecord: null,
   hiringAgentTotalScore: 4,
 };
 const documents = { cvDocument: { url: "https://x/cv.pdf", filename: "cv.pdf", uploadedDate: "", sizeKb: 1 }, transcriptDocument: null };

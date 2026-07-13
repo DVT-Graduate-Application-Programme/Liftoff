@@ -1,3 +1,5 @@
+"use client";
+
 import { ListFilter, ListOrdered, X } from "lucide-react";
 import { ApplicantList } from "./applicant-list";
 
@@ -42,7 +44,12 @@ const PendingCandidates = () => {
         </div>
       </section>
 
-      <ApplicantList status="PENDING,PROCESSING" emptyTitle="No pending applicants" showReviewedAt={false} />
+      <ApplicantList
+        status="PENDING,PROCESSING"
+        emptyTitle="No pending applicants"
+        showReviewedAt={false}
+        groupByDate
+      />
     </>
   );
 };

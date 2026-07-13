@@ -20,18 +20,28 @@ export interface EvaluationScore {
   evidence: string;
 }
 
+export interface EvaluationCategoryScores {
+  education: EvaluationScore;
+  open_source: EvaluationScore;
+  self_projects: EvaluationScore;
+  production: EvaluationScore;
+  technical_skills: EvaluationScore;
+}
+
 export interface Evaluation {
-  institution: { name: string; degreeName: string };
-  scores: {
-    open_source: EvaluationScore;
-    self_projects: EvaluationScore;
-    production: EvaluationScore;
-    technical_skills: EvaluationScore;
-  };
-  bonusPoints: { total: number; breakdown: Record<string, number> };
-  deductions: { total: number; reasons: string[] };
-  keyStrengths: string[];
-  areasForImprovement: string[];
+  id: string;
+  applicationRecordId: string;
+  institutionJson: { name: string; degreeName: string } | null;
+  categoryScoresJson: EvaluationCategoryScores;
+  evidenceJson: Record<string, string> | null;
+  bonusPointsJson: { total: number; breakdown: string } | null;
+  deductionsJson: { promptInjectionDetected: boolean; promptInjectionEvidence: string } | null;
+  keyStrengthsJson: string[] | null;
+  areasForImprovementJson: string[] | null;
+  gitHubProfileDataJson: Record<string, unknown> | null;
+  projectClassificationsJson: Record<string, unknown> | null;
+  processedAt: string;
+  applicationRecord: Record<string, unknown> | null;
   hiringAgentTotalScore: number;
 }
 

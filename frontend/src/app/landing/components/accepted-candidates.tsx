@@ -1,3 +1,5 @@
+"use client";
+
 import { ApplicantList } from "./applicant-list";
 
 function AcceptedCandidates() {

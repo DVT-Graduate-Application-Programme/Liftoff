@@ -1,48 +1,48 @@
 export type ApplicantDetailsEvaluation = {
-  institution: {
-    name: string;
-    degreeName: string;
+  id: string;
+  applicationRecordId: string;
+  institutionJson: Record<string, unknown> | null;
+  categoryScoresJson: {
+    education: ApplicantDetailsScoreCategory;
+    open_source: ApplicantDetailsScoreCategory;
+    production: ApplicantDetailsScoreCategory;
+    self_projects: ApplicantDetailsScoreCategory;
+    technical_skills: ApplicantDetailsScoreCategory;
   };
-  scores: {
-    open_source: {
-      score: number;
-      max: number;
-      evidence: string;
-    };
-    self_projects: {
-      score: number;
-      max: number;
-      evidence: string;
-    };
-    production: {
-      score: number;
-      max: number;
-      evidence: string;
-    };
-    technical_skills: {
-      score: number;
-      max: number;
-      evidence: string;
-    };
-  };
-  bonusPoints: {
+  evidenceJson: Record<string, string> | null;
+  bonusPointsJson: {
     total: number;
-    breakdown: Record<string, number>;
-  };
-  deductions: {
-    total: number;
-    reasons: string[];
-  };
-  keyStrengths: string[];
-  areasForImprovement: string[];
+    breakdown: string;
+  } | null;
+  deductionsJson: {
+    promptInjectionDetected: boolean;
+    promptInjectionEvidence: string;
+  } | null;
+  keyStrengthsJson: string[] | null;
+  areasForImprovementJson: string[] | null;
+  gitHubProfileDataJson: Record<string, unknown> | null;
+  projectClassificationsJson: Record<string, unknown> | null;
+  processedAt: string;
+  applicationRecord: Record<string, unknown> | null;
+};
+
+export type ApplicantDetailsScoreCategory = {
+  score: number;
+  max: number;
+  evidence: string;
 };
 
 export const mockApplicantDetails: ApplicantDetailsEvaluation = {
-  institution: {
-    name: "University of South Africa",
-    degreeName: "BSc Information Technology",
-  },
-  scores: {
+  id: "mock-evaluation",
+  applicationRecordId: "mock-application",
+  institutionJson: null,
+  categoryScoresJson: {
+    education: {
+      score: 23,
+      max: 25,
+      evidence:
+        "BSc Information Technology coursework demonstrates strong formal technical foundations.",
+    },
     open_source: {
       score: 10,
       max: 35,
@@ -68,26 +68,25 @@ export const mockApplicantDetails: ApplicantDetailsEvaluation = {
         "Demonstrated breadth across multiple modern stacks: Backend (.NET Core, C#, Web API), Frontend (Angular 21, React, TypeScript), Testing (xUnit, Moq, TDD), and Algorithms & Forensics (Python, Autopsy). Strong emphasis on SOLID principles and software architecture.",
     },
   },
-  bonusPoints: {
+  evidenceJson: null,
+  bonusPointsJson: {
     total: 3,
-    breakdown: {
-      linkedin_profile: 1,
-      technical_communication: 2,
-    },
+    breakdown: "LinkedIn profile: +1; technical communication: +2",
   },
-  deductions: {
-    total: 0,
-    reasons: [],
-  },
-  keyStrengths: [
+  deductionsJson: null,
+  keyStrengthsJson: [
     "Deep understanding of software architecture principles (SOLID, Clean Architecture)",
     "Proven ability to build complex full-stack applications demonstrating high technical proficiency",
     "Experience in enterprise development environments and agile methodologies",
     "Strong commitment to quality assurance through Test-Driven Development (TDD) and code reviews",
   ],
-  areasForImprovement: [
+  areasForImprovementJson: [
     "Contribute to established open-source projects to demonstrate community involvement.",
     "Provide live demos or deployed versions of self-projects where possible.",
     "Expand professional experience beyond internships to demonstrate sustained industry impact.",
   ],
+  gitHubProfileDataJson: null,
+  projectClassificationsJson: null,
+  processedAt: new Date().toISOString(),
+  applicationRecord: null,
 };

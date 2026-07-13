@@ -1,3 +1,5 @@
+"use client";
+
 import { ListFilter, ListOrdered, X } from "lucide-react";
 import { ApplicantList } from "./applicant-list";
 

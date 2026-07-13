@@ -9,9 +9,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import ApplicantCard from "@/components/applicant-card/applicant-card";
+import type { CandidateApplication } from "@/types/candidate";
 import {
   formatDate,
   getRecruiterLabel,
+  groupApplicationsByDate,
   statusLabels,
   statusTones,
   toScorePercent,
@@ -22,9 +24,37 @@ interface ApplicantListProps {
   emptyTitle: string;
   showReviewedAt?: boolean;
   enableClaim?: boolean;
+  groupByDate?: boolean;
 }
 
-export function ApplicantList({ status, emptyTitle, showReviewedAt = true, enableClaim = false }: ApplicantListProps) {
+const DATE_BUCKET_SECTIONS = [
+  {
+    key: "today" as const,
+    label: "Today",
+    countLabel: (count: number) => `${count} New Applicants`,
+    emptyText: "No pending applicants received today.",
+  },
+  {
+    key: "thisWeek" as const,
+    label: "This Week",
+    countLabel: (count: number) => `${count} Applicants`,
+    emptyText: "No pending applicants from earlier this week.",
+  },
+  {
+    key: "lastWeek" as const,
+    label: "Last Week",
+    countLabel: (count: number) => `${count} Applicants`,
+    emptyText: "No pending applicants from last week.",
+  },
+  {
+    key: "older" as const,
+    label: "Older",
+    countLabel: (count: number) => `${count} Applicants`,
+    emptyText: "No older pending applicants.",
+  },
+];
+
+export function ApplicantList({ status, emptyTitle, showReviewedAt = true, enableClaim = false, groupByDate = false }: ApplicantListProps) {
   const router = useRouter();
   const { search } = useApplicantSearch();
   const { data, isLoading, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteApplications({
@@ -58,54 +88,94 @@ export function ApplicantList({ status, emptyTitle, showReviewedAt = true, enabl
     );
   }
 
+  const renderCard = (application: CandidateApplication) => {
+    const isClaimedByActiveRecruiter = application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
+    const isClaiming = enableClaim && claimMutation.isPending && claimMutation.variables === application.applicationId;
+
+    return (
+      <ApplicantCard
+        key={application.applicationId}
+        name={application.candidateName}
+        institute={application.cvSummary}
+        systemScore={toScorePercent(application.hiringAgentTotalScore)}
+        statusLabel={statusLabels[application.currentStatus]}
+        statusTone={statusTones[application.currentStatus]}
+        reviewedAt={formatDate(application.createdAt)}
+        showReviewedAt={showReviewedAt}
+        createdAt={application.createdAt}
+        recruiterName={getRecruiterLabel(application)}
+        {...(enableClaim
+          ? {
+              secondaryActionLabel: isClaimedByActiveRecruiter ? "Claimed" : "Claim for review",
+              isSecondaryActionDisabled: isClaimedByActiveRecruiter || isClaiming,
+              isSecondaryActionLoading: isClaiming,
+              onSecondaryActionClick: isClaimedByActiveRecruiter
+                ? undefined
+                : () => {
+                    claimMutation.mutate(application.applicationId);
+                  },
+            }
+          : {})}
+        onClick={() => {
+          router.push(`/applicants/${application.applicationId}`);
+        }}
+      />
+    );
+  };
+
+  const loadMoreButton = hasNextPage && (
+    <Button
+      variant="outline"
+      className="self-center"
+      disabled={isFetchingNextPage}
+      onClick={() => {
+        void fetchNextPage();
+      }}
+    >
+      {isFetchingNextPage ? "Loading..." : "Load more"}
+    </Button>
+  );
+
+  if (groupByDate) {
+    const groupedApplications = groupApplicationsByDate(applications);
+
+    return (
+      <div className="space-y-10">
+        {DATE_BUCKET_SECTIONS.map(({ key, label, countLabel, emptyText }) => {
+          const bucketApplications = groupedApplications[key];
+
+          return (
+            <section key={key}>
+              <div className="mb-4 flex items-center gap-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                  {label}
+                </h3>
+                <div className="h-px flex-1 bg-border"></div>
+                <span className="text-[12px] font-medium text-muted-foreground">
+                  {countLabel(bucketApplications.length)}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                {bucketApplications.length > 0 ? (
+                  bucketApplications.map(renderCard)
+                ) : (
+                  <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                    {emptyText}
+                  </p>
+                )}
+              </div>
+            </section>
+          );
+        })}
+        {loadMoreButton && <div className="flex justify-center">{loadMoreButton}</div>}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-3">
-      {applications.map((application) => {
-        const isClaimedByActiveRecruiter = application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
-        const isClaiming = enableClaim && claimMutation.isPending && claimMutation.variables === application.applicationId;
-
-        return (
-          <ApplicantCard
-            key={application.applicationId}
-            name={application.candidateName}
-            institute={application.cvSummary}
-            systemScore={toScorePercent(application.hiringAgentTotalScore)}
-            statusLabel={statusLabels[application.currentStatus]}
-            statusTone={statusTones[application.currentStatus]}
-            reviewedAt={formatDate(application.createdAt)}
-            showReviewedAt={showReviewedAt}
-            createdAt={application.createdAt}
-            recruiterName={getRecruiterLabel(application)}
-            {...(enableClaim
-              ? {
-                  secondaryActionLabel: isClaimedByActiveRecruiter ? "Claimed" : "Claim for review",
-                  isSecondaryActionDisabled: isClaimedByActiveRecruiter || isClaiming,
-                  isSecondaryActionLoading: isClaiming,
-                  onSecondaryActionClick: isClaimedByActiveRecruiter
-                    ? undefined
-                    : () => {
-                        claimMutation.mutate(application.applicationId);
-                      },
-                }
-              : {})}
-            onClick={() => {
-              router.push(`/applicants/${application.applicationId}`);
-            }}
-          />
-        );
-      })}
-      {hasNextPage && (
-        <Button
-          variant="outline"
-          className="self-center"
-          disabled={isFetchingNextPage}
-          onClick={() => {
-            void fetchNextPage();
-          }}
-        >
-          {isFetchingNextPage ? "Loading..." : "Load more"}
-        </Button>
-      )}
+      {applications.map(renderCard)}
+      {loadMoreButton}
     </div>
   );
 }
