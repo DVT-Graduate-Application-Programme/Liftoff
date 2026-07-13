@@ -58,7 +58,6 @@ export const mockApplicantDetails: ApplicantDetailsEvaluation = {
   ],
   gitHubProfileDataJson: null,
   projectClassificationsJson: null,
+  aiSummary: "Strong technical candidate with consistent academic performance and an active GitHub history.",
   processedAt: new Date().toISOString(),
-  applicationRecord: null,
-  hiringAgentTotalScore: 84,
 };
