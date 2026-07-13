@@ -44,7 +44,7 @@ app.MapHealthChecks("/health");
 
 // ── Graph / AI ingestion pipeline – not needed for POC ──
 // app.MapControllers();          // ResumeController (old local-storage route)
-// app.MapIngestEndpoints();      // POST /api/applications/ingest  (triggers Graph email fetch)
+app.MapIngestEndpoints();         // POST /api/applications/ingest
 // app.MapEvaluationEndpoints();  // POST /internal/evaluation      (AI agent webhook callback)
 
 // ── POC endpoints ── active ──
@@ -52,6 +52,11 @@ app.MapDashboardEndpoints();
 app.MapApplicationEndpoints();
 
 // Seed POC data on startup (idempotent – skips if rows already exist)
-await DbSeeder.SeedAsync(app.Services);
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    await DbSeeder.SeedAsync(app.Services);
+}
 
 app.Run();
+
+public partial class Program;
