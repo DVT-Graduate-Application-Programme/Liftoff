@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 
 namespace Domain.Entities;
 
@@ -23,5 +24,6 @@ public class RecruiterAction
 
     public DateTimeOffset ActionedAt { get; set; }
 
+    [JsonIgnore]
     public ApplicationRecord? ApplicationRecord { get; set; }
 }

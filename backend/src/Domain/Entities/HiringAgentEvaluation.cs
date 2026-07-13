@@ -1,5 +1,6 @@
 using System;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Domain.Entities;
 
@@ -35,5 +36,6 @@ public class HiringAgentEvaluation
 
     public DateTimeOffset ProcessedAt { get; set; }
 
+    [JsonIgnore]
     public ApplicationRecord? ApplicationRecord { get; set; }
 }
