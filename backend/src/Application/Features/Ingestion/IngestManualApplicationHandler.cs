@@ -28,10 +28,21 @@ public class IngestManualApplicationHandler
             throw new ArgumentException("CandidateEmail is required to ingest an application.", nameof(request));
         }
 
+        var emailMessageId = BuildEmailMessageId(request);
+        var existingRecord = await _repository.GetByEmailMessageIdAsync(emailMessageId, cancellationToken);
+        if (existingRecord is not null)
+        {
+            return new IngestManualApplicationResult
+            {
+                ApplicationId = existingRecord.Id,
+                Status = existingRecord.Status
+            };
+        }
+
         var now = DateTimeOffset.UtcNow;
         var applicationRecord = new ApplicationRecord
         {
-            EmailMessageId = $"manual:{Guid.NewGuid()}",
+            EmailMessageId = emailMessageId,
             CandidateName = request.CandidateName,
             CandidateEmail = request.CandidateEmail,
             CvAttachmentId = request.HasCvFile ? $"manual-cv:{Guid.NewGuid()}" : null,
@@ -49,5 +60,14 @@ public class IngestManualApplicationHandler
             ApplicationId = applicationRecord.Id,
             Status = applicationRecord.Status
         };
+    }
+
+    private static string BuildEmailMessageId(IngestManualApplicationCommand request)
+    {
+        var idempotencyKey = string.IsNullOrWhiteSpace(request.IdempotencyKey)
+            ? request.CandidateEmail.Trim().ToLowerInvariant()
+            : request.IdempotencyKey.Trim();
+
+        return $"manual:{idempotencyKey}";
     }
 }
