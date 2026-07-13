@@ -140,8 +140,15 @@ function EvaluationSummary({ evaluation }: { evaluation: Evaluation }) {
           </span>
         </CardAction>
       </CardHeader>
-      <Separator />
+      
       <CardContent className="flex flex-col gap-5">
+        {evaluation.aiSummary && (
+          <>
+            <p className="text-sm leading-relaxed text-foreground">{evaluation.aiSummary}</p>
+            <Separator />
+          </>
+        )}
+
         <div className="flex flex-col gap-4">
           {SCORE_CATEGORIES.map(({ key, label }) => (
             <ScoreCategoryRow
