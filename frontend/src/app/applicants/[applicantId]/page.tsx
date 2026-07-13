@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -13,6 +14,7 @@ import {
   MinusCircle,
   Rocket,
   Sparkles,
+  Star,
 } from "lucide-react";
 import {
   Card,
@@ -24,13 +26,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
@@ -39,10 +34,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ApiError } from "@/lib/api-client";
+import { cn } from "@/lib/utils";
 import { useApplicationDetail } from "@/hooks/use-application-detail";
 import { useApplicant } from "@/hooks/use-applicant";
 import { useEvaluation } from "@/hooks/use-evaluation";
-import { useDocuments } from "@/hooks/use-documents";
+import { useOwnership } from "@/hooks/use-ownership";
+import { useRateApplication } from "@/hooks/use-rate-application";
+import { useShortlistApplication } from "@/hooks/use-shortlist-application";
+import { useAcceptApplication } from "@/hooks/use-accept-application";
+import { useRejectApplication } from "@/hooks/use-reject-application";
 import type { Evaluation, EvaluationCategoryScores, EvaluationScore } from "@/types/api";
 import { SCORE_CATEGORIES } from "@/app/landing/components/applicant-details/constants";
 import { DocumentViewer } from "./components/document-viewer/document-viewer";
@@ -84,28 +84,6 @@ function ScoreCategoryRow({
   );
 }
 
-function DocumentTab({
-  document,
-  label,
-  isLoading,
-}: {
-  document: { url: string; filename: string } | null | undefined;
-  label: string;
-  isLoading: boolean;
-}) {
-  if (isLoading) {
-    return (
-      <Card className="h-full">
-        <CardContent className="flex flex-1 items-center justify-center py-16">
-          <Skeleton className="h-6 w-32" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return <DocumentViewer url={document?.url ?? null} label={label} className="h-full min-h-64" />;
-}
-
 function EvaluationSummary({ evaluation }: { evaluation: Evaluation }) {
   const categoryScores = evaluation.categoryScoresJson;
   const bonusTotal = evaluation.bonusPointsJson?.total ?? 0;
@@ -140,8 +118,15 @@ function EvaluationSummary({ evaluation }: { evaluation: Evaluation }) {
           </span>
         </CardAction>
       </CardHeader>
-      <Separator />
+      
       <CardContent className="flex flex-col gap-5">
+        {evaluation.aiSummary && (
+          <>
+            <p className="text-sm leading-relaxed text-foreground">{evaluation.aiSummary}</p>
+            <Separator />
+          </>
+        )}
+
         <div className="flex flex-col gap-4">
           {SCORE_CATEGORIES.map(({ key, label }) => (
             <ScoreCategoryRow
@@ -212,6 +197,115 @@ function EvaluationSummary({ evaluation }: { evaluation: Evaluation }) {
   );
 }
 
+function StarRatingInput({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: number;
+  onChange: (rating: number) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          disabled={disabled}
+          onClick={() => { onChange(star); }}
+          aria-label={`Rate ${String(star)} star${star > 1 ? "s" : ""}`}
+          className="disabled:opacity-50"
+        >
+          <Star
+            className={cn(
+              "size-6 text-muted-foreground transition-colors",
+              star <= value && "fill-primary text-primary",
+            )}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function CandidateReview({ applicationId }: { applicationId: string }) {
+  const ownershipQuery = useOwnership(applicationId);
+  const rateMutation = useRateApplication(applicationId);
+  const shortlistMutation = useShortlistApplication(applicationId);
+  const acceptMutation = useAcceptApplication(applicationId);
+  const rejectMutation = useRejectApplication(applicationId);
+
+  const [ratingOverride, setRatingOverride] = useState<number | null>(null);
+  const [notesOverride, setNotesOverride] = useState<string | null>(null);
+
+  const rating = ratingOverride ?? ownershipQuery.data?.recruiterRating ?? 0;
+  const notes = notesOverride ?? ownershipQuery.data?.recruiterRatingNote ?? "";
+  const shortlistedAt = ownershipQuery.data?.shortlistedAt;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Candidate Review</CardTitle>
+      </CardHeader>
+
+      <CardContent className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <Label>Rating</Label>
+          <StarRatingInput value={rating} onChange={setRatingOverride} disabled={ownershipQuery.isLoading} />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="notes">Notes</Label>
+          <Textarea
+            id="notes"
+            placeholder="Add any additional notes..."
+            value={notes}
+            onChange={(e) => { setNotesOverride(e.target.value); }}
+            disabled={ownershipQuery.isLoading}
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={shortlistMutation.isPending || !!shortlistedAt}
+              onClick={() => { shortlistMutation.mutate(undefined); }}
+            >
+              {shortlistedAt ? "Shortlisted" : shortlistMutation.isPending ? "Shortlisting..." : "Shortlist"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={acceptMutation.isPending}
+              onClick={() => { acceptMutation.mutate(undefined); }}
+            >
+              {acceptMutation.isPending ? "Accepting..." : "Accept"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={rejectMutation.isPending}
+              onClick={() => { rejectMutation.mutate(undefined); }}
+            >
+              {rejectMutation.isPending ? "Rejecting..." : "Reject"}
+            </Button>
+          </div>
+
+          <Button
+            disabled={rating === 0 || rateMutation.isPending}
+            onClick={() => { rateMutation.mutate({ rating, notes: notes.length > 0 ? notes : undefined }); }}
+          >
+            {rateMutation.isPending ? "Submitting..." : "Submit Rating"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function DetailedApplicantInfo() {
   const params = useParams<{ applicantId: string }>();
   const applicantId = params.applicantId;
@@ -219,7 +313,6 @@ export default function DetailedApplicantInfo() {
   const detailQuery = useApplicationDetail(applicantId);
   const applicantQuery = useApplicant(applicantId);
   const evaluationQuery = useEvaluation(applicantId);
-  const documentsQuery = useDocuments(applicantId);
 
   if (detailQuery.isError) {
     const error = detailQuery.error;
@@ -276,17 +369,17 @@ export default function DetailedApplicantInfo() {
               <TabsTrigger value="transcript">Transcript</TabsTrigger>
             </TabsList>
             <TabsContent value="cv" className="flex-1 min-h-0">
-              <DocumentTab
-                document={documentsQuery.data?.cvDocument}
+              <DocumentViewer
+                url={`/api/applications/${applicantId}/cv`}
                 label="CV"
-                isLoading={documentsQuery.isLoading}
+                className="h-full min-h-64"
               />
             </TabsContent>
             <TabsContent value="transcript" className="flex-1 min-h-0">
-              <DocumentTab
-                document={documentsQuery.data?.transcriptDocument}
+              <DocumentViewer
+                url={`/api/applications/${applicantId}/transcript`}
                 label="Transcript"
-                isLoading={documentsQuery.isLoading}
+                className="h-full min-h-64"
               />
             </TabsContent>
           </Tabs>
@@ -316,52 +409,7 @@ export default function DetailedApplicantInfo() {
           </section>
 
           {/* Candidate Rating section*/}
-          <Card>
-            <CardHeader>
-              <CardTitle>Candidate Review</CardTitle>
-            </CardHeader>
-
-            <CardContent className="flex flex-col gap-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="potential-select">Potential Candidate</Label>
-                  <Select name="potential">
-                    <SelectTrigger id="potential-select" className="w-full">
-                      <SelectValue placeholder="Is this a potential candidate?" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Yes">Yes</SelectItem>
-                      <SelectItem value="Maybe">Maybe</SelectItem>
-                      <SelectItem value="No">No</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="tier-select">Candidate Tier</Label>
-                  <Select name="tier">
-                    <SelectTrigger id="tier-select" className="w-full">
-                      <SelectValue placeholder="Weigh the candidate by tier" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Strong">Strong</SelectItem>
-                      <SelectItem value="Borderline">Borderline</SelectItem>
-                      <SelectItem value="Weak">Weak</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="notes">Notes</Label>
-                <Textarea id="notes" placeholder="Add any additional notes..." />
-              </div>
-
-              <div className="flex justify-end pt-2">
-                <Button>Submit</Button>
-              </div>
-            </CardContent>
-          </Card>
+          <CandidateReview applicationId={applicantId} />
         </div>
       </div>
     </div>
