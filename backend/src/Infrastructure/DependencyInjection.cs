@@ -27,7 +27,7 @@ public static class DependencyInjection
 
         services.AddScoped<IApplicationRecordRepository, ApplicationRecordRepository>();
         services.AddScoped<IGraphEmailService, GraphEmailService>();
-
+        services.AddScoped<IAttachmentRetriever, UrlAttachmentRetriever>();
         return services;
     }
 }

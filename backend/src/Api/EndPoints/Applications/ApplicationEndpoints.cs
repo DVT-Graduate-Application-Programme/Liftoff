@@ -238,6 +238,41 @@ public static class ApplicationEndpoints
         })
         .WithName("GetApplicationTranscript");
 
+      
+        group.MapGet("/{id:guid}/cv/v2", async (
+            Guid id,
+            IApplicationRecordRepository repository,
+            IAttachmentRetriever attachmentRetriever,
+            CancellationToken ct) =>
+        {
+            var record = await repository.GetByIdAsync(id, ct);
+            if (record?.CvAttachmentId is null)
+                return Results.NotFound("CV not found for this application.");
+
+            var stream = await attachmentRetriever.GetContentAsync(record.CvAttachmentId, ct);
+            return stream is null
+                ? Results.NotFound("CV attachment could not be retrieved.")
+                : Results.File(stream, "application/pdf");
+        })
+        .WithName("GetApplicationCvV2");
+
+        group.MapGet("/{id:guid}/transcript/v2", async (
+            Guid id,
+            IApplicationRecordRepository repository,
+            IAttachmentRetriever attachmentRetriever,
+            CancellationToken ct) =>
+        {
+            var record = await repository.GetByIdAsync(id, ct);
+            if (record?.TranscriptAttachmentId is null)
+                return Results.NotFound("Transcript not found for this application.");
+
+            var stream = await attachmentRetriever.GetContentAsync(record.TranscriptAttachmentId, ct);
+            return stream is null
+                ? Results.NotFound("Transcript attachment could not be retrieved.")
+                : Results.File(stream, "application/pdf");
+        })
+        .WithName("GetApplicationTranscriptV2");
+
         // ── Graph attachment endpoint – disabled for POC ──
         // Fetches a CV/transcript attachment directly from Microsoft Graph using the email
         // message ID stored on the application record. Requires Graph:PollingInbox config.
