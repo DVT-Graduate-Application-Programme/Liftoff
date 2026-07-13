@@ -69,81 +69,119 @@ public static class ApplicationEndpoints
         })
         .WithName("GetApplicationOwnership");
 
+        // GET /api/applications/{id}/logs
+        // Returns the recruiter action logs for a given application
+        group.MapGet("/{id:guid}/logs", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        {
+            var logs = await repo.GetRecruiterLogsAsync(id, ct);
+            return Results.Ok(logs);
+        })
+        .WithName("GetApplicationLogs");
+
         // POST /api/applications/{id}/ownership/claim
         // Allows a recruiter to claim ownership of an application
-        group.MapPost("/{id:guid}/ownership/claim", async (Guid id, ClaimOwnershipRequest request, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/ownership/claim", async (Guid id, ClaimOwnershipRequest request, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
+            logger.LogInformation("Recruiter {RecruiterIdentity} is claiming application {ApplicationId}", request.RecruiterIdentity, id);
+            
             if (string.IsNullOrWhiteSpace(request.RecruiterIdentity))
             {
+                logger.LogWarning("Claim ownership failed for application {ApplicationId}: RecruiterIdentity is required", id);
                 return Results.BadRequest("RecruiterIdentity is required.");
             }
 
             var claim = await repo.ClaimOwnershipAsync(id, request.RecruiterIdentity, ct);
             if (claim is null)
             {
+                logger.LogWarning("Claim ownership failed: Application {ApplicationId} not found", id);
                 return Results.NotFound();
             }
 
             await repo.SaveChangesAsync(ct);
+            logger.LogInformation("Recruiter {RecruiterIdentity} successfully claimed application {ApplicationId}", request.RecruiterIdentity, id);
             return Results.Ok(claim);
         })
         .WithName("ClaimApplicationOwnership");
 
         // POST /api/applications/{id}/ownership/shortlist
         // Allows a recruiter to shortlist an application and progress its status
-        group.MapPost("/{id:guid}/ownership/shortlist", async (Guid id, ShortlistOwnershipRequest request, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/ownership/shortlist", async (Guid id, ShortlistOwnershipRequest request, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
+            logger.LogInformation("Recruiter {RecruiterIdentity} is shortlisting application {ApplicationId}", request.RecruiterIdentity, id);
+
             if (string.IsNullOrWhiteSpace(request.RecruiterIdentity))
             {
+                logger.LogWarning("Shortlist failed for application {ApplicationId}: RecruiterIdentity is required", id);
                 return Results.BadRequest("RecruiterIdentity is required.");
             }
 
             var shortlist = await repo.ShortlistAsync(id, request.RecruiterIdentity, request.Reason, ct);
-            if (shortlist is null) return Results.NotFound();
+            if (shortlist is null)
+            {
+                logger.LogWarning("Shortlist failed: Application {ApplicationId} not found", id);
+                return Results.NotFound();
+            }
 
             await repo.SaveChangesAsync(ct);
+            logger.LogInformation("Recruiter {RecruiterIdentity} successfully shortlisted application {ApplicationId}", request.RecruiterIdentity, id);
             return Results.Ok(shortlist);
         })
         .WithName("ShortlistApplicationOwnership");
 
-        group.MapPost("/{id:guid}/ownership/accept", async (Guid id, AcceptApplicationRequest request, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/ownership/accept", async (Guid id, AcceptApplicationRequest request, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
+            logger.LogInformation("Recruiter {RecruiterIdentity} is accepting application {ApplicationId}", request.RecruiterIdentity, id);
             if (string.IsNullOrWhiteSpace(request.RecruiterIdentity)) return Results.BadRequest("RecruiterIdentity is required.");
+            
             var result = await repo.AcceptAsync(id, request.RecruiterIdentity, request.Reason, ct);
             if (result is null) return Results.NotFound();
+            
             await repo.SaveChangesAsync(ct);
+            logger.LogInformation("Recruiter {RecruiterIdentity} successfully accepted application {ApplicationId}", request.RecruiterIdentity, id);
             return Results.Ok(result);
         })
         .WithName("AcceptApplication");
 
-        group.MapPost("/{id:guid}/ownership/reject", async (Guid id, RejectApplicationRequest request, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/ownership/reject", async (Guid id, RejectApplicationRequest request, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
+            logger.LogInformation("Recruiter {RecruiterIdentity} is rejecting application {ApplicationId}", request.RecruiterIdentity, id);
             if (string.IsNullOrWhiteSpace(request.RecruiterIdentity)) return Results.BadRequest("RecruiterIdentity is required.");
+            
             var result = await repo.RejectAsync(id, request.RecruiterIdentity, request.Reason, ct);
             if (result is null) return Results.NotFound();
+            
             await repo.SaveChangesAsync(ct);
+            logger.LogInformation("Recruiter {RecruiterIdentity} successfully rejected application {ApplicationId}", request.RecruiterIdentity, id);
             return Results.Ok(result);
         })
         .WithName("RejectApplication");
 
-        group.MapPost("/{id:guid}/ownership/rate", async (Guid id, RateApplicationRequest request, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/ownership/rate", async (Guid id, RateApplicationRequest request, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
+            logger.LogInformation("Recruiter {RecruiterIdentity} is rating application {ApplicationId} with {Rating} stars", request.RecruiterIdentity, id, request.Rating);
             if (string.IsNullOrWhiteSpace(request.RecruiterIdentity)) return Results.BadRequest("RecruiterIdentity is required.");
             if (request.Rating < 1 || request.Rating > 5) return Results.BadRequest("Rating must be between 1 and 5.");
+            
             var result = await repo.RateAsync(id, request.RecruiterIdentity, request.Rating, request.Notes, ct);
             if (result is null) return Results.NotFound();
+            
             await repo.SaveChangesAsync(ct);
+            logger.LogInformation("Recruiter {RecruiterIdentity} successfully rated application {ApplicationId}", request.RecruiterIdentity, id);
             return Results.Ok(result);
         })
         .WithName("RateApplication");
 
-        group.MapPost("/{id:guid}/ownership/notes", async (Guid id, AddNotesRequest request, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/ownership/notes", async (Guid id, AddNotesRequest request, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
+            logger.LogInformation("Recruiter {RecruiterIdentity} is adding notes to application {ApplicationId}", request.RecruiterIdentity, id);
             if (string.IsNullOrWhiteSpace(request.RecruiterIdentity)) return Results.BadRequest("RecruiterIdentity is required.");
             if (string.IsNullOrWhiteSpace(request.Notes)) return Results.BadRequest("Notes are required.");
+            
             var result = await repo.AddNotesAsync(id, request.RecruiterIdentity, request.Notes, ct);
             if (result is null) return Results.NotFound();
+            
             await repo.SaveChangesAsync(ct);
+            logger.LogInformation("Recruiter {RecruiterIdentity} successfully added notes to application {ApplicationId}", request.RecruiterIdentity, id);
             return Results.Ok(result);
         })
         .WithName("AddApplicationNotes");
