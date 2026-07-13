@@ -61,3 +61,14 @@ export interface PaginatedApplications {
   applications: CandidateApplication[];
   nextCursor: number | null;
 }
+
+export interface Ownership {
+  claimedByRecruiterId: string | null;
+  claimedAt: string | null;
+  shortlistedByRecruiterId: string | null;
+  shortlistedAt: string | null;
+  recruiterRating: number | null;
+  recruiterRatingNote: string | null;
+  ratedByRecruiterId: string | null;
+  ratedAt: string | null;
+}
