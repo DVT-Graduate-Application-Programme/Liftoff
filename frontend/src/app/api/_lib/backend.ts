@@ -1,0 +1,34 @@
+import { NextResponse } from "next/server";
+
+const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:5000";
+
+export function backendUrl(path: string): string {
+  return `${BACKEND_URL}${path}`;
+}
+
+// Proxies a JSON request/response to backend
+export async function proxyJson(path: string, init?: RequestInit): Promise<NextResponse> {
+  const res = await fetch(backendUrl(path), init);
+  const text = await res.text();
+  return new NextResponse(text.length > 0 ? text : null, {
+    status: res.status,
+    headers: { "Content-Type": res.headers.get("Content-Type") ?? "application/json" },
+  });
+}
+
+// Proxies a binary (pdf in this case) response to backend,
+export async function proxyBinary(path: string): Promise<NextResponse> {
+  const res = await fetch(backendUrl(path));
+  if (!res.ok || !res.body) {
+    return new NextResponse(null, { status: res.status });
+  }
+  return new NextResponse(res.body, {
+    status: res.status,
+    headers: {
+      "Content-Type": res.headers.get("Content-Type") ?? "application/pdf",
+      ...(res.headers.get("Content-Disposition")
+        ? { "Content-Disposition": res.headers.get("Content-Disposition")! }
+        : {}),
+    },
+  });
+}
