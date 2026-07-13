@@ -62,6 +62,10 @@ export async function GET(req: NextRequest) {
       (a, b) => direction * ((a.evaluation?.hiringAgentTotalScore ?? 0) - (b.evaluation?.hiringAgentTotalScore ?? 0))
     );
   }
+  if (sort === "date_desc" || sort === "date_asc") {
+    const direction = sort === "date_desc" ? -1 : 1;
+    results = [...results].sort((a, b) => direction * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
+  }
 
   const page = results.slice(cursor, cursor + limit);
   const nextCursor = cursor + limit < results.length ? cursor + limit : null;
