@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { badRequest, conflict, simulateLatency } from "../_lib/helpers";
-import { applications } from "../_lib/mockData";
+import { backendUrl } from "../_lib/backend";
+import type { CandidateApplication } from "@/types/candidate";
 
 // Track email message IDs seen this dev-server session so a repeat POST
 // naturally produces a 409, without needing a special test value.
@@ -13,8 +14,6 @@ function toBool(value: string | null): boolean | null {
 }
 
 export async function GET(req: NextRequest) {
-  await simulateLatency();
-
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status");
   const tier = searchParams.get("tier");
@@ -31,36 +30,38 @@ export async function GET(req: NextRequest) {
   const limit = Number(searchParams.get("limit") ?? Number.MAX_SAFE_INTEGER);
   const cursor = Number(searchParams.get("cursor") ?? 0);
 
+  // The backend's status filter is an exact match only (no comma-separated multi-status),
+  // so it's applied client-side below instead of being forwarded.
+  const backendParams = new URLSearchParams();
+  if (tier) backendParams.set("tier", tier);
+  if (hardGatePassed !== null) backendParams.set("hardGatePassed", String(hardGatePassed));
+  if (claimed !== null) backendParams.set("isClaimed", String(claimed));
+  if (shortlisted !== null) backendParams.set("isShortlisted", String(shortlisted));
+  if (dateFrom) backendParams.set("fromDate", dateFrom);
+  if (dateTo) backendParams.set("toDate", dateTo);
+
+  const res = await fetch(backendUrl(`/api/dashboard/applications?${backendParams.toString()}`));
+  if (!res.ok) {
+    return NextResponse.json({ error: "BACKEND_ERROR", message: res.statusText }, { status: res.status });
+  }
+  const { applications } = (await res.json()) as { applications: CandidateApplication[] };
+
   let results = applications;
 
   if (status) {
     const statuses = status.split(",");
     results = results.filter((a) => statuses.includes(a.currentStatus));
   }
-  if (tier) results = results.filter((a) => a.tier === tier);
-  if (hardGatePassed !== null) results = results.filter((a) => a.screening.hardGatePassed === hardGatePassed);
-  if (claimed !== null) {
-    results = results.filter((a) => (claimed ? a.ownership.claimedByRecruiterId !== null : a.ownership.claimedByRecruiterId === null));
-  }
-  if (shortlisted !== null) {
-    results = results.filter((a) =>
-      shortlisted ? a.ownership.shortlistedByRecruiterId !== null : a.ownership.shortlistedByRecruiterId === null
-    );
-  }
-  if (dateFrom) results = results.filter((a) => a.createdAt >= dateFrom);
-  if (dateTo) results = results.filter((a) => a.createdAt <= dateTo);
   if (search) {
     const needle = search.toLowerCase();
-    results = results.filter((a) => a.applicant.candidateName.toLowerCase().includes(needle));
+    results = results.filter((a) => a.candidateName.toLowerCase().includes(needle));
   }
   if (minScore !== null) {
-    results = results.filter((a) => (a.evaluation?.hiringAgentTotalScore ?? 0) >= minScore);
+    results = results.filter((a) => a.hiringAgentTotalScore >= minScore);
   }
   if (sort === "score_desc" || sort === "score_asc") {
     const direction = sort === "score_desc" ? -1 : 1;
-    results = [...results].sort(
-      (a, b) => direction * ((a.evaluation?.hiringAgentTotalScore ?? 0) - (b.evaluation?.hiringAgentTotalScore ?? 0))
-    );
+    results = [...results].sort((a, b) => direction * (a.hiringAgentTotalScore - b.hiringAgentTotalScore));
   }
   if (sort === "date_desc" || sort === "date_asc") {
     const direction = sort === "date_desc" ? -1 : 1;
@@ -70,23 +71,7 @@ export async function GET(req: NextRequest) {
   const page = results.slice(cursor, cursor + limit);
   const nextCursor = cursor + limit < results.length ? cursor + limit : null;
 
-  return NextResponse.json({
-    applications: page.map((application) => ({
-      applicationId: application.applicationId,
-      candidateName: application.applicant.candidateName,
-      currentStatus: application.currentStatus,
-      tier: application.tier,
-      hardGatePassed: application.screening.hardGatePassed,
-      hiringAgentTotalScore: application.evaluation?.hiringAgentTotalScore ?? 0,
-      cvSummary: application.cvSummary,
-      flags: application.flags,
-      candidateGitHubUrl: application.applicant.candidateGitHubUrl,
-      claimedByRecruiterId: application.ownership.claimedByRecruiterId,
-      shortlistedByRecruiterId: application.ownership.shortlistedByRecruiterId,
-      createdAt: application.createdAt,
-    })),
-    nextCursor,
-  });
+  return NextResponse.json({ applications: page, nextCursor });
 }
 
 export async function POST(req: NextRequest) {
