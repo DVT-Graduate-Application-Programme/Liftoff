@@ -22,6 +22,9 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
     {
         return await _dbContext.ApplicationRecords
             .AsNoTracking()
+            .Include(r => r.HiringAgentEvaluations)
+            .Include(r => r.RecruiterActions)
+            .Include(r => r.AuditLogs)
             .OrderByDescending(r => r.CreatedAt)
             .ToListAsync(cancellationToken);
     }
@@ -30,6 +33,9 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
     {
         return await _dbContext.ApplicationRecords
             .AsNoTracking()
+            .Include(r => r.HiringAgentEvaluations)
+            .Include(r => r.RecruiterActions)
+            .Include(r => r.AuditLogs)
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
     }
 
@@ -43,7 +49,10 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
                 Status = r.Status,
                 Tier = r.Tier,
                 CreatedAt = r.CreatedAt,
-                UpdatedAt = r.UpdatedAt
+                UpdatedAt = r.UpdatedAt,
+                HiringAgentEvaluations = r.HiringAgentEvaluations.ToList(),
+                RecruiterActions = r.RecruiterActions.ToList(),
+                AuditLogs = r.AuditLogs.ToList()
             })
             .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
@@ -292,6 +301,27 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             .Select(a => new RecruiterActionLogDto
             {
                 Id = a.Id,
+                ApplicationRecordId = a.ApplicationRecordId,
+                RecruiterIdentity = a.RecruiterIdentity,
+                ActionType = a.ActionType,
+                PreviousStatus = a.PreviousStatus,
+                NewStatus = a.NewStatus,
+                Reason = a.Reason,
+                RatingValue = a.RatingValue,
+                ActionedAt = a.ActionedAt
+            })
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<RecruiterActionLogDto>> GetAllRecruiterLogsAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.RecruiterActions
+            .AsNoTracking()
+            .OrderByDescending(a => a.ActionedAt)
+            .Select(a => new RecruiterActionLogDto
+            {
+                Id = a.Id,
+                ApplicationRecordId = a.ApplicationRecordId,
                 RecruiterIdentity = a.RecruiterIdentity,
                 ActionType = a.ActionType,
                 PreviousStatus = a.PreviousStatus,

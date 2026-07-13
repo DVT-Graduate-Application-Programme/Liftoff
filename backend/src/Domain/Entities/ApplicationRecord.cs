@@ -68,6 +68,9 @@ public class ApplicationDetails
     public string? Tier { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
+    public ICollection<HiringAgentEvaluation> HiringAgentEvaluations { get; set; } = new List<HiringAgentEvaluation>();
+    public ICollection<RecruiterAction> RecruiterActions { get; set; } = new List<RecruiterAction>();
+    public ICollection<AuditLog> AuditLogs { get; set; } = new List<AuditLog>();
 }
 
 public class ApplicationHardGateScreening
@@ -119,6 +122,7 @@ public class ApplicationRatingUpdate
 public class RecruiterActionLogDto
 {
     public Guid Id { get; set; }
+    public Guid ApplicationRecordId { get; set; }
     public string RecruiterIdentity { get; set; } = string.Empty;
     public string ActionType { get; set; } = string.Empty;
     public string? PreviousStatus { get; set; }
