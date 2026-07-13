@@ -207,7 +207,7 @@ function AcceptedCandidates() {
         )}
       </section>
       <ApplicantList
-        status="SHORTLISTED"
+        status="shortlisted"
         emptyTitle="No accepted applicants yet"
         filterApplications={filterApplications}
         sortApplications={sortApplications}

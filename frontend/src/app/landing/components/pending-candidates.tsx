@@ -83,7 +83,7 @@ const PendingCandidates = () => {
             <FilterField label="Minimum score">
               <input aria-label="Minimum score" type="number" min="0" step="0.1" value={minScore} onChange={(event) => { setMinScore(event.target.value); }} className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" placeholder="Any score" />
             </FilterField>
-            <FilterField label="Candidate tier"><FilterSelect value={tier} onChange={setTier} options={[["", "All tiers"], ["STRONG", "Strong"], ["BORDERLINE", "Borderline"], ["WEAK", "Weak"], ["INVALID", "Invalid"]]} /></FilterField>
+            <FilterField label="Candidate tier"><FilterSelect value={tier} onChange={setTier} options={[["", "All tiers"], ["A", "A"], ["B", "B"], ["C", "C"], ["D", "D"]]} /></FilterField>
             <FilterField label="Screening"><FilterSelect value={hardGate} onChange={setHardGate} options={[["all", "All results"], ["passed", "Passed"], ["failed", "Failed"]]} /></FilterField>
             <FilterField label="Ownership"><FilterSelect value={claimed} onChange={setClaimed} options={[["all", "All candidates"], ["unclaimed", "Unclaimed"], ["claimed", "Claimed"]]} /></FilterField>
             <FilterField label="Received"><FilterSelect value={dateRange} onChange={setDateRange} options={[["all", "Any time"], ["7", "Last 7 days"], ["30", "Last 30 days"]]} /></FilterField>
@@ -102,7 +102,7 @@ const PendingCandidates = () => {
       </section>
 
       <ApplicantList
-        status="PENDING,PROCESSING"
+        status="PENDING"
         filters={filters}
         emptyTitle="No pending applicants"
         showReviewedAt={false}

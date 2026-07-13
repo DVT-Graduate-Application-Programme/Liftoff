@@ -25,12 +25,10 @@ type Filters = Omit<ApplicationFilters, "search" | "limit" | "cursor">;
 const STATUS_OPTIONS = [
   ["", "All statuses"],
   ["PENDING", "Pending"],
-  ["PROCESSING", "Processing"],
-  ["VALID", "Valid"],
-  ["INVALID", "Invalid"],
-  ["MANUAL_REVIEW", "Manual review"],
-  ["SHORTLISTED", "Shortlisted"],
-  ["ERROR", "Error"],
+  ["evaluated", "Evaluated"],
+  ["forwarded", "Forwarded"],
+  ["rejected", "Rejected"],
+  ["shortlisted", "Shortlisted"],
 ] as [string, string][];
 
 function AllCandidates() {
@@ -197,10 +195,10 @@ function AllCandidates() {
                 onChange={setTier}
                 options={[
                   ["", "All tiers"],
-                  ["STRONG", "Strong"],
-                  ["BORDERLINE", "Borderline"],
-                  ["WEAK", "Weak"],
-                  ["INVALID", "Invalid"],
+                  ["A", "A"],
+                  ["B", "B"],
+                  ["C", "C"],
+                  ["D", "D"],
                 ]}
               />
             </FilterField>
