@@ -40,9 +40,8 @@ export interface Evaluation {
   areasForImprovementJson: string[] | null;
   gitHubProfileDataJson: Record<string, unknown> | null;
   projectClassificationsJson: Record<string, unknown> | null;
+  aiSummary: string | null;
   processedAt: string;
-  applicationRecord: Record<string, unknown> | null;
-  hiringAgentTotalScore: number;
 }
 
 export interface DocumentFile {
