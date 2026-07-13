@@ -2,12 +2,10 @@ import type { CandidateApplication } from "@/types/candidate";
 
 export const statusLabels: Record<CandidateApplication["currentStatus"], string> = {
   PENDING: "Pending",
-  PROCESSING: "Processing",
-  VALID: "Valid",
-  INVALID: "Invalid",
-  MANUAL_REVIEW: "Manual Review",
-  SHORTLISTED: "Shortlisted",
-  ERROR: "Error",
+  evaluated: "Evaluated",
+  forwarded: "Forwarded",
+  rejected: "Rejected",
+  shortlisted: "Shortlisted",
 };
 
 export const statusTones: Record<
@@ -15,12 +13,10 @@ export const statusTones: Record<
   "positive" | "warning" | "negative" | "neutral"
 > = {
   PENDING: "neutral",
-  PROCESSING: "warning",
-  VALID: "positive",
-  INVALID: "negative",
-  MANUAL_REVIEW: "warning",
-  SHORTLISTED: "positive",
-  ERROR: "negative",
+  evaluated: "warning",
+  forwarded: "warning",
+  rejected: "negative",
+  shortlisted: "positive",
 };
 
 export const formatDate = (isoDate: string) =>
@@ -30,7 +26,7 @@ export const formatDate = (isoDate: string) =>
     year: "numeric",
   });
 
-export const toScorePercent = (score: number) => Math.round(score * 20);
+export const toScorePercent = (score: number) => Math.round(score);
 
 export const getRecruiterLabel = (application: CandidateApplication) =>
   application.shortlistedByRecruiterId ??
