@@ -24,6 +24,9 @@ export async function GET(req: NextRequest) {
   const dateFrom = searchParams.get("dateFrom");
   const dateTo = searchParams.get("dateTo");
   const search = searchParams.get("search");
+  const minScoreValue = Number(searchParams.get("minScore"));
+  const minScore = Number.isFinite(minScoreValue) && searchParams.has("minScore") ? minScoreValue : null;
+  const sort = searchParams.get("sort");
   // Callers that don't care about pagination (e.g. History) omit `limit` and get everything back.
   const limit = Number(searchParams.get("limit") ?? Number.MAX_SAFE_INTEGER);
   const cursor = Number(searchParams.get("cursor") ?? 0);
@@ -49,6 +52,15 @@ export async function GET(req: NextRequest) {
   if (search) {
     const needle = search.toLowerCase();
     results = results.filter((a) => a.applicant.candidateName.toLowerCase().includes(needle));
+  }
+  if (minScore !== null) {
+    results = results.filter((a) => (a.evaluation?.hiringAgentTotalScore ?? 0) >= minScore);
+  }
+  if (sort === "score_desc" || sort === "score_asc") {
+    const direction = sort === "score_desc" ? -1 : 1;
+    results = [...results].sort(
+      (a, b) => direction * ((a.evaluation?.hiringAgentTotalScore ?? 0) - (b.evaluation?.hiringAgentTotalScore ?? 0))
+    );
   }
 
   const page = results.slice(cursor, cursor + limit);
