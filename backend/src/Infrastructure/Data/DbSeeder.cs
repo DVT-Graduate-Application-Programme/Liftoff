@@ -50,9 +50,7 @@ public static class DbSeeder
 
         logger.LogInformation("[DbSeeder] Seeding POC data…");
 
-        // ──────────────────────────────────────────────
-        // Candidate 1 – Joseph Monakedis (Score 77)
-        // ──────────────────────────────────────────────
+
         var app1 = new ApplicationRecord
         {
             Id = App1Id,
