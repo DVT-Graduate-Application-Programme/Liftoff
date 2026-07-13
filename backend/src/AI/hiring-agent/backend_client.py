@@ -43,11 +43,25 @@ class Resume(BaseModel):
 
 
 def get_resume(candidate_id: UUID) -> Resume:
-    url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}"
+    url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/applicant"
     with httpx.Client() as client:
         response = client.get(url)
         response.raise_for_status()
-    return Resume.model_validate(response.json())
+        metadata = response.json()
+
+        cv_url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/cv"
+        transcript_url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/transcript"
+
+        transcript_check = client.head(transcript_url) # if transript is available 
+        if transcript_check.status_code == 404:
+            transcript_url = None
+
+    return Resume(
+        id=candidate_id,
+        candidate_name=metadata.get("candidateName", "Unknown"),
+        document_url=cv_url,
+        transcript_url=transcript_url,
+    )
 
 
 def get_all_resumes() -> list[Resume]:
