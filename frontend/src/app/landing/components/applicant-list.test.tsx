@@ -2,10 +2,15 @@ import { screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { renderWithQueryClient, jsonResponse } from "@/test-utils";
 import { ApplicantSearchProvider } from "@/components/providers/applicant-search-provider";
+import { ApplicantSelectionProvider } from "@/components/providers/applicant-selection-provider";
 import { ApplicantList } from "./applicant-list";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
+}));
+
+vi.mock("@/components/ui/sidebar", () => ({
+  useSidebar: () => ({ setOpen: vi.fn() }),
 }));
 
 function makeApplication(overrides: Partial<Record<string, unknown>> = {}) {
@@ -29,7 +34,9 @@ function makeApplication(overrides: Partial<Record<string, unknown>> = {}) {
 function renderList(props: { status?: string; emptyTitle: string } = { emptyTitle: "No applicants yet" }) {
   return renderWithQueryClient(
     <ApplicantSearchProvider>
-      <ApplicantList {...props} />
+      <ApplicantSelectionProvider>
+        <ApplicantList {...props} />
+      </ApplicantSelectionProvider>
     </ApplicantSearchProvider>
   );
 }

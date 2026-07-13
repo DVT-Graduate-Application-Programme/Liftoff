@@ -40,7 +40,9 @@ export function usePdfDocuments() {
       setContainerWidth(Math.max(0, width - CONTAINER_PADDING));
     });
     observer.observe(element);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
   const onDocumentLoadSuccess = useCallback((pdf: DocumentCallback) => {

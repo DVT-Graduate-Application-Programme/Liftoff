@@ -2,8 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
+import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
 import { useInfiniteApplications } from "@/hooks/use-infinite-applications";
 import { ACTIVE_RECRUITER_ID, useClaimApplication } from "@/hooks/use-claim-application";
+import { useSidebar } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
@@ -31,25 +33,25 @@ const DATE_BUCKET_SECTIONS = [
   {
     key: "today" as const,
     label: "Today",
-    countLabel: (count: number) => `${count} New Applicants`,
+    countLabel: (count: number) => `${String(count)} New Applicants`,
     emptyText: "No pending applicants received today.",
   },
   {
     key: "thisWeek" as const,
     label: "This Week",
-    countLabel: (count: number) => `${count} Applicants`,
+    countLabel: (count: number) => `${String(count)} Applicants`,
     emptyText: "No pending applicants from earlier this week.",
   },
   {
     key: "lastWeek" as const,
     label: "Last Week",
-    countLabel: (count: number) => `${count} Applicants`,
+    countLabel: (count: number) => `${String(count)} Applicants`,
     emptyText: "No pending applicants from last week.",
   },
   {
     key: "older" as const,
     label: "Older",
-    countLabel: (count: number) => `${count} Applicants`,
+    countLabel: (count: number) => `${String(count)} Applicants`,
     emptyText: "No older pending applicants.",
   },
 ];
@@ -57,6 +59,8 @@ const DATE_BUCKET_SECTIONS = [
 export function ApplicantList({ status, emptyTitle, showReviewedAt = true, enableClaim = false, groupByDate = false }: ApplicantListProps) {
   const router = useRouter();
   const { search } = useApplicantSearch();
+  const { selectApplication } = useApplicantSelection();
+  const { setOpen } = useSidebar();
   const { data, isLoading, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteApplications({
     status,
     search: search || undefined,
@@ -118,6 +122,10 @@ export function ApplicantList({ status, emptyTitle, showReviewedAt = true, enabl
           : {})}
         onClick={() => {
           router.push(`/applicants/${application.applicationId}`);
+        }}
+        onActionClick={() => {
+          selectApplication(application.applicationId);
+          setOpen(true);
         }}
       />
     );

@@ -113,11 +113,11 @@ function EvaluationSummary({ evaluation }: { evaluation: Evaluation }) {
   const areasForImprovement = evaluation.areasForImprovementJson ?? [];
 
   const totalScore = SCORE_CATEGORIES.reduce(
-    (sum, { key }) => sum + (categoryScores[key]?.score ?? 0),
+    (sum, { key }) => sum + categoryScores[key].score,
     0,
   );
   const maxScore = SCORE_CATEGORIES.reduce(
-    (sum, { key }) => sum + (categoryScores[key]?.max ?? 0),
+    (sum, { key }) => sum + categoryScores[key].max,
     0,
   );
   const overallScore = Math.max(0, totalScore + bonusTotal);
@@ -143,19 +143,14 @@ function EvaluationSummary({ evaluation }: { evaluation: Evaluation }) {
       <Separator />
       <CardContent className="flex flex-col gap-5">
         <div className="flex flex-col gap-4">
-          {SCORE_CATEGORIES.map(({ key, label }) => {
-            const category = categoryScores[key];
-            if (!category) return null;
-
-            return (
-              <ScoreCategoryRow
-                key={key}
-                label={label}
-                icon={scoreCategoryMeta[key].icon}
-                category={category}
-              />
-            );
-          })}
+          {SCORE_CATEGORIES.map(({ key, label }) => (
+            <ScoreCategoryRow
+              key={key}
+              label={label}
+              icon={scoreCategoryMeta[key].icon}
+              category={categoryScores[key]}
+            />
+          ))}
         </div>
 
         <Separator />

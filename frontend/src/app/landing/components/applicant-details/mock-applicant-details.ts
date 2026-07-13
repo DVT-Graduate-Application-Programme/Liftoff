@@ -1,36 +1,7 @@
-export type ApplicantDetailsEvaluation = {
-  id: string;
-  applicationRecordId: string;
-  institutionJson: Record<string, unknown> | null;
-  categoryScoresJson: {
-    education: ApplicantDetailsScoreCategory;
-    open_source: ApplicantDetailsScoreCategory;
-    production: ApplicantDetailsScoreCategory;
-    self_projects: ApplicantDetailsScoreCategory;
-    technical_skills: ApplicantDetailsScoreCategory;
-  };
-  evidenceJson: Record<string, string> | null;
-  bonusPointsJson: {
-    total: number;
-    breakdown: string;
-  } | null;
-  deductionsJson: {
-    promptInjectionDetected: boolean;
-    promptInjectionEvidence: string;
-  } | null;
-  keyStrengthsJson: string[] | null;
-  areasForImprovementJson: string[] | null;
-  gitHubProfileDataJson: Record<string, unknown> | null;
-  projectClassificationsJson: Record<string, unknown> | null;
-  processedAt: string;
-  applicationRecord: Record<string, unknown> | null;
-};
+import type { Evaluation, EvaluationScore } from "@/types/api";
 
-export type ApplicantDetailsScoreCategory = {
-  score: number;
-  max: number;
-  evidence: string;
-};
+export type ApplicantDetailsEvaluation = Evaluation;
+export type ApplicantDetailsScoreCategory = EvaluationScore;
 
 export const mockApplicantDetails: ApplicantDetailsEvaluation = {
   id: "mock-evaluation",
@@ -89,4 +60,5 @@ export const mockApplicantDetails: ApplicantDetailsEvaluation = {
   projectClassificationsJson: null,
   processedAt: new Date().toISOString(),
   applicationRecord: null,
+  hiringAgentTotalScore: 84,
 };
