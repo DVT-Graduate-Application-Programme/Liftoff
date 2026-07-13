@@ -13,7 +13,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import ApplicantCard from "@/components/applicant-card/applicant-card";
 import type { CandidateApplication } from "@/types/candidate";
-import type { PaginatedApplications } from "@/types/api";
+import type { ApplicationFilters, PaginatedApplications } from "@/types/api";
 import {
   formatDate,
   getRecruiterLabel,
@@ -25,6 +25,7 @@ import {
 
 interface ApplicantListProps {
   status?: string;
+  filters?: ApplicationFilters;
   emptyTitle: string;
   showReviewedAt?: boolean;
   enableClaim?: boolean;
@@ -62,6 +63,7 @@ const DATE_BUCKET_SECTIONS = [
 
 export function ApplicantList({
   status,
+  filters,
   emptyTitle,
   showReviewedAt = true,
   enableClaim = false,
@@ -74,7 +76,8 @@ export function ApplicantList({
   const { selectApplication } = useApplicantSelection();
   const { setOpen } = useSidebar();
   const { data, isLoading, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteApplications({
-    status,
+    ...filters,
+    status: status ?? filters?.status,
     search: search || undefined,
   });
   const claimMutation = useClaimApplication();
