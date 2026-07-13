@@ -70,7 +70,7 @@ export function PdfViewer({
           <div className="flex flex-col items-center gap-2 text-center">
             <AlertTriangle className="size-6 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
-              Couldn't load {label.toLowerCase()}.
+              Couldn&apos;t load {label.toLowerCase()}.
             </p>
           </div>
         ) : (

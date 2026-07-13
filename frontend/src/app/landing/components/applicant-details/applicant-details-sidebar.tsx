@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sidebar, SidebarContent, SidebarGroup } from "@/components/ui/sidebar";
 import type { ApplicantDetailsEvaluation } from "./mock-applicant-details";
@@ -5,6 +6,7 @@ import { CloseApplicantDetailsSidebarButton } from "./applicant-details-sidebar-
 import { SCORE_CATEGORIES } from "./constants";
 
 type ApplicantDetailsSidebarProps = {
+  applicantId?: string | null;
   candidateName: string;
   evaluation: ApplicantDetailsEvaluation | null;
   isLoadingEvaluation?: boolean;
@@ -16,6 +18,7 @@ function formatDecimal(value: number) {
 }
 
 export function ApplicantDetailsSidebar({
+  applicantId = null,
   candidateName,
   evaluation,
   isLoadingEvaluation = false,
@@ -123,9 +126,15 @@ export function ApplicantDetailsSidebar({
           </div>
           <Button
             type="button"
+            asChild={Boolean(applicantId)}
+            disabled={!applicantId}
             className="mt-6 h-11 w-full text-base font-medium"
           >
-            View CV and Transcript
+            {applicantId ? (
+              <Link href={`/applicants/${applicantId}`}>View CV and Transcript</Link>
+            ) : (
+              "View CV and Transcript"
+            )}
           </Button>
         </SidebarGroup>
       </SidebarContent>

@@ -1,37 +1,9 @@
-import React from "react";
+"use client";
+
 import { ListFilter, ListOrdered, X } from "lucide-react";
-import ApplicantCard from "@/components/applicant-card/applicant-card";
-import { useSidebar } from "@/components/ui/sidebar";
-import type { CandidateApplication } from "@/types/candidate";
-import {
-  getRecruiterLabel,
-  formatDate,
-  statusLabels,
-  statusTones,
-  toScorePercent,
-} from "./candidate-list-utils";
+import { ApplicantList } from "./applicant-list";
 
-type AllCandidatesProps = {
-  applications: CandidateApplication[];
-  onSelectApplication: (application: CandidateApplication) => void;
-  onClaimApplication: (application: CandidateApplication) => Promise<void>;
-  claimingApplicationId: string | null;
-  activeRecruiterId: string;
-};
-
-const AllCandidates = ({
-  applications,
-  onSelectApplication,
-  onClaimApplication,
-  claimingApplicationId,
-  activeRecruiterId,
-}: AllCandidatesProps) => {
-  const { setOpen } = useSidebar();
-
-  const handleOpenSummary = (application: CandidateApplication) => {
-    onSelectApplication(application);
-    setOpen(true);
-  };
+const AllCandidates = () => {
   return (
     <>
       <section className="mb-8 flex flex-col gap-6">
@@ -68,53 +40,7 @@ const AllCandidates = ({
           </button>
         </div>
       </section>
-      <div className="flex flex-col gap-2">
-        {applications.map((application) => {
-          const isClaimedByActiveRecruiter =
-            application.claimedByRecruiterId === activeRecruiterId;
-          const isClaiming =
-            claimingApplicationId === application.applicationId;
-
-          return (
-            <ApplicantCard
-              key={application.applicationId}
-              name={application.candidateName}
-              institute={application.cvSummary}
-              showInstitute={false}
-              systemScore={toScorePercent(application.hiringAgentTotalScore)}
-              scoreLabel="System Score"
-              statusLabel={statusLabels[application.currentStatus]}
-              statusTone={statusTones[application.currentStatus]}
-              reviewedAt={formatDate(application.createdAt)}
-              recruiterLabel="recruiter"
-              recruiterName={getRecruiterLabel(application)}
-              actionLabel="Show AI Summary"
-              onActionClick={() => {
-                handleOpenSummary(application);
-              }}
-              secondaryActionLabel={
-                isClaimedByActiveRecruiter ? "Claimed" : "Claim for review"
-              }
-              isSecondaryActionDisabled={
-                isClaimedByActiveRecruiter || isClaiming
-              }
-              isSecondaryActionLoading={
-                !isClaimedByActiveRecruiter && isClaiming
-              }
-              onSecondaryActionClick={
-                isClaimedByActiveRecruiter
-                  ? undefined
-                  : () => {
-                      void onClaimApplication(application);
-                    }
-              }
-              onClick={() => {
-                onSelectApplication(application);
-              }}
-            />
-          );
-        })}
-      </div>
+      <ApplicantList emptyTitle="No applicants yet" enableClaim />
     </>
   );
 };
