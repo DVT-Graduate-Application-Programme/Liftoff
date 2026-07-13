@@ -42,7 +42,6 @@ import { ApiError } from "@/lib/api-client";
 import { useApplicationDetail } from "@/hooks/use-application-detail";
 import { useApplicant } from "@/hooks/use-applicant";
 import { useEvaluation } from "@/hooks/use-evaluation";
-import { useDocuments } from "@/hooks/use-documents";
 import type { Evaluation, EvaluationCategoryScores, EvaluationScore } from "@/types/api";
 import { SCORE_CATEGORIES } from "@/app/landing/components/applicant-details/constants";
 import { DocumentViewer } from "./components/document-viewer/document-viewer";
@@ -82,28 +81,6 @@ function ScoreCategoryRow({
       </p>
     </div>
   );
-}
-
-function DocumentTab({
-  document,
-  label,
-  isLoading,
-}: {
-  document: { url: string; filename: string } | null | undefined;
-  label: string;
-  isLoading: boolean;
-}) {
-  if (isLoading) {
-    return (
-      <Card className="h-full">
-        <CardContent className="flex flex-1 items-center justify-center py-16">
-          <Skeleton className="h-6 w-32" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return <DocumentViewer url={document?.url ?? null} label={label} className="h-full min-h-64" />;
 }
 
 function EvaluationSummary({ evaluation }: { evaluation: Evaluation }) {
@@ -226,7 +203,6 @@ export default function DetailedApplicantInfo() {
   const detailQuery = useApplicationDetail(applicantId);
   const applicantQuery = useApplicant(applicantId);
   const evaluationQuery = useEvaluation(applicantId);
-  const documentsQuery = useDocuments(applicantId);
 
   if (detailQuery.isError) {
     const error = detailQuery.error;
@@ -283,17 +259,17 @@ export default function DetailedApplicantInfo() {
               <TabsTrigger value="transcript">Transcript</TabsTrigger>
             </TabsList>
             <TabsContent value="cv" className="flex-1 min-h-0">
-              <DocumentTab
-                document={documentsQuery.data?.cvDocument}
+              <DocumentViewer
+                url={`/api/applications/${applicantId}/cv`}
                 label="CV"
-                isLoading={documentsQuery.isLoading}
+                className="h-full min-h-64"
               />
             </TabsContent>
             <TabsContent value="transcript" className="flex-1 min-h-0">
-              <DocumentTab
-                document={documentsQuery.data?.transcriptDocument}
+              <DocumentViewer
+                url={`/api/applications/${applicantId}/transcript`}
                 label="Transcript"
-                isLoading={documentsQuery.isLoading}
+                className="h-full min-h-64"
               />
             </TabsContent>
           </Tabs>
