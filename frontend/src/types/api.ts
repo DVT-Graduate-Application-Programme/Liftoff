@@ -66,6 +66,8 @@ export interface ApplicationFilters {
   dateFrom?: string;
   dateTo?: string;
   search?: string;
+  minScore?: number;
+  sort?: "score_desc" | "score_asc";
   limit?: number;
   cursor?: number;
 }
