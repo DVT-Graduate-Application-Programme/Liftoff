@@ -78,6 +78,15 @@ public static class ApplicationEndpoints
         })
         .WithName("GetApplicationLogs");
 
+        // GET /api/applications/logs
+        // Returns all recruiter action logs across all applications
+        group.MapGet("/logs", async (IApplicationRecordRepository repo, CancellationToken ct) =>
+        {
+            var logs = await repo.GetAllRecruiterLogsAsync(ct);
+            return Results.Ok(logs);
+        })
+        .WithName("GetAllApplicationLogs");
+
         // POST /api/applications/{id}/ownership/claim
         // Allows a recruiter to claim ownership of an application
         group.MapPost("/{id:guid}/ownership/claim", async (Guid id, ClaimOwnershipRequest request, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
