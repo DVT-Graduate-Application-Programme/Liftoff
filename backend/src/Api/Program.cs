@@ -16,7 +16,7 @@ builder.Services.AddHealthChecks();
 
 // ── Graph / AI ingestion pipeline – not needed for POC ──
 builder.Services.AddScoped<IResumeStorage, LocalResumeStorage>();
-// builder.Services.AddScoped<IngestApplicationHandler>();
+ builder.Services.AddScoped<IngestApplicationHandler>();
 
 builder.Services.AddMediatR(cfg =>
 {
@@ -33,7 +33,7 @@ Infrastructure.DependencyInjection.AddInfrastructure(builder.Services, builder.C
 
 var app = builder.Build();
 
-
+await GradRecruitmentSchemaInitializer.EnsureSchemaAsync(app.Services);
 
     app.MapOpenApi();
     app.MapScalarApiReference();
