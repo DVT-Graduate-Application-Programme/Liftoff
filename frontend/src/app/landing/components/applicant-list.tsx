@@ -24,7 +24,7 @@ import {
 
 interface ApplicantListProps {
   status?: string;
-  filters?: Omit<ApplicationFilters, "status" | "search" | "limit" | "cursor">;
+  filters?: Omit<ApplicationFilters, "search" | "limit" | "cursor">;
   emptyTitle: string;
   showReviewedAt?: boolean;
   enableClaim?: boolean;
@@ -65,7 +65,7 @@ export function ApplicantList({ status, filters, emptyTitle, showReviewedAt = tr
   const { setOpen } = useSidebar();
   const { data, isLoading, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteApplications({
     ...filters,
-    status,
+    status: status ?? filters?.status,
     search: search || undefined,
   });
   const claimMutation = useClaimApplication();
