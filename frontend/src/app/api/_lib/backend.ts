@@ -22,13 +22,13 @@ export async function proxyBinary(path: string): Promise<NextResponse> {
   if (!res.ok || !res.body) {
     return new NextResponse(null, { status: res.status });
   }
-  return new NextResponse(res.body, {
-    status: res.status,
-    headers: {
-      "Content-Type": res.headers.get("Content-Type") ?? "application/pdf",
-      ...(res.headers.get("Content-Disposition")
-        ? { "Content-Disposition": res.headers.get("Content-Disposition")! }
-        : {}),
-    },
-  });
+
+  const headers = new Headers();
+  headers.set("Content-Type", res.headers.get("Content-Type") ?? "application/pdf");
+  const contentDisposition = res.headers.get("Content-Disposition");
+  if (contentDisposition) {
+    headers.set("Content-Disposition", contentDisposition);
+  }
+
+  return new NextResponse(res.body, { status: res.status, headers });
 }
