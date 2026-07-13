@@ -4,6 +4,7 @@ import * as React from "react";
 import { usePathname } from "next/navigation";
 import { NavDrawer } from "./navbar/nav-drawer";
 import Navbar from "./navbar/navbar";
+import { Breadcrumbs } from "./breadcrumbs";
 import { useState } from "react";
 
 type AppShellProps = {
@@ -26,6 +27,7 @@ export default function AppShell({ children }: AppShellProps) {
         }}
       />
       <NavDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
+      <Breadcrumbs />
       {children}
     </>
   );
