@@ -6,11 +6,56 @@ import { applications } from "../_lib/mockData";
 // naturally produces a 409, without needing a special test value.
 const seenEmailMessageIds = new Set<string>();
 
-export async function GET() {
+function toBool(value: string | null): boolean | null {
+  if (value === "true") return true;
+  if (value === "false") return false;
+  return null;
+}
+
+export async function GET(req: NextRequest) {
   await simulateLatency();
 
+  const { searchParams } = new URL(req.url);
+  const status = searchParams.get("status");
+  const tier = searchParams.get("tier");
+  const hardGatePassed = toBool(searchParams.get("hardGatePassed"));
+  const claimed = toBool(searchParams.get("claimed"));
+  const shortlisted = toBool(searchParams.get("shortlisted"));
+  const dateFrom = searchParams.get("dateFrom");
+  const dateTo = searchParams.get("dateTo");
+  const search = searchParams.get("search");
+  // Callers that don't care about pagination (e.g. History) omit `limit` and get everything back.
+  const limit = Number(searchParams.get("limit") ?? Number.MAX_SAFE_INTEGER);
+  const cursor = Number(searchParams.get("cursor") ?? 0);
+
+  let results = applications;
+
+  if (status) {
+    const statuses = status.split(",");
+    results = results.filter((a) => statuses.includes(a.currentStatus));
+  }
+  if (tier) results = results.filter((a) => a.tier === tier);
+  if (hardGatePassed !== null) results = results.filter((a) => a.screening.hardGatePassed === hardGatePassed);
+  if (claimed !== null) {
+    results = results.filter((a) => (claimed ? a.ownership.claimedByRecruiterId !== null : a.ownership.claimedByRecruiterId === null));
+  }
+  if (shortlisted !== null) {
+    results = results.filter((a) =>
+      shortlisted ? a.ownership.shortlistedByRecruiterId !== null : a.ownership.shortlistedByRecruiterId === null
+    );
+  }
+  if (dateFrom) results = results.filter((a) => a.createdAt >= dateFrom);
+  if (dateTo) results = results.filter((a) => a.createdAt <= dateTo);
+  if (search) {
+    const needle = search.toLowerCase();
+    results = results.filter((a) => a.applicant.candidateName.toLowerCase().includes(needle));
+  }
+
+  const page = results.slice(cursor, cursor + limit);
+  const nextCursor = cursor + limit < results.length ? cursor + limit : null;
+
   return NextResponse.json({
-    applications: applications.map((application) => ({
+    applications: page.map((application) => ({
       applicationId: application.applicationId,
       candidateName: application.applicant.candidateName,
       currentStatus: application.currentStatus,
@@ -24,6 +69,7 @@ export async function GET() {
       shortlistedByRecruiterId: application.ownership.shortlistedByRecruiterId,
       createdAt: application.createdAt,
     })),
+    nextCursor,
   });
 }
 

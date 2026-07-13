@@ -19,6 +19,7 @@ type ApplicantCardProps = {
   recruiterLabel?: string;
   recruiterName?: string;
   actionLabel?: string;
+  onActionClick?: () => void;
   onClick?: () => void;
   secondaryActionLabel?: string;
   onSecondaryActionClick?: () => void;
@@ -102,7 +103,8 @@ export default function ApplicantCard({
   showReviewedAt = true,
   recruiterLabel,
   recruiterName,
-  actionLabel = "Show AI Review",
+  actionLabel = "Show AI Summary",
+  onActionClick,
   onClick,
   secondaryActionLabel,
   onSecondaryActionClick,
@@ -239,6 +241,10 @@ export default function ApplicantCard({
           )}
           onClick={(event) => {
             event.stopPropagation();
+            if (onActionClick) {
+              onActionClick();
+              return;
+            }
             onClick?.();
           }}
         >

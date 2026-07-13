@@ -1,10 +1,13 @@
-export type CandidateTier = "STRONG" | "MODERATE" | "WEAK";
+export type CandidateTier = "STRONG" | "BORDERLINE" | "WEAK" | "INVALID";
 
 export type CandidateStatus =
+  | "PENDING"
   | "PROCESSING"
+  | "VALID"
+  | "INVALID"
+  | "MANUAL_REVIEW"
   | "SHORTLISTED"
-  | "REJECTED"
-  | "HIRED";
+  | "ERROR";
 
 export interface CandidateApplication {
   applicationId: string;
