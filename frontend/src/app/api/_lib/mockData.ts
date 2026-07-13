@@ -429,6 +429,116 @@ export const applications: MockApplication[] = [
   },
 ];
 
+// Synthetic extra applications so pagination/infinite-scroll and name search have
+// enough data to actually demonstrate multiple pages across every status.
+const SYNTHETIC_NAMES = [
+  "Sarah Jenkins",
+  "Neo Rankapole",
+  "Jake Benkins",
+  "Amahle Zulu",
+  "Kagiso Mthembu",
+  "Tumi Radebe",
+  "Zanele Ngcobo",
+  "Bongani Sithole",
+  "Palesa Mokgadi",
+  "Sibusiso Ndlovu",
+  "Refilwe Mabaso",
+  "Katlego Sebola",
+  "Ayanda Cele",
+  "Mpho Tshabalala",
+  "Nomsa Khoza",
+  "Sarah Okonkwo",
+  "Lindiwe Buthelezi",
+  "Sarah Adams",
+  "Thandeka Mahlangu",
+  "Kabelo Modise",
+  "Nokuthula Zwane",
+  "Sarah Petersen",
+  "Vusi Mahlaba",
+  "Dineo Mokoena",
+  "Sarah Williams",
+  "Andile Ngwenya",
+  "Precious Nkuna",
+  "Sarah Botha",
+];
+
+const SYNTHETIC_STATUSES: CurrentStatus[] = [
+  "PENDING",
+  "PROCESSING",
+  "VALID",
+  "VALID",
+  "MANUAL_REVIEW",
+  "SHORTLISTED",
+  "ERROR",
+  "INVALID",
+];
+
+const SYNTHETIC_TIERS: Tier[] = ["STRONG", "BORDERLINE", "WEAK"];
+
+function buildSyntheticApplication(index: number): MockApplication {
+  const name = SYNTHETIC_NAMES[index % SYNTHETIC_NAMES.length];
+  const status = SYNTHETIC_STATUSES[index % SYNTHETIC_STATUSES.length];
+  // INVALID tier is reserved for applications that failed the hard gate, matching the status.
+  const tier = status === "INVALID" ? "INVALID" : SYNTHETIC_TIERS[index % SYNTHETIC_TIERS.length];
+  const hasEvaluation = status !== "PENDING" && status !== "INVALID" && status !== "ERROR";
+  const createdAt = new Date(Date.UTC(2025, index % 12, (index % 27) + 1, 9, 0, 0)).toISOString();
+  const score = Math.min(5, ((index * 7) % 50) / 10 + 0.5);
+
+  return {
+    applicationId: `synthetic-${String(index).padStart(4, "0")}`,
+    currentStatus: status,
+    tier,
+    createdAt,
+    updatedAt: createdAt,
+    applicant: {
+      candidateName: name,
+      candidateEmail: `${name.toLowerCase().replace(/\s+/g, ".")}@email.com`,
+      candidateGitHubUrl: index % 3 === 0 ? null : `https://github.com/${name.toLowerCase().replace(/\s+/g, "-")}`,
+    },
+    screening: {
+      hardGatePassed: status !== "INVALID",
+      hardGateReason: status === "INVALID" ? "CV could not be parsed." : null,
+    },
+    evaluation: hasEvaluation
+      ? {
+          institution: { name: "University of the Witwatersrand", degreeName: "BSc Computer Science" },
+          scores: {
+            open_source: { score: 10, max: 35, evidence: "Synthetic evidence." },
+            self_projects: { score: 15, max: 30, evidence: "Synthetic evidence." },
+            production: { score: 10, max: 25, evidence: "Synthetic evidence." },
+            technical_skills: { score: 6, max: 10, evidence: "Synthetic evidence." },
+          },
+          bonusPoints: { total: 0, breakdown: {} },
+          deductions: { total: 0, reasons: [] },
+          keyStrengths: ["Solid fundamentals"],
+          areasForImprovement: ["More production experience"],
+          hiringAgentTotalScore: score,
+        }
+      : null,
+    documents: {
+      cvDocument: {
+        url: `https://storageaccount.blob.core.windows.net/cvs/synthetic-${String(index)}-cv.pdf`,
+        filename: `synthetic-${String(index)}-cv.pdf`,
+        uploadedDate: createdAt,
+        sizeKb: 500 + index * 10,
+      },
+      transcriptDocument: null,
+    },
+    ownership: {
+      claimedByRecruiterId: null,
+      claimedAt: null,
+      shortlistedByRecruiterId: status === "SHORTLISTED" ? "recruiter1@company.com" : null,
+      shortlistedAt: null,
+    },
+    cvSummary: "Synthetic candidate generated for pagination/search testing.",
+    flags: [],
+  };
+}
+
+for (let i = 0; i < 30; i++) {
+  applications.push(buildSyntheticApplication(i));
+}
+
 export function findApplication(applicationId: string): MockApplication | undefined {
   return applications.find((a) => a.applicationId === applicationId);
 }
