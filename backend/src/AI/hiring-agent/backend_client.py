@@ -51,7 +51,7 @@ def get_resume(candidate_id: UUID) -> Resume:
         cv_url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/cv/v2"
         transcript_url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/transcript/v2"
 
-        transcript_check = client.get(transcript_url) # if transript is available 
+        transcript_check = client.get(transcript_url) # if transript is available
         if transcript_check.status_code == 404:
             transcript_url = None
 
