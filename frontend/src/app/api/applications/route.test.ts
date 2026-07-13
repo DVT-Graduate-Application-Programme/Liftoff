@@ -27,6 +27,26 @@ describe("GET /api/applications", () => {
     expect(body.applications.every((a) => ["PENDING", "PROCESSING"].includes(a.currentStatus))).toBe(true);
   });
 
+  it("filters by minimum score and sorts by score", async () => {
+    const response = await GET(request("?status=PENDING,PROCESSING&minScore=3&sort=score_desc"));
+    const body = (await response.json()) as { applications: { hiringAgentTotalScore: number }[] };
+
+    expect(body.applications.length).toBeGreaterThan(0);
+    expect(body.applications.every((a) => a.hiringAgentTotalScore >= 3)).toBe(true);
+    expect(body.applications.map((a) => a.hiringAgentTotalScore)).toEqual(
+      [...body.applications.map((a) => a.hiringAgentTotalScore)].sort((a, b) => b - a)
+    );
+  });
+
+  it("sorts applications by applied date", async () => {
+    const response = await GET(request("?sort=date_asc"));
+    const body = (await response.json()) as { applications: { createdAt: string }[] };
+
+    expect(body.applications.map((a) => a.createdAt)).toEqual(
+      [...body.applications.map((a) => a.createdAt)].sort()
+    );
+  });
+
   it("paginates via limit/cursor and reports nextCursor", async () => {
     const first = await GET(request("?limit=2&cursor=0"));
     const firstBody = (await first.json()) as { applications: unknown[]; nextCursor: number | null };

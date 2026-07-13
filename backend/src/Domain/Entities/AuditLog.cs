@@ -1,5 +1,4 @@
 using System;
-using System.Text.Json.Serialization;
 
 namespace Domain.Entities;
 
@@ -13,6 +12,5 @@ public class AuditLog
     public string? ExceptionDetails { get; set; }
     public DateTimeOffset Timestamp { get; set; }
 
-    [JsonIgnore]
     public ApplicationRecord? ApplicationRecord { get; set; }
 }

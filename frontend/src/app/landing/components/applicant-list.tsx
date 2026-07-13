@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
 import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
@@ -12,6 +13,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import ApplicantCard from "@/components/applicant-card/applicant-card";
 import type { CandidateApplication } from "@/types/candidate";
+import type { ApplicationFilters, PaginatedApplications } from "@/types/api";
 import {
   formatDate,
   getRecruiterLabel,
@@ -23,10 +25,13 @@ import {
 
 interface ApplicantListProps {
   status?: string;
+  filters?: ApplicationFilters;
   emptyTitle: string;
   showReviewedAt?: boolean;
   enableClaim?: boolean;
   groupByDate?: boolean;
+  filterApplications?: (applications: CandidateApplication[]) => CandidateApplication[];
+  sortApplications?: (applications: CandidateApplication[]) => CandidateApplication[];
 }
 
 const DATE_BUCKET_SECTIONS = [
@@ -56,16 +61,33 @@ const DATE_BUCKET_SECTIONS = [
   },
 ];
 
-export function ApplicantList({ status, emptyTitle, showReviewedAt = true, enableClaim = false, groupByDate = false }: ApplicantListProps) {
+export function ApplicantList({
+  status,
+  filters,
+  emptyTitle,
+  showReviewedAt = true,
+  enableClaim = false,
+  groupByDate = false,
+  filterApplications,
+  sortApplications,
+}: ApplicantListProps) {
   const router = useRouter();
   const { search } = useApplicantSearch();
   const { selectApplication } = useApplicantSelection();
   const { setOpen } = useSidebar();
   const { data, isLoading, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteApplications({
-    status,
+    ...filters,
+    status: status ?? filters?.status,
     search: search || undefined,
   });
   const claimMutation = useClaimApplication();
+  const applications = useMemo(() => {
+    const loadedApplications = (data?.pages ?? []).flatMap(
+      (page: PaginatedApplications) => page.applications,
+    );
+    const filteredApplications = filterApplications ? filterApplications(loadedApplications) : loadedApplications;
+    return sortApplications ? sortApplications(filteredApplications) : filteredApplications;
+  }, [data?.pages, filterApplications, sortApplications]);
 
   if (isLoading) {
     return (
@@ -80,8 +102,6 @@ export function ApplicantList({ status, emptyTitle, showReviewedAt = true, enabl
   if (isError) {
     return <ErrorState message="Couldn't load applicants." onRetry={() => { void refetch(); }} />;
   }
-
-  const applications = (data?.pages ?? []).flatMap((page) => page.applications);
 
   if (applications.length === 0) {
     return (
@@ -145,7 +165,7 @@ export function ApplicantList({ status, emptyTitle, showReviewedAt = true, enabl
   );
 
   if (groupByDate) {
-    const groupedApplications = groupApplicationsByDate(applications);
+    const groupedApplications = groupApplicationsByDate<CandidateApplication>(applications);
 
     return (
       <div className="space-y-10">
