@@ -3,6 +3,7 @@ using Api.Internal;
 using Backend.Application.Interfaces;
 using Backend.Application.Queries.GetResumes;
 using Backend.Infrastructure.Storage;
+using Infrastructure.Data;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,7 +32,7 @@ Infrastructure.DependencyInjection.AddInfrastructure(builder.Services, builder.C
 
 var app = builder.Build();
 
-
+await GradRecruitmentSchemaInitializer.EnsureSchemaAsync(app.Services);
 
     app.MapOpenApi();
     app.MapScalarApiReference();
