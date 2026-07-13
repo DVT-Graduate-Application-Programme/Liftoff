@@ -73,7 +73,7 @@ public static class DbSeeder
         {
             Id = Eval1Id,
             ApplicationRecordId = App1Id,
-            AiSummary = "AI Summary: A standout profile with a solid foundation in modern full-stack frameworks and scalable architectures. Demonstrated leadership in academic projects.",
+            AiSummary = "A standout profile with a solid foundation in modern full-stack frameworks and scalable architectures. Demonstrated leadership in academic projects.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 23.0, "max": 25 },
@@ -132,7 +132,7 @@ public static class DbSeeder
         {
             Id = Eval2Id,
             ApplicationRecordId = App2Id,
-            AiSummary = "AI Summary: Profile lacks substantial evidence of practical coding experience beyond basic coursework. Assessment scores were significantly below the required threshold.",
+            AiSummary = "Profile lacks substantial evidence of practical coding experience beyond basic coursework. Assessment scores were significantly below the required threshold.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 20.0, "max": 25 },
@@ -193,7 +193,7 @@ public static class DbSeeder
         {
             Id = Eval3Id,
             ApplicationRecordId = App3Id,
-            AiSummary = "AI Summary: Shows promise with front-end technologies, but backend experience is limited. Might need additional ramp-up time compared to top-tier candidates.",
+            AiSummary = "Shows promise with front-end technologies, but backend experience is limited. Might need additional ramp-up time compared to top-tier candidates.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 23.0, "max": 25 },
@@ -253,7 +253,7 @@ public static class DbSeeder
         {
             Id = Eval4Id,
             ApplicationRecordId = App4Id,
-            AiSummary = "AI Summary: Exceptional open-source contributions and deep understanding of cloud infrastructure. A highly competitive candidate with proven production-level skills.",
+            AiSummary = "Exceptional open-source contributions and deep understanding of cloud infrastructure. A highly competitive candidate with proven production-level skills.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 25.0, "max": 25 },
@@ -311,7 +311,7 @@ public static class DbSeeder
         {
             Id = Eval5Id,
             ApplicationRecordId = App5Id,
-            AiSummary = "AI Summary: Possesses good foundational knowledge and communication skills, though technical portfolio lacks complexity. Could be a fit with the right mentorship.",
+            AiSummary = "Possesses good foundational knowledge and communication skills, though technical portfolio lacks complexity. Could be a fit with the right mentorship.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 21.0, "max": 25 },
@@ -370,7 +370,7 @@ public static class DbSeeder
         {
             Id = Eval6Id,
             ApplicationRecordId = App6Id,
-            AiSummary = "AI Summary: Did not pass the initial hard-gate screening due to insufficient graduation credentials and low technical scoring across the board.",
+            AiSummary = "Did not pass the initial hard-gate screening due to insufficient graduation credentials and low technical scoring across the board.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score":  8.0, "max": 25 },
@@ -430,7 +430,7 @@ public static class DbSeeder
         {
             Id = Eval7Id,
             ApplicationRecordId = App7Id,
-            AiSummary = "AI Summary: Outstanding academic record combined with relevant internship experience. Strong problem-solving capabilities evidenced by their algorithmic project work.",
+            AiSummary = "Outstanding academic record combined with relevant internship experience. Strong problem-solving capabilities evidenced by their algorithmic project work.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 24.0, "max": 25 },
@@ -488,7 +488,7 @@ public static class DbSeeder
         {
             Id = Eval8Id,
             ApplicationRecordId = App8Id,
-            AiSummary = "AI Summary: The candidate's technical skills appear very rudimentary. Minimal project history and poor performance in the technical evaluation phase.",
+            AiSummary = "The candidate's technical skills appear very rudimentary. Minimal project history and poor performance in the technical evaluation phase.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 16.0, "max": 25 },
@@ -546,7 +546,7 @@ public static class DbSeeder
         {
             Id = Eval9Id,
             ApplicationRecordId = App9Id,
-            AiSummary = "AI Summary: While showing enthusiasm, the candidate currently lacks the necessary practical experience and core competencies required for this role.",
+            AiSummary = "While showing enthusiasm, the candidate currently lacks the necessary practical experience and core competencies required for this role.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 15.0, "max": 25 },
@@ -605,7 +605,7 @@ public static class DbSeeder
         {
             Id = Eval10Id,
             ApplicationRecordId = App10Id,
-            AiSummary = "AI Summary: Fails to meet the baseline technical requirements. Limited exposure to our required tech stack and no significant project work demonstrated.",
+            AiSummary = "Fails to meet the baseline technical requirements. Limited exposure to our required tech stack and no significant project work demonstrated.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score":  0.0, "max": 25 },
@@ -664,7 +664,7 @@ public static class DbSeeder
         {
             Id = Eval11Id,
             ApplicationRecordId = App11Id,
-            AiSummary = "AI Summary: Profile does not align with our engineering standards. Missing key technical skills and practical application experience.",
+            AiSummary = "Profile does not align with our engineering standards. Missing key technical skills and practical application experience.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score":  0.0, "max": 25 },
@@ -723,7 +723,7 @@ public static class DbSeeder
         {
             Id = Eval12Id,
             ApplicationRecordId = App12Id,
-            AiSummary = "AI Summary: Candidate did not demonstrate sufficient proficiency in required languages or frameworks. Overall evaluation score is too low to proceed.",
+            AiSummary = "Candidate did not demonstrate sufficient proficiency in required languages or frameworks. Overall evaluation score is too low to proceed.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score":  0.0, "max": 25 },
@@ -760,40 +760,36 @@ public static class DbSeeder
         db.ApplicationRecords.AddRange(app1, app2, app3, app4, app5, app6, app7, app8, app9, app10, app11, app12);
         db.HiringAgentEvaluations.AddRange(eval1, eval2, eval3, eval4, eval5, eval6, eval7, eval8, eval9, eval10, eval11, eval12);
 
-        var log1 = new RecruiterAction
+        var actions = new List<RecruiterAction>
         {
-            Id = Guid.NewGuid(),
-            ApplicationRecordId = App1Id,
-            RecruiterIdentity = "recruiter-demo",
-            ActionType = "RATING",
-            RatingValue = 5,
-            Reason = "Exceptional profile, great potential.",
-            ActionedAt = DateTimeOffset.UtcNow.AddDays(-2)
+            // App1: Rating and Notes
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "recruiter-demo", ActionType = "RATING", RatingValue = 5, Reason = "Exceptional profile, great potential.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "manager-demo", ActionType = "NOTES", Reason = "Left a voicemail to schedule technical round.", ActionedAt = DateTimeOffset.UtcNow.AddHours(-5) },
+            
+            // App3: Shortlisted
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Strong candidate, advancing to interview.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
+
+            // App4: Forwarded
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, RecruiterIdentity = "manager-seed-002", ActionType = "FORWARD", PreviousStatus = "evaluated", NewStatus = "forwarded", Reason = "Forwarding to engineering lead for review.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-3) },
+
+            // App6: Rejected
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App6Id, RecruiterIdentity = "recruiter-demo", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Lacks required technical skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-1) },
+            
+            // App7: Shortlisted and Rated
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "recruiter-demo", ActionType = "RATING", RatingValue = 4, Reason = "Good algorithm skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-4) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "recruiter-demo", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Passed initial screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
+            
+            // App10: Rejected
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App10Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Does not meet baseline experience.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-7) },
+            
+            // App11: Rejected
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App11Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Failed automated technical assessment.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-6) },
+            
+            // App12: Rejected
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App12Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Poor cultural fit identified in pre-screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
         };
 
-        var log2 = new RecruiterAction
-        {
-            Id = Guid.NewGuid(),
-            ApplicationRecordId = App1Id,
-            RecruiterIdentity = "recruiter-demo",
-            ActionType = "SHORTLIST",
-            PreviousStatus = "EVALUATED",
-            NewStatus = "SHORTLISTED",
-            Reason = "Progressing to interview stage.",
-            ActionedAt = DateTimeOffset.UtcNow.AddDays(-1)
-        };
-
-        var log3 = new RecruiterAction
-        {
-            Id = Guid.NewGuid(),
-            ApplicationRecordId = App1Id,
-            RecruiterIdentity = "manager-demo",
-            ActionType = "NOTES",
-            Reason = "Left a voicemail to schedule technical round.",
-            ActionedAt = DateTimeOffset.UtcNow.AddHours(-5)
-        };
-
-        db.RecruiterActions.AddRange(log1, log2, log3);
+        db.RecruiterActions.AddRange(actions);
 
         await db.SaveChangesAsync();
         logger.LogInformation("[DbSeeder] Seeded 12 application records, 12 evaluations, and mock logs successfully.");
