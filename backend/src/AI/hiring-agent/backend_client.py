@@ -8,7 +8,7 @@ from typing import Optional
 from models import  EvaluationData
 from uuid import UUID
 
-BACKEND_BASE_URL = os.environ.get("BACKEND_BASE_URL", "http://localhost:8080")
+BACKEND_BASE_URL = os.environ.get("BACKEND_BASE_URL", "http://localhost:5000")
 
 from pydantic.alias_generators import to_camel
 
