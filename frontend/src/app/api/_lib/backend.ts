@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:5000";
 
@@ -16,7 +16,7 @@ export async function proxyJson(path: string, init?: RequestInit): Promise<NextR
   });
 }
 
-// Proxies a binary (pdf in this case) response to backend,
+// Proxies a binary (pdf in this case) response to backend
 export async function proxyBinary(path: string): Promise<NextResponse> {
   const res = await fetch(backendUrl(path));
   if (!res.ok || !res.body) {
@@ -31,4 +31,13 @@ export async function proxyBinary(path: string): Promise<NextResponse> {
   }
 
   return new NextResponse(res.body, { status: res.status, headers });
+}
+
+// Proxies a JSON POST body from incoming request to th backend
+export async function proxyPost(path: string, req: NextRequest): Promise<NextResponse> {
+  return proxyJson(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: await req.text(),
+  });
 }
