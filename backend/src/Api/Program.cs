@@ -14,8 +14,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
 
+// ── Graph / AI ingestion pipeline – not needed for POC ──
 builder.Services.AddScoped<IResumeStorage, LocalResumeStorage>();
-builder.Services.AddScoped<IngestApplicationHandler>();
+// builder.Services.AddScoped<IngestApplicationHandler>();
 
 builder.Services.AddMediatR(cfg =>
 {
@@ -41,13 +42,16 @@ await GradRecruitmentSchemaInitializer.EnsureSchemaAsync(app.Services);
 
 app.MapHealthChecks("/health");
 
-app.MapControllers();
-app.MapIngestEndpoints();
+// ── Graph / AI ingestion pipeline – not needed for POC ──
+// app.MapControllers();          // ResumeController (old local-storage route)
+// app.MapIngestEndpoints();      // POST /api/applications/ingest  (triggers Graph email fetch)
+// app.MapEvaluationEndpoints();  // POST /internal/evaluation      (AI agent webhook callback)
+
+// ── POC endpoints ── active ──
 app.MapDashboardEndpoints();
-
-app.MapEvaluationEndpoints();
-
 app.MapApplicationEndpoints();
 
+// Seed POC data on startup (idempotent – skips if rows already exist)
+await DbSeeder.SeedAsync(app.Services);
 
 app.Run();
