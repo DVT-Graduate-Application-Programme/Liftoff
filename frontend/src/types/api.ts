@@ -44,18 +44,6 @@ export interface Evaluation {
   processedAt: string;
 }
 
-export interface DocumentFile {
-  url: string;
-  filename: string;
-  uploadedDate: string;
-  sizeKb: number;
-}
-
-export interface Documents {
-  cvDocument: DocumentFile;
-  transcriptDocument: DocumentFile | null;
-}
-
 export interface ApplicationFilters {
   status?: string;
   tier?: string;
