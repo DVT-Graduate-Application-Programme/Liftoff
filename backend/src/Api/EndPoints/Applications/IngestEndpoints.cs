@@ -58,7 +58,7 @@ public static class IngestEndpoints
 
     private static async Task NotifyHiringAgent(Guid applicationId)
     {
-        const string fastApiBaseUrl = "http://host.docker.internal:8001"; // because backend runs on docker and not locally like fatsapi
+        const string fastApiBaseUrl = "http://hiring-agent:8001";
         try
         {
             var payload = new { candidate_id = applicationId };
