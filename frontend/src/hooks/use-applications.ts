@@ -14,6 +14,8 @@ function toQueryString(filters?: ApplicationFilters) {
   if (filters.shortlisted !== undefined) params.set("shortlisted", String(filters.shortlisted));
   if (filters.dateFrom) params.set("dateFrom", filters.dateFrom);
   if (filters.dateTo) params.set("dateTo", filters.dateTo);
+  if (filters.minScore !== undefined) params.set("minScore", String(filters.minScore));
+  if (filters.sort) params.set("sort", filters.sort);
   const qs = params.toString();
   return qs ? `?${qs}` : "";
 }
