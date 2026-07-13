@@ -45,12 +45,8 @@ public static class DbSeeder
         // Apply any pending migrations
         await db.Database.MigrateAsync();
 
-        // Only seed when the table is empty
-        if (await db.ApplicationRecords.AnyAsync())
-        {
-            logger.LogInformation("[DbSeeder] Data already present – skipping seed.");
-            return;
-        }
+        logger.LogInformation("[DbSeeder] Truncating existing data to re-seed POC data…");
+        await db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"ApplicationRecords\" CASCADE;");
 
         logger.LogInformation("[DbSeeder] Seeding POC data…");
 
@@ -766,7 +762,42 @@ public static class DbSeeder
         db.ApplicationRecords.AddRange(app1, app2, app3, app4, app5, app6, app7, app8, app9, app10, app11, app12);
         db.HiringAgentEvaluations.AddRange(eval1, eval2, eval3, eval4, eval5, eval6, eval7, eval8, eval9, eval10, eval11, eval12);
 
+        var log1 = new RecruiterAction
+        {
+            Id = Guid.NewGuid(),
+            ApplicationRecordId = App1Id,
+            RecruiterIdentity = "recruiter-demo",
+            ActionType = "RATING",
+            RatingValue = 5,
+            Reason = "Exceptional profile, great potential.",
+            ActionedAt = DateTimeOffset.UtcNow.AddDays(-2)
+        };
+
+        var log2 = new RecruiterAction
+        {
+            Id = Guid.NewGuid(),
+            ApplicationRecordId = App1Id,
+            RecruiterIdentity = "recruiter-demo",
+            ActionType = "SHORTLIST",
+            PreviousStatus = "EVALUATED",
+            NewStatus = "SHORTLISTED",
+            Reason = "Progressing to interview stage.",
+            ActionedAt = DateTimeOffset.UtcNow.AddDays(-1)
+        };
+
+        var log3 = new RecruiterAction
+        {
+            Id = Guid.NewGuid(),
+            ApplicationRecordId = App1Id,
+            RecruiterIdentity = "manager-demo",
+            ActionType = "NOTES",
+            Reason = "Left a voicemail to schedule technical round.",
+            ActionedAt = DateTimeOffset.UtcNow.AddHours(-5)
+        };
+
+        db.RecruiterActions.AddRange(log1, log2, log3);
+
         await db.SaveChangesAsync();
-        logger.LogInformation("[DbSeeder] Seeded 12 application records and 12 evaluations successfully.");
+        logger.LogInformation("[DbSeeder] Seeded 12 application records, 12 evaluations, and mock logs successfully.");
     }
 }
