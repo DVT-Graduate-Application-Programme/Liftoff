@@ -17,12 +17,10 @@ import type { ApplicationFilters } from "@/types/api";
 const STATUS_OPTIONS = [
   { label: "All Statuses", value: undefined },
   { label: "Pending", value: "PENDING" },
-  { label: "Processing", value: "PROCESSING" },
-  { label: "Valid", value: "VALID" },
-  { label: "Invalid", value: "INVALID" },
-  { label: "Manual Review", value: "MANUAL_REVIEW" },
-  { label: "Shortlisted", value: "SHORTLISTED" },
-  { label: "Error", value: "ERROR" },
+  { label: "Evaluated", value: "evaluated" },
+  { label: "Forwarded", value: "forwarded" },
+  { label: "Rejected", value: "rejected" },
+  { label: "Shortlisted", value: "shortlisted" },
 ] as const;
 
 const DATE_RANGE_OPTIONS = [
@@ -32,13 +30,11 @@ const DATE_RANGE_OPTIONS = [
 ] as const;
 
 const STATUS_BADGE_VARIANT: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  SHORTLISTED: "default",
-  INVALID: "destructive",
-  ERROR: "destructive",
-  MANUAL_REVIEW: "outline",
+  shortlisted: "default",
+  rejected: "destructive",
+  forwarded: "outline",
   PENDING: "secondary",
-  PROCESSING: "secondary",
-  VALID: "secondary",
+  evaluated: "secondary",
 };
 
 function initials(name: string): string {
