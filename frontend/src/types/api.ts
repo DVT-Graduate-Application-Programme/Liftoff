@@ -40,21 +40,8 @@ export interface Evaluation {
   areasForImprovementJson: string[] | null;
   gitHubProfileDataJson: Record<string, unknown> | null;
   projectClassificationsJson: Record<string, unknown> | null;
+  aiSummary: string | null;
   processedAt: string;
-  applicationRecord: Record<string, unknown> | null;
-  hiringAgentTotalScore: number;
-}
-
-export interface DocumentFile {
-  url: string;
-  filename: string;
-  uploadedDate: string;
-  sizeKb: number;
-}
-
-export interface Documents {
-  cvDocument: DocumentFile;
-  transcriptDocument: DocumentFile | null;
 }
 
 export interface ApplicationFilters {
@@ -75,4 +62,15 @@ export interface ApplicationFilters {
 export interface PaginatedApplications {
   applications: CandidateApplication[];
   nextCursor: number | null;
+}
+
+export interface Ownership {
+  claimedByRecruiterId: string | null;
+  claimedAt: string | null;
+  shortlistedByRecruiterId: string | null;
+  shortlistedAt: string | null;
+  recruiterRating: number | null;
+  recruiterRatingNote: string | null;
+  ratedByRecruiterId: string | null;
+  ratedAt: string | null;
 }

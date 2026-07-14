@@ -30,9 +30,6 @@ interface ApplicantListProps {
   showReviewedAt?: boolean;
   enableClaim?: boolean;
   groupByDate?: boolean;
-  filterApplications?: (applications: CandidateApplication[]) => CandidateApplication[];
-  sortApplications?: (applications: CandidateApplication[]) => CandidateApplication[];
-  renderCard?: (application: CandidateApplication) => ReactNode;
 }
 
 const DATE_BUCKET_SECTIONS = [
@@ -69,9 +66,6 @@ export function ApplicantList({
   showReviewedAt = true,
   enableClaim = false,
   groupByDate = false,
-  filterApplications,
-  sortApplications,
-  renderCard,
 }: ApplicantListProps) {
   const router = useRouter();
   const { search } = useApplicantSearch();
@@ -83,13 +77,10 @@ export function ApplicantList({
     search: search || undefined,
   });
   const claimMutation = useClaimApplication();
-  const applications = useMemo(() => {
-    const loadedApplications = (data?.pages ?? []).flatMap(
-      (page: PaginatedApplications) => page.applications,
-    );
-    const filteredApplications = filterApplications ? filterApplications(loadedApplications) : loadedApplications;
-    return sortApplications ? sortApplications(filteredApplications) : filteredApplications;
-  }, [data?.pages, filterApplications, sortApplications]);
+  const applications = useMemo(
+    () => (data?.pages ?? []).flatMap((page: PaginatedApplications) => page.applications),
+    [data?.pages],
+  );
 
   if (isLoading) {
     return (

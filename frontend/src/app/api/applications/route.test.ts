@@ -1,6 +1,66 @@
 import { NextRequest } from "next/server";
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import type { CandidateApplication } from "@/types/candidate";
 import { GET } from "./route";
+
+const fixtures: CandidateApplication[] = [
+  {
+    applicationId: "app-1",
+    candidateName: "Thabo Nkosi",
+    currentStatus: "PENDING",
+    tier: "STRONG",
+    hardGatePassed: true,
+    hiringAgentTotalScore: 4,
+    cvSummary: "Strong candidate",
+    flags: [],
+    candidateGitHubUrl: null,
+    claimedByRecruiterId: null,
+    shortlistedByRecruiterId: null,
+    createdAt: "2024-01-01T00:00:00.000Z",
+  },
+  {
+    applicationId: "app-2",
+    candidateName: "Andile Ngwenya",
+    currentStatus: "evaluated",
+    tier: "BORDERLINE",
+    hardGatePassed: true,
+    hiringAgentTotalScore: 2,
+    cvSummary: "Borderline candidate",
+    flags: [],
+    candidateGitHubUrl: null,
+    claimedByRecruiterId: null,
+    shortlistedByRecruiterId: null,
+    createdAt: "2024-01-02T00:00:00.000Z",
+  },
+  {
+    applicationId: "app-3",
+    candidateName: "Sarah Adams",
+    currentStatus: "shortlisted",
+    tier: "STRONG",
+    hardGatePassed: true,
+    hiringAgentTotalScore: 5,
+    cvSummary: "Shortlisted candidate",
+    flags: [],
+    candidateGitHubUrl: null,
+    claimedByRecruiterId: "recruiter1@company.com",
+    shortlistedByRecruiterId: "recruiter1@company.com",
+    createdAt: "2024-01-03T00:00:00.000Z",
+  },
+  {
+    applicationId: "app-4",
+    candidateName: "Katlego Sebola",
+    currentStatus: "rejected",
+    tier: "WEAK",
+    hardGatePassed: true,
+    hiringAgentTotalScore: 1,
+    cvSummary: "Weak candidate",
+    flags: [],
+    candidateGitHubUrl: null,
+    claimedByRecruiterId: null,
+    shortlistedByRecruiterId: null,
+    createdAt: "2024-01-04T00:00:00.000Z",
+  },
+];
 
 function request(query: string) {
   return new NextRequest(`http://localhost/api/applications${query}`);
@@ -8,7 +68,14 @@ function request(query: string) {
 
 describe("GET /api/applications", () => {
   beforeEach(() => {
-    vi.stubEnv("MOCK_API_DELAY_MS", "0");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        statusText: "OK",
+        json: async () => ({ applications: fixtures }),
+      })),
+    );
   });
 
   it("filters by a case-insensitive candidateName search", async () => {
@@ -20,19 +87,19 @@ describe("GET /api/applications", () => {
   });
 
   it("matches any status in a comma-separated status list", async () => {
-    const response = await GET(request("?status=PENDING,PROCESSING"));
+    const response = await GET(request("?status=PENDING,evaluated"));
     const body = (await response.json()) as { applications: { currentStatus: string }[] };
 
     expect(body.applications.length).toBeGreaterThan(0);
-    expect(body.applications.every((a) => ["PENDING", "PROCESSING"].includes(a.currentStatus))).toBe(true);
+    expect(body.applications.every((a) => ["PENDING", "evaluated"].includes(a.currentStatus))).toBe(true);
   });
 
   it("filters by minimum score and sorts by score", async () => {
-    const response = await GET(request("?status=PENDING,PROCESSING&minScore=3&sort=score_desc"));
+    const response = await GET(request("?minScore=2&sort=score_desc"));
     const body = (await response.json()) as { applications: { hiringAgentTotalScore: number }[] };
 
     expect(body.applications.length).toBeGreaterThan(0);
-    expect(body.applications.every((a) => a.hiringAgentTotalScore >= 3)).toBe(true);
+    expect(body.applications.every((a) => a.hiringAgentTotalScore >= 2)).toBe(true);
     expect(body.applications.map((a) => a.hiringAgentTotalScore)).toEqual(
       [...body.applications.map((a) => a.hiringAgentTotalScore)].sort((a, b) => b - a)
     );
@@ -59,6 +126,7 @@ describe("GET /api/applications", () => {
 
     expect(secondBody.applications).toHaveLength(2);
     expect(secondBody.applications).not.toEqual(firstBody.applications);
+    expect(secondBody.nextCursor).toBeNull();
   });
 
   it("returns nextCursor null once results are exhausted", async () => {
