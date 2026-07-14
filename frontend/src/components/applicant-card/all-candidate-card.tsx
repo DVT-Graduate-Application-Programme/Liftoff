@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Separator } from "../ui/separator";
 
 type StatusTone = "positive" | "warning" | "negative" | "neutral";
 
@@ -147,17 +148,10 @@ export default function AllCandidateCard({
         }
       }}
       className={cn(
-        "group relative flex cursor-pointer items-center gap-2 rounded-xl border bg-card p-4 pr-44",
-        // "border-l-4 border-border transition-all hover:-translate-y-px",
-        // "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-        // statusStyle.border,
+        "group relative flex cursor-pointer items-center gap-0 rounded-xl border bg-card p-4 w-full",
       )}
     >
-      {/* <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
-        {initials}
-      </div> */}
-
-      <div className="flex w-20 shrink-0 flex-col items-center justify-center gap-0.5 sm:ml-0">
+      <div className="flex w-20 shrink-0 flex-col items-center justify-center gap-0.5">
         <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
           Status
         </span>
@@ -173,7 +167,7 @@ export default function AllCandidateCard({
         </span>
       </div>
 
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-initial flex flex-col pl-4">
         <h4 className="font-semibold leading-tight text-foreground">{name}</h4>
         {showInstitute && (
           <p className="mt-0.5 truncate text-xs text-muted-foreground">
@@ -189,64 +183,57 @@ export default function AllCandidateCard({
         )}
       </div>
 
-      <div className="hidden shrink-0 items-center gap-1 sm:flex">
-        <div className="flex w-20 flex-col items-center gap-0.5">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-            {scoreLabel}
-          </span>
-          <ScoreTag score={systemScore} />
+      <div className="flex flex-1 items-center justify-center gap-4 px-4">
+        <div className="hidden shrink-0 items-center gap-1 sm:flex">
+          <div className="flex w-20 flex-col items-center gap-0.5">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+              {scoreLabel}
+            </span>
+            <ScoreTag score={systemScore} />
+          </div>
+          {academicAverage !== undefined && (
+            <>
+              <div className="h-10 w-px bg-border" />
+              <div className="flex w-20 flex-col items-center gap-0.5">
+                <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+                  Acad. Avg
+                </span>
+                <ScoreTag score={academicAverage} />
+              </div>
+            </>
+          )}
         </div>
-        {academicAverage !== undefined ? (
-          <>
-            <div className="h-10 w-px bg-border" />
-            <div className="flex w-20 flex-col items-center gap-0.5">
-              <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-                Acad. Avg
-              </span>
-              <ScoreTag score={academicAverage} />
-            </div>
-          </>
+
+        {daysAgo !== null && daysAgo >= 1 ? (
+          <div className="hidden w-20 shrink-0 flex-col items-end gap-0.5 md:flex">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+              Applied
+            </span>
+            <span className="max-w-full whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
+              {daysAgo} day(s) ago
+            </span>
+          </div>
+        ) : null}
+
+        {showReviewedAt && reviewedAt ? (
+          <div className="hidden w-20 shrink-0 flex-col items-end gap-0.5 md:flex">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+              Reviewed
+            </span>
+            <span className="max-w-full truncate whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
+              {reviewedAt}
+            </span>
+          </div>
         ) : null}
       </div>
-      {/* 
-      <div className="flex w-20 shrink-0 flex-col items-center justify-center gap-0.5 sm:ml-0">
-        <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-          Status
-        </span>
-        <span className={cn("max-w-full text-xs font-semibold", statusStyle.text)}>
-          {statusLabel}
-        </span>
-      </div> */}
 
-      {showReviewedAt && reviewedAt ? (
-        <div className="hidden w-20 shrink-0 flex-col items-end gap-0.5 pl-1 md:flex">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-            Reviewed
-          </span>
-          <span className="max-w-full truncate whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
-            {reviewedAt}
-          </span>
-        </div>
-      ) : null}
-
-      {daysAgo !== null && daysAgo >= 1 ? (
-        <div className="hidden w-20 shrink-0 flex-col items-center gap-0.5 pl-1 md:flex">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-            Applied
-          </span>
-          <span className="max-w-full truncate whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
-            {daysAgo} day(s) ago
-          </span>
-        </div>
-      ) : null}
-
-      <div className="absolute right-4 top-4 flex w-28 flex-col items-end gap-2">
+      <div className="flex shrink-0 flex-col justify-end items-end gap-2">
         {secondaryActionLabel ? (
           <Button
             type="button"
             variant="secondary"
             size="sm"
-            className="w-28 justify-center gap-1 text-xs"
+            className="w-30 justify-center gap-1 text-xs"
             disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
             onClick={(event) => {
               event.stopPropagation();
@@ -262,7 +249,7 @@ export default function AllCandidateCard({
           type="button"
           variant="outline"
           size="sm"
-          className="w-28 justify-center gap-1 text-xs"
+          className="w-30 justify-center gap-1 text-xs bg-primary text-white"
           onClick={(event) => {
             event.stopPropagation();
             if (onActionClick) {
