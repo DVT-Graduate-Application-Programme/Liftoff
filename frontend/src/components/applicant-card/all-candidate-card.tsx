@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Separator } from "../ui/separator";
 
 type StatusTone = "positive" | "warning" | "negative" | "neutral";
 
@@ -125,12 +124,6 @@ export default function AllCandidateCard({
   isSecondaryActionDisabled = false,
   isSecondaryActionLoading = false,
 }: AllCandidateCardProps) {
-  const initials = name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
   const currentStatusTone = statusTone ?? "positive";
   const statusStyle = statusStyles[currentStatusTone];
   const daysAgo = createdAt ? getDaysAgo(createdAt) : null;
