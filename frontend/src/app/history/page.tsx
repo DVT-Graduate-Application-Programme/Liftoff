@@ -195,6 +195,7 @@ function CandidateHistoryCard({
   const router = useRouter();
   const { selectApplication } = useApplicantSelection();
   const { setOpen } = useSidebar();
+  const evaluationQuery = useEvaluation(candidate.applicationId);
 
   const handleCardClick = () => {
     router.push(`/applicants/${candidate.applicationId}`);
@@ -207,12 +208,16 @@ function CandidateHistoryCard({
     return "warning";
   };
 
+  const academicAverage =
+    evaluationQuery.data?.institutionJson?.academic_average ??
+    evaluationQuery.data?.categoryScoresJson.education.score;
+
   return (
     <ApplicantCard
       key={candidate.applicationId}
       name={candidate.candidateName}
       institute={candidate.cvSummary || "Applicant"}
-      academicAverage={0}
+      academicAverage={academicAverage}
       systemScore={candidate.hiringAgentTotalScore}
       scoreLabel={candidate.tier || "Unknown"}
       statusLabel={candidate.currentStatus}
