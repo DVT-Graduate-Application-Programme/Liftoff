@@ -70,6 +70,10 @@ CREATE TABLE public."HiringAgentEvaluations" (
     "Id"                            UUID        NOT NULL DEFAULT gen_random_uuid(),
     "ApplicationRecordId"           UUID        NOT NULL,
 
+    -- The overall AI-generated summary
+    "AiSummary"                     TEXT        NULL,
+
+
     -- Institution: { name, degreeName }
     "InstitutionJson"               JSONB       NULL,
 

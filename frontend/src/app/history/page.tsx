@@ -14,6 +14,36 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { SidebarInset, SidebarProvider, useSidebar } from "@/components/ui/sidebar";
+import { ApplicantDetailsSidebar } from "@/app/landing/components/applicant-details/applicant-details-sidebar";
+import {
+  ApplicantSelectionProvider,
+  useApplicantSelection,
+} from "@/components/providers/applicant-selection-provider";
+import { useApplicant } from "@/hooks/use-applicant";
+import { useEvaluation } from "@/hooks/use-evaluation";
+
+function SelectedApplicantDetailsSidebar() {
+  const { selectedApplicationId } = useApplicantSelection();
+  const applicantQuery = useApplicant(selectedApplicationId ?? "");
+  const evaluationQuery = useEvaluation(selectedApplicationId ?? "");
+
+  const evaluationMessage = !selectedApplicationId
+    ? "Select a candidate's “Show AI Summary” to view their evaluation here."
+    : evaluationQuery.isError
+      ? "Couldn't load evaluation."
+      : null;
+
+  return (
+    <ApplicantDetailsSidebar
+      applicantId={selectedApplicationId}
+      candidateName={applicantQuery.data?.candidateName ?? "Applicant"}
+      evaluation={evaluationQuery.data ?? null}
+      isLoadingEvaluation={Boolean(selectedApplicationId) && (applicantQuery.isLoading || evaluationQuery.isLoading)}
+      evaluationMessage={evaluationMessage}
+    />
+  );
+}
 
 // Filter Components
 function FilterDateRangePicker({
@@ -163,6 +193,8 @@ function CandidateHistoryCard({
   candidate: CandidateApplication;
 }) {
   const router = useRouter();
+  const { selectApplication } = useApplicantSelection();
+  const { setOpen } = useSidebar();
 
   const handleCardClick = () => {
     router.push(`/applicants/${candidate.applicationId}`);
@@ -188,6 +220,10 @@ function CandidateHistoryCard({
       reviewedAt={new Date(candidate.createdAt).toLocaleDateString()}
       showReviewedAt={true}
       onClick={handleCardClick}
+      onActionClick={() => {
+        selectApplication(candidate.applicationId);
+        setOpen(true);
+      }}
       secondaryActionLabel="View Applicant"
       onSecondaryActionClick={() => handleCardClick()}
     />
@@ -275,63 +311,74 @@ export default function HistoryPage() {
   groups = groups.filter(g => g.candidates.length > 0);
 
   return (
-    <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl space-y-6">
+    <ApplicantSelectionProvider>
+      <div className="w-full overflow-hidden">
+        <SidebarProvider defaultOpen={false} className="min-h-0 w-full">
+          <div className="flex h-full min-h-0 w-full overflow-hidden">
+            <SidebarInset className="flex-1 overflow-y-auto">
+              <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-5xl space-y-6">
 
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              Review History
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground max-w-md">
-              An audit trail of all candidate applications.
-            </p>
-          </div>
-        </div>
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h1 className="text-2xl font-bold text-foreground">
+                        Review History
+                      </h1>
+                      <p className="mt-1 text-sm text-muted-foreground max-w-md">
+                        An audit trail of all candidate applications.
+                      </p>
+                    </div>
+                  </div>
 
-        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 shadow-sm ring-1 ring-foreground/5">
-          <FilterDropdown 
-            label="All Statuses" 
-            options={["All", "PENDING", "VALID", "INVALID", "SHORTLISTED", "MANUAL_REVIEW"]}
-            value={filterDecision}
-            onChange={setFilterDecision}
-          />
-          <FilterDateRangePicker
-            value={filterDateRange}
-            onChange={setFilterDateRange}
-          />
-          <FilterDropdown 
-            label="System Score" 
-            options={["All", "STRONG", "MODERATE", "WEAK"]}
-            value={filterScore}
-            onChange={setFilterScore}
-          />
-        </div>
+                  <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 shadow-sm ring-1 ring-foreground/5">
+                    <FilterDropdown 
+                      label="All Statuses" 
+                      options={["All", "PENDING", "VALID", "INVALID", "SHORTLISTED", "MANUAL_REVIEW"]}
+                      value={filterDecision}
+                      onChange={setFilterDecision}
+                    />
+                    <FilterDateRangePicker
+                      value={filterDateRange}
+                      onChange={setFilterDateRange}
+                    />
+                    <FilterDropdown 
+                      label="System Score" 
+                      options={["All", "STRONG", "BORDERLINE", "WEAK"]}
+                      value={filterScore}
+                      onChange={setFilterScore}
+                    />
+                  </div>
 
-        {isLoading ? (
-          <div className="flex h-64 items-center justify-center">
-            <Loader2 className="size-8 animate-spin text-muted-foreground" />
+                  {isLoading ? (
+                    <div className="flex h-64 items-center justify-center">
+                      <Loader2 className="size-8 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : error ? (
+                    <div className="flex h-64 items-center justify-center text-destructive">
+                      <p>Error loading history.</p>
+                    </div>
+                  ) : filteredCandidates.length === 0 ? (
+                    <div className="flex h-64 items-center justify-center rounded-xl border border-dashed border-border bg-muted/30">
+                      <p className="text-sm text-muted-foreground">No candidate history matches your filters.</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-8">
+                      {groups.map(({ label, candidates }) => (
+                        <DateGroup
+                          key={label}
+                          label={label}
+                          candidates={candidates}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </main>
+            </SidebarInset>
+            <SelectedApplicantDetailsSidebar />
           </div>
-        ) : error ? (
-          <div className="flex h-64 items-center justify-center text-destructive">
-            <p>Error loading history.</p>
-          </div>
-        ) : filteredCandidates.length === 0 ? (
-          <div className="flex h-64 items-center justify-center rounded-xl border border-dashed border-border bg-muted/30">
-            <p className="text-sm text-muted-foreground">No candidate history matches your filters.</p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-8">
-            {groups.map(({ label, candidates }) => (
-              <DateGroup
-                key={label}
-                label={label}
-                candidates={candidates}
-              />
-            ))}
-          </div>
-        )}
+        </SidebarProvider>
       </div>
-    </main>
+    </ApplicantSelectionProvider>
   );
 }

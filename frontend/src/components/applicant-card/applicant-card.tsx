@@ -141,30 +141,32 @@ export default function ApplicantCard({
         }
       }}
       className={cn(
-        "group relative flex cursor-pointer items-center gap-3 rounded-xl border bg-card p-4",
-        "border-l-4 border-border transition-all hover:-translate-y-px",
+        "group relative flex cursor-pointer rounded-xl border bg-card p-4 transition-all hover:-translate-y-px",
+        "flex-col gap-4 sm:flex-row sm:items-center sm:gap-3",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
         statusStyle.border,
       )}
     >
-      <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
-        {initials}
-      </div>
+      <div className="flex w-full min-w-0 flex-1 items-center gap-3 sm:w-auto">
+        <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
+          {initials}
+        </div>
 
-      <div className="min-w-0 flex-1">
-        <h4 className="font-semibold leading-tight text-foreground">{name}</h4>
-        {showInstitute && (
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            {institute}
-          </p>
-        )}
-        {recruiterName && (
-          <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
-            <InfoRow label={recruiterLabel ?? "Recruiter"}>
-              {recruiterName}
-            </InfoRow>
-          </div>
-        )}
+        <div className="min-w-0 flex-1">
+          <h4 className="font-semibold leading-tight text-foreground">{name}</h4>
+          {showInstitute && (
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              {institute}
+            </p>
+          )}
+          {recruiterName && (
+            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
+              <InfoRow label={recruiterLabel ?? "Recruiter"}>
+                {recruiterName}
+              </InfoRow>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-1 items-center justify-center gap-4">
@@ -232,7 +234,7 @@ export default function ApplicantCard({
             type="button"
             variant="secondary"
             size="sm"
-            className="w-32 justify-center gap-1.5 text-xs"
+            className="w-full justify-center gap-1.5 text-xs sm:w-32"
             disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
             onClick={(event) => {
               event.stopPropagation();
@@ -249,8 +251,8 @@ export default function ApplicantCard({
           variant="outline"
           size="sm"
           className={cn(
-            "gap-1.5 text-xs",
-            secondaryActionLabel ? "w-32 justify-center" : undefined,
+            "gap-1.5 text-xs w-full sm:w-auto",
+            secondaryActionLabel ? "sm:w-32 justify-center" : undefined,
           )}
           onClick={(event) => {
             event.stopPropagation();
