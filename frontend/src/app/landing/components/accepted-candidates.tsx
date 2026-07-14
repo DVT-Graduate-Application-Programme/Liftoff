@@ -1,11 +1,74 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { ApplicationFilters } from "@/types/api";
+import { useApplicationDetail } from "@/hooks/use-application-detail";
+import { useEvaluation } from "@/hooks/use-evaluation";
+import { useOwnership } from "@/hooks/use-ownership";
+import ApplicantCard from "@/components/applicant-card/applicant-card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ApplicantList } from "./applicant-list";
 import { FilterBar, type ActiveFilter, type FilterFieldConfig, type SortOption } from "./filter-bar";
+import type { CandidateApplication } from "@/types/candidate";
+import { formatDate, statusLabels, statusTones } from "./candidate-list-utils";
 
 type Filters = Omit<ApplicationFilters, "status" | "search" | "limit" | "cursor">;
+
+function AcceptedCandidateCard({ application }: { application: CandidateApplication }) {
+  const router = useRouter();
+  const detailQuery = useApplicationDetail(application.applicationId);
+  const evaluationQuery = useEvaluation(application.applicationId);
+  const ownershipQuery = useOwnership(application.applicationId);
+
+  const applicationDetail = detailQuery.data;
+  const evaluation = evaluationQuery.data;
+  const ownership = ownershipQuery.data;
+
+  const isLoading =
+    detailQuery.isLoading ||
+    evaluationQuery.isLoading ||
+    ownershipQuery.isLoading;
+
+  if (isLoading) {
+    return <Skeleton className="h-32 rounded-xl" />;
+  }
+
+  if (!applicationDetail) {
+    return null;
+  }
+
+  const institution = evaluation?.institutionJson;
+  const academicAverage = evaluation?.categoryScoresJson.education.score;
+  const reviewedAt = ownership?.shortlistedAt ?? applicationDetail.updatedAt;
+
+  return (
+    <ApplicantCard
+      name={application.candidateName}
+      institute={institution?.degreeName ?? "Applicant"}
+      secondaryInstitute={institution?.name}
+      academicAverage={academicAverage}
+      systemScore={Math.round(application.hiringAgentTotalScore)}
+      scoreLabel="System Score"
+      secondaryScoreLabel="Academic Avg"
+      statusLabel={statusLabels[applicationDetail.currentStatus as keyof typeof statusLabels]}
+      statusTone={statusTones[applicationDetail.currentStatus as keyof typeof statusTones]}
+      showReviewedAt
+      reviewedAt={formatDate(reviewedAt)}
+      createdAt={application.createdAt}
+      wrapInstitute
+      wrapReviewedAt
+      actionLabel="View details"
+      onActionClick={() => {
+        router.push(`/applicants/${application.applicationId}`);
+      }}
+      onClick={() => {
+        router.push(`/applicants/${application.applicationId}`);
+      }}
+      showInstitute
+    />
+  );
+}
 
 function AcceptedCandidates() {
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -59,6 +122,7 @@ function AcceptedCandidates() {
         status="shortlisted"
         filters={filters}
         emptyTitle="No accepted applicants yet"
+        renderItem={(candidate) => <AcceptedCandidateCard application={candidate} />}
       />
     </>
   );
