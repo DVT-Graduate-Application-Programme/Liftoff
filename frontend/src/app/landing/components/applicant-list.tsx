@@ -171,7 +171,7 @@ export function ApplicantList({
           }
         : {}),
       onClick: () => {
-        router.push(`/applicants/${application.applicationId}`);
+        void router.push(`/applicants/${application.applicationId}`);
       },
       onActionClick: () => {
         selectApplication(application.applicationId);
@@ -204,7 +204,7 @@ export function ApplicantList({
               }
             : {})}
           onClick={() => {
-            router.push(`/applicants/${application.applicationId}`);
+            void router.push(`/applicants/${application.applicationId}`);
           }}
           onActionClick={() => {
             selectApplication(application.applicationId);
@@ -248,14 +248,14 @@ export function ApplicantList({
   };
 
   const loadMoreButton = hasNextPage && (
-    <Button
-      variant="outline"
-      className="self-center"
-      disabled={isFetchingNextPage}
-      onClick={() => {
-        void fetchNextPage();
-      }}
-    >
+      <Button
+        variant="outline"
+        className="self-center"
+        disabled={isFetchingNextPage}
+        onClick={() => {
+          void fetchNextPage();
+        }}
+      >
       {isFetchingNextPage ? "Loading..." : "Load more"}
     </Button>
   );

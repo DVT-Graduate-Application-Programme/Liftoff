@@ -65,7 +65,9 @@ function FilterDateRangePicker({
       <button
         type="button"
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          setOpen((v) => !v);
+        }}
         className={cn(
           "inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground",
           "transition-all hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
@@ -102,7 +104,9 @@ function FilterDateRangePicker({
               <input
                 type="date"
                 value={value.start}
-                onChange={(e) => onChange({ ...value, start: e.target.value })}
+                onChange={(e) => {
+                  onChange({ ...value, start: e.target.value });
+                }}
                 className="w-full h-8 rounded-md border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
@@ -111,11 +115,19 @@ function FilterDateRangePicker({
               <input
                 type="date"
                 value={value.end}
-                onChange={(e) => onChange({ ...value, end: e.target.value })}
+                onChange={(e) => {
+                  onChange({ ...value, end: e.target.value });
+                }}
                 className="w-full h-8 rounded-md border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
-            <Button size="sm" className="mt-2 w-full" onClick={() => setOpen(false)}>
+            <Button
+              size="sm"
+              className="mt-2 w-full"
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
               Apply Range
             </Button>
           </div>
@@ -168,7 +180,7 @@ function FilterDropdown({
           <p className="px-2 py-1.5 text-xs text-muted-foreground font-medium">
             Options
           </p>
-          {options.map((opt) => (
+        {options.map((opt) => (
             <button
               key={opt}
               type="button"
@@ -227,7 +239,7 @@ function CandidateHistoryCard({
       : degreeName || institutionName || candidate.cvSummary || "Applicant";
 
   return (
-    <AllCandidateCard
+      <AllCandidateCard
       key={candidate.applicationId}
       name={candidate.candidateName}
       subtitle={subtitle}
@@ -238,8 +250,8 @@ function CandidateHistoryCard({
       layout="history"
       statusLabel={candidate.currentStatus}
       statusTone={getStatusTone(candidate.currentStatus)}
-      tierLabel={candidate.tier || "Unknown"}
-      tierTone={getTierTone(candidate.tier || "")}
+      tierLabel={candidate.tier}
+      tierTone={getTierTone(candidate.tier)}
       reviewedAt={new Date(candidate.createdAt).toLocaleDateString()}
       showReviewedAt={true}
       onClick={handleCardClick}
@@ -248,7 +260,9 @@ function CandidateHistoryCard({
         setOpen(true);
       }}
       secondaryActionLabel="View Applicant"
-      onSecondaryActionClick={() => handleCardClick()}
+      onSecondaryActionClick={() => {
+        handleCardClick();
+      }}
     />
   );
 }
@@ -297,7 +311,10 @@ export default function HistoryPage() {
     filteredCandidates = filteredCandidates.filter((c: CandidateApplication) => c.currentStatus === filterDecision);
   }
   if (filterScore !== "All") {
-    filteredCandidates = filteredCandidates.filter((c: CandidateApplication) => (c.tier || "").toLowerCase() === filterScore.toLowerCase());
+    filteredCandidates = filteredCandidates.filter(
+      (c: CandidateApplication) =>
+        c.tier.toLowerCase() === filterScore.toLowerCase(),
+    );
   }
 
   if (filterDateRange.start) {
@@ -331,7 +348,7 @@ export default function HistoryPage() {
     ];
   }
 
-  groups = groups.filter(g => g.candidates.length > 0);
+  groups = groups.filter((g) => g.candidates.length > 0);
 
   return (
     <ApplicantSelectionProvider>
