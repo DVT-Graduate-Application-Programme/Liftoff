@@ -1,4 +1,4 @@
-export type CandidateTier = "A" | "B" | "C" | "D";
+export type CandidateTier = "STRONG" | "BORDERLINE" | "WEAK";
 
 export type CandidateStatus =
   | "PENDING"
