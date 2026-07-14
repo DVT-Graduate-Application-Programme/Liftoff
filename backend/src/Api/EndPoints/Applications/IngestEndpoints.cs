@@ -8,7 +8,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using System.Net.Http;
 using System.Net.Http.Json;
+<<<<<<< HEAD
 using Microsoft.Graph.Models;
+=======
+using System.IO;
+using System.Linq; 
+>>>>>>> 1651bf8 (feat: implement manual graduate application form with PDF file ingestion and backend storage)
 
 namespace Api.EndPoints.Applications;
 
@@ -32,15 +37,6 @@ public static class IngestEndpoints
         MediatR.IMediator mediator,
         CancellationToken ct)
     {
-        var command = new IngestManualApplicationCommand
-        {
-            CandidateName = request.CandidateName,
-            CandidateEmail = request.CandidateEmail,
-            IdempotencyKey = httpRequest.Headers["Idempotency-Key"].ToString(),
-            HasCvFile = request.CvFile is not null,
-            HasTranscriptFile = request.TranscriptFile is not null
-        };
-
         var command2 = new SendApplicationCommand
         {
             CandidateName = request.CandidateName,
