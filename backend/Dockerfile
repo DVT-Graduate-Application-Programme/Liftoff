@@ -16,7 +16,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 RUN useradd --no-create-home --shell /bin/false appuser
 COPY --from=build /app/publish .
-RUN chown -R appuser:appuser /app
+RUN chown -R appuser:appuser /app && chmod -R 755 /app
 USER appuser
 EXPOSE 5000
 ENV ASPNETCORE_URLS=http://+:5000 ASPNETCORE_ENVIRONMENT=Development
