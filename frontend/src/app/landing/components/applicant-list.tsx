@@ -25,6 +25,7 @@ import {
   statusTones,
   toScorePercent,
 } from "./candidate-list-utils";
+import router from "next/router";
 
 interface ApplicantListProps {
   status?: string;
@@ -154,8 +155,7 @@ export function ApplicantList({
             secondaryActionLabel: isClaimedByActiveRecruiter
               ? "Claimed"
               : "Claim for review",
-            isSecondaryActionDisabled:
-              isClaimedByActiveRecruiter || isClaiming,
+            isSecondaryActionDisabled: isClaimedByActiveRecruiter || isClaiming,
             isSecondaryActionLoading: isClaiming,
             onSecondaryActionClick: isClaimedByActiveRecruiter
               ? undefined
