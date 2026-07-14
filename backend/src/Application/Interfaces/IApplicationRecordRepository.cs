@@ -13,6 +13,7 @@ public interface IApplicationRecordRepository
 {
     Task<List<ApplicationRecord>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<ApplicationRecord?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<ApplicationRecord?> GetByEmailMessageIdAsync(string emailMessageId, CancellationToken cancellationToken = default);
     Task<Applicant?> GetApplicantByApplicationIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<ApplicationDetails?> GetApplicationDetailsAsync(Guid id, CancellationToken cancellationToken = default);
     Task<ApplicationHardGateScreening?> GetHardGateScreeningByApplicationIdAsync(Guid id, CancellationToken cancellationToken = default);

@@ -5,7 +5,7 @@
 
 # dotenv files
 .env.**
-
+.env
 # OpenTofu / Terraform — never commit real variable values
 infrastructure/**/*.tfvars
 infrastructure/**/*.tfvars.example
