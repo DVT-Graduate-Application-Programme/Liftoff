@@ -218,7 +218,7 @@ export default function ApplicantCard({
           </span>
           <span
             className={cn(
-              "max-w-full rounded-full px-2 py-1 text-xs font-semibold",
+              "max-w-full rounded-full px-2 py-1 text-xs font-semibold text-center",
               statusStyle.text,
               statusStyle.background,
             )}
@@ -242,7 +242,6 @@ export default function ApplicantCard({
             </span>
           </div>
         )}
-
         {daysAgo !== null && daysAgo >= 1 && (
           <div className="hidden w-32 shrink-0 flex-col items-center gap-0.5 pl-2 md:flex">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
