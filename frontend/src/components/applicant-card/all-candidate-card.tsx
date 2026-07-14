@@ -184,7 +184,6 @@ export default function AllCandidateCard({
       </div>
 
       <div className="flex flex-1 items-center justify-center gap-6 px-2">
-        {/* Column 1: System Score */}
         <div className="hidden w-20 shrink-0 flex-col items-center gap-0.5 sm:flex">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
             {scoreLabel}
@@ -192,44 +191,41 @@ export default function AllCandidateCard({
           <ScoreTag score={systemScore} />
         </div>
 
-        {/* Column 2: Acad. Avg */}
         <div className="hidden w-20 shrink-0 flex-col items-center gap-0.5 sm:flex">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+            Acad. Avg
+          </span>
           {academicAverage !== undefined ? (
-            <>
-              <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-                Acad. Avg
-              </span>
-              <ScoreTag score={academicAverage} />
-            </>
-          ) : null}
+            <ScoreTag score={academicAverage} />
+          ) : (
+            <span className="text-sm font-semibold text-muted-foreground">–</span>
+          )}
         </div>
 
-        {/* Column 3: Applied */}
         <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 md:flex">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+            Applied
+          </span>
           {daysAgo !== null && daysAgo >= 1 ? (
-            <>
-              <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-                Applied
-              </span>
-              <span className="max-w-full whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
-                {daysAgo} day(s) ago
-              </span>
-            </>
-          ) : null}
+            <span className="max-w-full whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
+              {daysAgo} day(s) ago
+            </span>
+          ) : (
+            <span className="text-sm font-semibold text-muted-foreground">–</span>
+          )}
         </div>
 
-        {/* Column 4: Reviewed */}
         <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 md:flex">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+            Reviewed
+          </span>
           {showReviewedAt && reviewedAt ? (
-            <>
-              <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-                Reviewed
-              </span>
-              <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
-                {reviewedAt}
-              </span>
-            </>
-          ) : null}
+            <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
+              {reviewedAt}
+            </span>
+          ) : (
+            <span className="text-sm font-semibold text-muted-foreground">–</span>
+          )}
         </div>
       </div>
 
