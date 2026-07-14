@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import React, { useMemo, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
 import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
@@ -30,6 +30,7 @@ interface ApplicantListProps {
   showReviewedAt?: boolean;
   enableClaim?: boolean;
   groupByDate?: boolean;
+  renderCard?: (application: CandidateApplication) => React.ReactElement;
 }
 
 const DATE_BUCKET_SECTIONS = [
@@ -66,6 +67,7 @@ export function ApplicantList({
   showReviewedAt = true,
   enableClaim = false,
   groupByDate = false,
+  renderCard,
 }: ApplicantListProps) {
   const router = useRouter();
   const { search } = useApplicantSearch();
