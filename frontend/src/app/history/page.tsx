@@ -3,6 +3,8 @@
 import * as React from "react";
 import ApplicantCard from "@/components/applicant-card/applicant-card";
 import { useRouter } from "next/navigation";
+import { useApplications } from "@/hooks/use-applications";
+import type { CandidateApplication } from "@/types/candidate";
 import {
   ChevronDown,
   Calendar,
@@ -155,55 +157,39 @@ function FilterDropdown({
   );
 }
 
-interface Candidate {
-  id: string;
-  name: string;
-  role: string;
-  status: string;
-  systemScore: number;
-  systemScoreLabel: string;
-  academicAverage: number;
-  reviewedAt: string;
-  avatarInitials: string;
-  rawDate: Date;
-}
-
 function CandidateHistoryCard({
   candidate,
 }: {
-  candidate: Candidate;
+  candidate: CandidateApplication;
 }) {
   const router = useRouter();
 
   const handleCardClick = () => {
-    router.push(`/applicants/${candidate.id}`);
+    router.push(`/applicants/${candidate.applicationId}`);
   };
 
   const getStatusTone = (status: string) => {
     const s = status.toUpperCase();
-    if (s === "SHORTLISTED" || s === "HIRED") return "positive";
-    if (s === "INVALID") return "negative";
+    if (s === "SHORTLISTED" || s === "HIRED" || s === "VALID") return "positive";
+    if (s === "INVALID" || s === "REJECTED") return "negative";
     return "warning";
   };
 
   return (
     <ApplicantCard
-      key={candidate.id}
-      name={candidate.name}
-      institute={candidate.role}
-      academicAverage={candidate.academicAverage}
-      systemScore={candidate.systemScore}
-      scoreLabel={candidate.systemScoreLabel}
-      statusLabel={candidate.status}
-      statusTone={getStatusTone(candidate.status)}
-      reviewedAt={candidate.reviewedAt}
+      key={candidate.applicationId}
+      name={candidate.candidateName}
+      institute={candidate.cvSummary || "Applicant"}
+      academicAverage={0}
+      systemScore={candidate.hiringAgentTotalScore}
+      scoreLabel={candidate.tier || "Unknown"}
+      statusLabel={candidate.currentStatus}
+      statusTone={getStatusTone(candidate.currentStatus)}
+      reviewedAt={new Date(candidate.createdAt).toLocaleDateString()}
       showReviewedAt={true}
       onClick={handleCardClick}
       secondaryActionLabel="View Applicant"
-      onSecondaryActionClick={(e) => {
-        e?.stopPropagation();
-        handleCardClick();
-      }}
+      onSecondaryActionClick={() => handleCardClick()}
     />
   );
 }
@@ -213,7 +199,7 @@ function DateGroup({
   candidates,
 }: {
   label: string;
-  candidates: Candidate[];
+  candidates: CandidateApplication[];
 }) {
   if (candidates.length === 0) return null;
 
@@ -229,7 +215,7 @@ function DateGroup({
       <div className="flex flex-col gap-2.5">
         {candidates.map((c) => (
           <CandidateHistoryCard
-            key={c.id}
+            key={c.applicationId}
             candidate={c}
           />
         ))}
@@ -238,126 +224,46 @@ function DateGroup({
   );
 }
 
-function formatReviewDate(dateStr: string): string {
-  const d = new Date(dateStr);
-  const now = new Date();
-  
-  const isToday =
-    d.getDate() === now.getDate() &&
-    d.getMonth() === now.getMonth() &&
-    d.getFullYear() === now.getFullYear();
-
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
-  const isYesterday =
-    d.getDate() === yesterday.getDate() &&
-    d.getMonth() === yesterday.getMonth() &&
-    d.getFullYear() === yesterday.getFullYear();
-
-  const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-  if (isToday) return `Today, ${timeStr}`;
-  if (isYesterday) return `Yesterday, ${timeStr}`;
-  return `${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, ${timeStr}`;
-}
-
 export default function HistoryPage() {
-  const [candidates, setCandidates] = React.useState<Candidate[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-
   const [filterDecision, setFilterDecision] = React.useState("All");
   const [filterDateRange, setFilterDateRange] = React.useState({ start: "", end: "" });
   const [filterScore, setFilterScore] = React.useState("All");
 
-  React.useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/applications");
-        if (!response.ok) {
-          throw new Error("Failed to fetch applications from backend");
-        }
-        
-        const data = await response.json();
-        const appsArray = Array.isArray(data) ? data : data.applications || [];
+  const { data, isLoading, error } = useApplications();
+  const applications = data?.applications || [];
 
-        const reviewedCandidates = appsArray
-          .filter((app: any) => ["SHORTLISTED", "INVALID", "MANUAL_REVIEW"].includes(app.status))
-          .map((app: any) => {
-            const rawScore = app.hiringAgentTotalScore || 0;
-            const scoreLabel = app.tier || "Unknown";
-
-            let acadAvg = 0;
-            if (app.hiringAgentEvaluations?.[0]?.institutionJson?.academic_average) {
-              acadAvg = parseFloat(app.hiringAgentEvaluations[0].institutionJson.academic_average);
-            }
-
-            const role = app.hiringAgentEvaluations?.[0]?.institutionJson?.degreeName || "Graduate Applicant";
-            const nameParts = (app.candidateName || "Unknown").split(" ");
-            const initials = nameParts.length > 1
-              ? `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`
-              : nameParts[0].substring(0, 2);
-
-            const latestAction = app.recruiterActions?.[0];
-            const dateToUse = latestAction?.actionedAt || app.updatedAt;
-
-            return {
-              id: app.id,
-              name: app.candidateName || "Unknown Candidate",
-              role,
-              status: app.status,
-              systemScore: rawScore,
-              systemScoreLabel: scoreLabel,
-              academicAverage: acadAvg,
-              reviewedAt: formatReviewDate(dateToUse),
-              avatarInitials: initials.toUpperCase(),
-              rawDate: new Date(dateToUse),
-            };
-          })
-          .sort((a: Candidate, b: Candidate) => b.rawDate.getTime() - a.rawDate.getTime());
-
-        setCandidates(reviewedCandidates);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchHistory();
-  }, []);
-
-  let filteredCandidates = candidates;
+  let filteredCandidates = applications;
+  
   if (filterDecision !== "All") {
-    filteredCandidates = filteredCandidates.filter(c => c.status === filterDecision);
+    filteredCandidates = filteredCandidates.filter((c: CandidateApplication) => c.currentStatus === filterDecision);
   }
   if (filterScore !== "All") {
-    filteredCandidates = filteredCandidates.filter(c => c.systemScoreLabel.toLowerCase() === filterScore.toLowerCase());
+    filteredCandidates = filteredCandidates.filter((c: CandidateApplication) => (c.tier || "").toLowerCase() === filterScore.toLowerCase());
   }
 
   if (filterDateRange.start) {
     const [year, month, day] = filterDateRange.start.split("-").map(Number);
     const startObj = new Date(year, month - 1, day, 0, 0, 0, 0);
-    filteredCandidates = filteredCandidates.filter(c => c.rawDate >= startObj);
+    filteredCandidates = filteredCandidates.filter((c: CandidateApplication) => new Date(c.createdAt) >= startObj);
   }
   if (filterDateRange.end) {
     const [year, month, day] = filterDateRange.end.split("-").map(Number);
     const endObj = new Date(year, month - 1, day, 23, 59, 59, 999);
-    filteredCandidates = filteredCandidates.filter(c => c.rawDate <= endObj);
+    filteredCandidates = filteredCandidates.filter((c: CandidateApplication) => new Date(c.createdAt) <= endObj);
   }
 
-  let groups = [];
+  let groups: { label: string; candidates: CandidateApplication[] }[] = [];
   
   if (filteredCandidates.length > 0) {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const yesterdayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
 
-    const todayCandidates = filteredCandidates.filter((c) => c.rawDate >= todayStart);
+    const todayCandidates = filteredCandidates.filter((c: CandidateApplication) => new Date(c.createdAt) >= todayStart);
     const yesterdayCandidates = filteredCandidates.filter(
-      (c) => c.rawDate >= yesterdayStart && c.rawDate < todayStart
+      (c: CandidateApplication) => new Date(c.createdAt) >= yesterdayStart && new Date(c.createdAt) < todayStart
     );
-    const earlierCandidates = filteredCandidates.filter((c) => c.rawDate < yesterdayStart);
+    const earlierCandidates = filteredCandidates.filter((c: CandidateApplication) => new Date(c.createdAt) < yesterdayStart);
 
     groups = [
       { label: "Processed Today", candidates: todayCandidates },
@@ -378,7 +284,7 @@ export default function HistoryPage() {
               Review History
             </h1>
             <p className="mt-1 text-sm text-muted-foreground max-w-md">
-              An audit trail of all finalized candidate decisions.
+              An audit trail of all candidate applications.
             </p>
           </div>
         </div>
@@ -386,7 +292,7 @@ export default function HistoryPage() {
         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 shadow-sm ring-1 ring-foreground/5">
           <FilterDropdown 
             label="All Statuses" 
-            options={["All", "SHORTLISTED", "INVALID", "MANUAL_REVIEW"]}
+            options={["All", "PENDING", "VALID", "INVALID", "SHORTLISTED", "MANUAL_REVIEW"]}
             value={filterDecision}
             onChange={setFilterDecision}
           />
@@ -396,7 +302,7 @@ export default function HistoryPage() {
           />
           <FilterDropdown 
             label="System Score" 
-            options={["All", "Strong", "Borderline", "Weak"]}
+            options={["All", "STRONG", "MODERATE", "WEAK"]}
             value={filterScore}
             onChange={setFilterScore}
           />
@@ -408,7 +314,7 @@ export default function HistoryPage() {
           </div>
         ) : error ? (
           <div className="flex h-64 items-center justify-center text-destructive">
-            <p>Error loading history: {error}</p>
+            <p>Error loading history.</p>
           </div>
         ) : filteredCandidates.length === 0 ? (
           <div className="flex h-64 items-center justify-center rounded-xl border border-dashed border-border bg-muted/30">
