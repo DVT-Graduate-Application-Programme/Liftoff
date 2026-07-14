@@ -83,13 +83,10 @@ export function ApplicantList({
     search: search || undefined,
   });
   const claimMutation = useClaimApplication();
-  const applications = useMemo(() => {
-    const loadedApplications = (data?.pages ?? []).flatMap(
-      (page: PaginatedApplications) => page.applications,
-    );
-    const filteredApplications = filterApplications ? filterApplications(loadedApplications) : loadedApplications;
-    return sortApplications ? sortApplications(filteredApplications) : filteredApplications;
-  }, [data?.pages, filterApplications, sortApplications]);
+  const applications = useMemo(
+    () => (data?.pages ?? []).flatMap((page: PaginatedApplications) => page.applications),
+    [data?.pages],
+  );
 
   if (isLoading) {
     return (
