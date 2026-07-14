@@ -238,7 +238,7 @@ export default function AllCandidateCard({
         </div>
       )}
 
-      <div className="flex flex-1 items-center justify-center gap-4 px-4">
+      <div className="flex flex-1 items-center justify-center gap-4 px-2">
         <div className="hidden shrink-0 items-center gap-1 sm:flex">
           <div className="flex w-20 flex-col items-center gap-0.5">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
@@ -248,7 +248,6 @@ export default function AllCandidateCard({
           </div>
           {academicAverage !== undefined && (
             <>
-              <div className="h-10 w-px bg-border" />
               <div className="flex w-20 flex-col items-center gap-0.5">
                 <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
                   Acad. Avg

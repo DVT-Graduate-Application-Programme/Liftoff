@@ -3,14 +3,27 @@
 import { useMemo, useState } from "react";
 import type { ApplicationFilters } from "@/types/api";
 import { ApplicantList } from "./applicant-list";
-import { FilterBar, type ActiveFilter, type FilterFieldConfig, type SortOption } from "./filter-bar";
-import { useRouter } from "next/navigation";
+import {
+  FilterBar,
+  type ActiveFilter,
+  type FilterFieldConfig,
+  type SortOption,
+} from "./filter-bar";
 import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
 import { useSidebar } from "@/components/ui/sidebar";
-import { ACTIVE_RECRUITER_ID, useClaimApplication } from "@/hooks/use-claim-application";
+import {
+  ACTIVE_RECRUITER_ID,
+  useClaimApplication,
+} from "@/hooks/use-claim-application";
 import { CandidateApplication } from "@/types/candidate";
 import AllCandidateCard from "@/components/applicant-card/all-candidate-card";
-import { toScorePercent, statusLabels, statusTones, formatDate, getRecruiterLabel } from "./candidate-list-utils";
+import {
+  toScorePercent,
+  statusLabels,
+  statusTones,
+  formatDate,
+  getRecruiterLabel,
+} from "./candidate-list-utils";
 
 type Filters = Omit<ApplicationFilters, "search" | "limit" | "cursor">;
 
@@ -61,26 +74,126 @@ function AllCandidates() {
   };
 
   const fields: FilterFieldConfig[] = [
-    { key: "status", label: "Application status", value: status, onChange: setStatus, options: STATUS_OPTIONS },
-    { key: "minScore", label: "Minimum score", type: "number", value: minScore, onChange: setMinScore, options: [], placeholder: "Any score" },
-    { key: "tier", label: "Candidate tier", value: tier, onChange: setTier, options: [["", "All tiers"], ["A", "A"], ["B", "B"], ["C", "C"], ["D", "D"]] },
-    { key: "hardGate", label: "Screening", value: hardGate, onChange: setHardGate, options: [["all", "All results"], ["passed", "Passed"], ["failed", "Failed"]] },
-    { key: "claimed", label: "Ownership", value: claimed, onChange: setClaimed, options: [["all", "All candidates"], ["unclaimed", "Unclaimed"], ["claimed", "Claimed"]] },
-    { key: "shortlisted", label: "Shortlist", value: shortlisted, onChange: setShortlisted, options: [["all", "All candidates"], ["shortlisted", "Shortlisted"], ["not-shortlisted", "Not shortlisted"]] },
-    { key: "dateRange", label: "Received", value: dateRange, onChange: setDateRange, options: [["all", "Any time"], ["7", "Last 7 days"], ["30", "Last 30 days"]] },
+    {
+      key: "status",
+      label: "Application status",
+      value: status,
+      onChange: setStatus,
+      options: STATUS_OPTIONS,
+    },
+    {
+      key: "minScore",
+      label: "Minimum score",
+      type: "number",
+      value: minScore,
+      onChange: setMinScore,
+      options: [],
+      placeholder: "Any score",
+    },
+    {
+      key: "tier",
+      label: "Candidate tier",
+      value: tier,
+      onChange: setTier,
+      options: [
+        ["", "All tiers"],
+        ["A", "A"],
+        ["B", "B"],
+        ["C", "C"],
+        ["D", "D"],
+      ],
+    },
+    {
+      key: "hardGate",
+      label: "Screening",
+      value: hardGate,
+      onChange: setHardGate,
+      options: [
+        ["all", "All results"],
+        ["passed", "Passed"],
+        ["failed", "Failed"],
+      ],
+    },
+    {
+      key: "claimed",
+      label: "Ownership",
+      value: claimed,
+      onChange: setClaimed,
+      options: [
+        ["all", "All candidates"],
+        ["unclaimed", "Unclaimed"],
+        ["claimed", "Claimed"],
+      ],
+    },
+    {
+      key: "shortlisted",
+      label: "Shortlist",
+      value: shortlisted,
+      onChange: setShortlisted,
+      options: [
+        ["all", "All candidates"],
+        ["shortlisted", "Shortlisted"],
+        ["not-shortlisted", "Not shortlisted"],
+      ],
+    },
+    {
+      key: "dateRange",
+      label: "Received",
+      value: dateRange,
+      onChange: setDateRange,
+      options: [
+        ["all", "Any time"],
+        ["7", "Last 7 days"],
+        ["30", "Last 30 days"],
+      ],
+    },
   ];
 
   const activeFilters: ActiveFilter[] = [
-    status && { label: `Status: ${status.toLowerCase().replaceAll("_", " ")}`, onClear: () => { setStatus(""); } },
-    tier && { label: `Tier: ${tier.toLowerCase()}`, onClear: () => { setTier(""); } },
-    minScore && { label: `Score: ${minScore}+`, onClear: () => { setMinScore(""); } },
-    hardGate !== "all" && { label: hardGate === "passed" ? "Screening: passed" : "Screening: failed", onClear: () => { setHardGate("all"); } },
-    claimed !== "all" && { label: claimed === "claimed" ? "Claimed" : "Unclaimed", onClear: () => { setClaimed("all"); } },
-    shortlisted !== "all" && { label: shortlisted === "shortlisted" ? "Shortlisted" : "Not shortlisted", onClear: () => { setShortlisted("all"); } },
-    dateRange !== "all" && { label: `Last ${dateRange} days`, onClear: () => { setDateRange("all"); } },
+    status && {
+      label: `Status: ${status.toLowerCase().replaceAll("_", " ")}`,
+      onClear: () => {
+        setStatus("");
+      },
+    },
+    tier && {
+      label: `Tier: ${tier.toLowerCase()}`,
+      onClear: () => {
+        setTier("");
+      },
+    },
+    minScore && {
+      label: `Score: ${minScore}+`,
+      onClear: () => {
+        setMinScore("");
+      },
+    },
+    hardGate !== "all" && {
+      label: hardGate === "passed" ? "Screening: passed" : "Screening: failed",
+      onClear: () => {
+        setHardGate("all");
+      },
+    },
+    claimed !== "all" && {
+      label: claimed === "claimed" ? "Claimed" : "Unclaimed",
+      onClear: () => {
+        setClaimed("all");
+      },
+    },
+    shortlisted !== "all" && {
+      label: shortlisted === "shortlisted" ? "Shortlisted" : "Not shortlisted",
+      onClear: () => {
+        setShortlisted("all");
+      },
+    },
+    dateRange !== "all" && {
+      label: `Last ${dateRange} days`,
+      onClear: () => {
+        setDateRange("all");
+      },
+    },
   ].filter(Boolean) as ActiveFilter[];
 
-  const router = useRouter();
   const { selectApplication } = useApplicantSelection();
   const { setOpen } = useSidebar();
   const claimMutation = useClaimApplication();
@@ -92,7 +205,9 @@ function AllCandidates() {
         <FilterBar
           id="all-candidate-filters"
           filtersOpen={filtersOpen}
-          onToggleFilters={() => { setFiltersOpen((open) => !open); }}
+          onToggleFilters={() => {
+            setFiltersOpen((open) => !open);
+          }}
           fields={fields}
           sort={sort}
           onSortChange={setSort}
@@ -101,12 +216,16 @@ function AllCandidates() {
         />
       </section>
       <ApplicantList
+        tabKey="all"
         filters={filters}
         emptyTitle="No applicants yet"
         enableClaim
         renderCard={(application: CandidateApplication) => {
-          const isClaimedByActiveRecruiter = application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
-          const isClaiming = claimMutation.isPending && claimMutation.variables === application.applicationId;
+          const isClaimedByActiveRecruiter =
+            application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
+          const isClaiming =
+            claimMutation.isPending &&
+            claimMutation.variables === application.applicationId;
 
           return (
             <AllCandidateCard
@@ -120,17 +239,22 @@ function AllCandidates() {
               showReviewedAt
               createdAt={application.createdAt}
               recruiterName={getRecruiterLabel(application)}
-              secondaryActionLabel={isClaimedByActiveRecruiter ? "Claimed" : "Claim for review"}
-              isSecondaryActionDisabled={isClaimedByActiveRecruiter || isClaiming}
+              secondaryActionLabel={
+                isClaimedByActiveRecruiter ? "Claimed" : "Claim for review"
+              }
+              isSecondaryActionDisabled={
+                isClaimedByActiveRecruiter || isClaiming
+              }
               isSecondaryActionLoading={isClaiming}
-              onSecondaryActionClick={isClaimedByActiveRecruiter ? undefined : () => {
-                claimMutation.mutate(application.applicationId);
-              }}
-              onClick={() => {
-                router.push(`/applicants/${application.applicationId}`);
-              }}
+              onSecondaryActionClick={
+                isClaimedByActiveRecruiter
+                  ? undefined
+                  : () => {
+                      claimMutation.mutate(application.applicationId);
+                    }
+              }
               onActionClick={() => {
-                selectApplication(application.applicationId);
+                selectApplication(application.applicationId, "all");
                 setOpen(true);
               }}
             />

@@ -121,6 +121,7 @@ function AcceptedCandidates() {
       </section>
       <ApplicantList
         status="shortlisted"
+        tabKey="accepted"
         filters={filters}
         emptyTitle="No accepted applicants yet"
         renderItem={(candidate) => <AcceptedCandidateCard application={candidate} />}

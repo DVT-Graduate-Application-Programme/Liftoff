@@ -1,6 +1,7 @@
 import { Bell, Menu, Settings } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/logo";
 import { NavSearchBar } from "./nav-search-bar";
 
 function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
@@ -15,9 +16,7 @@ function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
         >
           <Menu />
         </Button>
-        <div>
-          <h1 className="text-primary font-extrabold text-3xl">DVT</h1>
-        </div>
+        <Logo />
       </div>
       <NavSearchBar />
       <div className="flex gap-2">
