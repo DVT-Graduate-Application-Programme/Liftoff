@@ -6,6 +6,7 @@ public class IngestManualApplicationCommand : IRequest<IngestManualApplicationRe
 {
     public string CandidateName { get; set; } = string.Empty;
     public string CandidateEmail { get; set; } = string.Empty;
+    public string? IdempotencyKey { get; set; }
     public bool HasCvFile { get; set; }
     public bool HasTranscriptFile { get; set; }
 }
