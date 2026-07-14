@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import ApplicantCard from "@/components/applicant-card/applicant-card";
+import AllCandidateCard from "@/components/applicant-card/all-candidate-card";
 import { useRouter } from "next/navigation";
 import { useApplications } from "@/hooks/use-applications";
 import type { CandidateApplication } from "@/types/candidate";
@@ -213,7 +213,7 @@ function CandidateHistoryCard({
     evaluationQuery.data?.categoryScoresJson.education.score;
 
   return (
-    <ApplicantCard
+    <AllCandidateCard
       key={candidate.applicationId}
       name={candidate.candidateName}
       institute={candidate.cvSummary || "Applicant"}
