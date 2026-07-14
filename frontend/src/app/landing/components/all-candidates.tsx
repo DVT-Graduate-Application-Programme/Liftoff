@@ -1,9 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
+import { useClaimApplication, ACTIVE_RECRUITER_ID } from "@/hooks/use-claim-application";
+import { useSidebar } from "@/components/ui/sidebar";
+import AllCandidateCard from "@/components/applicant-card/all-candidate-card";
+import type { CandidateApplication } from "@/types/candidate";
 import type { ApplicationFilters } from "@/types/api";
 import { ApplicantList } from "./applicant-list";
 import { FilterBar, type ActiveFilter, type FilterFieldConfig, type SortOption } from "./filter-bar";
+import {
+  formatDate,
+  getRecruiterLabel,
+  statusLabels,
+  statusTones,
+  toScorePercent,
+} from "./candidate-list-utils";
 
 type Filters = Omit<ApplicationFilters, "search" | "limit" | "cursor">;
 
@@ -73,7 +85,6 @@ function AllCandidates() {
     dateRange !== "all" && { label: `Last ${dateRange} days`, onClear: () => { setDateRange("all"); } },
   ].filter(Boolean) as ActiveFilter[];
 
-  const router = useRouter();
   const { selectApplication } = useApplicantSelection();
   const { setOpen } = useSidebar();
   const claimMutation = useClaimApplication();
@@ -94,6 +105,7 @@ function AllCandidates() {
         />
       </section>
       <ApplicantList
+        tabKey="all"
         filters={filters}
         emptyTitle="No applicants yet"
         enableClaim
@@ -119,11 +131,8 @@ function AllCandidates() {
               onSecondaryActionClick={isClaimedByActiveRecruiter ? undefined : () => {
                 claimMutation.mutate(application.applicationId);
               }}
-              onClick={() => {
-                router.push(`/applicants/${application.applicationId}`);
-              }}
               onActionClick={() => {
-                selectApplication(application.applicationId);
+                selectApplication(application.applicationId, "all");
                 setOpen(true);
               }}
             />
