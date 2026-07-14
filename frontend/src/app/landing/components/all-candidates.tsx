@@ -4,6 +4,13 @@ import { useMemo, useState } from "react";
 import type { ApplicationFilters } from "@/types/api";
 import { ApplicantList } from "./applicant-list";
 import { FilterBar, type ActiveFilter, type FilterFieldConfig, type SortOption } from "./filter-bar";
+import { useRouter } from "next/navigation";
+import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
+import { useSidebar } from "@/components/ui/sidebar";
+import { ACTIVE_RECRUITER_ID, useClaimApplication } from "@/hooks/use-claim-application";
+import { CandidateApplication } from "@/types/candidate";
+import AllCandidateCard from "@/components/applicant-card/all-candidate-card";
+import { toScorePercent, statusLabels, statusTones, formatDate, getRecruiterLabel } from "./candidate-list-utils";
 
 type Filters = Omit<ApplicationFilters, "search" | "limit" | "cursor">;
 
