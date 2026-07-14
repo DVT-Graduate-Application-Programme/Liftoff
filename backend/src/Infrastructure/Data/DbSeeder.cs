@@ -45,18 +45,12 @@ public static class DbSeeder
         // Apply any pending migrations
         await db.Database.MigrateAsync();
 
-        // Only seed when the table is empty
-        if (await db.ApplicationRecords.AnyAsync())
-        {
-            logger.LogInformation("[DbSeeder] Data already present – skipping seed.");
-            return;
-        }
+        logger.LogInformation("[DbSeeder] Truncating existing data to re-seed POC data…");
+        await db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"ApplicationRecords\" CASCADE;");
 
         logger.LogInformation("[DbSeeder] Seeding POC data…");
 
-        // ──────────────────────────────────────────────
-        // Candidate 1 – Joseph Monakedis (Score 77)
-        // ──────────────────────────────────────────────
+
         var app1 = new ApplicationRecord
         {
             Id = App1Id,
@@ -65,7 +59,7 @@ public static class DbSeeder
             CandidateEmail = "joseph@example.com",
             CandidateGitHubUrl = "https://github.com/joseph-dev-grad",
             Status = "evaluated",
-            Tier = "A",
+            Tier = "Strong",
             HardGatePassed = true,
             HardGateReason = null,
             HiringAgentTotalScore = 77.0m,
@@ -79,6 +73,7 @@ public static class DbSeeder
         {
             Id = Eval1Id,
             ApplicationRecordId = App1Id,
+            AiSummary = "A standout profile with a solid foundation in modern full-stack frameworks and scalable architectures. Demonstrated leadership in academic projects.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 23.0, "max": 25 },
@@ -123,7 +118,7 @@ public static class DbSeeder
             CandidateEmail = "alex.turner@example.com",
             CandidateGitHubUrl = null,
             Status = "evaluated",
-            Tier = "C",
+            Tier = "Weak",
             HardGatePassed = true,
             HardGateReason = null,
             HiringAgentTotalScore = 56.0m,
@@ -137,6 +132,7 @@ public static class DbSeeder
         {
             Id = Eval2Id,
             ApplicationRecordId = App2Id,
+            AiSummary = "Profile lacks substantial evidence of practical coding experience beyond basic coursework. Assessment scores were significantly below the required threshold.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 20.0, "max": 25 },
@@ -181,7 +177,7 @@ public static class DbSeeder
             CandidateEmail = "priya.sharma@example.com",
             CandidateGitHubUrl = "https://github.com/josephexample-dev",
             Status = "shortlisted",
-            Tier = "B",
+            Tier = "Borderline",
             HardGatePassed = true,
             HardGateReason = null,
             HiringAgentTotalScore = 75.0m,
@@ -197,6 +193,7 @@ public static class DbSeeder
         {
             Id = Eval3Id,
             ApplicationRecordId = App3Id,
+            AiSummary = "Shows promise with front-end technologies, but backend experience is limited. Might need additional ramp-up time compared to top-tier candidates.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 23.0, "max": 25 },
@@ -241,7 +238,7 @@ public static class DbSeeder
             CandidateEmail = "liam.obrien@example.com",
             CandidateGitHubUrl = "https://github.com/liam-obrien-dev",
             Status = "forwarded",
-            Tier = "A",
+            Tier = "Strong",
             HardGatePassed = true,
             HiringAgentTotalScore = 91.0m,
             HiringAgentExplanation = "Exceptional full-stack candidate. Ships production-grade React + Node.js apps, has two SWE internships, and maintains an open-source React form library with thousands of weekly downloads.",
@@ -256,6 +253,7 @@ public static class DbSeeder
         {
             Id = Eval4Id,
             ApplicationRecordId = App4Id,
+            AiSummary = "Exceptional open-source contributions and deep understanding of cloud infrastructure. A highly competitive candidate with proven production-level skills.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 25.0, "max": 25 },
@@ -300,7 +298,7 @@ public static class DbSeeder
             CandidateEmail = "amara.diallo@example.com",
             CandidateGitHubUrl = "https://github.com/amara-fullstack",
             Status = "evaluated",
-            Tier = "B",
+            Tier = "Borderline",
             HardGatePassed = true,
             HiringAgentTotalScore = 69.0m,
             HiringAgentExplanation = "Solid full-stack candidate with a well-rounded Vue/Django skill set and a meaningful 12-month placement year. GitHub is consistent but no external OSS contributions.",
@@ -313,6 +311,7 @@ public static class DbSeeder
         {
             Id = Eval5Id,
             ApplicationRecordId = App5Id,
+            AiSummary = "Possesses good foundational knowledge and communication skills, though technical portfolio lacks complexity. Could be a fit with the right mentorship.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 21.0, "max": 25 },
@@ -357,7 +356,7 @@ public static class DbSeeder
             CandidateEmail = "chloe.bennett@example.com",
             CandidateGitHubUrl = null,
             Status = "rejected",
-            Tier = "D",
+            Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "Degree not in a qualifying IT or STEM discipline. Bootcamp HTML/CSS training is insufficient to compensate for the missing academic requirement.",
             HiringAgentTotalScore = 38.0m,
@@ -371,6 +370,7 @@ public static class DbSeeder
         {
             Id = Eval6Id,
             ApplicationRecordId = App6Id,
+            AiSummary = "Did not pass the initial hard-gate screening due to insufficient graduation credentials and low technical scoring across the board.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score":  8.0, "max": 25 },
@@ -415,7 +415,7 @@ public static class DbSeeder
             CandidateEmail = "ravi.nair@example.com",
             CandidateGitHubUrl = "https://github.com/ravi-builds",
             Status = "shortlisted",
-            Tier = "A",
+            Tier = "Strong",
             HardGatePassed = true,
             HiringAgentTotalScore = 80.0m,
             HiringAgentExplanation = "Strong full-stack profile with React/Spring Boot experience, a 6-month ThoughtWorks internship, and well-tested deployed projects. Comfortable across the entire stack.",
@@ -430,6 +430,7 @@ public static class DbSeeder
         {
             Id = Eval7Id,
             ApplicationRecordId = App7Id,
+            AiSummary = "Outstanding academic record combined with relevant internship experience. Strong problem-solving capabilities evidenced by their algorithmic project work.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 24.0, "max": 25 },
@@ -474,7 +475,7 @@ public static class DbSeeder
             CandidateEmail = "sophie.walsh@example.com",
             CandidateGitHubUrl = "https://github.com/sophiewalsh-dev",
             Status = "evaluated",
-            Tier = "C",
+            Tier = "Weak",
             HardGatePassed = true,
             HiringAgentTotalScore = 54.0m,
             HiringAgentExplanation = "Some interest in full-stack development but projects are predominantly static front-end. The only backend work is a tutorial-level Express server with no database. No production software experience.",
@@ -487,6 +488,7 @@ public static class DbSeeder
         {
             Id = Eval8Id,
             ApplicationRecordId = App8Id,
+            AiSummary = "The candidate's technical skills appear very rudimentary. Minimal project history and poor performance in the technical evaluation phase.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 16.0, "max": 25 },
@@ -531,7 +533,7 @@ public static class DbSeeder
             CandidateEmail = "marcus.okafor@example.com",
             CandidateGitHubUrl = null,
             Status = "evaluated",
-            Tier = "C",
+            Tier = "Weak",
             HardGatePassed = true,
             HiringAgentTotalScore = 44.0m,
             HiringAgentExplanation = "Meets the minimum academic requirement but cannot demonstrate any meaningful full-stack capability. No GitHub, no deployed project, no relevant work experience in software.",
@@ -544,6 +546,7 @@ public static class DbSeeder
         {
             Id = Eval9Id,
             ApplicationRecordId = App9Id,
+            AiSummary = "While showing enthusiasm, the candidate currently lacks the necessary practical experience and core competencies required for this role.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score": 15.0, "max": 25 },
@@ -588,7 +591,7 @@ public static class DbSeeder
             CandidateEmail = "tomas.reyes@example.com",
             CandidateGitHubUrl = null,
             Status = "rejected",
-            Tier = "D",
+            Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "Degree is in Culinary Arts – not an IT, Computer Science, or STEM discipline. No evidence of self-taught programming or compensating technical experience.",
             HiringAgentTotalScore = 12.0m,
@@ -602,6 +605,7 @@ public static class DbSeeder
         {
             Id = Eval10Id,
             ApplicationRecordId = App10Id,
+            AiSummary = "Fails to meet the baseline technical requirements. Limited exposure to our required tech stack and no significant project work demonstrated.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score":  0.0, "max": 25 },
@@ -646,7 +650,7 @@ public static class DbSeeder
             CandidateEmail = "harriet.langley@example.com",
             CandidateGitHubUrl = null,
             Status = "rejected",
-            Tier = "D",
+            Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "MBA is a postgraduate business qualification, not an IT or STEM degree. Undergraduate degree is in History. No compensating technical background identified.",
             HiringAgentTotalScore = 8.0m,
@@ -660,6 +664,7 @@ public static class DbSeeder
         {
             Id = Eval11Id,
             ApplicationRecordId = App11Id,
+            AiSummary = "Profile does not align with our engineering standards. Missing key technical skills and practical application experience.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score":  0.0, "max": 25 },
@@ -704,7 +709,7 @@ public static class DbSeeder
             CandidateEmail = "derek.hobson@example.com",
             CandidateGitHubUrl = null,
             Status = "rejected",
-            Tier = "D",
+            Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "Degree is in Physical Geography – not an IT or STEM computing discipline. Attempted prompt injection detected in CV; application automatically rejected.",
             HiringAgentTotalScore = 5.0m,
@@ -718,6 +723,7 @@ public static class DbSeeder
         {
             Id = Eval12Id,
             ApplicationRecordId = App12Id,
+            AiSummary = "Candidate did not demonstrate sufficient proficiency in required languages or frameworks. Overall evaluation score is too low to proceed.",
             CategoryScoresJson = JsonDocument.Parse("""
                 {
                   "education":        { "score":  0.0, "max": 25 },
@@ -754,7 +760,38 @@ public static class DbSeeder
         db.ApplicationRecords.AddRange(app1, app2, app3, app4, app5, app6, app7, app8, app9, app10, app11, app12);
         db.HiringAgentEvaluations.AddRange(eval1, eval2, eval3, eval4, eval5, eval6, eval7, eval8, eval9, eval10, eval11, eval12);
 
+        var actions = new List<RecruiterAction>
+        {
+            // App1: Rating and Notes
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "recruiter-demo", ActionType = "RATING", RatingValue = 5, Reason = "Exceptional profile, great potential.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "manager-demo", ActionType = "NOTES", Reason = "Left a voicemail to schedule technical round.", ActionedAt = DateTimeOffset.UtcNow.AddHours(-5) },
+            
+            // App3: Shortlisted
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Strong candidate, advancing to interview.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
+
+            // App4: Forwarded
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, RecruiterIdentity = "manager-seed-002", ActionType = "FORWARD", PreviousStatus = "evaluated", NewStatus = "forwarded", Reason = "Forwarding to engineering lead for review.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-3) },
+
+            // App6: Rejected
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App6Id, RecruiterIdentity = "recruiter-demo", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Lacks required technical skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-1) },
+            
+            // App7: Shortlisted and Rated
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "recruiter-demo", ActionType = "RATING", RatingValue = 4, Reason = "Good algorithm skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-4) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "recruiter-demo", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Passed initial screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
+            
+            // App10: Rejected
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App10Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Does not meet baseline experience.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-7) },
+            
+            // App11: Rejected
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App11Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Failed automated technical assessment.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-6) },
+            
+            // App12: Rejected
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App12Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Poor cultural fit identified in pre-screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
+        };
+
+        db.RecruiterActions.AddRange(actions);
+
         await db.SaveChangesAsync();
-        logger.LogInformation("[DbSeeder] Seeded 12 application records and 12 evaluations successfully.");
+        logger.LogInformation("[DbSeeder] Seeded 12 application records, 12 evaluations, and mock logs successfully.");
     }
 }

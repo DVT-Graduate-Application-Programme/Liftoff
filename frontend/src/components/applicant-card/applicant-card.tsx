@@ -134,30 +134,32 @@ export default function ApplicantCard({
         }
       }}
       className={cn(
-        "group relative flex cursor-pointer items-center gap-3 rounded-xl border bg-card p-4",
-        "border-l-4 border-border transition-all hover:-translate-y-px",
+        "group relative flex cursor-pointer rounded-xl border bg-card p-4 transition-all hover:-translate-y-px",
+        "flex-col gap-4 sm:flex-row sm:items-center sm:gap-3",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
         statusStyle.border,
       )}
     >
-      <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
-        {initials}
-      </div>
+      <div className="flex w-full min-w-0 flex-1 items-center gap-3 sm:w-auto">
+        <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
+          {initials}
+        </div>
 
-      <div className="min-w-0 flex-1">
-        <h4 className="font-semibold leading-tight text-foreground">{name}</h4>
-        {showInstitute && (
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            {institute}
-          </p>
-        )}
-        {recruiterName && (
-          <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
-            <InfoRow label={recruiterLabel ?? "Recruiter"}>
-              {recruiterName}
-            </InfoRow>
-          </div>
-        )}
+        <div className="min-w-0 flex-1">
+          <h4 className="font-semibold leading-tight text-foreground">{name}</h4>
+          {showInstitute && (
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              {institute}
+            </p>
+          )}
+          {recruiterName && (
+            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
+              <InfoRow label={recruiterLabel ?? "Recruiter"}>
+                {recruiterName}
+              </InfoRow>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="hidden w-[10rem] shrink-0 items-center justify-center gap-2 sm:flex">
@@ -180,7 +182,7 @@ export default function ApplicantCard({
         )}
       </div>
 
-      <div className="flex w-16 shrink-0 flex-col items-center justify-center gap-0.5 sm:ml-0 md:ml-1">
+      <div className="flex shrink-0 flex-row items-center justify-between gap-2 sm:ml-0 sm:w-16 sm:flex-col sm:justify-center sm:gap-0.5 md:ml-1">
         <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
           Status
         </span>
@@ -213,13 +215,13 @@ export default function ApplicantCard({
         </div>
       )}
 
-      <div className="flex shrink-0 items-center gap-2 pl-2">
+      <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:pl-2">
         {secondaryActionLabel ? (
           <Button
             type="button"
             variant="secondary"
             size="sm"
-            className="w-32 justify-center gap-1.5 text-xs"
+            className="w-full justify-center gap-1.5 text-xs sm:w-32"
             disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
             onClick={(event) => {
               event.stopPropagation();
@@ -236,8 +238,8 @@ export default function ApplicantCard({
           variant="outline"
           size="sm"
           className={cn(
-            "gap-1.5 text-xs",
-            secondaryActionLabel ? "w-32 justify-center" : undefined,
+            "gap-1.5 text-xs w-full sm:w-auto",
+            secondaryActionLabel ? "sm:w-32 justify-center" : undefined,
           )}
           onClick={(event) => {
             event.stopPropagation();

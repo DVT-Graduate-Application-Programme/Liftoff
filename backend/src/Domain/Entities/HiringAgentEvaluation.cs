@@ -8,6 +8,9 @@ public class HiringAgentEvaluation
     public Guid Id { get; set; }
     public Guid ApplicationRecordId { get; set; }
 
+    // The overall AI-generated summary
+    public string? AiSummary { get; set; }
+
     // Institution: { name, degreeName }
     public JsonDocument? InstitutionJson { get; set; }
 

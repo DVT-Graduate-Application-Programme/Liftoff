@@ -6,6 +6,7 @@ import time
 from pydantic import BaseModel
 from typing import Optional
 from models import  EvaluationData
+from uuid import UUID
 
 BACKEND_BASE_URL = os.environ.get("BACKEND_BASE_URL", "http://localhost:5000")
 
@@ -32,7 +33,7 @@ class ResumeEvaluationPayload(BaseModel):
     evaluation: EvaluationData
 
 class Resume(BaseModel):
-    id: str
+    id: UUID
     message_id: str
     candidate_name: str
     document_url: str
@@ -40,18 +41,27 @@ class Resume(BaseModel):
 
     model_config = {"alias_generator": to_camel, "populate_by_name": True}
 
-def get_resume(resume_id: int) -> Resume:
-    """
-    Fetches a single ResumeDto from the .NET API and returns it
-    as a typed Resume object, ready to pass to the hiring agent.
-    """
-    url = f"{BACKEND_BASE_URL}/api/resumes/{resume_id}"
 
+def get_resume(candidate_id: UUID) -> Resume:
+    url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/applicant"
     with httpx.Client() as client:
         response = client.get(url)
         response.raise_for_status()
+        metadata = response.json()
 
-    return Resume.model_validate(response.json())
+        cv_url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/cv"
+        transcript_url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/transcript"
+
+        transcript_check = client.head(transcript_url) # if transript is available 
+        if transcript_check.status_code == 404:
+            transcript_url = None
+
+    return Resume(
+        id=candidate_id,
+        candidate_name=metadata.get("candidateName", "Unknown"),
+        document_url=cv_url,
+        transcript_url=transcript_url,
+    )
 
 
 def get_all_resumes() -> list[Resume]:
