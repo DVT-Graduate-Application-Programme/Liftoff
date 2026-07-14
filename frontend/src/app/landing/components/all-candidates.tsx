@@ -9,7 +9,6 @@ import {
   type FilterFieldConfig,
   type SortOption,
 } from "./filter-bar";
-import { useRouter } from "next/navigation";
 import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
 import { useSidebar } from "@/components/ui/sidebar";
 import {
@@ -195,7 +194,6 @@ function AllCandidates() {
     },
   ].filter(Boolean) as ActiveFilter[];
 
-  const router = useRouter();
   const { selectApplication } = useApplicantSelection();
   const { setOpen } = useSidebar();
   const claimMutation = useClaimApplication();
@@ -218,6 +216,7 @@ function AllCandidates() {
         />
       </section>
       <ApplicantList
+        tabKey="all"
         filters={filters}
         emptyTitle="No applicants yet"
         enableClaim
@@ -254,11 +253,8 @@ function AllCandidates() {
                       claimMutation.mutate(application.applicationId);
                     }
               }
-              onClick={() => {
-                router.push(`/applicants/${application.applicationId}`);
-              }}
               onActionClick={() => {
-                selectApplication(application.applicationId);
+                selectApplication(application.applicationId, "all");
                 setOpen(true);
               }}
             />

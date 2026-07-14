@@ -77,6 +77,7 @@ const PendingCandidates = () => {
 
       <ApplicantList
         status="PENDING"
+        tabKey="pending"
         filters={filters}
         emptyTitle="No pending applicants"
         showReviewedAt={false}

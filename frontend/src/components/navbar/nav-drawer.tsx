@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Logo } from "@/components/logo";
 import {
   Drawer,
   DrawerClose,
@@ -25,15 +26,16 @@ export function NavDrawer({
     <Drawer open={open} onOpenChange={onOpenChange} direction="left">
       <DrawerContent>
         <div className="flex h-full w-full flex-col p-4">
-          <DrawerHeader>
-            <DrawerTitle>DVT</DrawerTitle>
-          </DrawerHeader>
-          <div className="relative pt-4 pb-0">
-            <DrawerClose asChild className="absolute right-5 top-4">
-              <Button variant="ghost">
+          <DrawerHeader className="flex flex-row items-center justify-between">
+            <DrawerTitle className="sr-only">Navigation menu</DrawerTitle>
+            <Logo />
+            <DrawerClose asChild>
+              <Button variant="ghost" size="icon" aria-label="Close navigation drawer">
                 <X size={16} />
               </Button>
             </DrawerClose>
+          </DrawerHeader>
+          <div className="pt-4 pb-0">
             <div className="w-full">
               <NavMenu
                 onItemNavigate={() => {

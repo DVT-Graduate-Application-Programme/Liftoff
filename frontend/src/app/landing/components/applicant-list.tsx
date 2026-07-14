@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useMemo, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import React, { useMemo } from "react";
 import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
 import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
 import { useInfiniteApplications } from "@/hooks/use-infinite-applications";
@@ -28,6 +27,7 @@ import {
 
 interface ApplicantListProps {
   status?: string;
+  tabKey: "pending" | "all" | "accepted";
   filters?: ApplicationFilters;
   emptyTitle: string;
   showReviewedAt?: boolean;
@@ -65,6 +65,7 @@ const DATE_BUCKET_SECTIONS = [
 
 export function ApplicantList({
   status,
+  tabKey,
   filters,
   emptyTitle,
   showReviewedAt = true,
@@ -72,7 +73,6 @@ export function ApplicantList({
   groupByDate = false,
   renderCard,
 }: ApplicantListProps) {
-  const router = useRouter();
   const { search } = useApplicantSearch();
   const { selectApplication } = useApplicantSelection();
   const { setOpen } = useSidebar();
@@ -167,11 +167,8 @@ export function ApplicantList({
                   },
             }
           : {})}
-        onClick={() => {
-          router.push(`/applicants/${application.applicationId}`);
-        }}
         onActionClick={() => {
-          selectApplication(application.applicationId);
+          selectApplication(application.applicationId, tabKey);
           setOpen(true);
         }}
       />
