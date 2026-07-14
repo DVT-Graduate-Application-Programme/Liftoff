@@ -197,7 +197,7 @@ export default function AllCandidateCard({
                 <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
                   Acad. Avg
                 </span>
-                <ScoreTag score={16} />
+                <ScoreTag score={academicAverage} />
               </div>
             </>
           )}
