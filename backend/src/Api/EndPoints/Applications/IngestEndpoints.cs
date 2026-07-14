@@ -68,7 +68,7 @@ public static class IngestEndpoints
     }
 
 
-    private static async Task NotifyHiringAgent(Guid applicationId)
+    public static async Task NotifyHiringAgent(Guid applicationId)
     {
         const string fastApiBaseUrl = "http://hiring-agent:8001";
         try
@@ -85,5 +85,4 @@ public static class IngestEndpoints
             // swallow — don't let a notify failure crash ingest
         }
     }
-
 }

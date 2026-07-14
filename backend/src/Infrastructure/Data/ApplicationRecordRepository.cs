@@ -497,6 +497,37 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         return true;
     }
 
+    public async Task<bool> ResetEvaluationAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var applicationRecord = await _dbContext.ApplicationRecords
+            .Include(r => r.HiringAgentEvaluations)
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+
+        if (applicationRecord is null)
+        {
+            return false;
+        }
+
+        // Remove any existing evaluations
+        if (applicationRecord.HiringAgentEvaluations.Any())
+        {
+            _dbContext.HiringAgentEvaluations.RemoveRange(applicationRecord.HiringAgentEvaluations);
+        }
+
+        // Reset fields
+        applicationRecord.Tier = null;
+        applicationRecord.HardGatePassed = null;
+        applicationRecord.HardGateReason = null;
+        applicationRecord.HiringAgentTotalScore = null;
+        applicationRecord.HiringAgentExplanation = null;
+        applicationRecord.CvSummary = null;
+        applicationRecord.FlagsJson = null;
+        applicationRecord.Status = "PENDING";
+        applicationRecord.UpdatedAt = DateTimeOffset.UtcNow;
+
+        return true;
+    }
+
     public async Task AddAuditLogAsync(AuditLog auditLog, CancellationToken cancellationToken = default)
     {
         await _dbContext.AuditLogs.AddAsync(auditLog, cancellationToken);

@@ -57,6 +57,7 @@ def get_resume(candidate_id: UUID) -> Resume:
 
     return Resume(
         id=candidate_id,
+        message_id=str(candidate_id),
         candidate_name=metadata.get("candidateName", "Unknown"),
         document_url=cv_url,
         transcript_url=transcript_url,
