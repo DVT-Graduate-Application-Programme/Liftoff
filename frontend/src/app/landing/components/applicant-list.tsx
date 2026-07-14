@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
 import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
 import { useInfiniteApplications } from "@/hooks/use-infinite-applications";
-import { ACTIVE_RECRUITER_ID, useClaimApplication } from "@/hooks/use-claim-application";
+import {
+  ACTIVE_RECRUITER_ID,
+  useClaimApplication,
+} from "@/hooks/use-claim-application";
 import { useSidebar } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -73,14 +76,25 @@ export function ApplicantList({
   const { search } = useApplicantSearch();
   const { selectApplication } = useApplicantSelection();
   const { setOpen } = useSidebar();
-  const { data, isLoading, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteApplications({
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteApplications({
     ...filters,
     status: status ?? filters?.status,
     search: search || undefined,
   });
   const claimMutation = useClaimApplication();
   const applications = useMemo(
-    () => (data?.pages ?? []).flatMap((page: PaginatedApplications) => page.applications),
+    () =>
+      (data?.pages ?? []).flatMap(
+        (page: PaginatedApplications) => page.applications,
+      ),
     [data?.pages],
   );
 
@@ -95,7 +109,14 @@ export function ApplicantList({
   }
 
   if (isError) {
-    return <ErrorState message="Couldn't load applicants." onRetry={() => { void refetch(); }} />;
+    return (
+      <ErrorState
+        message="Couldn't load applicants."
+        onRetry={() => {
+          void refetch();
+        }}
+      />
+    );
   }
 
   if (applications.length === 0) {
@@ -112,8 +133,12 @@ export function ApplicantList({
       return renderCard(application);
     }
 
-    const isClaimedByActiveRecruiter = application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
-    const isClaiming = enableClaim && claimMutation.isPending && claimMutation.variables === application.applicationId;
+    const isClaimedByActiveRecruiter =
+      application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
+    const isClaiming =
+      enableClaim &&
+      claimMutation.isPending &&
+      claimMutation.variables === application.applicationId;
 
     return (
       <ApplicantCard
@@ -129,8 +154,11 @@ export function ApplicantList({
         recruiterName={getRecruiterLabel(application)}
         {...(enableClaim
           ? {
-              secondaryActionLabel: isClaimedByActiveRecruiter ? "Claimed" : "Claim for review",
-              isSecondaryActionDisabled: isClaimedByActiveRecruiter || isClaiming,
+              secondaryActionLabel: isClaimedByActiveRecruiter
+                ? "Claimed"
+                : "Claim for review",
+              isSecondaryActionDisabled:
+                isClaimedByActiveRecruiter || isClaiming,
               isSecondaryActionLoading: isClaiming,
               onSecondaryActionClick: isClaimedByActiveRecruiter
                 ? undefined
@@ -164,7 +192,8 @@ export function ApplicantList({
   );
 
   if (groupByDate) {
-    const groupedApplications = groupApplicationsByDate<CandidateApplication>(applications);
+    const groupedApplications =
+      groupApplicationsByDate<CandidateApplication>(applications);
 
     return (
       <div className="space-y-10">
@@ -194,7 +223,9 @@ export function ApplicantList({
             </section>
           );
         })}
-        {loadMoreButton && <div className="flex justify-center">{loadMoreButton}</div>}
+        {loadMoreButton && (
+          <div className="flex justify-center">{loadMoreButton}</div>
+        )}
       </div>
     );
   }
