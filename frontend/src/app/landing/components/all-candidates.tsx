@@ -73,6 +73,11 @@ function AllCandidates() {
     dateRange !== "all" && { label: `Last ${dateRange} days`, onClear: () => { setDateRange("all"); } },
   ].filter(Boolean) as ActiveFilter[];
 
+  const router = useRouter();
+  const { selectApplication } = useApplicantSelection();
+  const { setOpen } = useSidebar();
+  const claimMutation = useClaimApplication();
+
   return (
     <>
       <section className="mb-8 flex flex-col gap-6">
@@ -92,6 +97,38 @@ function AllCandidates() {
         filters={filters}
         emptyTitle="No applicants yet"
         enableClaim
+        renderCard={(application: CandidateApplication) => {
+          const isClaimedByActiveRecruiter = application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
+          const isClaiming = claimMutation.isPending && claimMutation.variables === application.applicationId;
+
+          return (
+            <AllCandidateCard
+              key={application.applicationId}
+              name={application.candidateName}
+              institute={application.cvSummary}
+              systemScore={toScorePercent(application.hiringAgentTotalScore)}
+              statusLabel={statusLabels[application.currentStatus]}
+              statusTone={statusTones[application.currentStatus]}
+              reviewedAt={formatDate(application.createdAt)}
+              showReviewedAt
+              createdAt={application.createdAt}
+              recruiterName={getRecruiterLabel(application)}
+              secondaryActionLabel={isClaimedByActiveRecruiter ? "Claimed" : "Claim for review"}
+              isSecondaryActionDisabled={isClaimedByActiveRecruiter || isClaiming}
+              isSecondaryActionLoading={isClaiming}
+              onSecondaryActionClick={isClaimedByActiveRecruiter ? undefined : () => {
+                claimMutation.mutate(application.applicationId);
+              }}
+              onClick={() => {
+                router.push(`/applicants/${application.applicationId}`);
+              }}
+              onActionClick={() => {
+                selectApplication(application.applicationId);
+                setOpen(true);
+              }}
+            />
+          );
+        }}
       />
     </>
   );

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 type StatusTone = "positive" | "warning" | "negative" | "neutral";
 
-type ApplicantCardProps = {
+type AllCandidateCardProps = {
   name: string;
   institute: string;
   academicAverage?: number;
@@ -59,13 +59,19 @@ const statusStyles = {
   { border: string; text: string; background: string }
 >;
 
-function ScoreTag({ score }: { score: number }) {
+function ScoreTag({
+  score,
+  isDefault = true,
+}: {
+  score: number;
+  isDefault?: boolean;
+}) {
   return (
     <div className="flex min-w-12 justify-center">
       <span
         className={cn(
           "text-xl font-black leading-none tabular-nums",
-          getScoreColor(score),
+          !isDefault ? getScoreColor(score) : undefined,
         )}
       >
         {score}%
@@ -96,7 +102,7 @@ function getDaysAgo(dateString: string): number | null {
   return Math.max(0, Math.floor(difference / millisecondsPerDay));
 }
 
-export default function ApplicantCard({
+export default function AllCandidateCard({
   name,
   institute,
   academicAverage,
@@ -106,8 +112,8 @@ export default function ApplicantCard({
   statusTone,
   showInstitute = true,
   reviewedAt,
-  createdAt,
   showReviewedAt = true,
+  createdAt,
   recruiterLabel,
   recruiterName,
   actionLabel = "Show AI Summary",
@@ -117,13 +123,7 @@ export default function ApplicantCard({
   onSecondaryActionClick,
   isSecondaryActionDisabled = false,
   isSecondaryActionLoading = false,
-}: ApplicantCardProps) {
-  const initials = name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+}: AllCandidateCardProps) {
   const currentStatusTone = statusTone ?? "positive";
   const statusStyle = statusStyles[currentStatusTone];
   const daysAgo = createdAt ? getDaysAgo(createdAt) : null;
@@ -141,36 +141,43 @@ export default function ApplicantCard({
         }
       }}
       className={cn(
-        "group relative flex cursor-pointer rounded-xl border bg-card p-4 transition-all hover:-translate-y-px",
-        "flex-col gap-4 sm:flex-row sm:items-center sm:gap-3",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-        statusStyle.border,
+        "group relative flex cursor-pointer items-center gap-0 rounded-xl border bg-card p-4 w-full",
       )}
     >
-      <div className="flex w-full min-w-0 flex-1 items-center gap-3 sm:w-auto">
-        <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
-          {initials}
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <h4 className="font-semibold leading-tight text-foreground">{name}</h4>
-          {showInstitute && (
-            <p className="mt-0.5 truncate text-xs text-muted-foreground">
-              {institute}
-            </p>
+      <div className="flex w-20 shrink-0 flex-col items-center justify-center gap-0.5">
+        <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+          Status
+        </span>
+        <span
+          className={cn(
+            "max-w-full rounded-full px-2 py-1 text-xs font-semibold",
+            "inline-flex items-center justify-between text-center leading-tight whitespace-normal",
+            statusStyle.text,
+            statusStyle.background,
           )}
-          {recruiterName && (
-            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
-              <InfoRow label={recruiterLabel ?? "Recruiter"}>
-                {recruiterName}
-              </InfoRow>
-            </div>
-          )}
-        </div>
+        >
+          {statusLabel}
+        </span>
       </div>
 
-      <div className="flex flex-1 items-center justify-center gap-4">
-        <div className="hidden w-[10rem] shrink-0 items-center justify-center gap-2 sm:flex">
+      <div className="min-w-0 flex-initial flex flex-col pl-4">
+        <h4 className="font-semibold leading-tight text-foreground">{name}</h4>
+        {showInstitute && (
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+            {institute}
+          </p>
+        )}
+        {recruiterName && (
+          <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
+            <InfoRow label={recruiterLabel ?? "Recruiter"}>
+              {recruiterName}
+            </InfoRow>
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-1 items-center justify-center gap-4 px-4">
+        <div className="hidden shrink-0 items-center gap-1 sm:flex">
           <div className="flex w-20 flex-col items-center gap-0.5">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
               {scoreLabel}
@@ -190,23 +197,19 @@ export default function ApplicantCard({
           )}
         </div>
 
-        <div className="flex w-16 shrink-0 flex-col items-center justify-center gap-0.5">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-            Status
-          </span>
-          <span
-            className={cn(
-              "max-w-full rounded-full px-2 py-1 text-xs font-semibold",
-              statusStyle.text,
-              statusStyle.background,
-            )}
-          >
-            {statusLabel}
-          </span>
-        </div>
+        {daysAgo !== null && daysAgo >= 1 ? (
+          <div className="hidden w-20 shrink-0 flex-col items-end gap-0.5 md:flex">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+              Applied
+            </span>
+            <span className="max-w-full whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
+              {daysAgo} day(s) ago
+            </span>
+          </div>
+        ) : null}
 
-        {showReviewedAt && reviewedAt && (
-          <div className="hidden w-28 shrink-0 flex-col items-end gap-0.5 md:flex">
+        {showReviewedAt && reviewedAt ? (
+          <div className="hidden w-20 shrink-0 flex-col items-end gap-0.5 md:flex">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
               Reviewed
             </span>
@@ -214,27 +217,16 @@ export default function ApplicantCard({
               {reviewedAt}
             </span>
           </div>
-        )}
-
-        {daysAgo !== null && daysAgo >= 1 && (
-          <div className="hidden w-32 shrink-0 flex-col items-center gap-0.5 md:flex">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-              Applied
-            </span>
-            <span className="max-w-full truncate whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
-              {daysAgo} day(s) ago
-            </span>
-          </div>
-        )}
+        ) : null}
       </div>
 
-      <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:pl-2">
+      <div className="flex shrink-0 flex-col justify-end items-end gap-2">
         {secondaryActionLabel ? (
           <Button
             type="button"
             variant="secondary"
             size="sm"
-            className="w-full justify-center gap-1.5 text-xs sm:w-32"
+            className="w-30 justify-center gap-1 text-xs"
             disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
             onClick={(event) => {
               event.stopPropagation();
@@ -250,10 +242,7 @@ export default function ApplicantCard({
           type="button"
           variant="outline"
           size="sm"
-          className={cn(
-            "gap-1.5 text-xs w-full sm:w-auto",
-            secondaryActionLabel ? "sm:w-32 justify-center" : undefined,
-          )}
+          className="w-30 justify-center gap-1 text-xs bg-primary text-white"
           onClick={(event) => {
             event.stopPropagation();
             if (onActionClick) {
