@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import ApplicantCard from "@/components/applicant-card/applicant-card";
+import PendingCandidateCard from "@/components/applicant-card/pending-candidate-card";
 import type { CandidateApplication } from "@/types/candidate";
 import type { ApplicationFilters, PaginatedApplications } from "@/types/api";
 import {
@@ -140,14 +141,79 @@ export function ApplicantList({
       claimMutation.isPending &&
       claimMutation.variables === application.applicationId;
 
+    const commonProps = {
+      name: application.candidateName,
+      institute: application.cvSummary,
+      systemScore: toScorePercent(application.hiringAgentTotalScore),
+      reviewedAt: formatDate(application.createdAt),
+      showReviewedAt: showReviewedAt,
+      createdAt: application.createdAt,
+      recruiterName: getRecruiterLabel(application),
+      ...(enableClaim
+        ? {
+            secondaryActionLabel: isClaimedByActiveRecruiter
+              ? "Claimed"
+              : "Claim for review",
+            isSecondaryActionDisabled:
+              isClaimedByActiveRecruiter || isClaiming,
+            isSecondaryActionLoading: isClaiming,
+            onSecondaryActionClick: isClaimedByActiveRecruiter
+              ? undefined
+              : () => {
+                  claimMutation.mutate(application.applicationId);
+                },
+          }
+        : {}),
+      onClick: () => {
+        router.push(`/applicants/${application.applicationId}`);
+      },
+      onActionClick: () => {
+        selectApplication(application.applicationId);
+        setOpen(true);
+      },
+    };
+
+    if (application.currentStatus === "PENDING") {
+      return (
+        <PendingCandidateCard
+          key={application.applicationId}
+          name={application.candidateName}
+          institute={application.cvSummary}
+          systemScore={toScorePercent(application.hiringAgentTotalScore)}
+          academicAverage={application.academicAverage}
+          createdAt={application.createdAt}
+          {...(enableClaim
+            ? {
+                secondaryActionLabel: isClaimedByActiveRecruiter
+                  ? "Claimed"
+                  : "Claim for review",
+                isSecondaryActionDisabled:
+                  isClaimedByActiveRecruiter || isClaiming,
+                isSecondaryActionLoading: isClaiming,
+                onSecondaryActionClick: isClaimedByActiveRecruiter
+                  ? undefined
+                  : () => {
+                      claimMutation.mutate(application.applicationId);
+                    },
+              }
+            : {})}
+          onClick={() => {
+            router.push(`/applicants/${application.applicationId}`);
+          }}
+          onActionClick={() => {
+            selectApplication(application.applicationId);
+            setOpen(true);
+          }}
+        />
+      );
+    }
+
     return (
       <ApplicantCard
         key={application.applicationId}
-        name={application.candidateName}
-        institute={application.cvSummary}
-        systemScore={toScorePercent(application.hiringAgentTotalScore)}
         statusLabel={statusLabels[application.currentStatus]}
         statusTone={statusTones[application.currentStatus]}
+        {...commonProps}
         reviewedAt={formatDate(application.createdAt)}
         showReviewedAt={showReviewedAt}
         createdAt={application.createdAt}

@@ -183,47 +183,50 @@ export default function AllCandidateCard({
         )}
       </div>
 
-      <div className="flex flex-1 items-center justify-center gap-4 px-2">
-        <div className="hidden shrink-0 items-center gap-1 sm:flex">
-          <div className="flex w-20 flex-col items-center gap-0.5">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-              {scoreLabel}
-            </span>
-            <ScoreTag score={systemScore} />
-          </div>
-          {academicAverage !== undefined && (
-            <>
-              <div className="flex w-20 flex-col items-center gap-0.5">
-                <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-                  Acad. Avg
-                </span>
-                <ScoreTag score={academicAverage} />
-              </div>
-            </>
+      <div className="flex flex-1 items-center justify-center gap-6 px-2">
+        <div className="hidden w-20 shrink-0 flex-col items-center gap-0.5 sm:flex">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+            {scoreLabel}
+          </span>
+          <ScoreTag score={systemScore} />
+        </div>
+
+        <div className="hidden w-20 shrink-0 flex-col items-center gap-0.5 sm:flex">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+            Acad. Avg
+          </span>
+          {academicAverage !== undefined ? (
+            <ScoreTag score={academicAverage} />
+          ) : (
+            <span className="text-sm font-semibold text-muted-foreground">–</span>
           )}
         </div>
 
-        {daysAgo !== null && daysAgo >= 1 ? (
-          <div className="hidden w-20 shrink-0 flex-col items-end gap-0.5 md:flex">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-              Applied
-            </span>
-            <span className="max-w-full whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
+        <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 md:flex">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+            Applied
+          </span>
+          {daysAgo !== null && daysAgo >= 1 ? (
+            <span className="max-w-full whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
               {daysAgo} day(s) ago
             </span>
-          </div>
-        ) : null}
+          ) : (
+            <span className="text-sm font-semibold text-muted-foreground">–</span>
+          )}
+        </div>
 
-        {showReviewedAt && reviewedAt ? (
-          <div className="hidden w-20 shrink-0 flex-col items-end gap-0.5 md:flex">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-              Reviewed
-            </span>
-            <span className="max-w-full truncate whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
+        <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 md:flex">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+            Reviewed
+          </span>
+          {showReviewedAt && reviewedAt ? (
+            <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
               {reviewedAt}
             </span>
-          </div>
-        ) : null}
+          ) : (
+            <span className="text-sm font-semibold text-muted-foreground">–</span>
+          )}
+        </div>
       </div>
 
       <div className="flex shrink-0 flex-col justify-end items-end gap-2">
