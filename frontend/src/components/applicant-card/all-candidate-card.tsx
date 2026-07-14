@@ -7,12 +7,17 @@ type StatusTone = "positive" | "warning" | "negative" | "neutral";
 
 type AllCandidateCardProps = {
   name: string;
-  institute: string;
+  institute?: string;
+  subtitle?: string;
   academicAverage?: number;
   systemScore: number;
   scoreLabel?: string;
+  scoreClassName?: string;
   statusLabel?: string;
   statusTone?: StatusTone;
+  tierLabel?: string;
+  tierTone?: StatusTone;
+  layout?: "default" | "history";
   showInstitute?: boolean;
   reviewedAt?: string;
   showReviewedAt?: boolean;
@@ -63,15 +68,18 @@ const statusStyles = {
 function ScoreTag({
   score,
   isDefault = true,
+  className,
 }: {
   score: number;
   isDefault?: boolean;
+  className?: string;
 }) {
   return (
     <div className="flex min-w-12 justify-center">
       <span
         className={cn(
-          "text-xl font-black leading-none tabular-nums",
+          "text-xl leading-none tabular-nums",
+          className ?? "font-black",
           !isDefault ? getScoreColor(score) : undefined,
         )}
       >
@@ -106,11 +114,16 @@ function getDaysAgo(dateString: string): number | null {
 export default function AllCandidateCard({
   name,
   institute,
+  subtitle,
   academicAverage,
   systemScore,
   scoreLabel = "System Score",
+  scoreClassName,
   statusLabel = "Pending",
   statusTone,
+  tierLabel,
+  tierTone,
+  layout = "default",
   showInstitute = true,
   reviewedAt,
   showReviewedAt = true,
@@ -133,7 +146,11 @@ export default function AllCandidateCard({
     .toUpperCase();
   const currentStatusTone = statusTone ?? "positive";
   const statusStyle = statusStyles[currentStatusTone];
+  const currentTierTone = tierTone ?? "neutral";
+  const tierStyle = statusStyles[currentTierTone];
   const daysAgo = createdAt ? getDaysAgo(createdAt) : null;
+  const displaySubtitle = subtitle ?? institute;
+  const displayTier = tierLabel;
 
   return (
     <div
@@ -167,28 +184,66 @@ export default function AllCandidateCard({
         </span>
       </div>
 
-      <div className="flex w-80 flex-col pl-4">
-        <h4 className="font-semibold leading-tight text-foreground">{name}</h4>
-        {showInstitute && (
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            {institute}
-          </p>
-        )}
-        {recruiterName && (
-          <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
-            <InfoRow label={recruiterLabel ?? "Recruiter"}>
-              {recruiterName}
-            </InfoRow>
+      {layout === "history" ? (
+        <>
+          <div className="flex w-20 shrink-0 flex-col items-center justify-center gap-0.5">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+              Tier
+            </span>
+            <span
+              className={cn(
+                "max-w-full rounded-full px-2 py-1 text-xs font-semibold",
+                "inline-flex items-center justify-between text-center leading-tight whitespace-normal",
+                tierStyle.text,
+                tierStyle.background,
+              )}
+            >
+              {displayTier ?? "Unknown"}
+            </span>
           </div>
-        )}
-      </div>
+
+          <div className="min-w-0 flex-1 flex flex-col pl-4">
+            <h4 className="break-words font-semibold leading-tight text-foreground">
+              {name}
+            </h4>
+            {showInstitute && displaySubtitle && (
+              <p className="mt-0.5 break-words text-xs text-muted-foreground">
+                {displaySubtitle}
+              </p>
+            )}
+            {recruiterName && (
+              <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
+                <InfoRow label={recruiterLabel ?? "Recruiter"}>
+                  {recruiterName}
+                </InfoRow>
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="min-w-0 flex-1 flex flex-col pl-4">
+          <h4 className="font-semibold leading-tight text-foreground">{name}</h4>
+          {showInstitute && (
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              {displaySubtitle}
+            </p>
+          )}
+          {recruiterName && (
+            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
+              <InfoRow label={recruiterLabel ?? "Recruiter"}>
+                {recruiterName}
+              </InfoRow>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex flex-1 items-center justify-center gap-6 px-2">
         <div className="hidden w-20 shrink-0 flex-col items-center gap-0.5 sm:flex">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
             {scoreLabel}
           </span>
-          <ScoreTag score={systemScore} />
+          <ScoreTag score={systemScore} className={scoreClassName} />
         </div>
 
         <div className="hidden w-20 shrink-0 flex-col items-center gap-0.5 sm:flex">
@@ -196,7 +251,7 @@ export default function AllCandidateCard({
             Acad. Avg
           </span>
           {academicAverage !== undefined ? (
-            <ScoreTag score={academicAverage} />
+            <ScoreTag score={academicAverage} className={scoreClassName} />
           ) : (
             <span className="text-sm font-semibold text-muted-foreground">–</span>
           )}

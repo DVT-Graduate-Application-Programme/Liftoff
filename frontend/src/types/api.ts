@@ -31,7 +31,11 @@ export interface EvaluationCategoryScores {
 export interface Evaluation {
   id: string;
   applicationRecordId: string;
-  institutionJson: { name: string; degreeName: string } | null;
+  institutionJson: {
+    name: string;
+    degreeName: string;
+    academic_average?: number;
+  } | null;
   categoryScoresJson: EvaluationCategoryScores;
   evidenceJson: Record<string, string> | null;
   bonusPointsJson: { total: number; breakdown: string } | null;

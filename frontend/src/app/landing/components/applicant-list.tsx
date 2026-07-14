@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import { useMemo, type ReactElement, type ReactNode } from "react";
 import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
 import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
 import { useInfiniteApplications } from "@/hooks/use-infinite-applications";
@@ -35,7 +35,8 @@ interface ApplicantListProps {
   showReviewedAt?: boolean;
   enableClaim?: boolean;
   groupByDate?: boolean;
-  renderCard?: (application: CandidateApplication) => React.ReactElement;
+  renderItem?: (application: CandidateApplication) => ReactNode;
+  renderCard?: (application: CandidateApplication) => ReactElement;
 }
 
 const DATE_BUCKET_SECTIONS = [
@@ -73,6 +74,7 @@ export function ApplicantList({
   showReviewedAt = true,
   enableClaim = false,
   groupByDate = false,
+  renderItem,
   renderCard,
 }: ApplicantListProps) {
   const { search } = useApplicantSearch();
@@ -133,6 +135,10 @@ export function ApplicantList({
   const renderCardItem = (application: CandidateApplication) => {
     if (renderCard) {
       return renderCard(application);
+    }
+
+    if (renderItem) {
+      return <div key={application.applicationId}>{renderItem(application)}</div>;
     }
 
     const isClaimedByActiveRecruiter =

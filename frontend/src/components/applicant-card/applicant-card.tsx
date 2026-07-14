@@ -7,14 +7,19 @@ type StatusTone = "positive" | "warning" | "negative" | "neutral";
 type ApplicantCardProps = {
   name: string;
   institute: string;
+  secondaryInstitute?: string;
   academicAverage?: number;
   systemScore: number;
   scoreLabel?: string;
+  secondaryScoreLabel?: string;
   statusLabel?: string;
   statusTone?: StatusTone;
+  showStatus?: boolean;
   showInstitute?: boolean;
+  wrapInstitute?: boolean;
   reviewedAt?: string;
   showReviewedAt?: boolean;
+  wrapReviewedAt?: boolean;
   createdAt?: string;
   recruiterLabel?: string;
   recruiterName?: string;
@@ -64,7 +69,7 @@ function ScoreTag({ score }: { score: number }) {
     <div className="flex min-w-12 justify-center">
       <span
         className={cn(
-          "text-xl font-black leading-none tabular-nums",
+          "text-lg font-semibold leading-none tabular-nums",
           getScoreColor(score),
         )}
       >
@@ -99,15 +104,20 @@ function getDaysAgo(dateString: string): number | null {
 export default function ApplicantCard({
   name,
   institute,
+  secondaryInstitute,
   academicAverage,
   systemScore,
   scoreLabel = "System Score",
+  secondaryScoreLabel = "Acad. Avg",
   statusLabel = "Pending",
   statusTone,
+  showStatus = true,
   showInstitute = true,
+  wrapInstitute = false,
   reviewedAt,
   createdAt,
   showReviewedAt = true,
+  wrapReviewedAt = false,
   recruiterLabel,
   recruiterName,
   actionLabel = "Show AI Summary",
@@ -153,11 +163,25 @@ export default function ApplicantCard({
         </div>
 
         <div className="min-w-0 flex-1">
-          <h4 className="font-semibold leading-tight text-foreground">{name}</h4>
+          <h4 className="text-base font-semibold leading-tight text-foreground">
+            {name}
+          </h4>
           {showInstitute && (
-            <p className="mt-0.5 truncate text-xs text-muted-foreground">
-              {institute}
-            </p>
+            <div className="mt-1 flex flex-col gap-0.5 text-xs text-muted-foreground">
+              <p className={cn(wrapInstitute ? "whitespace-normal break-words" : "truncate")}>
+                {institute}
+              </p>
+              {secondaryInstitute && (
+                <p
+                  className={cn(
+                    "text-muted-foreground/80",
+                    wrapInstitute ? "whitespace-normal break-words" : "truncate",
+                  )}
+                >
+                  {secondaryInstitute}
+                </p>
+              )}
+            </div>
           )}
           {recruiterName && (
             <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
@@ -169,70 +193,74 @@ export default function ApplicantCard({
         </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-center gap-6">
-        {/* Column 1: System Score */}
-        <div className="hidden w-20 shrink-0 flex-col items-center gap-0.5 sm:flex">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-            {scoreLabel}
-          </span>
-          <ScoreTag score={systemScore} />
-        </div>
-
-        {/* Column 2: Acad. Avg */}
-        <div className="hidden w-20 shrink-0 flex-col items-center gap-0.5 sm:flex">
-          {academicAverage !== undefined ? (
+      <div className="flex flex-col gap-3 sm:flex-1 sm:flex-row sm:items-center sm:justify-center sm:gap-4">
+        <div className="hidden w-[12rem] shrink-0 items-center justify-center gap-3 sm:flex">
+          <div className="flex w-24 flex-col items-center gap-0.5">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+              {scoreLabel}
+            </span>
+            <ScoreTag score={systemScore} />
+          </div>
+          {academicAverage !== undefined && (
             <>
-              <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-                Acad. Avg
-              </span>
-              <ScoreTag score={academicAverage} />
+              <div className="h-10 w-px bg-border" />
+              <div className="flex w-24 flex-col items-center gap-0.5">
+                <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+                  {secondaryScoreLabel}
+                </span>
+                <ScoreTag score={academicAverage} />
+              </div>
             </>
-          ) : null}
+          )}
         </div>
 
-        {/* Column 3: Status */}
-        <div className="flex w-20 shrink-0 flex-col items-center justify-center gap-0.5">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-            Status
-          </span>
-          <span
-            className={cn(
-              "max-w-full rounded-full px-2 py-1 text-xs font-semibold text-center",
-              statusStyle.text,
-              statusStyle.background,
-            )}
-          >
-            {statusLabel}
-          </span>
-        </div>
+        {showStatus && (
+          <div className="flex shrink-0 flex-col items-start gap-0.5 sm:ml-0 sm:w-16 sm:items-center sm:justify-center md:ml-1">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+              Status
+            </span>
+            <span
+              className={cn(
+                "max-w-full rounded-full px-2 py-1 text-xs font-semibold text-center",
+                statusStyle.text,
+                statusStyle.background,
+              )}
+            >
+              {statusLabel}
+            </span>
+          </div>
+        )}
 
-        {/* Column 4: Reviewed */}
-        <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 md:flex">
-          {showReviewedAt && reviewedAt ? (
-            <>
-              <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-                Reviewed
-              </span>
-              <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
-                {reviewedAt}
-              </span>
-            </>
-          ) : null}
-        </div>
-
-        {/* Column 5: Applied */}
-        <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 md:flex">
-          {daysAgo !== null && daysAgo >= 1 ? (
-            <>
-              <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-                Applied
-              </span>
-              <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
-                {daysAgo} day(s) ago
-              </span>
-            </>
-          ) : null}
-        </div>
+        {showReviewedAt && reviewedAt && (
+          <div className="hidden w-28 shrink-0 flex-col items-end gap-0.5 pl-2 md:flex">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+              Reviewed
+            </span>
+            <span
+              className={cn(
+                "max-w-full text-right text-xs font-medium tabular-nums text-foreground",
+                wrapReviewedAt ? "whitespace-normal break-words" : "truncate whitespace-nowrap",
+              )}
+            >
+              {reviewedAt}
+            </span>
+          </div>
+        )}
+        {daysAgo !== null && daysAgo >= 1 && (
+          <div className="hidden w-32 shrink-0 flex-col items-center gap-0.5 pl-2 md:flex">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+              Applied
+            </span>
+            <span
+              className={cn(
+                "max-w-full text-right text-xs font-medium tabular-nums text-foreground",
+                wrapReviewedAt ? "whitespace-normal break-words" : "truncate whitespace-nowrap",
+              )}
+            >
+              {daysAgo} day(s) ago
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:pl-2">
