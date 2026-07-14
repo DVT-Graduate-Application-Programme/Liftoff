@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 type StatusTone = "positive" | "warning" | "negative" | "neutral";
 
-type ApplicantCardProps = {
+type AllCandidateCardProps = {
   name: string;
   institute: string;
   academicAverage?: number;
@@ -54,15 +54,24 @@ const statusStyles = {
     text: "text-muted-foreground",
     background: "bg-muted",
   },
-} satisfies Record<StatusTone, { border: string; text: string; background: string }>;
+} satisfies Record<
+  StatusTone,
+  { border: string; text: string; background: string }
+>;
 
-function ScoreTag({ score }: { score: number }) {
+function ScoreTag({
+  score,
+  isDefault = true,
+}: {
+  score: number;
+  isDefault?: boolean;
+}) {
   return (
     <div className="flex min-w-12 justify-center">
       <span
         className={cn(
           "text-xl font-black leading-none tabular-nums",
-          getScoreColor(score),
+          !isDefault ? getScoreColor(score) : undefined,
         )}
       >
         {score}%
@@ -93,7 +102,7 @@ function getDaysAgo(dateString: string): number | null {
   return Math.max(0, Math.floor(difference / millisecondsPerDay));
 }
 
-export default function ApplicantCard({
+export default function AllCandidateCard({
   name,
   institute,
   academicAverage,
@@ -103,8 +112,8 @@ export default function ApplicantCard({
   statusTone,
   showInstitute = true,
   reviewedAt,
-  createdAt,
   showReviewedAt = true,
+  createdAt,
   recruiterLabel,
   recruiterName,
   actionLabel = "Show AI Summary",
@@ -114,7 +123,7 @@ export default function ApplicantCard({
   onSecondaryActionClick,
   isSecondaryActionDisabled = false,
   isSecondaryActionLoading = false,
-}: ApplicantCardProps) {
+}: AllCandidateCardProps) {
   const initials = name
     .split(" ")
     .map((part) => part[0])
@@ -138,14 +147,30 @@ export default function ApplicantCard({
         }
       }}
       className={cn(
-        "group relative flex cursor-pointer items-center gap-3 rounded-xl border bg-card p-4",
-        "border-l-4 border-border transition-all hover:-translate-y-px",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-        statusStyle.border,
+        "group relative flex cursor-pointer items-center gap-2 rounded-xl border bg-card p-4 pr-44",
+        // "border-l-4 border-border transition-all hover:-translate-y-px",
+        // "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+        // statusStyle.border,
       )}
     >
-      <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
+      {/* <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
         {initials}
+      </div> */}
+
+      <div className="flex w-20 shrink-0 flex-col items-center justify-center gap-0.5 sm:ml-0">
+        <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+          Status
+        </span>
+        <span
+          className={cn(
+            "max-w-full rounded-full px-2 py-1 text-xs font-semibold",
+            "inline-flex items-center justify-between text-center leading-tight whitespace-normal",
+            statusStyle.text,
+            statusStyle.background,
+          )}
+        >
+          {statusLabel}
+        </span>
       </div>
 
       <div className="min-w-0 flex-1">
@@ -164,14 +189,14 @@ export default function ApplicantCard({
         )}
       </div>
 
-      <div className="hidden w-[10rem] shrink-0 items-center justify-center gap-2 sm:flex">
+      <div className="hidden shrink-0 items-center gap-1 sm:flex">
         <div className="flex w-20 flex-col items-center gap-0.5">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
             {scoreLabel}
           </span>
           <ScoreTag score={systemScore} />
         </div>
-        {academicAverage !== undefined && (
+        {academicAverage !== undefined ? (
           <>
             <div className="h-10 w-px bg-border" />
             <div className="flex w-20 flex-col items-center gap-0.5">
@@ -181,26 +206,20 @@ export default function ApplicantCard({
               <ScoreTag score={academicAverage} />
             </div>
           </>
-        )}
+        ) : null}
       </div>
-
-      <div className="flex w-16 shrink-0 flex-col items-center justify-center gap-0.5 sm:ml-0 md:ml-1">
+      {/* 
+      <div className="flex w-20 shrink-0 flex-col items-center justify-center gap-0.5 sm:ml-0">
         <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
           Status
         </span>
-        <span
-          className={cn(
-            "max-w-full rounded-full px-2 py-1 text-xs font-semibold",
-            statusStyle.text,
-            statusStyle.background,
-          )}
-        >
+        <span className={cn("max-w-full text-xs font-semibold", statusStyle.text)}>
           {statusLabel}
         </span>
-      </div>
+      </div> */}
 
-      {showReviewedAt && reviewedAt && (
-        <div className="hidden w-28 shrink-0 flex-col items-end gap-0.5 pl-2 md:flex">
+      {showReviewedAt && reviewedAt ? (
+        <div className="hidden w-20 shrink-0 flex-col items-end gap-0.5 pl-1 md:flex">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
             Reviewed
           </span>
@@ -208,10 +227,10 @@ export default function ApplicantCard({
             {reviewedAt}
           </span>
         </div>
-      )}
+      ) : null}
 
-      {daysAgo !== null && daysAgo >= 1 && (
-        <div className="hidden w-32 shrink-0 flex-col items-center gap-0.5 pl-2 md:flex">
+      {daysAgo !== null && daysAgo >= 1 ? (
+        <div className="hidden w-20 shrink-0 flex-col items-center gap-0.5 pl-1 md:flex">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
             Applied
           </span>
@@ -219,15 +238,15 @@ export default function ApplicantCard({
             {daysAgo} day(s) ago
           </span>
         </div>
-      )}
+      ) : null}
 
-      <div className="flex shrink-0 items-center gap-2 pl-2">
+      <div className="absolute right-4 top-4 flex w-28 flex-col items-end gap-2">
         {secondaryActionLabel ? (
           <Button
             type="button"
             variant="secondary"
             size="sm"
-            className="w-32 justify-center gap-1.5 text-xs"
+            className="w-28 justify-center gap-1 text-xs"
             disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
             onClick={(event) => {
               event.stopPropagation();
@@ -243,10 +262,7 @@ export default function ApplicantCard({
           type="button"
           variant="outline"
           size="sm"
-          className={cn(
-            "gap-1.5 text-xs",
-            secondaryActionLabel ? "w-32 justify-center" : undefined,
-          )}
+          className="w-28 justify-center gap-1 text-xs"
           onClick={(event) => {
             event.stopPropagation();
             if (onActionClick) {
