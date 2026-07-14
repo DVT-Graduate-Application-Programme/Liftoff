@@ -54,7 +54,10 @@ const statusStyles = {
     text: "text-muted-foreground",
     background: "bg-muted",
   },
-} satisfies Record<StatusTone, { border: string; text: string; background: string }>;
+} satisfies Record<
+  StatusTone,
+  { border: string; text: string; background: string }
+>;
 
 function ScoreTag({ score }: { score: number }) {
   return (
@@ -164,64 +167,66 @@ export default function ApplicantCard({
         )}
       </div>
 
-      <div className="hidden w-[10rem] shrink-0 items-center justify-center gap-2 sm:flex">
-        <div className="flex w-20 flex-col items-center gap-0.5">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-            {scoreLabel}
-          </span>
-          <ScoreTag score={systemScore} />
+      <div className="flex flex-1 items-center justify-center gap-4">
+        <div className="hidden w-[10rem] shrink-0 items-center justify-center gap-2 sm:flex">
+          <div className="flex w-20 flex-col items-center gap-0.5">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+              {scoreLabel}
+            </span>
+            <ScoreTag score={systemScore} />
+          </div>
+          {academicAverage !== undefined && (
+            <>
+              <div className="h-10 w-px bg-border" />
+              <div className="flex w-20 flex-col items-center gap-0.5">
+                <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+                  Acad. Avg
+                </span>
+                <ScoreTag score={academicAverage} />
+              </div>
+            </>
+          )}
         </div>
-        {academicAverage !== undefined && (
-          <>
-            <div className="h-10 w-px bg-border" />
-            <div className="flex w-20 flex-col items-center gap-0.5">
-              <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-                Acad. Avg
-              </span>
-              <ScoreTag score={academicAverage} />
-            </div>
-          </>
+
+        <div className="flex w-16 shrink-0 flex-col items-center justify-center gap-0.5">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+            Status
+          </span>
+          <span
+            className={cn(
+              "max-w-full rounded-full px-2 py-1 text-xs font-semibold",
+              statusStyle.text,
+              statusStyle.background,
+            )}
+          >
+            {statusLabel}
+          </span>
+        </div>
+
+        {showReviewedAt && reviewedAt && (
+          <div className="hidden w-28 shrink-0 flex-col items-end gap-0.5 md:flex">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+              Reviewed
+            </span>
+            <span className="max-w-full truncate whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
+              {reviewedAt}
+            </span>
+          </div>
+        )}
+
+        {daysAgo !== null && daysAgo >= 1 && (
+          <div className="hidden w-32 shrink-0 flex-col items-center gap-0.5 md:flex">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+              Applied
+            </span>
+            <span className="max-w-full truncate whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
+              {daysAgo} day(s) ago
+            </span>
+          </div>
         )}
       </div>
 
-      <div className="flex w-16 shrink-0 flex-col items-center justify-center gap-0.5 sm:ml-0 md:ml-1">
-        <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-          Status
-        </span>
-        <span
-          className={cn(
-            "max-w-full rounded-full px-2 py-1 text-xs font-semibold",
-            statusStyle.text,
-            statusStyle.background,
-          )}
-        >
-          {statusLabel}
-        </span>
-      </div>
-
-      {showReviewedAt && reviewedAt && (
-        <div className="hidden w-28 shrink-0 flex-col items-end gap-0.5 pl-2 md:flex">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-            Reviewed
-          </span>
-          <span className="max-w-full truncate whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
-            {reviewedAt}
-          </span>
-        </div>
-      )}
-
-      {daysAgo !== null && daysAgo >= 1 && (
-        <div className="hidden w-32 shrink-0 flex-col items-center gap-0.5 pl-2 md:flex">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-            Applied
-          </span>
-          <span className="max-w-full truncate whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
-            {daysAgo} day(s) ago
-          </span>
-        </div>
-      )}
-
-      <div className="flex shrink-0 items-center gap-2 pl-2">
+      <div className="flex shrink-0 items-center gap-2">
         {secondaryActionLabel ? (
           <Button
             type="button"
