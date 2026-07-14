@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ApplicantList } from "./applicant-list";
 import { FilterBar, type ActiveFilter, type FilterFieldConfig, type SortOption } from "./filter-bar";
 import type { CandidateApplication } from "@/types/candidate";
-import { formatDate, statusLabels, statusTones } from "./candidate-list-utils";
+import { formatDate } from "./candidate-list-utils";
 
 type Filters = Omit<ApplicationFilters, "status" | "search" | "limit" | "cursor">;
 
@@ -52,8 +52,7 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
       systemScore={Math.round(application.hiringAgentTotalScore)}
       scoreLabel="System Score"
       secondaryScoreLabel="Academic Avg"
-      statusLabel={statusLabels[applicationDetail.currentStatus as keyof typeof statusLabels]}
-      statusTone={statusTones[applicationDetail.currentStatus as keyof typeof statusTones]}
+      showStatus={false}
       showReviewedAt
       reviewedAt={formatDate(reviewedAt)}
       createdAt={application.createdAt}

@@ -14,6 +14,7 @@ type ApplicantCardProps = {
   secondaryScoreLabel?: string;
   statusLabel?: string;
   statusTone?: StatusTone;
+  showStatus?: boolean;
   showInstitute?: boolean;
   wrapInstitute?: boolean;
   reviewedAt?: string;
@@ -110,6 +111,7 @@ export default function ApplicantCard({
   secondaryScoreLabel = "Acad. Avg",
   statusLabel = "Pending",
   statusTone,
+  showStatus = true,
   showInstitute = true,
   wrapInstitute = false,
   reviewedAt,
@@ -212,20 +214,22 @@ export default function ApplicantCard({
           )}
         </div>
 
-        <div className="flex shrink-0 flex-col items-start gap-0.5 sm:ml-0 sm:w-16 sm:items-center sm:justify-center md:ml-1">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-            Status
-          </span>
-          <span
-            className={cn(
-              "max-w-full rounded-full px-2 py-1 text-xs font-semibold text-center",
-              statusStyle.text,
-              statusStyle.background,
-            )}
-          >
-            {statusLabel}
-          </span>
-        </div>
+        {showStatus && (
+          <div className="flex shrink-0 flex-col items-start gap-0.5 sm:ml-0 sm:w-16 sm:items-center sm:justify-center md:ml-1">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+              Status
+            </span>
+            <span
+              className={cn(
+                "max-w-full rounded-full px-2 py-1 text-xs font-semibold text-center",
+                statusStyle.text,
+                statusStyle.background,
+              )}
+            >
+              {statusLabel}
+            </span>
+          </div>
+        )}
 
         {showReviewedAt && reviewedAt && (
           <div className="hidden w-28 shrink-0 flex-col items-end gap-0.5 pl-2 md:flex">
