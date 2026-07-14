@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
 import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
@@ -32,6 +32,7 @@ interface ApplicantListProps {
   groupByDate?: boolean;
   filterApplications?: (applications: CandidateApplication[]) => CandidateApplication[];
   sortApplications?: (applications: CandidateApplication[]) => CandidateApplication[];
+  renderCard?: (application: CandidateApplication) => ReactNode;
 }
 
 const DATE_BUCKET_SECTIONS = [
@@ -70,6 +71,7 @@ export function ApplicantList({
   groupByDate = false,
   filterApplications,
   sortApplications,
+  renderCard,
 }: ApplicantListProps) {
   const router = useRouter();
   const { search } = useApplicantSearch();
@@ -112,7 +114,11 @@ export function ApplicantList({
     );
   }
 
-  const renderCard = (application: CandidateApplication) => {
+  const renderCardItem = (application: CandidateApplication) => {
+    if (renderCard) {
+      return renderCard(application);
+    }
+
     const isClaimedByActiveRecruiter = application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
     const isClaiming = enableClaim && claimMutation.isPending && claimMutation.variables === application.applicationId;
 
@@ -185,7 +191,7 @@ export function ApplicantList({
               </div>
               <div className="grid grid-cols-1 gap-4">
                 {bucketApplications.length > 0 ? (
-                  bucketApplications.map(renderCard)
+                  bucketApplications.map(renderCardItem)
                 ) : (
                   <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
                     {emptyText}
@@ -202,7 +208,7 @@ export function ApplicantList({
 
   return (
     <div className="flex flex-col gap-3">
-      {applications.map(renderCard)}
+      {applications.map(renderCardItem)}
       {loadMoreButton}
     </div>
   );

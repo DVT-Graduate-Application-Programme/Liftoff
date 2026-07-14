@@ -1,10 +1,24 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { ChevronDown, ListFilter, ListOrdered, X } from "lucide-react";
 import type { ApplicationFilters } from "@/types/api";
-import { cn } from "@/lib/utils";
+import type { CandidateApplication } from "@/types/candidate";
 import { ApplicantList } from "./applicant-list";
+import AllCandidateCard from "@/components/applicant-card/all-candidate-card";
+import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
+import { useSidebar } from "@/components/ui/sidebar";
+import { ACTIVE_RECRUITER_ID, useClaimApplication } from "@/hooks/use-claim-application";
+import {
+  formatDate,
+  getRecruiterLabel,
+  statusLabels,
+  statusTones,
+  toScorePercent,
+} from "./candidate-list-utils";
+
+import { cn } from "@/lib/utils";
 
 type Filters = Omit<ApplicationFilters, "search" | "limit" | "cursor">;
 
@@ -101,6 +115,11 @@ function AllCandidates() {
       },
     },
   ].filter(Boolean) as { label: string; clear: () => void }[];
+
+  const router = useRouter();
+  const { selectApplication } = useApplicantSelection();
+  const { setOpen } = useSidebar();
+  const claimMutation = useClaimApplication();
 
   return (
     <>
@@ -263,6 +282,38 @@ function AllCandidates() {
         filters={filters}
         emptyTitle="No applicants yet"
         enableClaim
+        renderCard={(application: CandidateApplication) => {
+          const isClaimedByActiveRecruiter = application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
+          const isClaiming = claimMutation.isPending && claimMutation.variables === application.applicationId;
+
+          return (
+            <AllCandidateCard
+              key={application.applicationId}
+              name={application.candidateName}
+              institute={application.cvSummary}
+              systemScore={toScorePercent(application.hiringAgentTotalScore)}
+              statusLabel={statusLabels[application.currentStatus]}
+              statusTone={statusTones[application.currentStatus]}
+              reviewedAt={formatDate(application.createdAt)}
+              showReviewedAt
+              createdAt={application.createdAt}
+              recruiterName={getRecruiterLabel(application)}
+              secondaryActionLabel={isClaimedByActiveRecruiter ? "Claimed" : "Claim for review"}
+              isSecondaryActionDisabled={isClaimedByActiveRecruiter || isClaiming}
+              isSecondaryActionLoading={isClaiming}
+              onSecondaryActionClick={isClaimedByActiveRecruiter ? undefined : () => {
+                claimMutation.mutate(application.applicationId);
+              }}
+              onClick={() => {
+                router.push(`/applicants/${application.applicationId}`);
+              }}
+              onActionClick={() => {
+                selectApplication(application.applicationId);
+                setOpen(true);
+              }}
+            />
+          );
+        }}
       />
     </>
   );
