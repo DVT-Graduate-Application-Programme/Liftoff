@@ -11,6 +11,7 @@ type AllCandidateCardProps = {
   academicAverage?: number;
   systemScore: number;
   scoreLabel?: string;
+  scoreClassName?: string;
   statusLabel?: string;
   statusTone?: StatusTone;
   showInstitute?: boolean;
@@ -63,15 +64,18 @@ const statusStyles = {
 function ScoreTag({
   score,
   isDefault = true,
+  className,
 }: {
   score: number;
   isDefault?: boolean;
+  className?: string;
 }) {
   return (
     <div className="flex min-w-12 justify-center">
       <span
         className={cn(
-          "text-xl font-black leading-none tabular-nums",
+          "text-xl leading-none tabular-nums",
+          className ?? "font-black",
           !isDefault ? getScoreColor(score) : undefined,
         )}
       >
@@ -109,6 +113,7 @@ export default function AllCandidateCard({
   academicAverage,
   systemScore,
   scoreLabel = "System Score",
+  scoreClassName,
   statusLabel = "Pending",
   statusTone,
   showInstitute = true,
@@ -189,7 +194,7 @@ export default function AllCandidateCard({
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
               {scoreLabel}
             </span>
-            <ScoreTag score={systemScore} />
+            <ScoreTag score={systemScore} className={scoreClassName} />
           </div>
           {academicAverage !== undefined && (
             <>
@@ -198,7 +203,7 @@ export default function AllCandidateCard({
                 <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
                   Acad. Avg
                 </span>
-                <ScoreTag score={academicAverage} />
+                <ScoreTag score={academicAverage} className={scoreClassName} />
               </div>
             </>
           )}

@@ -220,6 +220,7 @@ function CandidateHistoryCard({
       academicAverage={academicAverage}
       systemScore={candidate.hiringAgentTotalScore}
       scoreLabel={candidate.tier || "Unknown"}
+      scoreClassName="font-semibold"
       statusLabel={candidate.currentStatus}
       statusTone={getStatusTone(candidate.currentStatus)}
       reviewedAt={new Date(candidate.createdAt).toLocaleDateString()}
