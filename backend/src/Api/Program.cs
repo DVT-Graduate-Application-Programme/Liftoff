@@ -45,7 +45,7 @@ app.MapHealthChecks("/health");
 // ── Graph / AI ingestion pipeline – not needed for POC ──
 // app.MapControllers();          // ResumeController (old local-storage route)
 app.MapIngestEndpoints();         // POST /api/applications/ingest
-// app.MapEvaluationEndpoints();  // POST /internal/evaluation      (AI agent webhook callback)
+app.MapEvaluationEndpoints();  // POST /internal/evaluation      (AI agent webhook callback)
 
 // ── POC endpoints ── active ──
 app.MapDashboardEndpoints();
