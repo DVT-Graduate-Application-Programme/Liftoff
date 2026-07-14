@@ -1,5 +1,6 @@
 import { signIn } from "@/auth"
 import { Button } from "@/components/ui/button"
+import { Logo } from "@/components/logo"
 
 export default async function LoginPage({
   searchParams,
@@ -11,7 +12,7 @@ export default async function LoginPage({
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 text-center">
-        <h1 className="text-primary font-extrabold text-3xl">DVT</h1>
+        <Logo />
 
         <h1 className="mt-6 text-xl font-semibold text-foreground">
           Recruiter dashboard

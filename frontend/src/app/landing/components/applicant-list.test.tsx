@@ -31,11 +31,13 @@ function makeApplication(overrides: Partial<Record<string, unknown>> = {}) {
   };
 }
 
-function renderList(props: { status?: string; emptyTitle: string } = { emptyTitle: "No applicants yet" }) {
+function renderList(
+  props: { status?: string; emptyTitle: string } = { emptyTitle: "No applicants yet" },
+) {
   return renderWithQueryClient(
     <ApplicantSearchProvider>
       <ApplicantSelectionProvider>
-        <ApplicantList {...props} />
+        <ApplicantList tabKey="pending" {...props} />
       </ApplicantSelectionProvider>
     </ApplicantSearchProvider>
   );
