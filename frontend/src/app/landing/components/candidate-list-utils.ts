@@ -1,6 +1,9 @@
 import type { CandidateApplication } from "@/types/candidate";
 
-export const statusLabels: Record<CandidateApplication["currentStatus"], string> = {
+export const statusLabels: Record<
+  CandidateApplication["currentStatus"],
+  string
+> = {
   PENDING: "Pending",
   evaluated: "Evaluated",
   forwarded: "Forwarded",
@@ -31,7 +34,7 @@ export const toScorePercent = (score: number) => Math.round(score);
 export const getRecruiterLabel = (application: CandidateApplication) =>
   application.shortlistedByRecruiterId ??
   application.claimedByRecruiterId ??
-  "Unassigned";
+  "phindi@dvtsoftware.com";
 
 export type DateBucket = "today" | "thisWeek" | "lastWeek" | "older";
 
