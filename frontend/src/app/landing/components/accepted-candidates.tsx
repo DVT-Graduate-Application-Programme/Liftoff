@@ -39,7 +39,8 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
   }
 
   const institution = evaluation?.institutionJson;
-  const academicAverage = evaluation?.categoryScoresJson.education.score;
+  const academicAverage =
+    institution?.academic_average ?? evaluation?.categoryScoresJson.education.score;
   const reviewedAt = ownership?.shortlistedAt ?? applicationDetail.updatedAt;
 
   return (
