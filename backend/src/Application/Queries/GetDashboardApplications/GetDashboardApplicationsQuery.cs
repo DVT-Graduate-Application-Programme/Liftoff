@@ -9,6 +9,7 @@ public class GetDashboardApplicationsQuery : IRequest<List<DashboardApplicationD
     public bool? HardGatePassed { get; set; }
     public bool? IsClaimed { get; set; }
     public bool? IsShortlisted { get; set; }
+    public string? RecruiterIdentity { get; set; }
     public DateTime? FromDate { get; set; }
     public DateTime? ToDate { get; set; }
 }

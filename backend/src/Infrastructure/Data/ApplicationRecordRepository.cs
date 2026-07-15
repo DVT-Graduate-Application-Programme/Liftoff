@@ -124,8 +124,10 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         }
 
         var now = DateTimeOffset.UtcNow;
+        var previousStatus = applicationRecord.Status;
         applicationRecord.ClaimedByRecruiterId = recruiterIdentity;
         applicationRecord.ClaimedAt = now;
+        applicationRecord.Status = "PENDING";
         applicationRecord.UpdatedAt = now;
 
         await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
@@ -133,6 +135,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             ApplicationRecordId = id,
             RecruiterIdentity = recruiterIdentity,
             ActionType = "CLAIM",
+            PreviousStatus = previousStatus,
+            NewStatus = "PENDING",
             ActionedAt = now
         }, cancellationToken);
 
@@ -220,6 +224,14 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
                 : records.Where(a => a.ShortlistedByRecruiterId == null);
         }
 
+        if (!string.IsNullOrWhiteSpace(query.RecruiterIdentity))
+        {
+            records = records.Where(a =>
+                a.ClaimedByRecruiterId == query.RecruiterIdentity ||
+                a.ShortlistedByRecruiterId == query.RecruiterIdentity ||
+                a.RatedByRecruiterId == query.RecruiterIdentity);
+        }
+
         if (query.FromDate is not null)
         {
             var fromDate = new DateTimeOffset(DateTime.SpecifyKind(query.FromDate.Value, DateTimeKind.Utc));
@@ -247,6 +259,7 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
                 a.CandidateGitHubUrl,
                 a.ClaimedByRecruiterId,
                 a.ShortlistedByRecruiterId,
+                a.RatedByRecruiterId,
                 a.RecruiterRating,
                 a.CreatedAt
             })
@@ -266,6 +279,7 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
                 CandidateGitHubUrl = a.CandidateGitHubUrl,
                 ClaimedByRecruiterId = a.ClaimedByRecruiterId,
                 ShortlistedByRecruiterId = a.ShortlistedByRecruiterId,
+                RatedByRecruiterId = a.RatedByRecruiterId,
                 RecruiterRating = a.RecruiterRating,
                 CreatedAt = a.CreatedAt.UtcDateTime
             })

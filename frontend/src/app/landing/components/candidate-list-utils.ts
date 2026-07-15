@@ -34,6 +34,7 @@ export const toScorePercent = (score: number) => Math.round(score);
 export const getRecruiterLabel = (application: CandidateApplication) =>
   application.shortlistedByRecruiterId ??
   application.claimedByRecruiterId ??
+  application.ratedByRecruiterId ??
   "phindi@dvtsoftware.com";
 
 export type DateBucket = "today" | "thisWeek" | "lastWeek" | "older";

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import type { ApplicationFilters } from "@/types/api";
 import { ApplicantList } from "./applicant-list";
 import { FilterBar, type ActiveFilter, type FilterFieldConfig, type SortOption } from "./filter-bar";
+import { ACTIVE_RECRUITER_ID } from "@/hooks/use-claim-application";
 
 const PendingCandidates = () => {
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -16,6 +17,7 @@ const PendingCandidates = () => {
 
   const filters = useMemo(() => {
     const next: Omit<ApplicationFilters, "status" | "search" | "limit" | "cursor"> = { sort };
+    next.recruiterIdentity = ACTIVE_RECRUITER_ID;
     if (tier) next.tier = tier;
     if (minScore) next.minScore = Number(minScore);
     if (hardGate !== "all") next.hardGatePassed = hardGate === "passed";

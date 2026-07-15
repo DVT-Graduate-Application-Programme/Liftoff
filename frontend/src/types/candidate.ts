@@ -19,6 +19,7 @@ export interface CandidateApplication {
   candidateGitHubUrl: string | null;
   claimedByRecruiterId: string | null;
   shortlistedByRecruiterId: string | null;
+  ratedByRecruiterId: string | null;
   createdAt: string;
   academicAverage?: number;
 }

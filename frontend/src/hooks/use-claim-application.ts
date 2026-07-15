@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api-client";
 
-export const ACTIVE_RECRUITER_ID = "rose@dvtsoftware.com";
+export const ACTIVE_RECRUITER_ID = "phindi@dvtsoftware.com";
 
 interface ClaimResponse {
   claimedByRecruiterId: string | null;
