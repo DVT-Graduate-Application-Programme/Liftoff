@@ -77,7 +77,7 @@ function AcceptedCandidates() {
   const [sort, setSort] = useState<SortOption>("score_desc");
 
   const filters = useMemo(() => {
-    const next: Filters = { sort };
+    const next: Filters = { sort, shortlisted: true };
     if (minScore) next.minScore = Number(minScore);
     if (claimed !== "all") next.claimed = claimed === "claimed";
     return next;
@@ -119,7 +119,6 @@ function AcceptedCandidates() {
         />
       </section>
       <ApplicantList
-        status="shortlisted"
         tabKey="accepted"
         filters={filters}
         emptyTitle="No accepted applicants yet"
