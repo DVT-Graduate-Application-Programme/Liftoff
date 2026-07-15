@@ -224,9 +224,12 @@ export default function AllCandidateCard({
         <div className="min-w-0 flex-1 flex flex-col pl-4">
           <h4 className="font-semibold leading-tight text-foreground">{name}</h4>
           {showInstitute && (
-            <p className="mt-0.5 truncate text-xs text-muted-foreground">
-              {displaySubtitle}
-            </p>
+            <div className="mt-0.5 flex flex-col gap-0.5 text-xs text-muted-foreground">
+              <p className="whitespace-normal break-words">{institute}</p>
+              {displaySubtitle ? (
+                <p className="whitespace-normal break-words">{displaySubtitle}</p>
+              ) : null}
+            </div>
           )}
           {recruiterName && (
             <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
