@@ -288,7 +288,10 @@ export default function HistoryPage() {
   let filteredCandidates = applications;
   
   if (filterDecision !== "All") {
-    filteredCandidates = filteredCandidates.filter((c: CandidateApplication) => c.currentStatus === filterDecision);
+    filteredCandidates = filteredCandidates.filter(
+      (c: CandidateApplication) =>
+        c.currentStatus.toLowerCase() === filterDecision.toLowerCase(),
+    );
   }
   if (filterScore !== "All") {
     filteredCandidates = filteredCandidates.filter(

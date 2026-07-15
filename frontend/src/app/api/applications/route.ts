@@ -49,8 +49,8 @@ export async function GET(req: NextRequest) {
   let results = applications;
 
   if (status) {
-    const statuses = status.split(",");
-    results = results.filter((a) => statuses.includes(a.currentStatus));
+    const statuses = status.split(",").map((s) => s.toLowerCase());
+    results = results.filter((a) => statuses.includes(a.currentStatus.toLowerCase()));
   }
   if (search) {
     const needle = search.toLowerCase();
