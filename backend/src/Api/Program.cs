@@ -35,10 +35,11 @@ var app = builder.Build();
 
 await GradRecruitmentSchemaInitializer.EnsureSchemaAsync(app.Services);
 
+if (app.Environment.IsDevelopment())
+{
     app.MapOpenApi();
     app.MapScalarApiReference();
-
-
+}
 
 app.MapHealthChecks("/health");
 
