@@ -221,9 +221,30 @@ public static class ApplicationEndpoints
         .WithName("ReevaluateApplication");
 
         // GET /api/applications/{id}/cv
-        // Serves the seeded PDF CV for the given candidate.
-        group.MapGet("/{id:guid}/cv", (Guid id) =>
+        // Serves the candidate's CV. Uses CvAttachmentId first, falling back to seeded local file using applicant ID.
+        group.MapGet("/{id:guid}/cv", async (
+            Guid id,
+            IApplicationRecordRepository repository,
+            IAttachmentRetriever attachmentRetriever,
+            CancellationToken ct) =>
         {
+            var record = await repository.GetByIdAsync(id, ct);
+            if (record?.CvAttachmentId != null)
+            {
+                try
+                {
+                    var stream = await attachmentRetriever.GetContentAsync(record.CvAttachmentId, ct);
+                    if (stream != null)
+                    {
+                        return Results.File(stream, "application/pdf", $"{id}_cv.pdf");
+                    }
+                }
+                catch
+                {
+                    // Fall back to seed documents
+                }
+            }
+
             var possiblePaths = new[]
             {
                 Path.Combine(AppContext.BaseDirectory, "Data", "SeedDocuments"),
@@ -242,9 +263,30 @@ public static class ApplicationEndpoints
         .WithName("GetApplicationCv");
 
         // GET /api/applications/{id}/transcript
-        // Serves the seeded PDF transcript for the given candidate.
-        group.MapGet("/{id:guid}/transcript", (Guid id) =>
+        // Serves the candidate's transcript. Uses TranscriptAttachmentId first, falling back to seeded local file using applicant ID.
+        group.MapGet("/{id:guid}/transcript", async (
+            Guid id,
+            IApplicationRecordRepository repository,
+            IAttachmentRetriever attachmentRetriever,
+            CancellationToken ct) =>
         {
+            var record = await repository.GetByIdAsync(id, ct);
+            if (record?.TranscriptAttachmentId != null)
+            {
+                try
+                {
+                    var stream = await attachmentRetriever.GetContentAsync(record.TranscriptAttachmentId, ct);
+                    if (stream != null)
+                    {
+                        return Results.File(stream, "application/pdf", $"{id}_transcript.pdf");
+                    }
+                }
+                catch
+                {
+                    // Fall back to seed documents
+                }
+            }
+
             var possiblePaths = new[]
             {
                 Path.Combine(AppContext.BaseDirectory, "Data", "SeedDocuments"),
@@ -261,41 +303,6 @@ public static class ApplicationEndpoints
             return Results.File(filePath, "application/pdf", $"{id}_transcript.pdf");
         })
         .WithName("GetApplicationTranscript");
-
-      
-        group.MapGet("/{id:guid}/cv/v2", async (
-            Guid id,
-            IApplicationRecordRepository repository,
-            IAttachmentRetriever attachmentRetriever,
-            CancellationToken ct) =>
-        {
-            var record = await repository.GetByIdAsync(id, ct);
-            if (record?.CvAttachmentId is null)
-                return Results.NotFound("CV not found for this application.");
-
-            var stream = await attachmentRetriever.GetContentAsync(record.CvAttachmentId, ct);
-            return stream is null
-                ? Results.NotFound("CV attachment could not be retrieved.")
-                : Results.File(stream, "application/pdf");
-        })
-        .WithName("GetApplicationCvV2");
-
-        group.MapGet("/{id:guid}/transcript/v2", async (
-            Guid id,
-            IApplicationRecordRepository repository,
-            IAttachmentRetriever attachmentRetriever,
-            CancellationToken ct) =>
-        {
-            var record = await repository.GetByIdAsync(id, ct);
-            if (record?.TranscriptAttachmentId is null)
-                return Results.NotFound("Transcript not found for this application.");
-
-            var stream = await attachmentRetriever.GetContentAsync(record.TranscriptAttachmentId, ct);
-            return stream is null
-                ? Results.NotFound("Transcript attachment could not be retrieved.")
-                : Results.File(stream, "application/pdf");
-        })
-        .WithName("GetApplicationTranscriptV2");
 
         // ── Graph attachment endpoint – disabled for POC ──
         // Fetches a CV/transcript attachment directly from Microsoft Graph using the email
