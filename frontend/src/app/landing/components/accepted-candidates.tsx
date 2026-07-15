@@ -60,10 +60,10 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
       wrapReviewedAt
       actionLabel="View details"
       onActionClick={() => {
-        router.push(`/applicants/${application.applicationId}`);
+        router.push(`/applicants/${application.applicationId}?from=accepted`);
       }}
       onClick={() => {
-        router.push(`/applicants/${application.applicationId}`);
+        router.push(`/applicants/${application.applicationId}?from=accepted`);
       }}
       showInstitute
     />
