@@ -234,6 +234,7 @@ function AllCandidates() {
               name={application.candidateName}
               institute={application.cvSummary}
               systemScore={toScorePercent(application.hiringAgentTotalScore)}
+              academicAverage={application.academicAverage}
               statusLabel={getStatusLabel(application.currentStatus)}
               statusTone={getStatusTone(application.currentStatus)}
               reviewedAt={formatDate(application.createdAt)}

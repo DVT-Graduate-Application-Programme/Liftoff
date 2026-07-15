@@ -212,6 +212,7 @@ function CandidateHistoryCard({
       tierTone={getTierTone(candidate.tier)}
       reviewedAt={new Date(candidate.createdAt).toLocaleDateString()}
       showReviewedAt={true}
+      createdAt={candidate.createdAt}
       onClick={handleCardClick}
       onActionClick={() => {
         selectApplication(candidate.applicationId, "history");

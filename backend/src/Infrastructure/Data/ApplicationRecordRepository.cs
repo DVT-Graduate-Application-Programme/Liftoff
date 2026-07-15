@@ -407,7 +407,11 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
                 a.ShortlistedByRecruiterId,
                 a.RatedByRecruiterId,
                 a.RecruiterRating,
-                a.CreatedAt
+                a.CreatedAt,
+                LatestEvaluation = a.HiringAgentEvaluations
+                    .OrderByDescending(e => e.ProcessedAt)
+                    .Select(e => new { e.InstitutionJson, e.CategoryScoresJson })
+                    .FirstOrDefault()
             })
             .ToListAsync(cancellationToken);
 
@@ -427,10 +431,45 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
                 ShortlistedByRecruiterId = a.ShortlistedByRecruiterId,
                 RatedByRecruiterId = a.RatedByRecruiterId,
                 RecruiterRating = a.RecruiterRating,
+                AcademicAverage = GetAcademicAverage(a.LatestEvaluation?.InstitutionJson, a.LatestEvaluation?.CategoryScoresJson),
                 CreatedAt = a.CreatedAt.UtcDateTime
             })
             .ToList();
     }
+
+    private static double? GetAcademicAverage(JsonDocument? instJson, JsonDocument? scoreJson)
+    {
+        if (instJson != null)
+        {
+            try
+            {
+                var root = instJson.RootElement;
+                if (root.TryGetProperty("academic_average", out var avgProp) && avgProp.TryGetDouble(out var val))
+                {
+                    return val;
+                }
+            }
+            catch { }
+        }
+
+        if (scoreJson != null)
+        {
+            try
+            {
+                var root = scoreJson.RootElement;
+                if (root.TryGetProperty("education", out var eduProp) && 
+                    eduProp.TryGetProperty("score", out var scoreProp) && 
+                    scoreProp.TryGetDouble(out var val))
+                {
+                    return val;
+                }
+            }
+            catch { }
+        }
+
+        return null;
+    }
+
 
     public async Task<DashboardMetricsDto> GetDashboardMetricsAsync(CancellationToken cancellationToken = default)
     {
