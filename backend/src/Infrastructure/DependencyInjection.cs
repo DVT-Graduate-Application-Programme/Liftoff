@@ -19,6 +19,11 @@ public static class DependencyInjection
         var db = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? configuration["POSTGRES_DB"]; 
         var user = Environment.GetEnvironmentVariable("POSTGRES_USER") ?? configuration["POSTGRES_USER"];
         var password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? configuration["POSTGRES_PASSWORD"];
+
+        if(string.IsNullOrEmpty(host) || string.IsNullOrEmpty(port) || string.IsNullOrEmpty(db) || string.IsNullOrEmpty(user) || string.IsNullOrEmpty(password))
+        {
+            throw new InvalidOperationException("Database connection parameters are not set in environment variables or configuration.");
+        }
         
         var connectionString = $"Host={host};Port={port};Database={db};Username={user};Password={password}";
 
