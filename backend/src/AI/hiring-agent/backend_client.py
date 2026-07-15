@@ -78,7 +78,7 @@ def get_all_resumes() -> list[Resume]:
     return [Resume.model_validate(item) for item in response.json()]
 
 
-def send_eval(eval_data: EvaluationData, message_id: UUID, prompt_version: str):
+def send_eval(eval_data: EvaluationData, message_id: UUID, prompt_version: str, institution: dict = None):
     """
     After AI has completed processing, return results and post to API ingest layer.
     message_id must be the ID returned by the C# Ingest API when the PENDING record was created.
@@ -92,6 +92,9 @@ def send_eval(eval_data: EvaluationData, message_id: UUID, prompt_version: str):
         "application_id": str(message_id),
         **eval_dict # This unpacks scores, bonus_points, key_strengths, etc. into the root
     }
+
+    if institution:
+        final_payload["institution"] = institution
 
     ## TODO: add auth token check on endpoint
 

@@ -448,6 +448,10 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
                 {
                     return val;
                 }
+                if (root.TryGetProperty("academicAverage", out var avgPropCamel) && avgPropCamel.TryGetDouble(out var valCamel))
+                {
+                    return valCamel;
+                }
             }
             catch { }
         }

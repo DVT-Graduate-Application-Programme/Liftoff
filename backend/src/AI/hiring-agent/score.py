@@ -625,8 +625,7 @@ def main(pdf_path, transcript_path=None):
                     writer.writeheader()
 
                 # Write the row
-                writer.writerow(csv_row)
-        return score
+        return score, transcript_data, resume_data
     finally:
         if downloaded_path and not DEVELOPMENT_MODE and os.path.exists(downloaded_path):
             try:
@@ -662,8 +661,48 @@ def _evaluate_and_send(resume: Resume) -> dict:
     if not pdf_path:
         raise ValueError("No PDF path found for candidate.")
 
-    resp = main(pdf_path, transcript_path)
-    send_eval(resp, message_id, DEFAULT_MODEL)
+    resp, transcript_data, resume_data = main(pdf_path, transcript_path)
+    
+    # Calculate institution payload
+    institution = None
+    if transcript_data or resume_data:
+        inst_name = "Unknown University"
+        if resume_data and resume_data.education and len(resume_data.education) > 0:
+            inst_name = resume_data.education[0].institution or inst_name
+        elif transcript_data and transcript_data.degree_name:
+            inst_name = "University from Transcript"
+            
+        degree_name = "Unknown Degree"
+        if transcript_data and transcript_data.degree_name:
+            degree_name = transcript_data.degree_name
+        elif resume_data and resume_data.education and len(resume_data.education) > 0:
+            degree_name = resume_data.education[0].area or degree_name
+
+        academic_average = 0.0
+        if transcript_data:
+            if transcript_data.year_averages:
+                academic_average = sum(ya.average for ya in transcript_data.year_averages) / len(transcript_data.year_averages)
+            elif transcript_data.modules:
+                marks = [m.mark for m in transcript_data.modules if m.mark is not None]
+                if marks:
+                    academic_average = sum(marks) / len(marks)
+            
+            if academic_average == 0.0 and transcript_data.degrees:
+                deg = transcript_data.degrees[0]
+                if deg.year_averages:
+                    academic_average = sum(ya.average for ya in deg.year_averages) / len(deg.year_averages)
+                elif deg.modules:
+                    marks = [m.mark for m in deg.modules if m.mark is not None]
+                    if marks:
+                        academic_average = sum(marks) / len(marks)
+
+        institution = {
+            "name": inst_name,
+            "degree_name": degree_name,
+            "academic_average": float(academic_average)
+        }
+
+    send_eval(resp, message_id, DEFAULT_MODEL, institution=institution)
     return resp
 
 if __name__ == "__main__":
@@ -672,7 +711,7 @@ if __name__ == "__main__":
     if len(sys.argv) >= 2 and sys.argv[1].endswith(".pdf"):
         pdf_path = sys.argv[1]
         transcript_path = sys.argv[2] if len(sys.argv) >= 3 else None
-        resp = main(pdf_path, transcript_path)
+        resp, _, _ = main(pdf_path, transcript_path)
         print(resp)
         send_eval(resp, "TestEnvironment", DEFAULT_MODEL)
     elif len(sys.argv) >= 2:
