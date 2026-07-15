@@ -20,8 +20,8 @@ import AllCandidateCard from "@/components/applicant-card/all-candidate-card";
 import { useEvaluation } from "@/hooks/use-evaluation";
 import {
   toScorePercent,
-  statusLabels,
-  statusTones,
+  getStatusLabel,
+  getStatusTone,
   formatDate,
   getRecruiterLabel,
 } from "./candidate-list-utils";
@@ -67,8 +67,8 @@ function AllCandidateListCard({
       institute={education.degree}
       subtitle={education.university || undefined}
       systemScore={toScorePercent(application.hiringAgentTotalScore)}
-      statusLabel={statusLabels[application.currentStatus]}
-      statusTone={statusTones[application.currentStatus]}
+      statusLabel={getStatusLabel(application.currentStatus)}
+      statusTone={getStatusTone(application.currentStatus)}
       reviewedAt={formatDate(application.createdAt)}
       showReviewedAt
       createdAt={application.createdAt}

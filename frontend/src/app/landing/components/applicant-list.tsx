@@ -22,8 +22,8 @@ import {
   formatDate,
   getRecruiterLabel,
   groupApplicationsByDate,
-  statusLabels,
-  statusTones,
+  getStatusLabel,
+  getStatusTone,
   toScorePercent,
 } from "./candidate-list-utils";
 import router from "next/router";
@@ -272,7 +272,7 @@ export function ApplicantList({
           }
         : {}),
       onClick: () => {
-        router.push(`/applicants/${application.applicationId}`);
+        void router.push(`/applicants/${application.applicationId}`);
       },
       onActionClick: () => {
         selectApplication(application.applicationId, tabKey);
@@ -280,25 +280,60 @@ export function ApplicantList({
       },
     };
 
+    if (application.currentStatus === "PENDING") {
+      return (
+        <PendingCandidateCard
+          key={application.applicationId}
+          name={application.candidateName}
+          institute={application.cvSummary}
+          systemScore={toScorePercent(application.hiringAgentTotalScore)}
+          academicAverage={application.academicAverage}
+          createdAt={application.createdAt}
+          {...(enableClaim
+            ? {
+                secondaryActionLabel: isClaimedByActiveRecruiter
+                  ? "Claimed"
+                  : "Claim for review",
+                isSecondaryActionDisabled:
+                  isClaimedByActiveRecruiter || isClaiming,
+                isSecondaryActionLoading: isClaiming,
+                onSecondaryActionClick: isClaimedByActiveRecruiter
+                  ? undefined
+                  : () => {
+                      claimMutation.mutate(application.applicationId);
+                    },
+              }
+            : {})}
+          onClick={() => {
+            router.push(`/applicants/${application.applicationId}`);
+          }}
+          onActionClick={() => {
+            selectApplication(application.applicationId);
+            setOpen(true);
+          }}
+        />
+      );
+    }
+
     return (
       <ApplicantCard
         key={application.applicationId}
-        statusLabel={statusLabels[application.currentStatus]}
-        statusTone={statusTones[application.currentStatus]}
+        statusLabel={getStatusLabel(application.currentStatus)}
+        statusTone={getStatusTone(application.currentStatus)}
         {...commonProps}
       />
     );
   };
 
   const loadMoreButton = hasNextPage && (
-    <Button
-      variant="outline"
-      className="self-center"
-      disabled={isFetchingNextPage}
-      onClick={() => {
-        void fetchNextPage();
-      }}
-    >
+      <Button
+        variant="outline"
+        className="self-center"
+        disabled={isFetchingNextPage}
+        onClick={() => {
+          void fetchNextPage();
+        }}
+      >
       {isFetchingNextPage ? "Loading..." : "Load more"}
     </Button>
   );

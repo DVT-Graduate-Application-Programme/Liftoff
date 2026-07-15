@@ -70,10 +70,10 @@ describe("GET /api/applications", () => {
   beforeEach(() => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => ({
+      vi.fn(() => ({
         ok: true,
         statusText: "OK",
-        json: async () => ({ applications: fixtures }),
+        json: () => ({ applications: fixtures }),
       })),
     );
   });

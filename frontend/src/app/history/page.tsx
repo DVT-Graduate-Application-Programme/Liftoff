@@ -5,15 +5,15 @@ import AllCandidateCard from "@/components/applicant-card/all-candidate-card";
 import { useRouter } from "next/navigation";
 import { useApplications } from "@/hooks/use-applications";
 import type { CandidateApplication } from "@/types/candidate";
-import {
-  ChevronDown,
-  Calendar,
-  XCircle,
-  Loader2,
-} from "lucide-react";
+import { ListFilter, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import {
+  FilterField,
+  FilterSelect,
+  type ActiveFilter,
+} from "@/app/landing/components/filter-bar";
 import { SidebarInset, SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { ApplicantDetailsSidebar } from "@/app/landing/components/applicant-details/applicant-details-sidebar";
 import {
@@ -22,9 +22,10 @@ import {
 } from "@/components/providers/applicant-selection-provider";
 import { useApplicant } from "@/hooks/use-applicant";
 import { useEvaluation } from "@/hooks/use-evaluation";
+import { getStatusLabel } from "@/app/landing/components/candidate-list-utils";
 
 function SelectedApplicantDetailsSidebar() {
-  const { selectedApplicationId } = useApplicantSelection();
+  const { selectedApplicationId, selectedTabKey } = useApplicantSelection();
   const applicantQuery = useApplicant(selectedApplicationId ?? "");
   const evaluationQuery = useEvaluation(selectedApplicationId ?? "");
 
@@ -41,146 +42,115 @@ function SelectedApplicantDetailsSidebar() {
       evaluation={evaluationQuery.data ?? null}
       isLoadingEvaluation={Boolean(selectedApplicationId) && (applicantQuery.isLoading || evaluationQuery.isLoading)}
       evaluationMessage={evaluationMessage}
+      tabKey={selectedTabKey}
     />
   );
 }
 
-// Filter Components
-function FilterDateRangePicker({
-  value,
-  onChange,
+// Filter bar — restyled to match the dashboard tabs' FilterBar shell
+// (toggle button, collapsible field grid, active-filter chips), while
+// keeping History's own client-side filtering and date-range control.
+const HISTORY_STATUS_OPTIONS: [string, string][] = [
+  ["All", "All statuses"],
+  ["PENDING", "Pending"],
+  ["VALID", "Valid"],
+  ["INVALID", "Invalid"],
+  ["SHORTLISTED", "Shortlisted"],
+  ["MANUAL_REVIEW", "Manual review"],
+];
+
+const HISTORY_SCORE_OPTIONS: [string, string][] = [
+  ["All", "All tiers"],
+  ["STRONG", "Strong"],
+  ["BORDERLINE", "Borderline"],
+  ["WEAK", "Weak"],
+];
+
+function HistoryFilterBar({
+  filtersOpen,
+  onToggleFilters,
+  status,
+  onStatusChange,
+  score,
+  onScoreChange,
+  dateRange,
+  onDateRangeChange,
+  activeFilters,
+  onClearAll,
 }: {
-  value: { start: string; end: string };
-  onChange: (val: { start: string; end: string }) => void;
+  filtersOpen: boolean;
+  onToggleFilters: () => void;
+  status: string;
+  onStatusChange: (value: string) => void;
+  score: string;
+  onScoreChange: (value: string) => void;
+  dateRange: { start: string; end: string };
+  onDateRangeChange: (value: { start: string; end: string }) => void;
+  activeFilters: ActiveFilter[];
+  onClearAll: () => void;
 }) {
-  const [open, setOpen] = React.useState(false);
-
-  const hasFilter = value.start || value.end;
-  const label = hasFilter 
-    ? `${value.start || "Any"} to ${value.end || "Any"}`
-    : "Date Range";
-
   return (
-    <div className="relative">
-      <button
-        type="button"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-        className={cn(
-          "inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground",
-          "transition-all hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-          open && "bg-muted border-ring/30",
-          hasFilter && "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
-        )}
-      >
-        <Calendar className="size-3.5 text-muted-foreground" />
-        {label}
-        {hasFilter ? (
-          <XCircle 
-            className="size-3.5 text-muted-foreground hover:text-foreground ml-1" 
-            onClick={(e) => {
-              e.stopPropagation();
-              onChange({ start: "", end: "" });
-            }}
-          />
-        ) : (
-          <ChevronDown
-            className={cn(
-              "size-3.5 text-muted-foreground transition-transform",
-              open && "rotate-180"
-            )}
-          />
-        )}
-      </button>
-
-      {open && (
-        <div className="absolute top-full left-0 mt-1.5 z-20 min-w-64 rounded-xl border border-border bg-card p-3 shadow-lg ring-1 ring-foreground/5">
-          <p className="mb-2 text-xs text-muted-foreground font-medium">Select Date Range</p>
-          <div className="flex flex-col gap-2">
-            <div>
-              <label className="text-xs font-medium mb-1 block text-muted-foreground">From</label>
-              <input
-                type="date"
-                value={value.start}
-                onChange={(e) => onChange({ ...value, start: e.target.value })}
-                className="w-full h-8 rounded-md border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium mb-1 block text-muted-foreground">To</label>
-              <input
-                type="date"
-                value={value.end}
-                onChange={(e) => onChange({ ...value, end: e.target.value })}
-                className="w-full h-8 rounded-md border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-            <Button size="sm" className="mt-2 w-full" onClick={() => setOpen(false)}>
-              Apply Range
-            </Button>
-          </div>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap justify-end gap-3">
+        <button
+          type="button"
+          aria-expanded={filtersOpen}
+          aria-controls="history-filters"
+          onClick={onToggleFilters}
+          className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-foreground transition-colors hover:bg-muted"
+        >
+          <ListFilter size={16} />
+          Advanced Filters
+        </button>
+      </div>
+      {filtersOpen && (
+        <div
+          id="history-filters"
+          className="grid gap-4 rounded-xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-4"
+        >
+          <FilterField label="Status">
+            <FilterSelect value={status} onChange={onStatusChange} options={HISTORY_STATUS_OPTIONS} />
+          </FilterField>
+          <FilterField label="System Score">
+            <FilterSelect value={score} onChange={onScoreChange} options={HISTORY_SCORE_OPTIONS} />
+          </FilterField>
+          <FilterField label="Received from">
+            <input
+              aria-label="Received from"
+              type="date"
+              value={dateRange.start}
+              onChange={(event) => {
+                onDateRangeChange({ ...dateRange, start: event.target.value });
+              }}
+              className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+            />
+          </FilterField>
+          <FilterField label="Received to">
+            <input
+              aria-label="Received to"
+              type="date"
+              value={dateRange.end}
+              onChange={(event) => {
+                onDateRangeChange({ ...dateRange, end: event.target.value });
+              }}
+              className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+            />
+          </FilterField>
         </div>
       )}
-    </div>
-  );
-}
-
-function FilterDropdown({
-  label,
-  icon,
-  options = [],
-  value = "All",
-  onChange = () => {},
-}: {
-  label: string;
-  icon?: React.ReactNode;
-  options?: string[];
-  value?: string;
-  onChange?: (val: string) => void;
-}) {
-  const [open, setOpen] = React.useState(false);
-
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        aria-expanded={open}
-        onClick={() => {
-          setOpen((v) => !v);
-        }}
-        className={cn(
-          "inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground",
-          "transition-all hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-          open && "bg-muted border-ring/30"
-        )}
-      >
-        {icon && <span className="text-muted-foreground">{icon}</span>}
-        {value === "All" ? label : value}
-        <ChevronDown
-          className={cn(
-            "size-3.5 text-muted-foreground transition-transform",
-            open && "rotate-180"
-          )}
-        />
-      </button>
-      {open && (
-        <div className="absolute top-full left-0 mt-1.5 z-20 min-w-40 rounded-xl border border-border bg-card p-1 shadow-lg ring-1 ring-foreground/5">
-          <p className="px-2 py-1.5 text-xs text-muted-foreground font-medium">
-            Options
-          </p>
-          {options.map((opt) => (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => {
-                onChange(opt);
-                setOpen(false);
-              }}
-              className="w-full rounded-lg px-2 py-1.5 text-left text-sm text-foreground hover:bg-muted transition-colors"
-            >
-              {opt}
-            </button>
+      {activeFilters.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2" aria-label="Active filters">
+          {activeFilters.map((filter) => (
+            <Badge key={filter.label} variant="outline" className="gap-1.5 px-3 py-1">
+              {filter.label}
+              <button type="button" onClick={filter.onClear} aria-label={`Clear ${filter.label}`}>
+                ×
+              </button>
+            </Badge>
           ))}
+          <Button type="button" variant="ghost" size="sm" className="h-5 px-2 text-xs" onClick={onClearAll}>
+            Clear all
+          </Button>
         </div>
       )}
     </div>
@@ -198,7 +168,7 @@ function CandidateHistoryCard({
   const evaluationQuery = useEvaluation(candidate.applicationId);
 
   const handleCardClick = () => {
-    router.push(`/applicants/${candidate.applicationId}`);
+    router.push(`/applicants/${candidate.applicationId}?from=history`);
   };
 
   const getStatusTone = (status: string) => {
@@ -227,7 +197,7 @@ function CandidateHistoryCard({
       : degreeName || institutionName || candidate.cvSummary || "Applicant";
 
   return (
-    <AllCandidateCard
+      <AllCandidateCard
       key={candidate.applicationId}
       name={candidate.candidateName}
       subtitle={subtitle}
@@ -236,19 +206,21 @@ function CandidateHistoryCard({
       scoreLabel="Sys Score"
       scoreClassName="font-semibold"
       layout="history"
-      statusLabel={candidate.currentStatus}
+      statusLabel={getStatusLabel(candidate.currentStatus) ?? candidate.currentStatus}
       statusTone={getStatusTone(candidate.currentStatus)}
-      tierLabel={candidate.tier || "Unknown"}
-      tierTone={getTierTone(candidate.tier || "")}
+      tierLabel={candidate.tier}
+      tierTone={getTierTone(candidate.tier)}
       reviewedAt={new Date(candidate.createdAt).toLocaleDateString()}
       showReviewedAt={true}
       onClick={handleCardClick}
       onActionClick={() => {
-        selectApplication(candidate.applicationId);
+        selectApplication(candidate.applicationId, "history");
         setOpen(true);
       }}
       secondaryActionLabel="View Applicant"
-      onSecondaryActionClick={() => handleCardClick()}
+      onSecondaryActionClick={() => {
+        handleCardClick();
+      }}
     />
   );
 }
@@ -284,9 +256,31 @@ function DateGroup({
 }
 
 export default function HistoryPage() {
+  const [filtersOpen, setFiltersOpen] = React.useState(false);
   const [filterDecision, setFilterDecision] = React.useState("All");
   const [filterDateRange, setFilterDateRange] = React.useState({ start: "", end: "" });
   const [filterScore, setFilterScore] = React.useState("All");
+
+  const clearFilters = () => {
+    setFilterDecision("All");
+    setFilterDateRange({ start: "", end: "" });
+    setFilterScore("All");
+  };
+
+  const activeFilters: ActiveFilter[] = [
+    filterDecision !== "All" && {
+      label: `Status: ${filterDecision}`,
+      onClear: () => { setFilterDecision("All"); },
+    },
+    filterScore !== "All" && {
+      label: `Tier: ${filterScore}`,
+      onClear: () => { setFilterScore("All"); },
+    },
+    (filterDateRange.start || filterDateRange.end) && {
+      label: `Received: ${filterDateRange.start || "Any"} to ${filterDateRange.end || "Any"}`,
+      onClear: () => { setFilterDateRange({ start: "", end: "" }); },
+    },
+  ].filter(Boolean) as ActiveFilter[];
 
   const { data, isLoading, error } = useApplications();
   const applications = data?.applications || [];
@@ -294,10 +288,16 @@ export default function HistoryPage() {
   let filteredCandidates = applications;
   
   if (filterDecision !== "All") {
-    filteredCandidates = filteredCandidates.filter((c: CandidateApplication) => c.currentStatus === filterDecision);
+    filteredCandidates = filteredCandidates.filter(
+      (c: CandidateApplication) =>
+        c.currentStatus.toLowerCase() === filterDecision.toLowerCase(),
+    );
   }
   if (filterScore !== "All") {
-    filteredCandidates = filteredCandidates.filter((c: CandidateApplication) => (c.tier || "").toLowerCase() === filterScore.toLowerCase());
+    filteredCandidates = filteredCandidates.filter(
+      (c: CandidateApplication) =>
+        c.tier.toLowerCase() === filterScore.toLowerCase(),
+    );
   }
 
   if (filterDateRange.start) {
@@ -331,7 +331,7 @@ export default function HistoryPage() {
     ];
   }
 
-  groups = groups.filter(g => g.candidates.length > 0);
+  groups = groups.filter((g) => g.candidates.length > 0);
 
   return (
     <ApplicantSelectionProvider>
@@ -353,24 +353,18 @@ export default function HistoryPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 shadow-sm ring-1 ring-foreground/5">
-                    <FilterDropdown 
-                      label="All Statuses" 
-                      options={["All", "PENDING", "VALID", "INVALID", "SHORTLISTED", "MANUAL_REVIEW"]}
-                      value={filterDecision}
-                      onChange={setFilterDecision}
-                    />
-                    <FilterDateRangePicker
-                      value={filterDateRange}
-                      onChange={setFilterDateRange}
-                    />
-                    <FilterDropdown 
-                      label="System Score" 
-                      options={["All", "STRONG", "BORDERLINE", "WEAK"]}
-                      value={filterScore}
-                      onChange={setFilterScore}
-                    />
-                  </div>
+                  <HistoryFilterBar
+                    filtersOpen={filtersOpen}
+                    onToggleFilters={() => { setFiltersOpen((open) => !open); }}
+                    status={filterDecision}
+                    onStatusChange={setFilterDecision}
+                    score={filterScore}
+                    onScoreChange={setFilterScore}
+                    dateRange={filterDateRange}
+                    onDateRangeChange={setFilterDateRange}
+                    activeFilters={activeFilters}
+                    onClearAll={clearFilters}
+                  />
 
                   {isLoading ? (
                     <div className="flex h-64 items-center justify-center">
