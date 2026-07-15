@@ -50,14 +50,14 @@ public interface IApplicationRecordRepository
 public class ApplicationStatusUpdate
 {
     public string ActionedByRecruiterId { get; set; } = string.Empty;
-    public DateTime ActionedAt { get; set; }
+    public DateTimeOffset ActionedAt { get; set; }
     public string UpdatedStatus { get; set; } = string.Empty;
 }
 
 public class ApplicationRatingUpdate
 {
     public string RatedByRecruiterId { get; set; } = string.Empty;
-    public DateTime RatedAt { get; set; }
+    public DateTimeOffset RatedAt { get; set; }
     public short? RecruiterRating { get; set; }
     public string? RecruiterRatingNote { get; set; }
 }
@@ -71,5 +71,5 @@ public class RecruiterActionLogDto
     public string? NewStatus { get; set; }
     public string? Reason { get; set; }
     public short? RatingValue { get; set; }
-    public DateTime ActionedAt { get; set; }
+    public DateTimeOffset ActionedAt { get; set; }
 }
