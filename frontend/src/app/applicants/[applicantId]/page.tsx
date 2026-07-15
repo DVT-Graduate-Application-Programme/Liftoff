@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -358,6 +358,45 @@ export default function DetailedApplicantInfo() {
   const applicantQuery = useApplicant(applicantId);
   const evaluationQuery = useEvaluation(applicantId);
 
+  const [leftWidth, setLeftWidth] = useState(50); // percentage
+  const [isResizing, setIsResizing] = useState(false);
+  const [isMobile, setIsMobile] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const percentage = ((e.clientX - rect.left) / rect.width) * 100;
+      if (percentage >= 25 && percentage <= 75) {
+        setLeftWidth(percentage);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isResizing]);
+
   if (detailQuery.isError) {
     const error = detailQuery.error;
     if (error instanceof ApiError && error.status === 404) {
@@ -401,9 +440,18 @@ export default function DetailedApplicantInfo() {
           {evaluationQuery.data.institutionJson.degreeName} · {evaluationQuery.data.institutionJson.name}
         </p>
       )}
-      <div className="w-full flex flex-col md:flex-row items-start justify-center gap-10 pt-10">
+      <div 
+        ref={containerRef}
+        className={cn(
+          "w-full flex flex-col md:flex-row items-stretch justify-center pt-10",
+          isResizing && "select-none cursor-col-resize"
+        )}
+      >
         {/* Document Viewer Container */}
-        <section className="flex w-full md:max-w-xl md:h-[calc(100vh_-_10rem)] flex-col gap-3">
+        <section 
+          style={isMobile ? undefined : { width: `${leftWidth}%` }}
+          className="flex w-full md:h-[calc(100vh_-_10rem)] flex-col gap-3 md:pr-4"
+        >
           <h2 className="font-heading text-xs font-semibold uppercase tracking-wide text-muted-foreground pl-2">
             Applicant documents
           </h2>
@@ -429,8 +477,22 @@ export default function DetailedApplicantInfo() {
           </Tabs>
         </section>
 
+        {/* Resize Handle */}
+        <div
+          onMouseDown={() => setIsResizing(true)}
+          className={cn(
+            "hidden md:flex w-2 cursor-col-resize hover:bg-primary/20 items-center justify-center transition-colors rounded mx-1",
+            isResizing && "bg-primary/20"
+          )}
+        >
+          <div className="w-[2px] h-10 rounded bg-muted-foreground/30" />
+        </div>
+
         {/*Candidate INFO Container*/}
-        <div className="flex w-full md:max-w-xl flex-col gap-4">
+        <div 
+          style={isMobile ? undefined : { width: `${100 - leftWidth}%` }}
+          className="flex w-full flex-col gap-4 md:pl-4 overflow-y-auto md:h-[calc(100vh_-_10rem)]"
+        >
           {/* Candidate Summary Section */}
           <section className="flex flex-col gap-4">
             {evaluationQuery.isLoading ? (
