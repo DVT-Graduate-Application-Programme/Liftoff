@@ -1,26 +1,26 @@
 import type { CandidateApplication } from "@/types/candidate";
 
-export const statusLabels: Record<
-  CandidateApplication["currentStatus"],
-  string
-> = {
-  PENDING: "Pending",
+const statusLabels: Record<string, string> = {
+  pending: "Pending",
   evaluated: "Evaluated",
   forwarded: "Forwarded",
   rejected: "Rejected",
   shortlisted: "Shortlisted",
 };
 
-export const statusTones: Record<
-  CandidateApplication["currentStatus"],
-  "positive" | "warning" | "negative" | "neutral"
-> = {
-  PENDING: "neutral",
+const statusTones: Record<string, "positive" | "warning" | "negative" | "neutral"> = {
+  pending: "neutral",
   evaluated: "warning",
   forwarded: "warning",
   rejected: "negative",
   shortlisted: "positive",
 };
+
+export const getStatusLabel = (status: CandidateApplication["currentStatus"]) =>
+  statusLabels[status.toLowerCase()];
+
+export const getStatusTone = (status: CandidateApplication["currentStatus"]) =>
+  statusTones[status.toLowerCase()];
 
 export const formatDate = (isoDate: string) =>
   new Date(isoDate).toLocaleDateString("en-ZA", {
