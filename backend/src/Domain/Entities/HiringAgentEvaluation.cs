@@ -35,7 +35,6 @@ public class HiringAgentEvaluation
     public JsonDocument? GitHubProfileDataJson { get; set; }
     public JsonDocument? ProjectClassificationsJson { get; set; }
 
-    public string? AiSummary { get; set; }
 
     public DateTimeOffset ProcessedAt { get; set; }
 
