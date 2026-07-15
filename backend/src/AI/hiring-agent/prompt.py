@@ -13,8 +13,8 @@ from models import ModelProvider
 load_dotenv()
 
 # Constants
-DEFAULT_MODEL_NAME = "gemma3:4b"
-DEFAULT_PROVIDER = ModelProvider.OLLAMA
+DEFAULT_MODEL_NAME = "gemini-3.1-flash-lite"
+DEFAULT_PROVIDER = ModelProvider.GEMINI
 
 # Get model and provider from environment or use defaults
 DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", DEFAULT_MODEL_NAME)
@@ -27,7 +27,7 @@ if PROVIDER not in [p.value for p in ModelProvider]:
 # Model-specific parameters
 MODEL_PARAMETERS = {
     # Ollama models
-    "qwen3:1.7b": {"temperature": 0.0, "top_p": 0.9},
+    "qwen3:1.7b": {"temperature": 0.0, "top_p": 0.9, "think": False},
     "gemma3:1b": {"temperature": 0.0, "top_p": 0.9},
     "qwen3:4b": {"temperature": 0.1, "top_p": 0.4},
     "gemma3:4b": {"temperature": 0.1, "top_p": 0.9},
@@ -61,6 +61,7 @@ MODEL_PROVIDER_MAPPING = {
     "gemini-2.5-flash": ModelProvider.GEMINI,
     "gemini-2.5-flash-lite": ModelProvider.GEMINI,
     "gemini-2.5-pro": ModelProvider.GEMINI,
+    "gemma-4-31b": ModelProvider.GEMINI,
     "gemini-3.5-flash": ModelProvider.GEMINI,
     "gemini-3.1-flash-lite": ModelProvider.GEMINI,
 }

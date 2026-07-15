@@ -657,7 +657,7 @@ def process_candidate(candidate_id) -> dict:
 def _evaluate_and_send(resume: Resume) -> dict:
     pdf_path = resume.document_url
     transcript_path = resume.transcript_url
-    message_id = resume.id
+    message_id = str(resume.id)
 
     if not pdf_path:
         raise ValueError("No PDF path found for candidate.")

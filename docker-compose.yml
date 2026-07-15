@@ -55,10 +55,12 @@ services:
 
   hiring-agent:
       build: ./backend/src/AI/hiring-agent
+      env_file:
+        - .env.development
       environment:
         BACKEND_BASE_URL: "http://backend:5000"
         OLLAMA_HOST: "http://host.docker.internal:11434"
-        DEFAULT_MODEL: "gemma3:4b"
+
       ports:
         - "8001:8001"
       depends_on:
