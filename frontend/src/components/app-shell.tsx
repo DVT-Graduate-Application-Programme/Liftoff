@@ -1,11 +1,11 @@
 "use client";
 
 import * as React from "react";
+import { Suspense, useState } from "react";
 import { usePathname } from "next/navigation";
 import { NavDrawer } from "./navbar/nav-drawer";
 import Navbar from "./navbar/navbar";
 import { Breadcrumbs } from "./breadcrumbs";
-import { useState } from "react";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -27,7 +27,9 @@ export default function AppShell({ children }: AppShellProps) {
         }}
       />
       <NavDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
-      <Breadcrumbs />
+      <Suspense fallback={null}>
+        <Breadcrumbs />
+      </Suspense>
       {children}
     </>
   );
