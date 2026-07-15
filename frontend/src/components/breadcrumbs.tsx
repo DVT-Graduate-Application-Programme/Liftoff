@@ -16,6 +16,15 @@ const TAB_LABELS: Record<string, string> = {
   pending: "Pending Candidates",
   all: "All Candidates",
   accepted: "Accepted Candidates",
+  history: "History",
+}
+
+const TAB_HREFS: Record<string, string> = {
+  history: "/history",
+}
+
+function tabHref(from: string) {
+  return TAB_HREFS[from] ?? `/landing?tab=${from}`
 }
 
 function ApplicantCrumb() {
@@ -43,7 +52,7 @@ export function Breadcrumbs() {
         <>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href={`/landing?tab=${from}`}>{tabLabel}</Link>
+              <Link href={tabHref(from)}>{tabLabel}</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
