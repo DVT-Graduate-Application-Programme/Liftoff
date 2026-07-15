@@ -314,6 +314,25 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<List<RecruiterActionLogDto>> GetAllRecruiterLogsAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.RecruiterActions
+            .AsNoTracking()
+            .OrderByDescending(a => a.ActionedAt)
+            .Select(a => new RecruiterActionLogDto
+            {
+                Id = a.Id,
+                RecruiterIdentity = a.RecruiterIdentity,
+                ActionType = a.ActionType,
+                PreviousStatus = a.PreviousStatus,
+                NewStatus = a.NewStatus,
+                Reason = a.Reason,
+                RatingValue = a.RatingValue,
+                ActionedAt = a.ActionedAt
+            })
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<List<DashboardApplicationDto>> GetDashboardApplicationsAsync(
         GetDashboardApplicationsQuery query,
         CancellationToken cancellationToken = default)
