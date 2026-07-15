@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, type ReactElement, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
 import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
 import { useInfiniteApplications } from "@/hooks/use-infinite-applications";
@@ -26,8 +27,8 @@ import {
   getStatusTone,
   toScorePercent,
 } from "./candidate-list-utils";
-import router from "next/router";
 import type { Evaluation } from "@/types/api";
+import router from "next/router";
 
 interface ApplicantListProps {
   status?: string;
@@ -156,6 +157,7 @@ export function ApplicantList({
   renderItem,
   renderCard,
 }: ApplicantListProps) {
+  const router = useRouter();
   const { search } = useApplicantSearch();
   const { selectApplication } = useApplicantSelection();
   const { setOpen } = useSidebar();
@@ -279,41 +281,6 @@ export function ApplicantList({
         setOpen(true);
       },
     };
-
-    if (application.currentStatus === "PENDING") {
-      return (
-        <PendingCandidateCard
-          key={application.applicationId}
-          name={application.candidateName}
-          institute={application.cvSummary}
-          systemScore={toScorePercent(application.hiringAgentTotalScore)}
-          academicAverage={application.academicAverage}
-          createdAt={application.createdAt}
-          {...(enableClaim
-            ? {
-                secondaryActionLabel: isClaimedByActiveRecruiter
-                  ? "Claimed"
-                  : "Claim for review",
-                isSecondaryActionDisabled:
-                  isClaimedByActiveRecruiter || isClaiming,
-                isSecondaryActionLoading: isClaiming,
-                onSecondaryActionClick: isClaimedByActiveRecruiter
-                  ? undefined
-                  : () => {
-                      claimMutation.mutate(application.applicationId);
-                    },
-              }
-            : {})}
-          onClick={() => {
-            router.push(`/applicants/${application.applicationId}`);
-          }}
-          onActionClick={() => {
-            selectApplication(application.applicationId);
-            setOpen(true);
-          }}
-        />
-      );
-    }
 
     return (
       <ApplicantCard
