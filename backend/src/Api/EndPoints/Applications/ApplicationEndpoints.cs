@@ -1,8 +1,10 @@
 using Application.Interfaces;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
+
 using System;
 using System.IO;
 using System.Net.Http;
@@ -12,7 +14,9 @@ namespace Api.EndPoints.Applications;
 
 public static class ApplicationEndpoints
 {
+    #pragma warning disable IDE1006 // Intentionally using '_' prefix for private field consistency. (supress naming rule)
     private static readonly HttpClient _httpClient = new();
+    #pragma warning restore IDE1006
     public static void MapApplicationEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/applications").WithTags("Applications");
@@ -111,7 +115,7 @@ public static class ApplicationEndpoints
         })
         .WithName("ShortlistApplicationOwnership");
 
-      
+
         group.MapGet("/{id:guid}/cv", async (
             Guid id,
             IApplicationRecordRepository repository,
