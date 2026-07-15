@@ -2,20 +2,20 @@ using Application.Interfaces;
 using Domain.Entities;
 using MediatR;
 
-namespace Application.Features.Ingestion;
+namespace Application.Features.SendApplicaton;
 
-public class IngestManualApplicationHandler
-    : IRequestHandler<IngestManualApplicationCommand, IngestManualApplicationResult>
+public class SendApplicationHandler
+    : IRequestHandler<SendApplicationCommand, SendApplicationResult>
 {
     private readonly IApplicationRecordRepository _repository;
 
-    public IngestManualApplicationHandler(IApplicationRecordRepository repository)
+    public SendApplicationHandler(IApplicationRecordRepository repository)
     {
         _repository = repository;
     }
 
-    public async Task<IngestManualApplicationResult> Handle(
-        IngestManualApplicationCommand request,
+    public async Task<SendApplicationResult> Handle(
+        SendApplicationCommand request,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.CandidateName))
@@ -32,7 +32,7 @@ public class IngestManualApplicationHandler
         var existingRecord = await _repository.GetByEmailMessageIdAsync(emailMessageId, cancellationToken);
         if (existingRecord is not null)
         {
-            return new IngestManualApplicationResult
+            return new SendApplicationResult
             {
                 ApplicationId = existingRecord.Id,
                 Status = existingRecord.Status
@@ -45,8 +45,8 @@ public class IngestManualApplicationHandler
             EmailMessageId = emailMessageId,
             CandidateName = request.CandidateName,
             CandidateEmail = request.CandidateEmail,
-            CvAttachmentId = request.HasCvFile ? $"manual-cv:{Guid.NewGuid()}" : null,
-            TranscriptAttachmentId = request.HasTranscriptFile ? $"manual-transcript:{Guid.NewGuid()}" : null,
+            CvAttachmentId = request.CVurl is not null ? request.CVurl : null,
+            TranscriptAttachmentId = request.TranscriptUrl is not null ? request.TranscriptUrl : null,
             Status = "PENDING",
             CreatedAt = now,
             UpdatedAt = now
@@ -55,14 +55,14 @@ public class IngestManualApplicationHandler
         await _repository.AddAsync(applicationRecord, cancellationToken);
         await _repository.SaveChangesAsync(cancellationToken);
 
-        return new IngestManualApplicationResult
+        return new SendApplicationResult
         {
             ApplicationId = applicationRecord.Id,
             Status = applicationRecord.Status
         };
     }
 
-    private static string BuildEmailMessageId(IngestManualApplicationCommand request)
+    private static string BuildEmailMessageId(SendApplicationCommand request)
     {
         var idempotencyKey = string.IsNullOrWhiteSpace(request.IdempotencyKey)
             ? request.CandidateEmail.Trim().ToLowerInvariant()

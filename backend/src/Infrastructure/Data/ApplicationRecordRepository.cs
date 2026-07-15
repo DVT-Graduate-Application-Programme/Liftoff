@@ -39,6 +39,13 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
     }
 
+    public async Task<ApplicationRecord?> GetByEmailMessageIdAsync(string emailMessageId, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.ApplicationRecords
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.EmailMessageId == emailMessageId, cancellationToken);
+    }
+
     public Task<ApplicationDetails?> GetApplicationDetailsAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return _dbContext.ApplicationRecords

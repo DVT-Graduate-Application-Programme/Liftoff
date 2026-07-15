@@ -1,17 +1,19 @@
 using MediatR;
 
-namespace Application.Features.Ingestion;
+namespace Application.Features.SendApplicaton;
 
-public class IngestManualApplicationCommand : IRequest<IngestManualApplicationResult>
+public class SendApplicationCommand : IRequest<SendApplicationResult>
 {
+    
     public string CandidateName { get; set; } = string.Empty;
     public string CandidateEmail { get; set; } = string.Empty;
     public string? IdempotencyKey { get; set; }
-    public bool HasCvFile { get; set; }
-    public bool HasTranscriptFile { get; set; }
+    public string CVurl { get; set; } = string.Empty;
+    public string TranscriptUrl { get; set; } = string.Empty;
 }
 
-public class IngestManualApplicationResult
+
+public class SendApplicationResult
 {
     public Guid ApplicationId { get; set; }
     public string Status { get; set; } = string.Empty;
