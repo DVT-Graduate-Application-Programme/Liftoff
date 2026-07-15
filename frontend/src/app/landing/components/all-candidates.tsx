@@ -52,7 +52,7 @@ function AllCandidateListCard({
 }) {
   const evaluationQuery = useEvaluation(application.applicationId);
   const education = (() => {
-    const raw = evaluationQuery.data?.evidenceJson?.education?.trim() || application.cvSummary;
+    const raw = evaluationQuery.data?.evidenceJson?.education.trim() || application.cvSummary;
     const parts = raw.split(",").map((part) => part.trim()).filter(Boolean);
     return {
       degree: parts[0] ?? raw,

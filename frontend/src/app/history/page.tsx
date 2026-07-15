@@ -206,7 +206,7 @@ function CandidateHistoryCard({
       scoreLabel="Sys Score"
       scoreClassName="font-semibold"
       layout="history"
-      statusLabel={getStatusLabel(candidate.currentStatus) ?? candidate.currentStatus}
+      statusLabel={getStatusLabel(candidate.currentStatus)}
       statusTone={getStatusTone(candidate.currentStatus)}
       tierLabel={candidate.tier}
       tierTone={getTierTone(candidate.tier)}

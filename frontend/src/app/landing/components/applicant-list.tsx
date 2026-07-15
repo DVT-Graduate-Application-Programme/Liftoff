@@ -28,7 +28,6 @@ import {
   toScorePercent,
 } from "./candidate-list-utils";
 import type { Evaluation } from "@/types/api";
-import router from "next/router";
 
 interface ApplicantListProps {
   status?: string;
@@ -70,7 +69,7 @@ const DATE_BUCKET_SECTIONS = [
 ];
 
 function getEducationSubtitle(evaluation: Evaluation | null | undefined, fallback: string) {
-  const educationEvidence = evaluation?.evidenceJson?.education?.trim();
+  const educationEvidence = evaluation?.evidenceJson?.education.trim();
   return educationEvidence || fallback;
 }
 
@@ -99,6 +98,7 @@ function PendingApplicationCard({
   setOpen: (open: boolean) => void;
   claimMutation: ReturnType<typeof useClaimApplication>;
 }) {
+  const router = useRouter();
   const evaluationQuery = useEvaluation(application.applicationId);
   const isClaimedByActiveRecruiter =
     application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
@@ -138,6 +138,7 @@ function PendingApplicationCard({
       onClick={() => {
         router.push(`/applicants/${application.applicationId}`);
       }}
+
       onActionClick={() => {
         selectApplication(application.applicationId);
         setOpen(true);
@@ -274,7 +275,7 @@ export function ApplicantList({
           }
         : {}),
       onClick: () => {
-        void router.push(`/applicants/${application.applicationId}`);
+        router.push(`/applicants/${application.applicationId}`);
       },
       onActionClick: () => {
         selectApplication(application.applicationId, tabKey);
