@@ -1,12 +1,14 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Features.Ingestion;
+using Application.Features.SendApplicaton;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using System.Net.Http;
-using System.Net.Http.Json; 
+using System.Net.Http.Json;
+using Microsoft.Graph.Models;
 
 namespace Api.EndPoints.Applications;
 
@@ -25,7 +27,7 @@ public static class IngestEndpoints
     }
 
     private static async Task<IResult> IngestAsync(
-        [FromForm] global::IngestApplicationRequest request,
+        [FromForm] global::SendApplicationRequest request,
         HttpRequest httpRequest,
         MediatR.IMediator mediator,
         CancellationToken ct)
@@ -39,12 +41,20 @@ public static class IngestEndpoints
             HasTranscriptFile = request.TranscriptFile is not null
         };
 
-        var result = await mediator.Send(command, ct);
+        var command2 = new SendApplicationCommand
+        {
+            CandidateName = request.CandidateName,
+            CandidateEmail = request.CandidateEmail,
+            IdempotencyKey = httpRequest.Headers["Idempotency-Key"].ToString(),
+            CVurl = request.CvFile,
+            TranscriptUrl = request.TranscriptFile
+        };
+
+        var result = await mediator.Send(command2, ct);
 
         if(result is not null && !string.IsNullOrWhiteSpace(result.ApplicationId.ToString()))
         {
             // applciation created successfully
-            // call python
             try
             {
                await NotifyHiringAgent(result.ApplicationId);
