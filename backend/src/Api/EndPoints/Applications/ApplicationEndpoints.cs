@@ -1,16 +1,22 @@
 using Application.Interfaces;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
+
 using System;
 using System.IO;
+using System.Net.Http;
 using System.Threading;
 
 namespace Api.EndPoints.Applications;
 
 public static class ApplicationEndpoints
 {
+    #pragma warning disable IDE1006 // Intentionally using '_' prefix for private field consistency. (supress naming rule)
+    private static readonly HttpClient _httpClient = new();
+    #pragma warning restore IDE1006
     public static void MapApplicationEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/applications").WithTags("Applications");
@@ -109,45 +115,62 @@ public static class ApplicationEndpoints
         })
         .WithName("ShortlistApplicationOwnership");
 
-        // GET /api/applications/{id}/cv
-        // Serves the seeded PDF CV for the given candidate.
-        group.MapGet("/{id:guid}/cv", (Guid id) =>
-        {
-            var possiblePaths = new[]
-            {
-                Path.Combine(AppContext.BaseDirectory, "Data", "SeedDocuments"),
-                Path.Combine(Directory.GetCurrentDirectory(), "src", "Infrastructure", "Data", "SeedDocuments"),
-                Path.Combine(Directory.GetCurrentDirectory(), "..", "Infrastructure", "Data", "SeedDocuments")
-            };
-            string folder = possiblePaths.FirstOrDefault(Directory.Exists) ?? possiblePaths[0];
-            var filePath = Path.Combine(folder, $"{id}_cv.pdf");
 
-            if (!File.Exists(filePath))
+        group.MapGet("/{id:guid}/cv", async (
+            Guid id,
+            IApplicationRecordRepository repository,
+            IAttachmentRetriever attachmentRetriever,
+            CancellationToken ct) =>
+        {
+            var record = await repository.GetByIdAsync(id, ct);
+            if (record?.CvAttachmentId is null)
+                return Results.NotFound("CV not found for this application.");
+
+            if (Uri.TryCreate(record.CvAttachmentId, UriKind.Absolute, out var uriResult)
+                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
             {
-                return Results.NotFound("CV not found.");
+                var response = await _httpClient.GetAsync(uriResult, ct);
+                if (response.IsSuccessStatusCode)
+                {
+                    var urlStream = await response.Content.ReadAsStreamAsync(ct);
+                    return Results.File(urlStream, "application/pdf");
+                }
+                return Results.NotFound("CV URL could not be downloaded.");
             }
-            return Results.File(filePath, "application/pdf", $"{id}_cv.pdf");
+
+            var stream = await attachmentRetriever.GetContentAsync(record.CvAttachmentId, ct);
+            return stream is null
+                ? Results.NotFound("CV attachment could not be retrieved.")
+                : Results.File(stream, "application/pdf");
         })
         .WithName("GetApplicationCv");
 
-        // GET /api/applications/{id}/transcript
-        // Serves the seeded PDF transcript for the given candidate.
-        group.MapGet("/{id:guid}/transcript", (Guid id) =>
+        group.MapGet("/{id:guid}/transcript", async (
+            Guid id,
+            IApplicationRecordRepository repository,
+            IAttachmentRetriever attachmentRetriever,
+            CancellationToken ct) =>
         {
-            var possiblePaths = new[]
-            {
-                Path.Combine(AppContext.BaseDirectory, "Data", "SeedDocuments"),
-                Path.Combine(Directory.GetCurrentDirectory(), "src", "Infrastructure", "Data", "SeedDocuments"),
-                Path.Combine(Directory.GetCurrentDirectory(), "..", "Infrastructure", "Data", "SeedDocuments")
-            };
-            string folder = possiblePaths.FirstOrDefault(Directory.Exists) ?? possiblePaths[0];
-            var filePath = Path.Combine(folder, $"{id}_transcript.pdf");
+            var record = await repository.GetByIdAsync(id, ct);
+            if (record?.TranscriptAttachmentId is null)
+                return Results.NotFound("Transcript not found for this application.");
 
-            if (!File.Exists(filePath))
+            if (Uri.TryCreate(record.TranscriptAttachmentId, UriKind.Absolute, out var uriResult)
+                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
             {
-                return Results.NotFound("Transcript not found.");
+                var response = await _httpClient.GetAsync(uriResult, ct);
+                if (response.IsSuccessStatusCode)
+                {
+                    var urlStream = await response.Content.ReadAsStreamAsync(ct);
+                    return Results.File(urlStream, "application/pdf");
+                }
+                return Results.NotFound("Transcript URL could not be downloaded.");
             }
-            return Results.File(filePath, "application/pdf", $"{id}_transcript.pdf");
+
+            var stream = await attachmentRetriever.GetContentAsync(record.TranscriptAttachmentId, ct);
+            return stream is null
+                ? Results.NotFound("Transcript attachment could not be retrieved.")
+                : Results.File(stream, "application/pdf");
         })
         .WithName("GetApplicationTranscript");
 

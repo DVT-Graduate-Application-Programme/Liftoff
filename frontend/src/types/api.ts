@@ -54,6 +54,7 @@ export interface ApplicationFilters {
   hardGatePassed?: boolean;
   claimed?: boolean;
   shortlisted?: boolean;
+  recruiterIdentity?: string;
   dateFrom?: string;
   dateTo?: string;
   search?: string;

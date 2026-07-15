@@ -17,6 +17,7 @@ import {
 } from "@/hooks/use-claim-application";
 import { CandidateApplication } from "@/types/candidate";
 import AllCandidateCard from "@/components/applicant-card/all-candidate-card";
+import { useEvaluation } from "@/hooks/use-evaluation";
 import {
   toScorePercent,
   getStatusLabel,
@@ -35,6 +36,51 @@ const STATUS_OPTIONS: [string, string][] = [
   ["rejected", "Rejected"],
   ["shortlisted", "Shortlisted"],
 ];
+
+function AllCandidateListCard({
+  application,
+  isClaimedByActiveRecruiter,
+  isClaiming,
+  onClaim,
+  onOpen,
+}: {
+  application: CandidateApplication;
+  isClaimedByActiveRecruiter: boolean;
+  isClaiming: boolean;
+  onClaim: () => void;
+  onOpen: () => void;
+}) {
+  const evaluationQuery = useEvaluation(application.applicationId);
+  const education = (() => {
+    const raw = evaluationQuery.data?.evidenceJson?.education?.trim() || application.cvSummary;
+    const parts = raw.split(",").map((part) => part.trim()).filter(Boolean);
+    return {
+      degree: parts[0] ?? raw,
+      university: parts[1] ?? "",
+    };
+  })();
+
+  return (
+    <AllCandidateCard
+      key={application.applicationId}
+      name={application.candidateName}
+      institute={education.degree}
+      subtitle={education.university || undefined}
+      systemScore={toScorePercent(application.hiringAgentTotalScore)}
+      statusLabel={getStatusLabel(application.currentStatus)}
+      statusTone={getStatusTone(application.currentStatus)}
+      reviewedAt={formatDate(application.createdAt)}
+      showReviewedAt
+      createdAt={application.createdAt}
+      recruiterName={getRecruiterLabel(application)}
+      secondaryActionLabel={isClaimedByActiveRecruiter ? "Claimed" : "Claim for review"}
+      isSecondaryActionDisabled={isClaimedByActiveRecruiter || isClaiming}
+      isSecondaryActionLoading={isClaiming}
+      onSecondaryActionClick={isClaimedByActiveRecruiter ? undefined : onClaim}
+      onActionClick={onOpen}
+    />
+  );
+}
 
 function AllCandidates() {
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -228,32 +274,15 @@ function AllCandidates() {
             claimMutation.variables === application.applicationId;
 
           return (
-            <AllCandidateCard
+            <AllCandidateListCard
               key={application.applicationId}
-              name={application.candidateName}
-              institute={application.cvSummary}
-              systemScore={toScorePercent(application.hiringAgentTotalScore)}
-              statusLabel={getStatusLabel(application.currentStatus)}
-              statusTone={getStatusTone(application.currentStatus)}
-              reviewedAt={formatDate(application.createdAt)}
-              showReviewedAt
-              createdAt={application.createdAt}
-              recruiterName={getRecruiterLabel(application)}
-              secondaryActionLabel={
-                isClaimedByActiveRecruiter ? "Claimed" : "Claim for review"
-              }
-              isSecondaryActionDisabled={
-                isClaimedByActiveRecruiter || isClaiming
-              }
-              isSecondaryActionLoading={isClaiming}
-              onSecondaryActionClick={
-                isClaimedByActiveRecruiter
-                  ? undefined
-                  : () => {
-                      claimMutation.mutate(application.applicationId);
-                    }
-              }
-              onActionClick={() => {
+              application={application}
+              isClaimedByActiveRecruiter={isClaimedByActiveRecruiter}
+              isClaiming={isClaiming}
+              onClaim={() => {
+                claimMutation.mutate(application.applicationId);
+              }}
+              onOpen={() => {
                 selectApplication(application.applicationId, "all");
                 setOpen(true);
               }}

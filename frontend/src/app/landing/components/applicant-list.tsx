@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, type ReactElement, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
 import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
 import { useInfiniteApplications } from "@/hooks/use-infinite-applications";
+import { useEvaluation } from "@/hooks/use-evaluation";
 import {
   ACTIVE_RECRUITER_ID,
   useClaimApplication,
@@ -25,6 +27,7 @@ import {
   getStatusTone,
   toScorePercent,
 } from "./candidate-list-utils";
+import type { Evaluation } from "@/types/api";
 import router from "next/router";
 
 interface ApplicantListProps {
@@ -66,6 +69,83 @@ const DATE_BUCKET_SECTIONS = [
   },
 ];
 
+function getEducationSubtitle(evaluation: Evaluation | null | undefined, fallback: string) {
+  const educationEvidence = evaluation?.evidenceJson?.education?.trim();
+  return educationEvidence || fallback;
+}
+
+function parseEducationDisplay(education: string) {
+  const parts = education
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return {
+    degree: parts[0] ?? education,
+    university: parts[1] ?? "",
+  };
+}
+
+function PendingApplicationCard({
+  application,
+  enableClaim,
+  selectApplication,
+  setOpen,
+  claimMutation,
+}: {
+  application: CandidateApplication;
+  enableClaim: boolean;
+  selectApplication: (applicationId: string) => void;
+  setOpen: (open: boolean) => void;
+  claimMutation: ReturnType<typeof useClaimApplication>;
+}) {
+  const evaluationQuery = useEvaluation(application.applicationId);
+  const isClaimedByActiveRecruiter =
+    application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
+  const isClaiming =
+    enableClaim &&
+    claimMutation.isPending &&
+    claimMutation.variables === application.applicationId;
+
+  const education = parseEducationDisplay(
+    getEducationSubtitle(evaluationQuery.data, application.cvSummary),
+  );
+
+  return (
+    <PendingCandidateCard
+      key={application.applicationId}
+      name={application.candidateName}
+      institute={education.degree}
+      secondaryInstitute={education.university}
+      systemScore={toScorePercent(application.hiringAgentTotalScore)}
+      academicAverage={application.academicAverage}
+      createdAt={application.createdAt}
+      showInstitute
+      {...(enableClaim
+        ? {
+            secondaryActionLabel: isClaimedByActiveRecruiter
+              ? "Claimed"
+              : "Claim for review",
+            isSecondaryActionDisabled: isClaimedByActiveRecruiter || isClaiming,
+            isSecondaryActionLoading: isClaiming,
+            onSecondaryActionClick: isClaimedByActiveRecruiter
+              ? undefined
+              : () => {
+                  claimMutation.mutate(application.applicationId);
+                },
+          }
+        : {})}
+      onClick={() => {
+        router.push(`/applicants/${application.applicationId}`);
+      }}
+      onActionClick={() => {
+        selectApplication(application.applicationId);
+        setOpen(true);
+      }}
+    />
+  );
+}
+
 export function ApplicantList({
   status,
   tabKey,
@@ -77,6 +157,7 @@ export function ApplicantList({
   renderItem,
   renderCard,
 }: ApplicantListProps) {
+  const router = useRouter();
   const { search } = useApplicantSearch();
   const { selectApplication } = useApplicantSelection();
   const { setOpen } = useSidebar();
@@ -101,6 +182,19 @@ export function ApplicantList({
       ),
     [data?.pages],
   );
+  const claimableApplication = (application: CandidateApplication) => {
+    const isClaimedByActiveRecruiter =
+      application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
+    const isClaiming =
+      enableClaim &&
+      claimMutation.isPending &&
+      claimMutation.variables === application.applicationId;
+
+    return {
+      isClaimedByActiveRecruiter,
+      isClaiming,
+    };
+  };
 
   if (isLoading) {
     return (
@@ -141,19 +235,27 @@ export function ApplicantList({
       return <div key={application.applicationId}>{renderItem(application)}</div>;
     }
 
-    const isClaimedByActiveRecruiter =
-      application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
-    const isClaiming =
-      enableClaim &&
-      claimMutation.isPending &&
-      claimMutation.variables === application.applicationId;
+    if (application.currentStatus === "PENDING") {
+      return (
+        <PendingApplicationCard
+          key={application.applicationId}
+          application={application}
+          enableClaim={enableClaim}
+          selectApplication={selectApplication}
+          setOpen={setOpen}
+          claimMutation={claimMutation}
+        />
+      );
+    }
 
+    const { isClaimedByActiveRecruiter, isClaiming } =
+      claimableApplication(application);
     const commonProps = {
       name: application.candidateName,
       institute: application.cvSummary,
       systemScore: toScorePercent(application.hiringAgentTotalScore),
       reviewedAt: formatDate(application.createdAt),
-      showReviewedAt: showReviewedAt,
+      showReviewedAt,
       createdAt: application.createdAt,
       recruiterName: getRecruiterLabel(application),
       ...(enableClaim
@@ -161,7 +263,8 @@ export function ApplicantList({
             secondaryActionLabel: isClaimedByActiveRecruiter
               ? "Claimed"
               : "Claim for review",
-            isSecondaryActionDisabled: isClaimedByActiveRecruiter || isClaiming,
+            isSecondaryActionDisabled:
+              isClaimedByActiveRecruiter || isClaiming,
             isSecondaryActionLoading: isClaiming,
             onSecondaryActionClick: isClaimedByActiveRecruiter
               ? undefined
@@ -174,45 +277,10 @@ export function ApplicantList({
         void router.push(`/applicants/${application.applicationId}`);
       },
       onActionClick: () => {
-        selectApplication(application.applicationId);
+        selectApplication(application.applicationId, tabKey);
         setOpen(true);
       },
     };
-
-    if (application.currentStatus === "PENDING") {
-      return (
-        <PendingCandidateCard
-          key={application.applicationId}
-          name={application.candidateName}
-          institute={application.cvSummary}
-          systemScore={toScorePercent(application.hiringAgentTotalScore)}
-          academicAverage={application.academicAverage}
-          createdAt={application.createdAt}
-          {...(enableClaim
-            ? {
-                secondaryActionLabel: isClaimedByActiveRecruiter
-                  ? "Claimed"
-                  : "Claim for review",
-                isSecondaryActionDisabled:
-                  isClaimedByActiveRecruiter || isClaiming,
-                isSecondaryActionLoading: isClaiming,
-                onSecondaryActionClick: isClaimedByActiveRecruiter
-                  ? undefined
-                  : () => {
-                      claimMutation.mutate(application.applicationId);
-                    },
-              }
-            : {})}
-          onClick={() => {
-            void router.push(`/applicants/${application.applicationId}`);
-          }}
-          onActionClick={() => {
-            selectApplication(application.applicationId);
-            setOpen(true);
-          }}
-        />
-      );
-    }
 
     return (
       <ApplicantCard
@@ -220,29 +288,6 @@ export function ApplicantList({
         statusLabel={getStatusLabel(application.currentStatus)}
         statusTone={getStatusTone(application.currentStatus)}
         {...commonProps}
-        reviewedAt={formatDate(application.createdAt)}
-        showReviewedAt={showReviewedAt}
-        createdAt={application.createdAt}
-        recruiterName={getRecruiterLabel(application)}
-        {...(enableClaim
-          ? {
-              secondaryActionLabel: isClaimedByActiveRecruiter
-                ? "Claimed"
-                : "Claim for review",
-              isSecondaryActionDisabled:
-                isClaimedByActiveRecruiter || isClaiming,
-              isSecondaryActionLoading: isClaiming,
-              onSecondaryActionClick: isClaimedByActiveRecruiter
-                ? undefined
-                : () => {
-                    claimMutation.mutate(application.applicationId);
-                  },
-            }
-          : {})}
-        onActionClick={() => {
-          selectApplication(application.applicationId, tabKey);
-          setOpen(true);
-        }}
       />
     );
   };

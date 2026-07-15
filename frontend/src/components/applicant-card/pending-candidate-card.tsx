@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 type PendingCandidateCardProps = {
   name: string;
   institute: string;
+  secondaryInstitute?: string;
   academicAverage?: number;
   systemScore: number;
   scoreLabel?: string;
@@ -51,6 +52,7 @@ function getDaysAgo(dateString: string): number | null {
 export default function PendingCandidateCard({
   name,
   institute,
+  secondaryInstitute,
   academicAverage,
   systemScore,
   scoreLabel = "System Score",
@@ -98,9 +100,12 @@ export default function PendingCandidateCard({
         <div className="min-w-0 flex-1">
           <h4 className="font-semibold leading-tight text-foreground">{name}</h4>
           {showInstitute && (
-            <p className="mt-0.5 truncate text-xs text-muted-foreground">
-              {institute}
-            </p>
+            <div className="mt-0.5 flex flex-col gap-0.5 text-xs text-muted-foreground">
+              <p className="whitespace-normal break-words">{institute}</p>
+              {secondaryInstitute ? (
+                <p className="whitespace-normal break-words">{secondaryInstitute}</p>
+              ) : null}
+            </div>
           )}
         </div>
       </div>

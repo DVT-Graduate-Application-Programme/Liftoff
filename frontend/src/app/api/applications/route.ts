@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
   const hardGatePassed = toBool(searchParams.get("hardGatePassed"));
   const claimed = toBool(searchParams.get("claimed"));
   const shortlisted = toBool(searchParams.get("shortlisted"));
+  const recruiterIdentity = searchParams.get("recruiterIdentity");
   const dateFrom = searchParams.get("dateFrom");
   const dateTo = searchParams.get("dateTo");
   const search = searchParams.get("search");
@@ -37,6 +38,7 @@ export async function GET(req: NextRequest) {
   if (hardGatePassed !== null) backendParams.set("hardGatePassed", String(hardGatePassed));
   if (claimed !== null) backendParams.set("isClaimed", String(claimed));
   if (shortlisted !== null) backendParams.set("isShortlisted", String(shortlisted));
+  if (recruiterIdentity) backendParams.set("recruiterIdentity", recruiterIdentity);
   if (dateFrom) backendParams.set("fromDate", dateFrom);
   if (dateTo) backendParams.set("toDate", dateTo);
 
