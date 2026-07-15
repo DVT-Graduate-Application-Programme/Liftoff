@@ -171,14 +171,14 @@ public static class DbSeeder
         };
 
         // ──────────────────────────────────────────────
-        // Candidate 3 – Priya Sharma (Score 73 + 2 bonus = 75)
+        // Candidate 3 – Elena Rodriguez (Score 73 + 2 bonus = 75)
         // ──────────────────────────────────────────────
         var app3 = new ApplicationRecord
         {
             Id = App3Id,
             EmailMessageId = "seed-msg-003",
-            CandidateName = "Priya Sharma",
-            CandidateEmail = "priya.sharma@example.com",
+            CandidateName = "Elena Rodriguez",
+            CandidateEmail = "Elena.Rodriguez@example.com",
             CandidateGitHubUrl = "https://github.com/josephexample-dev",
             Status = "shortlisted",
             Tier = "Borderline",
@@ -187,7 +187,7 @@ public static class DbSeeder
             HiringAgentTotalScore = 75.0m,
             HiringAgentExplanation = "Well-rounded candidate with solid GitHub presence, diverse projects, and relevant work history.",
             CvSummary = "BSc (Hons) Computer Science (2:1, University of Manchester). Weather-tracking app, library management system. Customer Assistant at Tesco (2 yrs). Personal portfolio website.",
-            ShortlistedByRecruiterId = "rose@dvtsoftware.come",
+            ShortlistedByRecruiterId = "rose@dvtsoftware.com",
             ShortlistedAt = DateTimeOffset.UtcNow.AddDays(-5),
             CreatedAt = DateTimeOffset.UtcNow.AddDays(-6),
             UpdatedAt = DateTimeOffset.UtcNow.AddDays(-5),

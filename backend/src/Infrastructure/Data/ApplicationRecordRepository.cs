@@ -303,6 +303,7 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             .Select(a => new RecruiterActionLogDto
             {
                 Id = a.Id,
+                ApplicationRecordId = a.ApplicationRecordId,
                 RecruiterIdentity = a.RecruiterIdentity,
                 ActionType = a.ActionType,
                 PreviousStatus = a.PreviousStatus,
@@ -322,6 +323,7 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             .Select(a => new RecruiterActionLogDto
             {
                 Id = a.Id,
+                ApplicationRecordId = a.ApplicationRecordId,
                 RecruiterIdentity = a.RecruiterIdentity,
                 ActionType = a.ActionType,
                 PreviousStatus = a.PreviousStatus,

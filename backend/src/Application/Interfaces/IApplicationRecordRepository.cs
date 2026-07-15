@@ -65,6 +65,7 @@ public class ApplicationRatingUpdate
 public class RecruiterActionLogDto
 {
     public Guid Id { get; set; }
+    public Guid ApplicationRecordId { get; set; }
     public string RecruiterIdentity { get; set; } = string.Empty;
     public string ActionType { get; set; } = string.Empty;
     public string? PreviousStatus { get; set; }

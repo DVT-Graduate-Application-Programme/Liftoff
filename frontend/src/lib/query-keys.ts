@@ -7,4 +7,5 @@ export const queryKeys = {
   applicant: (id: string) => ["applications", id, "applicant"] as const,
   evaluation: (id: string) => ["applications", id, "evaluation"] as const,
   ownership: (id: string) => ["applications", id, "ownership"] as const,
+  logs: () => ["logs"] as const,
 };
