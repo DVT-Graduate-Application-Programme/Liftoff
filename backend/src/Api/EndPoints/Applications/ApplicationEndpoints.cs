@@ -5,12 +5,14 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
+using System.Net.Http;
 using System.Threading;
 
 namespace Api.EndPoints.Applications;
 
 public static class ApplicationEndpoints
 {
+    private static readonly HttpClient _httpClient = new();
     public static void MapApplicationEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/applications").WithTags("Applications");
@@ -109,50 +111,8 @@ public static class ApplicationEndpoints
         })
         .WithName("ShortlistApplicationOwnership");
 
-        // GET /api/applications/{id}/cv
-        // Serves the seeded PDF CV for the given candidate.
-        group.MapGet("/{id:guid}/cv", (Guid id) =>
-        {
-            var possiblePaths = new[]
-            {
-                Path.Combine(AppContext.BaseDirectory, "Data", "SeedDocuments"),
-                Path.Combine(Directory.GetCurrentDirectory(), "src", "Infrastructure", "Data", "SeedDocuments"),
-                Path.Combine(Directory.GetCurrentDirectory(), "..", "Infrastructure", "Data", "SeedDocuments")
-            };
-            string folder = possiblePaths.FirstOrDefault(Directory.Exists) ?? possiblePaths[0];
-            var filePath = Path.Combine(folder, $"{id}_cv.pdf");
-
-            if (!File.Exists(filePath))
-            {
-                return Results.NotFound("CV not found.");
-            }
-            return Results.File(filePath, "application/pdf", $"{id}_cv.pdf");
-        })
-        .WithName("GetApplicationCv");
-
-        // GET /api/applications/{id}/transcript
-        // Serves the seeded PDF transcript for the given candidate.
-        group.MapGet("/{id:guid}/transcript", (Guid id) =>
-        {
-            var possiblePaths = new[]
-            {
-                Path.Combine(AppContext.BaseDirectory, "Data", "SeedDocuments"),
-                Path.Combine(Directory.GetCurrentDirectory(), "src", "Infrastructure", "Data", "SeedDocuments"),
-                Path.Combine(Directory.GetCurrentDirectory(), "..", "Infrastructure", "Data", "SeedDocuments")
-            };
-            string folder = possiblePaths.FirstOrDefault(Directory.Exists) ?? possiblePaths[0];
-            var filePath = Path.Combine(folder, $"{id}_transcript.pdf");
-
-            if (!File.Exists(filePath))
-            {
-                return Results.NotFound("Transcript not found.");
-            }
-            return Results.File(filePath, "application/pdf", $"{id}_transcript.pdf");
-        })
-        .WithName("GetApplicationTranscript");
-
       
-        group.MapGet("/{id:guid}/cv/v2", async (
+        group.MapGet("/{id:guid}/cv", async (
             Guid id,
             IApplicationRecordRepository repository,
             IAttachmentRetriever attachmentRetriever,
@@ -162,14 +122,26 @@ public static class ApplicationEndpoints
             if (record?.CvAttachmentId is null)
                 return Results.NotFound("CV not found for this application.");
 
+            if (Uri.TryCreate(record.CvAttachmentId, UriKind.Absolute, out var uriResult)
+                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
+            {
+                var response = await _httpClient.GetAsync(uriResult, ct);
+                if (response.IsSuccessStatusCode)
+                {
+                    var urlStream = await response.Content.ReadAsStreamAsync(ct);
+                    return Results.File(urlStream, "application/pdf");
+                }
+                return Results.NotFound("CV URL could not be downloaded.");
+            }
+
             var stream = await attachmentRetriever.GetContentAsync(record.CvAttachmentId, ct);
             return stream is null
                 ? Results.NotFound("CV attachment could not be retrieved.")
                 : Results.File(stream, "application/pdf");
         })
-        .WithName("GetApplicationCvV2");
+        .WithName("GetApplicationCv");
 
-        group.MapGet("/{id:guid}/transcript/v2", async (
+        group.MapGet("/{id:guid}/transcript", async (
             Guid id,
             IApplicationRecordRepository repository,
             IAttachmentRetriever attachmentRetriever,
@@ -179,12 +151,24 @@ public static class ApplicationEndpoints
             if (record?.TranscriptAttachmentId is null)
                 return Results.NotFound("Transcript not found for this application.");
 
+            if (Uri.TryCreate(record.TranscriptAttachmentId, UriKind.Absolute, out var uriResult)
+                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
+            {
+                var response = await _httpClient.GetAsync(uriResult, ct);
+                if (response.IsSuccessStatusCode)
+                {
+                    var urlStream = await response.Content.ReadAsStreamAsync(ct);
+                    return Results.File(urlStream, "application/pdf");
+                }
+                return Results.NotFound("Transcript URL could not be downloaded.");
+            }
+
             var stream = await attachmentRetriever.GetContentAsync(record.TranscriptAttachmentId, ct);
             return stream is null
                 ? Results.NotFound("Transcript attachment could not be retrieved.")
                 : Results.File(stream, "application/pdf");
         })
-        .WithName("GetApplicationTranscriptV2");
+        .WithName("GetApplicationTranscript");
 
         // ── Graph attachment endpoint – disabled for POC ──
         // Fetches a CV/transcript attachment directly from Microsoft Graph using the email
