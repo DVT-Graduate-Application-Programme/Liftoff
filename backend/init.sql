@@ -70,10 +70,6 @@ CREATE TABLE public."HiringAgentEvaluations" (
     "Id"                            UUID        NOT NULL DEFAULT gen_random_uuid(),
     "ApplicationRecordId"           UUID        NOT NULL,
 
-    -- The overall AI-generated summary
-    "AiSummary"                     TEXT        NULL,
-
-
     -- Institution: { name, degreeName }
     "InstitutionJson"               JSONB       NULL,
 
@@ -97,6 +93,9 @@ CREATE TABLE public."HiringAgentEvaluations" (
     -- Raw GitHub and project classification data from the Hiring Agent
     "GitHubProfileDataJson"         JSONB       NULL,
     "ProjectClassificationsJson"    JSONB       NULL,
+
+    -- AI generated summary of the candidate
+    "AiSummary"                     TEXT        NULL,
 
     "ProcessedAt"                   TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

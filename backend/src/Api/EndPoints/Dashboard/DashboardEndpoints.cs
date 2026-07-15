@@ -17,7 +17,6 @@ public static class DashboardEndpoints
             bool? hardGatePassed,
             bool? isClaimed,
             bool? isShortlisted,
-            string? recruiterIdentity,
             DateTime? fromDate,
             DateTime? toDate) =>
         {
@@ -28,7 +27,6 @@ public static class DashboardEndpoints
                 HardGatePassed= hardGatePassed,
                 IsClaimed     = isClaimed,
                 IsShortlisted = isShortlisted,
-                RecruiterIdentity = recruiterIdentity,
                 FromDate      = fromDate,
                 ToDate        = toDate
             };

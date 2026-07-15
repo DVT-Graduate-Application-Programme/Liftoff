@@ -15,7 +15,7 @@ public static class DashboardSampleData
             CvSummary = "Strong technical candidate with consistent academic performance and an active GitHub history.",
             Flags = [],
             CandidateGitHubUrl = "https://github.com/thabo-mokoena",
-            ClaimedByRecruiterId = "rose@dvtsoftware.com",
+            ClaimedByRecruiterId = "recruiter1@company.com",
             ShortlistedByRecruiterId = null,
             RecruiterRating = 4,
             CreatedAt = new DateTime(2025, 1, 15, 10, 30, 0, DateTimeKind.Utc)
@@ -31,8 +31,8 @@ public static class DashboardSampleData
             CvSummary = "Exceptional candidate with open-source contributions and internship experience at a fintech company.",
             Flags = [],
             CandidateGitHubUrl = "https://github.com/lerato-dlamini",
-            ClaimedByRecruiterId = "phindi@dvtsoftware.com",
-            ShortlistedByRecruiterId = "phindi@dvtsoftware.com",
+            ClaimedByRecruiterId = "recruiter2@company.com",
+            ShortlistedByRecruiterId = "recruiter2@company.com",
             RecruiterRating = 5,
             CreatedAt = new DateTime(2025, 1, 14, 9, 0, 0, DateTimeKind.Utc)
         },
@@ -63,7 +63,7 @@ public static class DashboardSampleData
             CvSummary = "Candidate shows potential in niche areas but CV lacks depth in core technical skills.",
             Flags = ["Manual review required"],
             CandidateGitHubUrl = "https://github.com/ayanda-khumalo",
-            ClaimedByRecruiterId = "rose@dvtsoftware.com",
+            ClaimedByRecruiterId = "recruiter1@company.com",
             ShortlistedByRecruiterId = null,
             RecruiterRating = 2,
             CreatedAt = new DateTime(2025, 1, 13, 11, 15, 0, DateTimeKind.Utc)

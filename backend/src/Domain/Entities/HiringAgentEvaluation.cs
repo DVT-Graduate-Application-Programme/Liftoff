@@ -1,5 +1,6 @@
 using System;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Domain.Entities;
 
@@ -7,9 +8,6 @@ public class HiringAgentEvaluation
 {
     public Guid Id { get; set; }
     public Guid ApplicationRecordId { get; set; }
-
-    // The overall AI-generated summary
-    public string? AiSummary { get; set; }
 
     // Institution: { name, degreeName }
     public JsonDocument? InstitutionJson { get; set; }
@@ -34,7 +32,10 @@ public class HiringAgentEvaluation
     public JsonDocument? GitHubProfileDataJson { get; set; }
     public JsonDocument? ProjectClassificationsJson { get; set; }
 
+    public string? AiSummary { get; set; }
+
     public DateTimeOffset ProcessedAt { get; set; }
 
+    [JsonIgnore]
     public ApplicationRecord? ApplicationRecord { get; set; }
 }
