@@ -1,3 +1,4 @@
+using System.IO;
 using Application.Interfaces;
 using Domain.Entities;
 using MediatR;
@@ -45,12 +46,36 @@ public class SendApplicationHandler
             EmailMessageId = emailMessageId,
             CandidateName = request.CandidateName,
             CandidateEmail = request.CandidateEmail,
-            CvAttachmentId = request.CVurl is not null ? request.CVurl : null,
-            TranscriptAttachmentId = request.TranscriptUrl is not null ? request.TranscriptUrl : null,
+            CvAttachmentId = null,
+            TranscriptAttachmentId = null,
             Status = "PENDING",
             CreatedAt = now,
             UpdatedAt = now
         };
+
+        var possiblePaths = new[]
+        {
+            Path.Combine(AppContext.BaseDirectory, "Data", "SeedDocuments"),
+            Path.Combine(Directory.GetCurrentDirectory(), "src", "Infrastructure", "Data", "SeedDocuments"),
+            Path.Combine(Directory.GetCurrentDirectory(), "..", "Infrastructure", "Data", "SeedDocuments")
+        };
+        string folder = possiblePaths.FirstOrDefault(Directory.Exists) ?? possiblePaths[0];
+        Directory.CreateDirectory(folder);
+
+        var cvFilePath = Path.Combine(folder, $"{applicationRecord.Id}_cv.pdf");
+        using (var fileStream = new FileStream(cvFilePath, FileMode.Create))
+        {
+            await request.CvStream.CopyToAsync(fileStream, cancellationToken);
+        }
+
+        if (request.TranscriptStream != null)
+        {
+            var transcriptFilePath = Path.Combine(folder, $"{applicationRecord.Id}_transcript.pdf");
+            using (var fileStream = new FileStream(transcriptFilePath, FileMode.Create))
+            {
+                await request.TranscriptStream.CopyToAsync(fileStream, cancellationToken);
+            }
+        }
 
         await _repository.AddAsync(applicationRecord, cancellationToken);
         await _repository.SaveChangesAsync(cancellationToken);

@@ -34,13 +34,16 @@ public static class IngestEndpoints
         MediatR.IMediator mediator,
         CancellationToken ct)
     {
+        using var cvStream = request.CvFile.OpenReadStream();
+        using var transcriptStream = request.TranscriptFile?.OpenReadStream();
+
         var command2 = new SendApplicationCommand
         {
             CandidateName = request.CandidateName,
             CandidateEmail = request.CandidateEmail,
             IdempotencyKey = httpRequest.Headers["Idempotency-Key"].ToString(),
-            CVurl = request.CvFile,
-            TranscriptUrl = request.TranscriptFile
+            CvStream = cvStream,
+            TranscriptStream = transcriptStream
         };
 
         var result = await mediator.Send(command2, ct);
