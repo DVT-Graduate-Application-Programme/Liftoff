@@ -22,6 +22,7 @@ import {
 } from "@/components/providers/applicant-selection-provider";
 import { useApplicant } from "@/hooks/use-applicant";
 import { useEvaluation } from "@/hooks/use-evaluation";
+import { getStatusLabel } from "@/app/landing/components/candidate-list-utils";
 
 function SelectedApplicantDetailsSidebar() {
   const { selectedApplicationId } = useApplicantSelection();
@@ -248,7 +249,7 @@ function CandidateHistoryCard({
       scoreLabel="Sys Score"
       scoreClassName="font-semibold"
       layout="history"
-      statusLabel={candidate.currentStatus}
+      statusLabel={getStatusLabel(candidate.currentStatus) ?? candidate.currentStatus}
       statusTone={getStatusTone(candidate.currentStatus)}
       tierLabel={candidate.tier}
       tierTone={getTierTone(candidate.tier)}
