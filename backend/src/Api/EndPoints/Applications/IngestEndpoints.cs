@@ -8,12 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using System.Net.Http;
 using System.Net.Http.Json;
-<<<<<<< HEAD
 using Microsoft.Graph.Models;
-=======
 using System.IO;
-using System.Linq; 
->>>>>>> 1651bf8 (feat: implement manual graduate application form with PDF file ingestion and backend storage)
+using System.Linq;
 
 namespace Api.EndPoints.Applications;
 
