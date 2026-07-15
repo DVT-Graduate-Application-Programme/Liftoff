@@ -31,7 +31,11 @@ export interface EvaluationCategoryScores {
 export interface Evaluation {
   id: string;
   applicationRecordId: string;
-  institutionJson: { name: string; degreeName: string } | null;
+  institutionJson: {
+    name: string;
+    degreeName: string;
+    academic_average?: number;
+  } | null;
   categoryScoresJson: EvaluationCategoryScores;
   evidenceJson: Record<string, string> | null;
   bonusPointsJson: { total: number; breakdown: string } | null;
@@ -40,21 +44,8 @@ export interface Evaluation {
   areasForImprovementJson: string[] | null;
   gitHubProfileDataJson: Record<string, unknown> | null;
   projectClassificationsJson: Record<string, unknown> | null;
+  aiSummary: string | null;
   processedAt: string;
-  applicationRecord: Record<string, unknown> | null;
-  hiringAgentTotalScore: number;
-}
-
-export interface DocumentFile {
-  url: string;
-  filename: string;
-  uploadedDate: string;
-  sizeKb: number;
-}
-
-export interface Documents {
-  cvDocument: DocumentFile;
-  transcriptDocument: DocumentFile | null;
 }
 
 export interface ApplicationFilters {
@@ -63,9 +54,12 @@ export interface ApplicationFilters {
   hardGatePassed?: boolean;
   claimed?: boolean;
   shortlisted?: boolean;
+  recruiterIdentity?: string;
   dateFrom?: string;
   dateTo?: string;
   search?: string;
+  minScore?: number;
+  sort?: "score_desc" | "score_asc" | "date_desc" | "date_asc";
   limit?: number;
   cursor?: number;
 }
@@ -73,4 +67,15 @@ export interface ApplicationFilters {
 export interface PaginatedApplications {
   applications: CandidateApplication[];
   nextCursor: number | null;
+}
+
+export interface Ownership {
+  claimedByRecruiterId: string | null;
+  claimedAt: string | null;
+  shortlistedByRecruiterId: string | null;
+  shortlistedAt: string | null;
+  recruiterRating: number | null;
+  recruiterRatingNote: string | null;
+  ratedByRecruiterId: string | null;
+  ratedAt: string | null;
 }

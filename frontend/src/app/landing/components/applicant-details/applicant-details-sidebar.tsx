@@ -4,6 +4,7 @@ import { Sidebar, SidebarContent, SidebarGroup } from "@/components/ui/sidebar";
 import type { ApplicantDetailsEvaluation } from "./mock-applicant-details";
 import { CloseApplicantDetailsSidebarButton } from "./applicant-details-sidebar-controls";
 import { SCORE_CATEGORIES } from "./constants";
+import type { SelectionTabKey } from "@/components/providers/applicant-selection-provider";
 
 type ApplicantDetailsSidebarProps = {
   applicantId?: string | null;
@@ -11,6 +12,7 @@ type ApplicantDetailsSidebarProps = {
   evaluation: ApplicantDetailsEvaluation | null;
   isLoadingEvaluation?: boolean;
   evaluationMessage?: string | null;
+  tabKey?: SelectionTabKey | null;
 };
 
 function formatDecimal(value: number) {
@@ -23,6 +25,7 @@ export function ApplicantDetailsSidebar({
   evaluation,
   isLoadingEvaluation = false,
   evaluationMessage = null,
+  tabKey = null,
 }: ApplicantDetailsSidebarProps) {
   const categoryScores: Partial<
     ApplicantDetailsEvaluation["categoryScoresJson"]
@@ -131,7 +134,9 @@ export function ApplicantDetailsSidebar({
             className="mt-6 h-11 w-full text-base font-medium"
           >
             {applicantId ? (
-              <Link href={`/applicants/${applicantId}`}>View CV and Transcript</Link>
+              <Link href={tabKey ? `/applicants/${applicantId}?from=${tabKey}` : `/applicants/${applicantId}`}>
+                View CV and Transcript
+              </Link>
             ) : (
               "View CV and Transcript"
             )}

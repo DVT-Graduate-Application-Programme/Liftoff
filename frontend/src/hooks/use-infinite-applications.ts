@@ -10,9 +10,12 @@ function toQueryString(filters: ApplicationFilters, cursor: number) {
   if (filters.hardGatePassed !== undefined) params.set("hardGatePassed", String(filters.hardGatePassed));
   if (filters.claimed !== undefined) params.set("claimed", String(filters.claimed));
   if (filters.shortlisted !== undefined) params.set("shortlisted", String(filters.shortlisted));
+  if (filters.recruiterIdentity) params.set("recruiterIdentity", filters.recruiterIdentity);
   if (filters.dateFrom) params.set("dateFrom", filters.dateFrom);
   if (filters.dateTo) params.set("dateTo", filters.dateTo);
   if (filters.search) params.set("search", filters.search);
+  if (filters.minScore !== undefined) params.set("minScore", String(filters.minScore));
+  if (filters.sort) params.set("sort", filters.sort);
   params.set("limit", String(filters.limit ?? 6));
   params.set("cursor", String(cursor));
   return params.toString();

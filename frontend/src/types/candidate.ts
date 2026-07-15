@@ -1,13 +1,11 @@
-export type CandidateTier = "STRONG" | "BORDERLINE" | "WEAK" | "INVALID";
+export type CandidateTier = "STRONG" | "BORDERLINE" | "WEAK";
 
 export type CandidateStatus =
   | "PENDING"
-  | "PROCESSING"
-  | "VALID"
-  | "INVALID"
-  | "MANUAL_REVIEW"
-  | "SHORTLISTED"
-  | "ERROR";
+  | "evaluated"
+  | "forwarded"
+  | "rejected"
+  | "shortlisted";
 
 export interface CandidateApplication {
   applicationId: string;
@@ -21,5 +19,7 @@ export interface CandidateApplication {
   candidateGitHubUrl: string | null;
   claimedByRecruiterId: string | null;
   shortlistedByRecruiterId: string | null;
+  ratedByRecruiterId: string | null;
   createdAt: string;
+  academicAverage?: number;
 }
