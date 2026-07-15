@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-export type SelectionTabKey = "pending" | "all" | "accepted";
+export type SelectionTabKey = "pending" | "all" | "accepted" | "history";
 
 interface ApplicantSelectionContextValue {
   selectedApplicationId: string | null;

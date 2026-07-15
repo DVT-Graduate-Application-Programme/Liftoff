@@ -1,6 +1,8 @@
 using System;
 using System.Text.Json;
+
 using Domain.Entities;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,20 +20,20 @@ public static class DbSeeder
     private static readonly Guid App6Id = new("a6000000-0000-0000-0000-000000000006");
     private static readonly Guid App7Id = new("a7000000-0000-0000-0000-000000000007");
     private static readonly Guid App8Id = new("a8000000-0000-0000-0000-000000000008");
-    private static readonly Guid App9Id  = new("a9000000-0000-0000-0000-000000000009");
+    private static readonly Guid App9Id = new("a9000000-0000-0000-0000-000000000009");
     private static readonly Guid App10Id = new("b0000000-0000-0000-0000-000000000010");
     private static readonly Guid App11Id = new("b0000000-0000-0000-0000-000000000011");
     private static readonly Guid App12Id = new("b0000000-0000-0000-0000-000000000012");
 
-    private static readonly Guid Eval1Id  = new("e1000000-0000-0000-0000-000000000001");
-    private static readonly Guid Eval2Id  = new("e2000000-0000-0000-0000-000000000002");
-    private static readonly Guid Eval3Id  = new("e3000000-0000-0000-0000-000000000003");
-    private static readonly Guid Eval4Id  = new("e4000000-0000-0000-0000-000000000004");
-    private static readonly Guid Eval5Id  = new("e5000000-0000-0000-0000-000000000005");
-    private static readonly Guid Eval6Id  = new("e6000000-0000-0000-0000-000000000006");
-    private static readonly Guid Eval7Id  = new("e7000000-0000-0000-0000-000000000007");
-    private static readonly Guid Eval8Id  = new("e8000000-0000-0000-0000-000000000008");
-    private static readonly Guid Eval9Id  = new("e9000000-0000-0000-0000-000000000009");
+    private static readonly Guid Eval1Id = new("e1000000-0000-0000-0000-000000000001");
+    private static readonly Guid Eval2Id = new("e2000000-0000-0000-0000-000000000002");
+    private static readonly Guid Eval3Id = new("e3000000-0000-0000-0000-000000000003");
+    private static readonly Guid Eval4Id = new("e4000000-0000-0000-0000-000000000004");
+    private static readonly Guid Eval5Id = new("e5000000-0000-0000-0000-000000000005");
+    private static readonly Guid Eval6Id = new("e6000000-0000-0000-0000-000000000006");
+    private static readonly Guid Eval7Id = new("e7000000-0000-0000-0000-000000000007");
+    private static readonly Guid Eval8Id = new("e8000000-0000-0000-0000-000000000008");
+    private static readonly Guid Eval9Id = new("e9000000-0000-0000-0000-000000000009");
     private static readonly Guid Eval10Id = new("f0000000-0000-0000-0000-000000000010");
     private static readonly Guid Eval11Id = new("f0000000-0000-0000-0000-000000000011");
     private static readonly Guid Eval12Id = new("f0000000-0000-0000-0000-000000000012");
@@ -185,7 +187,7 @@ public static class DbSeeder
             HiringAgentTotalScore = 75.0m,
             HiringAgentExplanation = "Well-rounded candidate with solid GitHub presence, diverse projects, and relevant work history.",
             CvSummary = "BSc (Hons) Computer Science (2:1, University of Manchester). Weather-tracking app, library management system. Customer Assistant at Tesco (2 yrs). Personal portfolio website.",
-            ShortlistedByRecruiterId = "recruiter-seed-001",
+            ShortlistedByRecruiterId = "rose@dvtsoftware.come",
             ShortlistedAt = DateTimeOffset.UtcNow.AddDays(-5),
             CreatedAt = DateTimeOffset.UtcNow.AddDays(-6),
             UpdatedAt = DateTimeOffset.UtcNow.AddDays(-5),
@@ -245,7 +247,7 @@ public static class DbSeeder
             HiringAgentTotalScore = 91.0m,
             HiringAgentExplanation = "Exceptional full-stack candidate. Ships production-grade React + Node.js apps, has two SWE internships, and maintains an open-source React form library with thousands of weekly downloads.",
             CvSummary = "BSc (Hons) Computer Science, University of Edinburgh, First Class. Full-stack intern at Monzo and Sky. Maintains 'react-snap-forms' npm package (8k weekly downloads). Final year project: real-time collaborative whiteboard.",
-            ShortlistedByRecruiterId = "recruiter-seed-001",
+            ShortlistedByRecruiterId = "rose@dvtsoftware.come",
             ShortlistedAt = DateTimeOffset.UtcNow.AddDays(-4),
             CreatedAt = DateTimeOffset.UtcNow.AddDays(-12),
             UpdatedAt = DateTimeOffset.UtcNow.AddDays(-4),
@@ -422,7 +424,7 @@ public static class DbSeeder
             HiringAgentTotalScore = 80.0m,
             HiringAgentExplanation = "Strong full-stack profile with React/Spring Boot experience, a 6-month ThoughtWorks internship, and well-tested deployed projects. Comfortable across the entire stack.",
             CvSummary = "BSc (Hons) Software Engineering, University of Warwick, First Class. Full-stack intern at ThoughtWorks. Built a job board platform (React + Spring Boot + PostgreSQL, deployed on Heroku). Active OSS contributor.",
-            ShortlistedByRecruiterId = "recruiter-seed-002",
+            ShortlistedByRecruiterId = "phindi@dvtsoftware.come",
             ShortlistedAt = DateTimeOffset.UtcNow.AddDays(-3),
             CreatedAt = DateTimeOffset.UtcNow.AddDays(-11),
             UpdatedAt = DateTimeOffset.UtcNow.AddDays(-3),
@@ -769,7 +771,7 @@ public static class DbSeeder
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "manager-demo", ActionType = "NOTES", Reason = "Left a voicemail to schedule technical round.", ActionedAt = DateTimeOffset.UtcNow.AddHours(-5) },
             
             // App3: Shortlisted
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Strong candidate, advancing to interview.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, RecruiterIdentity = "rose@dvtsoftware.come", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Strong candidate, advancing to interview.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
 
             // App4: Forwarded
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, RecruiterIdentity = "manager-seed-002", ActionType = "FORWARD", PreviousStatus = "evaluated", NewStatus = "forwarded", Reason = "Forwarding to engineering lead for review.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-3) },
@@ -782,13 +784,13 @@ public static class DbSeeder
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "recruiter-demo", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Passed initial screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
             
             // App10: Rejected
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App10Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Does not meet baseline experience.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-7) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App10Id, RecruiterIdentity = "rose@dvtsoftware.come", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Does not meet baseline experience.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-7) },
             
             // App11: Rejected
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App11Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Failed automated technical assessment.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-6) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App11Id, RecruiterIdentity = "rose@dvtsoftware.come", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Failed automated technical assessment.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-6) },
             
             // App12: Rejected
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App12Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Poor cultural fit identified in pre-screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App12Id, RecruiterIdentity = "rose@dvtsoftware.come", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Poor cultural fit identified in pre-screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
         };
 
         db.RecruiterActions.AddRange(actions);
