@@ -48,8 +48,8 @@ def get_resume(candidate_id: UUID) -> Resume:
         response.raise_for_status()
         metadata = response.json()
 
-        cv_url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/cv/v2"
-        transcript_url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/transcript/v2"
+        cv_url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/cv"
+        transcript_url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/transcript"
 
         transcript_check = client.get(transcript_url) # if transript is available
         if transcript_check.status_code == 404:

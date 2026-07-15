@@ -216,7 +216,7 @@ public static class ApplicationEndpoints
             // Wait, IngestEndpoints.NotifyHiringAgent(id) was added by the user. I'll leave it.
             await IngestEndpoints.NotifyHiringAgent(id);
 
-            return Results.Ok();
+            return Results.Ok(new { success = true });
         })
         .WithName("ReevaluateApplication");
 
