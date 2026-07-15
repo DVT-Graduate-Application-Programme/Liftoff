@@ -1,224 +1,90 @@
-import ApplicantCard from "@/components/applicant-card/applicant-card";
-import type { CandidateApplication } from "@/types/candidate";
-import { ListFilter, ListOrdered, X } from "lucide-react";
-import React from "react";
-import {
-  formatDate,
-  statusLabels,
-  statusTones,
-  toScorePercent,
-} from "./candidate-list-utils";
+"use client";
 
-type PendingCandidatesProps = {
-  applications: CandidateApplication[];
-  onSelectApplication: (application: CandidateApplication) => void;
-};
+import { useMemo, useState } from "react";
+import type { ApplicationFilters } from "@/types/api";
+import { ApplicantList } from "./applicant-list";
+import { FilterBar, type ActiveFilter, type FilterFieldConfig, type SortOption } from "./filter-bar";
+import { ACTIVE_RECRUITER_ID } from "@/hooks/use-claim-application";
 
-const startOfToday = () => {
-  const date = new Date();
-  date.setHours(0, 0, 0, 0);
-  return date;
-};
-const getStartOfWeek = (date: Date) => {
-  const start = new Date(date);
-  start.setHours(0, 0, 0, 0);
-  const day = start.getDay();
-  const daysSinceMonday = (day + 6) % 7;
-  start.setDate(start.getDate() - daysSinceMonday);
-  return start;
-};
+const PendingCandidates = () => {
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [tier, setTier] = useState("");
+  const [minScore, setMinScore] = useState("");
+  const [hardGate, setHardGate] = useState("all");
+  const [claimed, setClaimed] = useState("all");
+  const [dateRange, setDateRange] = useState("all");
+  const [sort, setSort] = useState<SortOption>("score_desc");
 
-type DateBucket = "today" | "thisWeek" | "lastWeek" | "older";
+  const filters = useMemo(() => {
+    const next: Omit<ApplicationFilters, "status" | "search" | "limit" | "cursor"> = { sort };
+    next.recruiterIdentity = ACTIVE_RECRUITER_ID;
+    if (tier) next.tier = tier;
+    if (minScore) next.minScore = Number(minScore);
+    if (hardGate !== "all") next.hardGatePassed = hardGate === "passed";
+    if (claimed !== "all") next.claimed = claimed === "claimed";
+    if (dateRange !== "all") {
+      const from = new Date();
+      from.setDate(from.getDate() - Number(dateRange));
+      next.dateFrom = from.toISOString();
+    }
+    return next;
+  }, [claimed, dateRange, hardGate, minScore, sort, tier]);
 
-const getDateBucket = (createdAt: string): DateBucket => {
-  const createdDate = new Date(createdAt);
-  if (Number.isNaN(createdDate.getTime())) return "older";
+  const clearFilters = () => {
+    setTier("");
+    setMinScore("");
+    setHardGate("all");
+    setClaimed("all");
+    setDateRange("all");
+  };
 
-  const today = startOfToday();
-  const startOfThisWeek = getStartOfWeek(today);
-  const startOfLastWeek = new Date(startOfThisWeek);
-  startOfLastWeek.setDate(startOfThisWeek.getDate() - 7);
+  const fields: FilterFieldConfig[] = [
+    { key: "minScore", label: "Minimum score", type: "number", value: minScore, onChange: setMinScore, options: [], placeholder: "Any score" },
+    { key: "tier", label: "Candidate tier", value: tier, onChange: setTier, options: [["", "All tiers"], ["A", "A"], ["B", "B"], ["C", "C"], ["D", "D"]] },
+    { key: "hardGate", label: "Screening", value: hardGate, onChange: setHardGate, options: [["all", "All results"], ["passed", "Passed"], ["failed", "Failed"]] },
+    { key: "claimed", label: "Ownership", value: claimed, onChange: setClaimed, options: [["all", "All candidates"], ["unclaimed", "Unclaimed"], ["claimed", "Claimed"]] },
+    { key: "dateRange", label: "Received", value: dateRange, onChange: setDateRange, options: [["all", "Any time"], ["7", "Last 7 days"], ["30", "Last 30 days"]] },
+  ];
 
-  if (createdDate >= today) return "today";
-  if (createdDate >= startOfThisWeek) return "thisWeek";
-  if (createdDate >= startOfLastWeek) return "lastWeek";
-  return "older";
-};
-
-const renderCandidate = (
-  application: CandidateApplication,
-  onSelectApplication: (application: CandidateApplication) => void,
-) => (
-  <ApplicantCard
-    key={application.applicationId}
-    name={application.candidateName}
-    institute={application.cvSummary}
-    systemScore={toScorePercent(application.hiringAgentTotalScore)}
-    statusLabel={statusLabels[application.currentStatus]}
-    statusTone={statusTones[application.currentStatus]}
-    reviewedAt={formatDate(application.createdAt)}
-    showReviewedAt={false}
-    createdAt={application.createdAt}
-    onClick={() => {
-      onSelectApplication(application);
-    }}
-  />
-);
-
-const PendingCandidates = ({
-  applications,
-  onSelectApplication,
-}: PendingCandidatesProps) => {
-  const groupedCandidates = applications.reduce(
-    (groups, application) => {
-      groups[getDateBucket(application.createdAt)].push(application);
-      return groups;
-    },
-    {
-      today: [] as CandidateApplication[],
-      thisWeek: [] as CandidateApplication[],
-      lastWeek: [] as CandidateApplication[],
-      older: [] as CandidateApplication[],
-    },
-  );
+  const activeFilters: ActiveFilter[] = [
+    minScore && { label: `Score: ${minScore}+`, onClear: () => { setMinScore(""); } },
+    tier && { label: `Tier: ${tier.toLowerCase()}`, onClear: () => { setTier(""); } },
+    hardGate !== "all" && { label: hardGate === "passed" ? "Screening: passed" : "Screening: failed", onClear: () => { setHardGate("all"); } },
+    claimed !== "all" && { label: claimed === "claimed" ? "Claimed" : "Unclaimed", onClear: () => { setClaimed("all"); } },
+    dateRange !== "all" && { label: `Last ${dateRange} days`, onClear: () => { setDateRange("all"); } },
+  ].filter(Boolean) as ActiveFilter[];
 
   return (
     <>
       <section className="flex flex-col gap-6 mb-8">
-        <div className="flex justify-between items-end">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">
-              Applicant Pipeline
-            </h2>
-            <p className="text-muted-foreground">
-              Manage and screen incoming talent for the Engineering Team
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg text-foreground hover:bg-muted transition-colors">
-              <ListFilter size={16} />
-              Advanced Filters
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg text-foreground hover:bg-muted transition-colors">
-              <ListOrdered size={16} />
-              Sort: Higher System Score
-            </button>
-          </div>
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">
+            Applicant Pipeline
+          </h2>
+          <p className="text-muted-foreground">
+            Manage and screen incoming talent for the Engineering Team
+          </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[12px] font-bold border border-primary/20 flex items-center gap-1">
-            Score: 70+
-            <X size={14} />
-          </span>
-          <span className="px-3 py-1 bg-card text-muted-foreground rounded-full text-[12px] font-medium border border-border">
-            Degree: BSc Computer Science
-          </span>
-          <span className="px-3 py-1 bg-card text-muted-foreground rounded-full text-[12px] font-medium border border-border">
-            Experience: 2+ Years
-          </span>
-          <button className="text-primary text-[12px] font-bold ml-2">
-            Clear all
-          </button>
-        </div>
+        <FilterBar
+          id="pending-candidate-filters"
+          filtersOpen={filtersOpen}
+          onToggleFilters={() => { setFiltersOpen((open) => !open); }}
+          fields={fields}
+          sort={sort}
+          onSortChange={setSort}
+          activeFilters={activeFilters}
+          onClearAll={clearFilters}
+        />
       </section>
 
-      <div className="space-y-10">
-        {/* Today section */}
-        <section>
-          <div className="flex items-center gap-4 mb-4">
-            <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
-              Today
-            </h3>
-            <div className="h-px flex-1 bg-border"></div>
-            <span className="text-[12px] text-muted-foreground font-medium">
-              {groupedCandidates.today.length} New Applicants
-            </span>
-          </div>
-          <div className="grid grid-cols-1 gap-4">
-            {groupedCandidates.today.length > 0 ? (
-              groupedCandidates.today.map((application) =>
-                renderCandidate(application, onSelectApplication),
-              )
-            ) : (
-              <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                No pending applicants received today.
-              </p>
-            )}
-          </div>
-        </section>
-
-        {/* Week section */}
-        <section>
-          <div className="flex items-center gap-4 mb-4">
-            <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
-              This Week
-            </h3>
-            <div className="h-px flex-1 bg-border"></div>
-            <span className="text-[12px] text-muted-foreground font-medium">
-              {groupedCandidates.thisWeek.length} Applicants
-            </span>
-          </div>
-          <div className="grid grid-cols-1 gap-4">
-            {groupedCandidates.thisWeek.length > 0 ? (
-              groupedCandidates.thisWeek.map((application) =>
-                renderCandidate(application, onSelectApplication),
-              )
-            ) : (
-              <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                No pending applicants from earlier this week.
-              </p>
-            )}
-          </div>
-        </section>
-
-        {/* Last week section */}
-        <section>
-          <div className="flex items-center gap-4 mb-4">
-            <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
-              Last Week
-            </h3>
-            <div className="h-px flex-1 bg-border"></div>
-            <span className="text-[12px] text-muted-foreground font-medium">
-              {groupedCandidates.lastWeek.length} Applicants
-            </span>
-          </div>
-          <div className="grid grid-cols-1 gap-4">
-            {groupedCandidates.lastWeek.length > 0 ? (
-              groupedCandidates.lastWeek.map((application) =>
-                renderCandidate(application, onSelectApplication),
-              )
-            ) : (
-              <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                No pending applicants from last week.
-              </p>
-            )}
-          </div>
-        </section>
-
-        {/* Older section */}
-        <section>
-          <div className="flex items-center gap-4 mb-4">
-            <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
-              Older
-            </h3>
-            <div className="h-px flex-1 bg-border"></div>
-            <span className="text-[12px] text-muted-foreground font-medium">
-              {groupedCandidates.older.length} Applicants
-            </span>
-          </div>
-          <div className="grid grid-cols-1 gap-4">
-            {groupedCandidates.older.length > 0 ? (
-              groupedCandidates.older.map((application) =>
-                renderCandidate(application, onSelectApplication),
-              )
-            ) : (
-              <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                No older pending applicants.
-              </p>
-            )}
-          </div>
-        </section>
-      </div>
+      <ApplicantList
+        status="PENDING"
+        tabKey="pending"
+        filters={filters}
+        emptyTitle="No pending applicants"
+        showReviewedAt={false}
+        groupByDate
+      />
     </>
   );
 };
