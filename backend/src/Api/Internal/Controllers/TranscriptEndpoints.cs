@@ -12,6 +12,7 @@ public static class TranscriptEndpoints
         group.MapPost("/", async (IngestTranscriptCommand command, IMediator mediator) =>
         {
             var result = await mediator.Send(command);
+            Console.WriteLine(result.Message);
             return Results.Accepted("/internal/transcript", result);
         })
         .WithName("IngestTranscript");

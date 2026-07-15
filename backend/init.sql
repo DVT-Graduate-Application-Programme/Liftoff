@@ -20,15 +20,8 @@ CREATE TABLE public."ApplicationRecords" (
     "CandidateName"             VARCHAR(255)    NULL,
     "CandidateEmail"            VARCHAR(255)    NULL,
     "CandidateGitHubUrl"        VARCHAR(2048)   NULL,
-
-    -- Document blob URLs (captured at ingest)
-    "CvBlobUrl"                 VARCHAR(2048)   NULL,
-    "CvFilename"                VARCHAR(255)    NULL,
-    "CvSizeKb"                  INTEGER         NULL,
-    "TranscriptBlobUrl"         VARCHAR(2048)   NULL,
-    "TranscriptFilename"        VARCHAR(255)    NULL,
-    "TranscriptSizeKb"          INTEGER         NULL,
-
+    "CvAttachmentId"                  VARCHAR(2048)   NULL,
+    "TranscriptAttachmentId"         VARCHAR(2048)   NULL,
     -- Status and tier
     -- Status values: PENDING | PROCESSING | VALID | INVALID | MANUAL_REVIEW | SHORTLISTED | ERROR
     "Status"                    VARCHAR(50)     NOT NULL,
@@ -100,6 +93,9 @@ CREATE TABLE public."HiringAgentEvaluations" (
     -- Raw GitHub and project classification data from the Hiring Agent
     "GitHubProfileDataJson"         JSONB       NULL,
     "ProjectClassificationsJson"    JSONB       NULL,
+
+    -- AI generated summary of the candidate
+    "AiSummary"                     TEXT        NULL,
 
     "ProcessedAt"                   TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

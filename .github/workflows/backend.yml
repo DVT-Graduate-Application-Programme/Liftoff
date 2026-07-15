@@ -8,13 +8,9 @@ on:
     branches: [main, development]
     paths: ['backend/**', '.github/workflows/backend.yml']
 
-
-env:
-  AWS_REGION: af-south-1
-
 jobs:
   build:
-    name: Restore · Build · Test
+    name: Restore · Build · Test (C#)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -30,54 +26,25 @@ jobs:
       - run: dotnet build --no-restore -c Release
       - run: dotnet test --no-build -c Release
 
-  push-to-dev:
-    name: Docker Build · Push to ECR
-    needs: build
+  python-tests:
+    name: Run Python hiring-agent Tests
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/development' && github.event_name == 'push'
-
+    defaults:
+      run:
+        working-directory: backend/src/AI/hiring-agent
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          python-version: '3.11'
 
-      - name: Login to Amazon ECR
-        id: ecr-login
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build and push
-        env:
-          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
-          REPOSITORY: ${{ secrets.ECR_BACKEND_REPOSITORY }}
-          IMAGE_TAG: dev-${{ github.sha }}
+      - name: Install dependencies
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./backend
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
-          docker tag  $REGISTRY/$REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:latest
-          docker push $REGISTRY/$REPOSITORY:latest
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-  deploy-to-dev:
-    name: Deploy to ECS
-    needs: push-to-dev
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/development' && github.event_name == 'push'
-
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Force new ECS deployment
+      - name: Run unit tests
         run: |
-          aws ecs update-service \
-            --cluster ${{ secrets.ECS_CLUSTER }} \
-            --service ${{ secrets.ECS_BACKEND_SERVICE }} \
-            --force-new-deployment
+          python -m unittest discover -s tests -p "test_*.py"

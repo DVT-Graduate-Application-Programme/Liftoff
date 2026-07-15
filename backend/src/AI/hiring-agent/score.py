@@ -18,11 +18,11 @@ from transform import (
     convert_transcript_data_to_text,
 )
 from config import DEVELOPMENT_MODE
+from uuid import UUID
+from backend_client import Resume
 
 
-
-
-from backend_client import get_resume, get_all_resumes, BACKEND_BASE_URL
+from backend_client import get_resume, BACKEND_BASE_URL, send_eval
 
 
 logger = logging.getLogger(__name__)
@@ -626,7 +626,6 @@ def main(pdf_path, transcript_path=None):
 
                 # Write the row
                 writer.writerow(csv_row)
-
         return score
     finally:
         if downloaded_path and not DEVELOPMENT_MODE and os.path.exists(downloaded_path):
@@ -644,34 +643,44 @@ def main(pdf_path, transcript_path=None):
                     f"Failed to clean up downloaded transcript PDF {downloaded_transcript_path}: {e}"
                 )
 
+def process_candidate(candidate_id) -> dict:
+    """
+    Given an applicant_id, fetches resume details from the C# backend
+    and runs the full evaluation pipeline. Same logic previously inline
+    in the __main__ fallback branch.
+    """
+    
+    resume = get_resume(candidate_id)   # HTTP call — GET /api/candidates/{id}
+        
+    return _evaluate_and_send(resume)
 
-if __name__ == "__main__":
-    pdf_path = None
-    transcript_path = None
-
-    if len(sys.argv) >= 2:
-        pdf_path = sys.argv[1]
-        if len(sys.argv) >= 3:
-            transcript_path = sys.argv[2]
-    else:
-        # Fallback to querying C# API backend
-        try:
-            resume = get_resume(1)
-            pdf_path = resume.document_url
-            transcript_path = resume.transcript_url
-            print(f"Loaded candidate application: {resume}")
-
-            # Prepend backend base URL to relative URLs
-            if pdf_path and pdf_path.startswith("/api/"):
-                pdf_path = f"{BACKEND_BASE_URL}{pdf_path}"
-            if transcript_path and transcript_path.startswith("/api/"):
-                transcript_path = f"{BACKEND_BASE_URL}{transcript_path}"
-        except Exception as e:
-            print(f"Error fetching resume from C# API backend: {e}")
-            sys.exit(1)
+def _evaluate_and_send(resume: Resume) -> dict:
+    pdf_path = resume.document_url
+    transcript_path = resume.transcript_url
+    message_id = resume.id
 
     if not pdf_path:
-        print("Error: No PDF path provided or found.")
-        sys.exit(1)
+        raise ValueError("No PDF path found for candidate.")
 
-    main(pdf_path, transcript_path)
+    resp = main(pdf_path, transcript_path)
+    send_eval(resp, message_id, DEFAULT_MODEL)
+    return resp
+
+if __name__ == "__main__":
+    # Manual CLI testing only — NOT part of the real flow.
+    # Either pass local file paths directly, or pass a known candidate ID.
+    if len(sys.argv) >= 2 and sys.argv[1].endswith(".pdf"):
+        pdf_path = sys.argv[1]
+        transcript_path = sys.argv[2] if len(sys.argv) >= 3 else None
+        resp = main(pdf_path, transcript_path)
+        print(resp)
+        send_eval(resp, "TestEnvironment", DEFAULT_MODEL)
+    elif len(sys.argv) >= 2:
+        # python score.py <candidate-guid>
+        candidate_id = UUID(sys.argv[1])
+        resp = process_candidate(candidate_id)
+        print(resp)
+    else:
+        print("Usage: python score.py <pdf_path> [transcript_path]")
+        print("   or: python score.py <candidate-guid>")
+        sys.exit(1)
