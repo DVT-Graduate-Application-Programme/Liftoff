@@ -98,9 +98,6 @@ CREATE TABLE public."HiringAgentEvaluations" (
     "GitHubProfileDataJson"         JSONB       NULL,
     "ProjectClassificationsJson"    JSONB       NULL,
 
-    -- AI generated summary of the candidate
-    "AiSummary"                     TEXT        NULL,
-
     "ProcessedAt"                   TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "PK_HiringAgentEvaluations" PRIMARY KEY ("Id"),

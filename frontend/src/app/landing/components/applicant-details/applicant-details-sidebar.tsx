@@ -4,9 +4,7 @@ import { Sidebar, SidebarContent, SidebarGroup } from "@/components/ui/sidebar";
 import type { ApplicantDetailsEvaluation } from "./mock-applicant-details";
 import { CloseApplicantDetailsSidebarButton } from "./applicant-details-sidebar-controls";
 import { SCORE_CATEGORIES } from "./constants";
-
-import { useReevaluateApplicant } from "@/hooks/use-reevaluate-applicant";
-import { Loader2 } from "lucide-react";
+import type { SelectionTabKey } from "@/components/providers/applicant-selection-provider";
 
 type ApplicantDetailsSidebarProps = {
   applicantId?: string | null;
@@ -14,6 +12,7 @@ type ApplicantDetailsSidebarProps = {
   evaluation: ApplicantDetailsEvaluation | null;
   isLoadingEvaluation?: boolean;
   evaluationMessage?: string | null;
+  tabKey?: SelectionTabKey | null;
 };
 
 function formatDecimal(value: number) {
@@ -26,9 +25,8 @@ export function ApplicantDetailsSidebar({
   evaluation,
   isLoadingEvaluation = false,
   evaluationMessage = null,
+  tabKey = null,
 }: ApplicantDetailsSidebarProps) {
-  const { mutate: reevaluate, isPending: isReevaluating } = useReevaluateApplicant();
-  
   const categoryScores: Partial<
     ApplicantDetailsEvaluation["categoryScoresJson"]
   > | null = evaluation?.categoryScoresJson ?? null;
@@ -129,42 +127,22 @@ export function ApplicantDetailsSidebar({
               </div>
             )}
           </div>
-          <div className="mt-6 space-y-3">
-            <Button
-              type="button"
-              asChild={Boolean(applicantId)}
-              disabled={!applicantId}
-              className="h-11 w-full text-base font-medium"
-            >
-              {applicantId ? (
-                <Link href={`/applicants/${applicantId}`}>View CV and Transcript</Link>
-              ) : (
-                "View CV and Transcript"
-              )}
-            </Button>
-            
-            {applicantId && (
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isReevaluating}
-                onClick={() => reevaluate(applicantId)}
-                className="h-11 w-full text-base font-medium"
-              >
-                {isReevaluating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Re-evaluating...
-                  </>
-                ) : (
-                  "Re-evaluate Applicant"
-                )}
-              </Button>
+          <Button
+            type="button"
+            asChild={Boolean(applicantId)}
+            disabled={!applicantId}
+            className="mt-6 h-11 w-full text-base font-medium"
+          >
+            {applicantId ? (
+              <Link href={tabKey ? `/applicants/${applicantId}?from=${tabKey}` : `/applicants/${applicantId}`}>
+                View CV and Transcript
+              </Link>
+            ) : (
+              "View CV and Transcript"
             )}
-          </div>
+          </Button>
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   );
 }
-

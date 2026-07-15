@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import ApplicantCard from "@/components/applicant-card/applicant-card";
+import AllCandidateCard from "@/components/applicant-card/all-candidate-card";
 import { useRouter } from "next/navigation";
 import { useApplications } from "@/hooks/use-applications";
 import type { CandidateApplication } from "@/types/candidate";
@@ -195,6 +195,7 @@ function CandidateHistoryCard({
   const router = useRouter();
   const { selectApplication } = useApplicantSelection();
   const { setOpen } = useSidebar();
+  const evaluationQuery = useEvaluation(candidate.applicationId);
 
   const handleCardClick = () => {
     router.push(`/applicants/${candidate.applicationId}`);
@@ -207,16 +208,38 @@ function CandidateHistoryCard({
     return "warning";
   };
 
+  const getTierTone = (tier: string) => {
+    const t = tier.toUpperCase();
+    if (t === "STRONG") return "positive";
+    if (t === "BORDERLINE") return "warning";
+    if (t === "WEAK") return "negative";
+    return "neutral";
+  };
+
+  const academicAverage =
+    evaluationQuery.data?.institutionJson?.academic_average ??
+    evaluationQuery.data?.categoryScoresJson.education.score;
+  const institutionName = evaluationQuery.data?.institutionJson?.name ?? "";
+  const degreeName = evaluationQuery.data?.institutionJson?.degreeName ?? "";
+  const subtitle =
+    degreeName && institutionName
+      ? `${degreeName} · ${institutionName}`
+      : degreeName || institutionName || candidate.cvSummary || "Applicant";
+
   return (
-    <ApplicantCard
+    <AllCandidateCard
       key={candidate.applicationId}
       name={candidate.candidateName}
-      institute={candidate.cvSummary || "Applicant"}
-      academicAverage={0}
+      subtitle={subtitle}
+      academicAverage={academicAverage}
       systemScore={candidate.hiringAgentTotalScore}
-      scoreLabel={candidate.tier || "Unknown"}
+      scoreLabel="Sys Score"
+      scoreClassName="font-semibold"
+      layout="history"
       statusLabel={candidate.currentStatus}
       statusTone={getStatusTone(candidate.currentStatus)}
+      tierLabel={candidate.tier || "Unknown"}
+      tierTone={getTierTone(candidate.tier || "")}
       reviewedAt={new Date(candidate.createdAt).toLocaleDateString()}
       showReviewedAt={true}
       onClick={handleCardClick}

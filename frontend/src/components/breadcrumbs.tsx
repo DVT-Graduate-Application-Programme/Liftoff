@@ -1,6 +1,6 @@
 "use client"
 
-import { usePathname, useParams } from "next/navigation"
+import { usePathname, useParams, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import {
   Breadcrumb,
@@ -12,6 +12,12 @@ import {
 } from "@/components/ui/breadcrumb"
 import { useApplicant } from "@/hooks/use-applicant"
 
+const TAB_LABELS: Record<string, string> = {
+  pending: "Pending Candidates",
+  all: "All Candidates",
+  accepted: "Accepted Candidates",
+}
+
 function ApplicantCrumb() {
   const params = useParams<{ applicantId: string }>()
   const applicantQuery = useApplicant(params.applicantId)
@@ -22,12 +28,28 @@ function ApplicantCrumb() {
 
 export function Breadcrumbs() {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
 
   let trailing: React.ReactNode = null
+  let tabCrumb: React.ReactNode = null
   if (pathname === "/history") {
     trailing = <BreadcrumbPage>History</BreadcrumbPage>
   } else if (pathname.startsWith("/applicants/")) {
     trailing = <ApplicantCrumb />
+    const from = searchParams.get("from")
+    const tabLabel = from ? TAB_LABELS[from] : undefined
+    if (from && tabLabel) {
+      tabCrumb = (
+        <>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href={`/landing?tab=${from}`}>{tabLabel}</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+        </>
+      )
+    }
   } else {
     return null
   }
@@ -41,6 +63,7 @@ export function Breadcrumbs() {
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
+        {tabCrumb}
         <BreadcrumbItem>{trailing}</BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>

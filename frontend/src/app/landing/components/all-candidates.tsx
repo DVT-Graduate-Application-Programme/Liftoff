@@ -1,22 +1,29 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import type { ApplicationFilters } from "@/types/api";
-import type { CandidateApplication } from "@/types/candidate";
 import { ApplicantList } from "./applicant-list";
-import AllCandidateCard from "@/components/applicant-card/all-candidate-card";
+import {
+  FilterBar,
+  type ActiveFilter,
+  type FilterFieldConfig,
+  type SortOption,
+} from "./filter-bar";
 import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
 import { useSidebar } from "@/components/ui/sidebar";
-import { ACTIVE_RECRUITER_ID, useClaimApplication } from "@/hooks/use-claim-application";
 import {
-  formatDate,
-  getRecruiterLabel,
+  ACTIVE_RECRUITER_ID,
+  useClaimApplication,
+} from "@/hooks/use-claim-application";
+import { CandidateApplication } from "@/types/candidate";
+import AllCandidateCard from "@/components/applicant-card/all-candidate-card";
+import {
+  toScorePercent,
   statusLabels,
   statusTones,
-  toScorePercent,
+  formatDate,
+  getRecruiterLabel,
 } from "./candidate-list-utils";
-import { FilterBar, type ActiveFilter, type FilterFieldConfig, type SortOption } from "./filter-bar";
 
 type Filters = Omit<ApplicationFilters, "search" | "limit" | "cursor">;
 
@@ -187,7 +194,7 @@ function AllCandidates() {
     },
   ].filter(Boolean) as ActiveFilter[];
 
-  const router = useRouter();
+
   const { selectApplication } = useApplicantSelection();
   const { setOpen } = useSidebar();
   const claimMutation = useClaimApplication();
@@ -210,6 +217,7 @@ function AllCandidates() {
         />
       </section>
       <ApplicantList
+        tabKey="all"
         filters={filters}
         emptyTitle="No applicants yet"
         enableClaim
@@ -246,11 +254,8 @@ function AllCandidates() {
                       claimMutation.mutate(application.applicationId);
                     }
               }
-              onClick={() => {
-                router.push(`/applicants/${application.applicationId}`);
-              }}
               onActionClick={() => {
-                selectApplication(application.applicationId);
+                selectApplication(application.applicationId, "all");
                 setOpen(true);
               }}
             />

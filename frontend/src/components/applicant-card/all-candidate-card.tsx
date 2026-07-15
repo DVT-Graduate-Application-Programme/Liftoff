@@ -7,12 +7,17 @@ type StatusTone = "positive" | "warning" | "negative" | "neutral";
 
 type AllCandidateCardProps = {
   name: string;
-  institute: string;
+  institute?: string;
+  subtitle?: string;
   academicAverage?: number;
   systemScore: number;
   scoreLabel?: string;
+  scoreClassName?: string;
   statusLabel?: string;
   statusTone?: StatusTone;
+  tierLabel?: string;
+  tierTone?: StatusTone;
+  layout?: "default" | "history";
   showInstitute?: boolean;
   reviewedAt?: string;
   showReviewedAt?: boolean;
@@ -63,15 +68,18 @@ const statusStyles = {
 function ScoreTag({
   score,
   isDefault = true,
+  className,
 }: {
   score: number;
   isDefault?: boolean;
+  className?: string;
 }) {
   return (
     <div className="flex min-w-12 justify-center">
       <span
         className={cn(
-          "text-xl font-black leading-none tabular-nums",
+          "text-xl leading-none tabular-nums",
+          className ?? "font-black",
           !isDefault ? getScoreColor(score) : undefined,
         )}
       >
@@ -106,11 +114,16 @@ function getDaysAgo(dateString: string): number | null {
 export default function AllCandidateCard({
   name,
   institute,
+  subtitle,
   academicAverage,
   systemScore,
   scoreLabel = "System Score",
+  scoreClassName,
   statusLabel = "Pending",
   statusTone,
+  tierLabel,
+  tierTone,
+  layout = "default",
   showInstitute = true,
   reviewedAt,
   showReviewedAt = true,
@@ -133,7 +146,11 @@ export default function AllCandidateCard({
     .toUpperCase();
   const currentStatusTone = statusTone ?? "positive";
   const statusStyle = statusStyles[currentStatusTone];
+  const currentTierTone = tierTone ?? "neutral";
+  const tierStyle = statusStyles[currentTierTone];
   const daysAgo = createdAt ? getDaysAgo(createdAt) : null;
+  const displaySubtitle = subtitle ?? institute;
+  const displayTier = tierLabel;
 
   return (
     <div
@@ -167,63 +184,104 @@ export default function AllCandidateCard({
         </span>
       </div>
 
-      <div className="flex w-80 flex-col pl-4">
-        <h4 className="font-semibold leading-tight text-foreground">{name}</h4>
-        {showInstitute && (
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            {institute}
-          </p>
-        )}
-        {recruiterName && (
-          <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
-            <InfoRow label={recruiterLabel ?? "Recruiter"}>
-              {recruiterName}
-            </InfoRow>
-          </div>
-        )}
-      </div>
-
-      <div className="flex flex-1 items-center justify-center gap-4 px-2">
-        <div className="hidden shrink-0 items-center gap-1 sm:flex">
-          <div className="flex w-20 flex-col items-center gap-0.5">
+      {layout === "history" ? (
+        <>
+          <div className="flex w-20 shrink-0 flex-col items-center justify-center gap-0.5">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-              {scoreLabel}
+              Tier
             </span>
-            <ScoreTag score={systemScore} />
+            <span
+              className={cn(
+                "max-w-full rounded-full px-2 py-1 text-xs font-semibold",
+                "inline-flex items-center justify-between text-center leading-tight whitespace-normal",
+                tierStyle.text,
+                tierStyle.background,
+              )}
+            >
+              {displayTier ?? "Unknown"}
+            </span>
           </div>
-          {academicAverage !== undefined && (
-            <>
-              <div className="flex w-20 flex-col items-center gap-0.5">
-                <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-                  Acad. Avg
-                </span>
-                <ScoreTag score={academicAverage} />
+
+          <div className="min-w-0 flex-1 flex flex-col pl-4">
+            <h4 className="break-words font-semibold leading-tight text-foreground">
+              {name}
+            </h4>
+            {showInstitute && displaySubtitle && (
+              <p className="mt-0.5 break-words text-xs text-muted-foreground">
+                {displaySubtitle}
+              </p>
+            )}
+            {recruiterName && (
+              <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
+                <InfoRow label={recruiterLabel ?? "Recruiter"}>
+                  {recruiterName}
+                </InfoRow>
               </div>
-            </>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="min-w-0 flex-1 flex flex-col pl-4">
+          <h4 className="font-semibold leading-tight text-foreground">{name}</h4>
+          {showInstitute && (
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              {displaySubtitle}
+            </p>
+          )}
+          {recruiterName && (
+            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
+              <InfoRow label={recruiterLabel ?? "Recruiter"}>
+                {recruiterName}
+              </InfoRow>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="flex flex-1 items-center justify-center gap-6 px-2">
+        <div className="hidden w-20 shrink-0 flex-col items-center gap-0.5 sm:flex">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+            {scoreLabel}
+          </span>
+          <ScoreTag score={systemScore} className={scoreClassName} />
+        </div>
+
+        <div className="hidden w-20 shrink-0 flex-col items-center gap-0.5 sm:flex">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+            Acad. Avg
+          </span>
+          {academicAverage !== undefined ? (
+            <ScoreTag score={academicAverage} className={scoreClassName} />
+          ) : (
+            <span className="text-sm font-semibold text-muted-foreground">–</span>
           )}
         </div>
 
-        {daysAgo !== null && daysAgo >= 1 ? (
-          <div className="hidden w-20 shrink-0 flex-col items-end gap-0.5 md:flex">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-              Applied
-            </span>
-            <span className="max-w-full whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
+        <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 md:flex">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+            Applied
+          </span>
+          {daysAgo !== null && daysAgo >= 1 ? (
+            <span className="max-w-full whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
               {daysAgo} day(s) ago
             </span>
-          </div>
-        ) : null}
+          ) : (
+            <span className="text-sm font-semibold text-muted-foreground">–</span>
+          )}
+        </div>
 
-        {showReviewedAt && reviewedAt ? (
-          <div className="hidden w-20 shrink-0 flex-col items-end gap-0.5 md:flex">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-              Reviewed
-            </span>
-            <span className="max-w-full truncate whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
+        <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 md:flex">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+            Reviewed
+          </span>
+          {showReviewedAt && reviewedAt ? (
+            <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
               {reviewedAt}
             </span>
-          </div>
-        ) : null}
+          ) : (
+            <span className="text-sm font-semibold text-muted-foreground">–</span>
+          )}
+        </div>
       </div>
 
       <div className="flex shrink-0 flex-col justify-end items-end gap-2">
