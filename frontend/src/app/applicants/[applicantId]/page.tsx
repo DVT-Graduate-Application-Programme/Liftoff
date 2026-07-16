@@ -109,8 +109,8 @@ function EvaluationSummary({ evaluation, applicationId }: { evaluation: Evaluati
   const overallScore = Math.max(0, totalScore + bonusTotal);
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="flex-1 flex flex-col min-h-0">
+      <CardHeader className="shrink-0">
         <CardTitle className="flex items-center gap-2">
           <Sparkles className="size-4" />
           AI Summary
@@ -130,7 +130,7 @@ function EvaluationSummary({ evaluation, applicationId }: { evaluation: Evaluati
         </CardAction>
       </CardHeader>
       
-      <CardContent className="flex flex-col gap-5">
+      <CardContent className="flex-1 overflow-y-auto flex flex-col gap-5 pr-3">
         {evaluation.aiSummary && (
           <>
             <p className="text-sm leading-relaxed text-foreground">{evaluation.aiSummary}</p>
@@ -689,7 +689,7 @@ export default function DetailedApplicantInfo() {
           className="flex w-full flex-col gap-4 md:pl-4 md:h-full md:min-h-0"
         >
           {/* Candidate Summary Section */}
-          <section className="flex flex-col gap-4 flex-1 h-0 min-h-0 overflow-y-auto pr-1">
+          <section className="flex flex-col gap-4 flex-1 h-0 min-h-0">
             {evaluationQuery.isLoading ? (
               <Card>
                 <CardContent className="flex flex-col gap-2 py-6">
