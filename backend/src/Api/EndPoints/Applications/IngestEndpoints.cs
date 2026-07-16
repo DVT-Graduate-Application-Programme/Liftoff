@@ -34,37 +34,82 @@ public static class IngestEndpoints
         MediatR.IMediator mediator,
         CancellationToken ct)
     {
-        using var cvStream = request.CvFile.OpenReadStream();
-        using var transcriptStream = request.TranscriptFile?.OpenReadStream();
+        Stream cvStream;
+        Stream? transcriptStream = null;
 
-        var command2 = new SendApplicationCommand
+        // Resolve CV File/URL
+        if (httpRequest.Form.Files.GetFile("CvFile") is { } cvFormFile)
         {
-            CandidateName = request.CandidateName,
-            CandidateEmail = request.CandidateEmail,
-            IdempotencyKey = httpRequest.Headers["Idempotency-Key"].ToString(),
-            CvStream = cvStream,
-            TranscriptStream = transcriptStream
-        };
-
-        var result = await mediator.Send(command2, ct);
-
-        if(result is not null && !string.IsNullOrWhiteSpace(result.ApplicationId.ToString()))
+            cvStream = cvFormFile.OpenReadStream();
+        }
+        else if (httpRequest.Form.TryGetValue("CvFile", out var cvUrlValues) &&
+                 cvUrlValues.ToString() is { } cvUrl &&
+                 !string.IsNullOrWhiteSpace(cvUrl))
         {
-            // applciation created successfully
             try
             {
-               await NotifyHiringAgent(result.ApplicationId);
+                cvStream = await Client.GetStreamAsync(cvUrl, ct);
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-                
-                throw;
+                return Results.BadRequest($"Failed to download CV from URL: {ex.Message}");
             }
-        
+        }
+        else
+        {
+            return Results.BadRequest("CvFile is required (either as an uploaded file or a Google Drive download URL).");
         }
 
-       
-        return Results.Accepted(value: result);
+        // Resolve Transcript File/URL
+        if (httpRequest.Form.Files.GetFile("TranscriptFile") is { } transcriptFormFile)
+        {
+            transcriptStream = transcriptFormFile.OpenReadStream();
+        }
+        else if (httpRequest.Form.TryGetValue("TranscriptFile", out var transcriptUrlValues) &&
+                 transcriptUrlValues.ToString() is { } transcriptUrl &&
+                 !string.IsNullOrWhiteSpace(transcriptUrl))
+        {
+            try
+            {
+                transcriptStream = await Client.GetStreamAsync(transcriptUrl, ct);
+            }
+            catch (System.Exception ex)
+            {
+                return Results.BadRequest($"Failed to download Transcript from URL: {ex.Message}");
+            }
+        }
+
+        using (cvStream)
+        using (transcriptStream)
+        {
+            var command2 = new SendApplicationCommand
+            {
+                CandidateName = request.CandidateName,
+                CandidateEmail = request.CandidateEmail,
+                IdempotencyKey = httpRequest.Headers["Idempotency-Key"].ToString(),
+                CvStream = cvStream,
+                TranscriptStream = transcriptStream
+            };
+
+            var result = await mediator.Send(command2, ct);
+
+            if(result is not null && !string.IsNullOrWhiteSpace(result.ApplicationId.ToString()))
+            {
+                // applciation created successfully
+                try
+                {
+                   await NotifyHiringAgent(result.ApplicationId);
+                }
+                catch (System.Exception)
+                {
+                    
+                    throw;
+                }
+            
+            }
+
+            return Results.Accepted(value: result);
+        }
     }
 
 
