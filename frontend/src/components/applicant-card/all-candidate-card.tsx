@@ -82,7 +82,7 @@ function ScoreTag({
           !isDefault ? getScoreColor(score) : undefined,
         )}
       >
-        {score}%
+        {Number(score).toFixed(1)}%
       </span>
     </div>
   );

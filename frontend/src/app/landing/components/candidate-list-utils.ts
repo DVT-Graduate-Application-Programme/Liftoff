@@ -29,7 +29,7 @@ export const formatDate = (isoDate: string) =>
     year: "numeric",
   });
 
-export const toScorePercent = (score: number) => Math.round(score);
+export const toScorePercent = (score: number) => Math.round(score * 10) / 10;
 
 export const getRecruiterLabel = (application: CandidateApplication) =>
   application.shortlistedByRecruiterId ??

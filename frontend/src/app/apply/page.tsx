@@ -317,7 +317,7 @@ export default function ApplyPage() {
                           {form.cv.name}
                         </span>
                         <span className="block text-[10px] text-slate-500 mt-1">
-                          {(form.cv.size / 1024 / 1024).toFixed(2)} MB
+                          {(form.cv.size / 1024 / 1024).toFixed(1)} MB
                         </span>
                       </div>
                     ) : (
@@ -353,7 +353,7 @@ export default function ApplyPage() {
                           {form.transcript.name}
                         </span>
                         <span className="block text-[10px] text-slate-500 mt-1">
-                          {(form.transcript.size / 1024 / 1024).toFixed(2)} MB
+                          {(form.transcript.size / 1024 / 1024).toFixed(1)} MB
                         </span>
                       </div>
                     ) : (

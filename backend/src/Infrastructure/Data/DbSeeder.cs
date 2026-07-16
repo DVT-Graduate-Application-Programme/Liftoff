@@ -763,8 +763,8 @@ public static class DbSeeder
         var actions = new List<RecruiterAction>
         {
             // App1: Rating and Notes
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "recruiter-demo", ActionType = "RATING", RatingValue = 5, Reason = "Exceptional profile, great potential.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "manager-demo", ActionType = "NOTES", Reason = "Left a voicemail to schedule technical round.", ActionedAt = DateTimeOffset.UtcNow.AddHours(-5) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "RATING", RatingValue = 5, Reason = "Exceptional profile, great potential.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "NOTES", Reason = "Left a voicemail to schedule technical round.", ActionedAt = DateTimeOffset.UtcNow.AddHours(-5) },
             
             // App3: Shortlisted
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Strong candidate, advancing to interview.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
@@ -773,11 +773,11 @@ public static class DbSeeder
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, RecruiterIdentity = "manager-seed-002", ActionType = "FORWARD", PreviousStatus = "evaluated", NewStatus = "forwarded", Reason = "Forwarding to engineering lead for review.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-3) },
 
             // App6: Rejected
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App6Id, RecruiterIdentity = "recruiter-demo", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Lacks required technical skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-1) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App6Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Lacks required technical skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-1) },
             
             // App7: Shortlisted and Rated
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "recruiter-demo", ActionType = "RATING", RatingValue = 4, Reason = "Good algorithm skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-4) },
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "recruiter-demo", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Passed initial screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "RATING", RatingValue = 4, Reason = "Good algorithm skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-4) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Passed initial screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
             
             // App10: Rejected
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App10Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Does not meet baseline experience.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-7) },
