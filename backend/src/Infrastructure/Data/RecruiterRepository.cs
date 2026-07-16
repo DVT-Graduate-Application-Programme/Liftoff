@@ -16,24 +16,15 @@ public class RecruiterRepository : IRecruiterRepository
     {
         _dbContext = dbContext;
     }
-    public async Task<List<Recruiter>> GetActiveRecruitersAsync(CancellationToken cancellationToken = default)
-    {
-        return await _dbContext.Recruiters
-            .AsNoTracking()
-            .Where(r => r.IsActive)
-            .OrderBy(r => r.CreatedAt)
-            .ToListAsync(cancellationToken);
-    }
-
     public async Task<Recruiter?> GetRecruiters(CancellationToken cancellationToken = default)
     {
-        var activeRecruiters = await _dbContext.Recruiters
+        // Fetch ALL recruiters regardless of IsActive status
+        var allRecruiters = await _dbContext.Recruiters
             .AsNoTracking()
-            .Where(r => r.IsActive)
             .OrderBy(r => r.CreatedAt)
             .ToListAsync(cancellationToken);
 
-        if (activeRecruiters.Count == 0)
+        if (allRecruiters.Count == 0)
             return null;
 
         // Count how many applications each recruiter has already been assigned
@@ -44,8 +35,8 @@ public class RecruiterRepository : IRecruiterRepository
             .Select(g => new { RecruiterId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.RecruiterId, x => x.Count, cancellationToken);
 
-        // Select the recruiter with the fewest assignments; break ties by position in the ordered list
-        return activeRecruiters
+        // Select the recruiter with the fewest assignments; break ties by earliest CreatedAt
+        return allRecruiters
             .OrderBy(r => assignmentCounts.GetValueOrDefault(r.IdentityId, 0))
             .ThenBy(r => r.CreatedAt)
             .First();
