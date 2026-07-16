@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Routing;
 using System.Net.Http;
 using System.Net.Http.Json;
 using Microsoft.Graph.Models;
+using Application.Interfaces;
 
 namespace Api.EndPoints.Applications;
 
@@ -30,6 +31,7 @@ public static class IngestEndpoints
         [FromForm] global::SendApplicationRequest request,
         HttpRequest httpRequest,
         MediatR.IMediator mediator,
+        IRecruiterAssignmentService recruiterAssignmentService,
         CancellationToken ct)
     {
         var command = new IngestManualApplicationCommand
@@ -67,7 +69,9 @@ public static class IngestEndpoints
         
         }
 
-       
+        // assign recruiter
+        await recruiterAssignmentService.AssignRecruiterAsync(result.ApplicationId, ct);
+
         return Results.Accepted(value: result);
     }
 
