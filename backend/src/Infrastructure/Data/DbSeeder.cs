@@ -58,7 +58,7 @@ public static class DbSeeder
             CandidateName = "Joseph",
             CandidateEmail = "joseph@example.com",
             CandidateGitHubUrl = "https://github.com/joseph-dev-grad",
-            Status = "evaluated",
+            Status = ApplicationStatus.Pending,
             Tier = "Strong",
             HardGatePassed = true,
             HardGateReason = null,
@@ -117,7 +117,7 @@ public static class DbSeeder
             CandidateName = "Alex Turner",
             CandidateEmail = "alex.turner@example.com",
             CandidateGitHubUrl = null,
-            Status = "evaluated",
+            Status = ApplicationStatus.Pending,
             Tier = "Weak",
             HardGatePassed = true,
             HardGateReason = null,
@@ -176,7 +176,7 @@ public static class DbSeeder
             CandidateName = "Elena Rodriguez",
             CandidateEmail = "Elena.Rodriguez@example.com",
             CandidateGitHubUrl = "https://github.com/josephexample-dev",
-            Status = "shortlisted",
+            Status = ApplicationStatus.Shortlisted,
             Tier = "Borderline",
             HardGatePassed = true,
             HardGateReason = null,
@@ -237,7 +237,7 @@ public static class DbSeeder
             CandidateName = "Liam O'Brien",
             CandidateEmail = "liam.obrien@example.com",
             CandidateGitHubUrl = "https://github.com/liam-obrien-dev",
-            Status = "forwarded",
+            Status = ApplicationStatus.Pending,
             Tier = "Strong",
             HardGatePassed = true,
             HiringAgentTotalScore = 91.0m,
@@ -297,7 +297,7 @@ public static class DbSeeder
             CandidateName = "Amara Diallo",
             CandidateEmail = "amara.diallo@example.com",
             CandidateGitHubUrl = "https://github.com/amara-fullstack",
-            Status = "evaluated",
+            Status = ApplicationStatus.Pending,
             Tier = "Borderline",
             HardGatePassed = true,
             HiringAgentTotalScore = 69.0m,
@@ -355,7 +355,7 @@ public static class DbSeeder
             CandidateName = "Chloe Bennett",
             CandidateEmail = "chloe.bennett@example.com",
             CandidateGitHubUrl = null,
-            Status = "rejected",
+            Status = ApplicationStatus.Rejected,
             Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "Degree not in a qualifying IT or STEM discipline. Bootcamp HTML/CSS training is insufficient to compensate for the missing academic requirement.",
@@ -414,7 +414,7 @@ public static class DbSeeder
             CandidateName = "Ravi Nair",
             CandidateEmail = "ravi.nair@example.com",
             CandidateGitHubUrl = "https://github.com/ravi-builds",
-            Status = "shortlisted",
+            Status = ApplicationStatus.Shortlisted,
             Tier = "Strong",
             HardGatePassed = true,
             HiringAgentTotalScore = 80.0m,
@@ -474,7 +474,7 @@ public static class DbSeeder
             CandidateName = "Sophie Walsh",
             CandidateEmail = "sophie.walsh@example.com",
             CandidateGitHubUrl = "https://github.com/sophiewalsh-dev",
-            Status = "evaluated",
+            Status = ApplicationStatus.Pending,
             Tier = "Weak",
             HardGatePassed = true,
             HiringAgentTotalScore = 54.0m,
@@ -532,7 +532,7 @@ public static class DbSeeder
             CandidateName = "Marcus Okafor",
             CandidateEmail = "marcus.okafor@example.com",
             CandidateGitHubUrl = null,
-            Status = "evaluated",
+            Status = ApplicationStatus.Pending,
             Tier = "Weak",
             HardGatePassed = true,
             HiringAgentTotalScore = 44.0m,
@@ -590,7 +590,7 @@ public static class DbSeeder
             CandidateName = "Tomás Reyes",
             CandidateEmail = "tomas.reyes@example.com",
             CandidateGitHubUrl = null,
-            Status = "pending",
+            Status = ApplicationStatus.Pending,
             Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "Degree is in Culinary Arts – not an IT, Computer Science, or STEM discipline. No evidence of self-taught programming or compensating technical experience.",
@@ -649,7 +649,7 @@ public static class DbSeeder
             CandidateName = "Harriet Langley",
             CandidateEmail = "harriet.langley@example.com",
             CandidateGitHubUrl = null,
-            Status = "pending",
+            Status = ApplicationStatus.Pending,
             Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "MBA is a postgraduate business qualification, not an IT or STEM degree. Undergraduate degree is in History. No compensating technical background identified.",
@@ -708,7 +708,7 @@ public static class DbSeeder
             CandidateName = "Derek Hobson",
             CandidateEmail = "derek.hobson@example.com",
             CandidateGitHubUrl = null,
-            Status = "rejected",
+            Status = ApplicationStatus.Rejected,
             Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "Degree is in Physical Geography – not an IT or STEM computing discipline. Attempted prompt injection detected in CV; application automatically rejected.",
@@ -767,26 +767,26 @@ public static class DbSeeder
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "NOTES", Reason = "Left a voicemail to schedule technical round.", ActionedAt = DateTimeOffset.UtcNow.AddHours(-5) },
             
             // App3: Shortlisted
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Strong candidate, advancing to interview.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "SHORTLIST", PreviousStatus = ApplicationStatus.Pending, NewStatus = ApplicationStatus.Shortlisted, Reason = "Strong candidate, advancing to interview.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
 
             // App4: Forwarded
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, RecruiterIdentity = "manager-seed-002", ActionType = "FORWARD", PreviousStatus = "evaluated", NewStatus = "forwarded", Reason = "Forwarding to engineering lead for review.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-3) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, RecruiterIdentity = "manager-seed-002", ActionType = "FORWARD", PreviousStatus = ApplicationStatus.Pending, NewStatus = ApplicationStatus.Pending, Reason = "Forwarding to engineering lead for review.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-3) },
 
             // App6: Rejected
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App6Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Lacks required technical skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-1) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App6Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "REJECT", PreviousStatus = ApplicationStatus.Pending, NewStatus = ApplicationStatus.Rejected, Reason = "Lacks required technical skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-1) },
             
             // App7: Shortlisted and Rated
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "RATING", RatingValue = 4, Reason = "Good algorithm skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-4) },
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Passed initial screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "SHORTLIST", PreviousStatus = ApplicationStatus.Pending, NewStatus = ApplicationStatus.Shortlisted, Reason = "Passed initial screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
             
             // App10: Rejected
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App10Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Does not meet baseline experience.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-7) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App10Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = ApplicationStatus.Pending, NewStatus = ApplicationStatus.Rejected, Reason = "Does not meet baseline experience.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-7) },
             
             // App11: Rejected
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App11Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Failed automated technical assessment.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-6) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App11Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = ApplicationStatus.Pending, NewStatus = ApplicationStatus.Rejected, Reason = "Failed automated technical assessment.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-6) },
             
             // App12: Rejected
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App12Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Poor cultural fit identified in pre-screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App12Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = ApplicationStatus.Pending, NewStatus = ApplicationStatus.Rejected, Reason = "Poor cultural fit identified in pre-screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
         };
 
         db.RecruiterActions.AddRange(actions);

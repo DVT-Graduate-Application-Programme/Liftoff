@@ -166,7 +166,7 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             return null;
         }
 
-        const string shortlistedStatus = "SHORTLISTED";
+        const string shortlistedStatus = ApplicationStatus.Shortlisted;
         var now = DateTimeOffset.UtcNow;
         var previousStatus = applicationRecord.Status;
 
@@ -196,12 +196,12 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
 
     public async Task<ApplicationStatusUpdate?> AcceptAsync(Guid id, string recruiterIdentity, string? reason, CancellationToken cancellationToken = default)
     {
-        return await UpdateStatusAsync(id, recruiterIdentity, "ACCEPTED", reason, cancellationToken);
+        return await UpdateStatusAsync(id, recruiterIdentity, ApplicationStatus.Shortlisted, reason, cancellationToken);
     }
 
     public async Task<ApplicationStatusUpdate?> RejectAsync(Guid id, string recruiterIdentity, string? reason, CancellationToken cancellationToken = default)
     {
-        return await UpdateStatusAsync(id, recruiterIdentity, "REJECTED", reason, cancellationToken);
+        return await UpdateStatusAsync(id, recruiterIdentity, ApplicationStatus.Rejected, reason, cancellationToken);
     }
 
     private async Task<ApplicationStatusUpdate?> UpdateStatusAsync(Guid id, string recruiterIdentity, string newStatus, string? reason, CancellationToken cancellationToken)
@@ -483,13 +483,13 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         return new DashboardMetricsDto
         {
             TotalApplications = statusCounts.Sum(a => a.Count),
-            PendingApplications = counts.GetValueOrDefault("PENDING"),
-            ProcessingApplications = counts.GetValueOrDefault("PROCESSING"),
-            ValidApplications = counts.GetValueOrDefault("VALID"),
-            InvalidApplications = counts.GetValueOrDefault("INVALID"),
-            ManualReviewApplications = counts.GetValueOrDefault("MANUAL_REVIEW"),
-            ShortlistedApplications = counts.GetValueOrDefault("SHORTLISTED"),
-            ErrorApplications = counts.GetValueOrDefault("ERROR")
+            PendingApplications = counts.GetValueOrDefault(ApplicationStatus.Pending),
+            ProcessingApplications = 0,
+            ValidApplications = 0,
+            InvalidApplications = 0,
+            ManualReviewApplications = 0,
+            ShortlistedApplications = counts.GetValueOrDefault(ApplicationStatus.Shortlisted),
+            ErrorApplications = counts.GetValueOrDefault(ApplicationStatus.Rejected)
         };
     }
 
@@ -565,7 +565,7 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         applicationRecord.HiringAgentExplanation = null;
         applicationRecord.CvSummary = null;
         applicationRecord.FlagsJson = null;
-        applicationRecord.Status = "PENDING";
+        applicationRecord.Status = ApplicationStatus.Pending;
         applicationRecord.UpdatedAt = DateTimeOffset.UtcNow;
 
         return true;
