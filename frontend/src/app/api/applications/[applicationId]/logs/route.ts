@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { proxyJson } from "../../../../_lib/backend";
+import { proxyJson } from "../../../_lib/backend";
 
 export async function GET(
   _req: NextRequest,
