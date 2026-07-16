@@ -49,7 +49,7 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
         Assert.NotNull(firstResult);
         Assert.NotNull(secondResult);
         Assert.Equal(firstResult.ApplicationId, secondResult.ApplicationId);
-        Assert.Equal("PENDING", firstResult.Status);
+        Assert.Equal(ApplicationStatus.Pending, firstResult.Status);
 
         using var scope = _factory.Services.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IApplicationRecordRepository>();
@@ -103,7 +103,7 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
 
         var result = await response.Content.ReadFromJsonAsync<IngestResponse>();
         Assert.NotNull(result);
-        Assert.Equal("PENDING", result.Status);
+        Assert.Equal(ApplicationStatus.Pending, result.Status);
 
         using var scope = _factory.Services.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IApplicationRecordRepository>();
