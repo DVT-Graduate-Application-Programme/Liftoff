@@ -40,6 +40,7 @@ export default function ApplyPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: "cv" | "transcript") => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.type !== "application/pdf") {
