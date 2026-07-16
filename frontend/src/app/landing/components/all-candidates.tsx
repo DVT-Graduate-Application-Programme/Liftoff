@@ -24,6 +24,7 @@ import {
   getStatusTone,
   formatDate,
   getRecruiterLabel,
+  parseEducationEvidence,
 } from "./candidate-list-utils";
 
 type Filters = Omit<ApplicationFilters, "search" | "limit" | "cursor">;
