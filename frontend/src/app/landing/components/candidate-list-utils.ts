@@ -37,6 +37,19 @@ export const getRecruiterLabel = (application: CandidateApplication) =>
   application.ratedByRecruiterId ??
   "phindi@dvtsoftware.com";
 
+export function parseEducationEvidence(educationEvidence?: string | null) {
+  const parts = (educationEvidence ?? "")
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return {
+    degree: parts[0] ?? "",
+    institution: parts[1] ?? "",
+    average: parts[2] ?? "",
+  };
+}
+
 export type DateBucket = "today" | "thisWeek" | "lastWeek" | "older";
 
 const startOfToday = () => {

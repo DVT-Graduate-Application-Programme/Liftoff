@@ -51,22 +51,18 @@ function AllCandidateListCard({
   onOpen: () => void;
 }) {
   const evaluationQuery = useEvaluation(application.applicationId);
-  const education = (() => {
-    const raw = evaluationQuery.data?.evidenceJson?.education.trim() || application.cvSummary;
-    const parts = raw.split(",").map((part) => part.trim()).filter(Boolean);
-    return {
-      degree: parts[0] ?? raw,
-      university: parts[1] ?? "",
-    };
-  })();
+  const education = parseEducationEvidence(
+    evaluationQuery.data?.evidenceJson?.education?.trim() || application.cvSummary,
+  );
 
   return (
     <AllCandidateCard
       key={application.applicationId}
       name={application.candidateName}
-      institute={education.degree}
-      subtitle={education.university || undefined}
+      institute={education.degree || application.cvSummary}
+      subtitle={education.institution || undefined}
       systemScore={toScorePercent(application.hiringAgentTotalScore)}
+      academicAverage={undefined}
       statusLabel={getStatusLabel(application.currentStatus)}
       statusTone={getStatusTone(application.currentStatus)}
       reviewedAt={formatDate(application.createdAt)}

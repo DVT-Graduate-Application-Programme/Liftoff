@@ -246,7 +246,7 @@ export default function ApplicantCard({
             </span>
           </div>
         )}
-        {daysAgo !== null && daysAgo >= 1 && (
+        {daysAgo !== null && daysAgo >= 0 && (
           <div className="hidden w-32 shrink-0 flex-col items-center gap-0.5 pl-2 md:flex">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
               Applied
@@ -257,7 +257,21 @@ export default function ApplicantCard({
                 wrapReviewedAt ? "whitespace-normal break-words" : "truncate whitespace-nowrap",
               )}
             >
-              {daysAgo} day(s) ago
+              {daysAgo === 0
+                ? "Today"
+                : daysAgo === 1
+                  ? "1 day ago"
+                  : `${daysAgo} day(s) ago`}
+            </span>
+          </div>
+        )}
+        {daysAgo === null && (
+          <div className="hidden w-32 shrink-0 flex-col items-center gap-0.5 pl-2 md:flex">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+              Applied
+            </span>
+            <span className="text-xs font-medium tabular-nums text-muted-foreground">
+              --
             </span>
           </div>
         )}

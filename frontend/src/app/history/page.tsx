@@ -22,7 +22,7 @@ import {
 } from "@/components/providers/applicant-selection-provider";
 import { useApplicant } from "@/hooks/use-applicant";
 import { useEvaluation } from "@/hooks/use-evaluation";
-import { getStatusLabel } from "@/app/landing/components/candidate-list-utils";
+import { getStatusLabel, parseEducationEvidence } from "@/app/landing/components/candidate-list-utils";
 
 function SelectedApplicantDetailsSidebar() {
   const { selectedApplicationId, selectedTabKey } = useApplicantSelection();
@@ -186,22 +186,22 @@ function CandidateHistoryCard({
     return "neutral";
   };
 
-  const academicAverage =
-    evaluationQuery.data?.institutionJson?.academic_average ??
-    evaluationQuery.data?.categoryScoresJson.education.score;
-  const institutionName = evaluationQuery.data?.institutionJson?.name ?? "";
-  const degreeName = evaluationQuery.data?.institutionJson?.degreeName ?? "";
+  const education = parseEducationEvidence(
+    evaluationQuery.data?.evidenceJson?.education?.trim() || candidate.cvSummary,
+  );
+  const institutionName = evaluationQuery.data?.institutionJson?.name ?? education.institution;
+  const degreeName = evaluationQuery.data?.institutionJson?.degreeName ?? education.degree;
   const subtitle =
     degreeName && institutionName
       ? `${degreeName} · ${institutionName}`
-      : degreeName || institutionName || candidate.cvSummary || "Applicant";
+      : degreeName || institutionName || "Applicant";
 
   return (
       <AllCandidateCard
       key={candidate.applicationId}
       name={candidate.candidateName}
       subtitle={subtitle}
-      academicAverage={academicAverage}
+      academicAverage={undefined}
       systemScore={candidate.hiringAgentTotalScore}
       scoreLabel="Sys Score"
       scoreClassName="font-semibold"
