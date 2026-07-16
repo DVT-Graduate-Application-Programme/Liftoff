@@ -100,6 +100,11 @@ function PendingApplicationCard({
     getEducationSubtitle(evaluationQuery.data, application.cvSummary),
   );
 
+  const academicAverage =
+    evaluationQuery.data?.institutionJson?.academic_average ??
+    evaluationQuery.data?.categoryScoresJson?.education?.score ??
+    application.academicAverage;
+
   return (
     <PendingCandidateCard
       key={application.applicationId}
@@ -107,7 +112,7 @@ function PendingApplicationCard({
       institute={education.degree || application.cvSummary}
       secondaryInstitute={education.institution || undefined}
       systemScore={toScorePercent(application.hiringAgentTotalScore)}
-      academicAverage={undefined}
+      academicAverage={academicAverage}
       createdAt={application.createdAt}
       showInstitute
       {...(enableClaim

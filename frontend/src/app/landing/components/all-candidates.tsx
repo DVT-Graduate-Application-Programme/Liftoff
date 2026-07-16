@@ -56,6 +56,10 @@ function AllCandidateListCard({
     evaluationQuery.data?.evidenceJson?.education?.trim() || application.cvSummary,
   );
 
+  const academicAverage =
+    evaluationQuery.data?.institutionJson?.academic_average ??
+    evaluationQuery.data?.categoryScoresJson?.education?.score;
+
   return (
     <AllCandidateCard
       key={application.applicationId}
@@ -63,7 +67,7 @@ function AllCandidateListCard({
       institute={education.degree || application.cvSummary}
       subtitle={education.institution || undefined}
       systemScore={toScorePercent(application.hiringAgentTotalScore)}
-      academicAverage={undefined}
+      academicAverage={academicAverage}
       statusLabel={getStatusLabel(application.currentStatus)}
       statusTone={getStatusTone(application.currentStatus)}
       reviewedAt={formatDate(application.createdAt)}

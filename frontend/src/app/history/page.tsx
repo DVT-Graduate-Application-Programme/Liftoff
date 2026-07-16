@@ -196,12 +196,16 @@ function CandidateHistoryCard({
       ? `${degreeName} · ${institutionName}`
       : degreeName || institutionName || "Applicant";
 
+  const academicAverage =
+    evaluationQuery.data?.institutionJson?.academic_average ??
+    evaluationQuery.data?.categoryScoresJson?.education?.score;
+
   return (
       <AllCandidateCard
       key={candidate.applicationId}
       name={candidate.candidateName}
       subtitle={subtitle}
-      academicAverage={undefined}
+      academicAverage={academicAverage}
       systemScore={candidate.hiringAgentTotalScore}
       scoreLabel="Sys Score"
       scoreClassName="font-semibold"
