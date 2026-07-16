@@ -151,3 +151,26 @@ CREATE TABLE public."AuditLogs" (
     CONSTRAINT "FK_AuditLogs_ApplicationRecords" FOREIGN KEY ("ApplicationRecordId")
         REFERENCES public."ApplicationRecords" ("Id") ON DELETE SET NULL
 );
+
+-- ==========================================
+-- RECRUITERS TABLE
+-- ==========================================
+
+CREATE TABLE public."Recruiters" (
+    "Id"                UUID            NOT NULL DEFAULT gen_random_uuid(),
+
+    -- Identity provider identifier (Azure AD / Entra ID / Auth0 etc.)
+    "IdentityId"        VARCHAR(255)    NOT NULL,
+
+    "FirstName"         VARCHAR(100)    NOT NULL,
+    "LastName"          VARCHAR(100)    NOT NULL,
+    "Email"             VARCHAR(255)    NOT NULL,
+
+    -- Auditing
+    "CreatedAt"         TIMESTAMPTZ     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "UpdatedAt"         TIMESTAMPTZ     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "PK_Recruiters" PRIMARY KEY ("Id"),
+    CONSTRAINT "UQ_Recruiters_IdentityId" UNIQUE ("IdentityId"),
+    CONSTRAINT "UQ_Recruiters_Email" UNIQUE ("Email")
+);
