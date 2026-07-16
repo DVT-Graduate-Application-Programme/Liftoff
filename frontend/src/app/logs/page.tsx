@@ -38,8 +38,8 @@ export default function LogsPage() {
       ) : error ? (
         <ErrorState
           title="Failed to load logs"
-          description={error instanceof Error ? error.message : "An unknown error occurred"}
-          action={{ label: "Try again", onClick: () => refetch() }}
+          message={error instanceof Error ? error.message : "An unknown error occurred"}
+          onRetry={() => { void refetch(); }}
         />
       ) : !logs || logs.length === 0 ? (
         <EmptyState
