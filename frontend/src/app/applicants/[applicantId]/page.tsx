@@ -16,6 +16,7 @@ import {
   Sparkles,
   Star,
   RefreshCw,
+  FileText,
 } from "lucide-react";
 import {
   Card,
@@ -450,31 +451,38 @@ export default function DetailedApplicantInfo() {
         {/* Document Viewer Container */}
         <section 
           style={isMobile ? undefined : { width: `${leftWidth}%` }}
-          className="flex w-full md:h-[calc(100vh_-_10rem)] flex-col gap-3 md:pr-4"
+          className="flex w-full md:h-[calc(100vh_-_10rem)] flex-col md:pr-4"
         >
-          <h2 className="font-heading text-xs font-semibold uppercase tracking-wide text-muted-foreground pl-2">
-            Applicant documents
-          </h2>
-          <Tabs defaultValue="cv" className="flex-1 min-h-0 gap-3">
-            <TabsList className="self-center">
-              <TabsTrigger value="cv">CV</TabsTrigger>
-              <TabsTrigger value="transcript">Transcript</TabsTrigger>
-            </TabsList>
-            <TabsContent value="cv" className="flex-1 min-h-0">
-              <DocumentViewer
-                url={`/api/applications/${applicantId}/cv`}
-                label="CV"
-                className="h-full min-h-64"
-              />
-            </TabsContent>
-            <TabsContent value="transcript" className="flex-1 min-h-0">
-              <DocumentViewer
-                url={`/api/applications/${applicantId}/transcript`}
-                label="Transcript"
-                className="h-full min-h-64"
-              />
-            </TabsContent>
-          </Tabs>
+          <Card className="flex-1 flex flex-col min-h-0">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                <FileText className="size-4" />
+                Applicant Documents
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col min-h-0 gap-3">
+              <Tabs defaultValue="cv" className="flex-1 flex flex-col min-h-0 gap-3">
+                <TabsList className="self-start">
+                  <TabsTrigger value="cv">CV</TabsTrigger>
+                  <TabsTrigger value="transcript">Transcript</TabsTrigger>
+                </TabsList>
+                <TabsContent value="cv" className="flex-1 min-h-0 mt-0">
+                  <DocumentViewer
+                    url={`/api/applications/${applicantId}/cv`}
+                    label="CV"
+                    className="h-full min-h-64"
+                  />
+                </TabsContent>
+                <TabsContent value="transcript" className="flex-1 min-h-0 mt-0">
+                  <DocumentViewer
+                    url={`/api/applications/${applicantId}/transcript`}
+                    label="Transcript"
+                    className="h-full min-h-64"
+                  />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
         </section>
 
         {/* Resize Handle */}
