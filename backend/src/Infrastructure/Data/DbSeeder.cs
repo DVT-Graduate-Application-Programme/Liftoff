@@ -590,7 +590,7 @@ public static class DbSeeder
             CandidateName = "Tomás Reyes",
             CandidateEmail = "tomas.reyes@example.com",
             CandidateGitHubUrl = null,
-            Status = "rejected",
+            Status = "pending",
             Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "Degree is in Culinary Arts – not an IT, Computer Science, or STEM discipline. No evidence of self-taught programming or compensating technical experience.",
@@ -640,7 +640,7 @@ public static class DbSeeder
         };
 
         // ──────────────────────────────────────────────
-        // Candidate 11 – Harriet Langley (MBA) – hard gate fail, rejected
+        // Candidate 11 – Harriet Langley (MBA) – hard gate fail, pending
         // ──────────────────────────────────────────────
         var app11 = new ApplicationRecord
         {
@@ -649,7 +649,7 @@ public static class DbSeeder
             CandidateName = "Harriet Langley",
             CandidateEmail = "harriet.langley@example.com",
             CandidateGitHubUrl = null,
-            Status = "rejected",
+            Status = "pending",
             Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "MBA is a postgraduate business qualification, not an IT or STEM degree. Undergraduate degree is in History. No compensating technical background identified.",
