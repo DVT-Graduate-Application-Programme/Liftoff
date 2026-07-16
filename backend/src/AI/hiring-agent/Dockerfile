@@ -2,10 +2,11 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# PyMuPDF needs these system libs to build/run
+# PyMuPDF needs these system libs to build/run; tesseract-ocr powers the scanned-PDF OCR fallback
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libmupdf-dev \
     build-essential \
+    tesseract-ocr \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
