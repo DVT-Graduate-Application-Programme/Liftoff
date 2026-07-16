@@ -34,7 +34,7 @@ function ScoreTag({ score }: { score: number }) {
           getScoreColor(score),
         )}
       >
-        {Number(score).toFixed(1)}%
+        {score.toFixed(1)}%
       </span>
     </div>
   );

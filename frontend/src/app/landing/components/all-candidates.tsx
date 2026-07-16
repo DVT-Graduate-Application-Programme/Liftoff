@@ -53,12 +53,12 @@ function AllCandidateListCard({
 }) {
   const evaluationQuery = useEvaluation(application.applicationId);
   const education = parseEducationEvidence(
-    evaluationQuery.data?.evidenceJson?.education?.trim() || application.cvSummary,
+    evaluationQuery.data?.evidenceJson?.education.trim() || application.cvSummary,
   );
 
   const academicAverage =
     evaluationQuery.data?.institutionJson?.academic_average ??
-    evaluationQuery.data?.categoryScoresJson?.education?.score;
+    evaluationQuery.data?.categoryScoresJson.education.score;
 
   return (
     <AllCandidateCard

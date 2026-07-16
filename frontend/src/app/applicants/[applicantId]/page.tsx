@@ -505,13 +505,13 @@ function ReevaluateButton({ applicantId }: { applicantId: string }) {
 
   const handleConfirm = () => {
     reevaluate.mutate(undefined, {
-      onSuccess: () => setOpen(false)
+      onSuccess: () => { setOpen(false); }
     });
   };
 
   return (
     <>
-      <Button variant="outline" size="sm" onClick={() => setOpen(true)} className="gap-2">
+      <Button variant="outline" size="sm" onClick={() => { setOpen(true); }} className="gap-2">
         <RefreshCw className={cn("size-4", reevaluate.isPending && "animate-spin")} />
         Re-evaluate
       </Button>
@@ -524,7 +524,7 @@ function ReevaluateButton({ applicantId }: { applicantId: string }) {
               Are you sure you want to re-evaluate this applicant? This will reset the AI summary and trigger a new analysis based on the latest uploaded documents.
             </p>
             <div className="flex justify-end gap-3 mt-4">
-              <Button variant="ghost" onClick={() => setOpen(false)} disabled={reevaluate.isPending}>
+              <Button variant="ghost" onClick={() => { setOpen(false); }} disabled={reevaluate.isPending}>
                 Cancel
               </Button>
               <Button onClick={handleConfirm} disabled={reevaluate.isPending}>
@@ -557,7 +557,7 @@ export default function DetailedApplicantInfo() {
     };
     checkMobile();
     window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    return () => { window.removeEventListener("resize", checkMobile); };
   }, []);
 
   useEffect(() => {
@@ -637,7 +637,7 @@ export default function DetailedApplicantInfo() {
       >
         {/* Document Viewer Container */}
         <section 
-          style={isMobile ? undefined : { width: `${leftWidth}%` }}
+          style={isMobile ? undefined : { width: `${String(leftWidth)}%` }}
           className="flex w-full md:h-full flex-col md:pr-4 min-h-0"
         >
           <Card className="flex-1 flex flex-col min-h-0">
@@ -674,7 +674,7 @@ export default function DetailedApplicantInfo() {
 
         {/* Resize Handle */}
         <div
-          onMouseDown={() => setIsResizing(true)}
+          onMouseDown={() => { setIsResizing(true); }}
           className={cn(
             "hidden md:flex w-2 cursor-col-resize hover:bg-primary/20 items-center justify-center transition-colors rounded mx-1",
             isResizing && "bg-primary/20"
@@ -685,7 +685,7 @@ export default function DetailedApplicantInfo() {
 
         {/*Candidate INFO Container*/}
         <div 
-          style={isMobile ? undefined : { width: `${100 - leftWidth}%` }}
+          style={isMobile ? undefined : { width: `${String(100 - leftWidth)}%` }}
           className="flex w-full flex-col gap-4 md:pl-4 md:h-full md:min-h-0"
         >
           {/* Candidate Summary Section */}

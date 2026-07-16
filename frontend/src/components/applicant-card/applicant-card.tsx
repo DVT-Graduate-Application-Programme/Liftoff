@@ -73,7 +73,7 @@ function ScoreTag({ score }: { score: number }) {
           getScoreColor(score),
         )}
       >
-        {Number(score).toFixed(1)}%
+        {score.toFixed(1)}%
       </span>
     </div>
   );
@@ -261,7 +261,7 @@ export default function ApplicantCard({
                 ? "Today"
                 : daysAgo === 1
                   ? "1 day ago"
-                  : `${daysAgo} day(s) ago`}
+                  : `${String(daysAgo)} day(s) ago`}
             </span>
           </div>
         )}

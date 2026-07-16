@@ -31,7 +31,7 @@ export default function LogsPage() {
 
       {isLoading ? (
         <div className="flex flex-col gap-4">
-          {[...Array(5)].map((_, i) => (
+          {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-16 w-full rounded-lg" />
           ))}
         </div>

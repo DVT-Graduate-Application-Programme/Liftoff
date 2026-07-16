@@ -102,7 +102,7 @@ function PendingApplicationCard({
 
   const academicAverage =
     evaluationQuery.data?.institutionJson?.academic_average ??
-    evaluationQuery.data?.categoryScoresJson?.education?.score ??
+    evaluationQuery.data?.categoryScoresJson.education.score ??
     application.academicAverage;
 
   return (

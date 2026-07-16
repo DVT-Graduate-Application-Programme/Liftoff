@@ -82,7 +82,7 @@ function ScoreTag({
           !isDefault ? getScoreColor(score) : undefined,
         )}
       >
-        {Number(score).toFixed(1)}%
+        {score.toFixed(1)}%
       </span>
     </div>
   );
@@ -263,7 +263,7 @@ export default function AllCandidateCard({
                 ? "Today"
                 : daysAgo === 1
                   ? "1 day ago"
-                  : `${daysAgo} days ago`}
+                  : `${String(daysAgo)} days ago`}
             </span>
           ) : (
             <span className="text-sm font-semibold text-muted-foreground">–</span>

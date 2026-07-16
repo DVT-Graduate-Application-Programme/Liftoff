@@ -7,7 +7,7 @@ export function useReevaluateApplication(applicationId: string) {
 
   return useMutation({
     mutationFn: () =>
-      apiFetch<void>(`/api/applications/${applicationId}/re-evaluate`, {
+      apiFetch<unknown>(`/api/applications/${applicationId}/re-evaluate`, {
         method: "POST",
       }),
     onSuccess: () => {

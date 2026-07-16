@@ -187,7 +187,7 @@ function CandidateHistoryCard({
   };
 
   const education = parseEducationEvidence(
-    evaluationQuery.data?.evidenceJson?.education?.trim() || candidate.cvSummary,
+    evaluationQuery.data?.evidenceJson?.education.trim() || candidate.cvSummary,
   );
   const institutionName = evaluationQuery.data?.institutionJson?.name ?? education.institution;
   const degreeName = evaluationQuery.data?.institutionJson?.degreeName ?? education.degree;
@@ -198,7 +198,7 @@ function CandidateHistoryCard({
 
   const academicAverage =
     evaluationQuery.data?.institutionJson?.academic_average ??
-    evaluationQuery.data?.categoryScoresJson?.education?.score;
+    evaluationQuery.data?.categoryScoresJson.education.score;
 
   return (
       <AllCandidateCard

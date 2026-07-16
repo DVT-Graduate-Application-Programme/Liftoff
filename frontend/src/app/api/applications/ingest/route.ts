@@ -18,6 +18,6 @@ export async function POST(req: NextRequest) {
     return new NextResponse(errText || backendRes.statusText, { status: backendRes.status });
   }
 
-  const data = await backendRes.json();
+  const data = (await backendRes.json()) as unknown;
   return NextResponse.json(data, { status: backendRes.status });
 }

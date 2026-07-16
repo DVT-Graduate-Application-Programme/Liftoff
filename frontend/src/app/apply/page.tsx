@@ -40,9 +40,8 @@ export default function ApplyPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: "cv" | "transcript") => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+    const file = e.target.files?.[0];
+    if (file) {
       if (file.type !== "application/pdf") {
         setError("Only PDF files are supported.");
         return;
@@ -52,7 +51,7 @@ export default function ApplyPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!form.cv) {
       setError("CV file is required.");
@@ -75,7 +74,7 @@ export default function ApplyPage() {
       const response = await fetch("/api/applications/ingest", {
         method: "POST",
         headers: {
-          "Idempotency-Key": `manual-${form.email}-${Date.now()}`,
+          "Idempotency-Key": `manual-${form.email}-${String(Date.now())}`,
         },
         body: formData,
       });
@@ -98,8 +97,9 @@ export default function ApplyPage() {
         cv: null,
         transcript: null,
       });
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred during submission.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "An unexpected error occurred during submission.";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -155,7 +155,7 @@ export default function ApplyPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-8">
             {/* Section 1: Personal Details */}
             <div>
               <h3 className="text-lg font-bold text-slate-200 border-b border-slate-800 pb-2 mb-6">
@@ -307,7 +307,7 @@ export default function ApplyPage() {
                       type="file"
                       accept=".pdf"
                       required={!form.cv}
-                      onChange={(e) => handleFileChange(e, "cv")}
+                      onChange={(e) => { handleFileChange(e, "cv"); }}
                       className="sr-only"
                     />
                     {form.cv ? (
@@ -343,7 +343,7 @@ export default function ApplyPage() {
                     <input
                       type="file"
                       accept=".pdf"
-                      onChange={(e) => handleFileChange(e, "transcript")}
+                      onChange={(e) => { handleFileChange(e, "transcript"); }}
                       className="sr-only"
                     />
                     {form.transcript ? (
