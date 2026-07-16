@@ -7,7 +7,7 @@ const fixtures: CandidateApplication[] = [
   {
     applicationId: "app-1",
     candidateName: "Thabo Nkosi",
-    currentStatus: "PENDING",
+    currentStatus: "Pending",
     tier: "STRONG",
     hardGatePassed: true,
     hiringAgentTotalScore: 4,
@@ -21,7 +21,7 @@ const fixtures: CandidateApplication[] = [
   {
     applicationId: "app-2",
     candidateName: "Andile Ngwenya",
-    currentStatus: "evaluated",
+    currentStatus: "Pending",
     tier: "BORDERLINE",
     hardGatePassed: true,
     hiringAgentTotalScore: 2,
@@ -35,7 +35,7 @@ const fixtures: CandidateApplication[] = [
   {
     applicationId: "app-3",
     candidateName: "Sarah Adams",
-    currentStatus: "shortlisted",
+    currentStatus: "Shortlisted",
     tier: "STRONG",
     hardGatePassed: true,
     hiringAgentTotalScore: 5,
@@ -93,7 +93,7 @@ describe("GET /api/applications", () => {
   });
 
   it("matches any status in a comma-separated status list", async () => {
-    const response = await GET(request("?status=PENDING,evaluated"));
+    const response = await GET(request("?status=Pending,Shortlisted"));
     const body = (await response.json()) as {
       applications: { currentStatus: string }[];
     };
@@ -101,7 +101,7 @@ describe("GET /api/applications", () => {
     expect(body.applications.length).toBeGreaterThan(0);
     expect(
       body.applications.every((a) =>
-        ["PENDING", "evaluated"].includes(a.currentStatus),
+        ["Pending", "Shortlisted"].includes(a.currentStatus),
       ),
     ).toBe(true);
   });

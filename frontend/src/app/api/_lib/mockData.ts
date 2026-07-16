@@ -19,13 +19,9 @@
  */
 
 export type CurrentStatus =
-  | "PENDING"
-  | "PROCESSING"
-  | "VALID"
-  | "INVALID"
-  | "MANUAL_REVIEW"
-  | "SHORTLISTED"
-  | "ERROR";
+  | "Pending"
+  | "Rejected"
+  | "Shortlisted";
 
 export type Tier = "STRONG" | "BORDERLINE" | "WEAK" | "INVALID";
 
@@ -96,7 +92,7 @@ export const SERVER_ERROR_ID = "11111111-1111-1111-1111-111111111111";
 export const applications: MockApplication[] = [
   {
     applicationId: "b7f1d2c4-8f3a-4d2b-9f1a-2c3d4e5f6789",
-    currentStatus: "PROCESSING",
+    currentStatus: "Pending",
     tier: "STRONG",
     createdAt: "2025-01-15T10:30:00Z",
     updatedAt: "2025-01-15T10:45:00Z",
@@ -182,7 +178,7 @@ export const applications: MockApplication[] = [
 
   {
     applicationId: "3a2b1c9d-6e5f-4a3b-8c2d-1e2f3a4b5c6d",
-    currentStatus: "VALID",
+    currentStatus: "Pending",
     tier: "BORDERLINE",
     createdAt: "2025-02-03T08:12:00Z",
     updatedAt: "2025-02-03T08:40:00Z",
@@ -260,7 +256,7 @@ export const applications: MockApplication[] = [
 
   {
     applicationId: "5e6f7a8b-9c0d-4e1f-8a2b-3c4d5e6f7a8b",
-    currentStatus: "VALID",
+    currentStatus: "Pending",
     tier: "WEAK",
     createdAt: "2025-02-10T14:05:00Z",
     updatedAt: "2025-02-10T14:20:00Z",
@@ -333,7 +329,7 @@ export const applications: MockApplication[] = [
 
   {
     applicationId: "9c8d7e6f-5a4b-4c3d-9e2f-1a2b3c4d5e6f",
-    currentStatus: "INVALID",
+    currentStatus: "Rejected",
     tier: "INVALID",
     createdAt: "2025-02-12T09:00:00Z",
     updatedAt: "2025-02-12T09:02:00Z",
@@ -370,7 +366,7 @@ export const applications: MockApplication[] = [
 
   {
     applicationId: "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e",
-    currentStatus: "VALID",
+    currentStatus: "Pending",
     tier: "BORDERLINE",
     createdAt: "2025-02-14T11:30:00Z",
     updatedAt: "2025-02-14T11:50:00Z",
@@ -440,7 +436,7 @@ export const applications: MockApplication[] = [
 
   {
     applicationId: "7f8e9d0c-1b2a-4c3d-8e9f-0a1b2c3d4e5f",
-    currentStatus: "SHORTLISTED",
+    currentStatus: "Shortlisted",
     tier: "STRONG",
     createdAt: "2025-01-20T09:00:00Z",
     updatedAt: "2025-01-22T16:10:00Z",
@@ -523,7 +519,7 @@ export const applications: MockApplication[] = [
 
   {
     applicationId: "c1a1c1a1-0000-0000-0000-000000000000",
-    currentStatus: "PENDING",
+    currentStatus: "Pending",
     tier: "INVALID",
     createdAt: "2025-02-20T07:45:00Z",
     updatedAt: "2025-02-20T07:45:00Z",
@@ -589,14 +585,14 @@ const SYNTHETIC_NAMES = [
 ];
 
 const SYNTHETIC_STATUSES: CurrentStatus[] = [
-  "PENDING",
-  "PROCESSING",
-  "VALID",
-  "VALID",
-  "MANUAL_REVIEW",
-  "SHORTLISTED",
-  "ERROR",
-  "INVALID",
+  "Pending",
+  "Pending",
+  "Pending",
+  "Pending",
+  "Pending",
+  "Shortlisted",
+  "Rejected",
+  "Rejected",
 ];
 
 const SYNTHETIC_TIERS: Tier[] = ["STRONG", "BORDERLINE", "WEAK"];
@@ -604,13 +600,15 @@ const SYNTHETIC_TIERS: Tier[] = ["STRONG", "BORDERLINE", "WEAK"];
 function buildSyntheticApplication(index: number): MockApplication {
   const name = SYNTHETIC_NAMES[index % SYNTHETIC_NAMES.length];
   const status = SYNTHETIC_STATUSES[index % SYNTHETIC_STATUSES.length];
+  const rawStatus = ["PENDING", "PROCESSING", "VALID", "VALID", "MANUAL_REVIEW", "SHORTLISTED", "ERROR", "INVALID"][index % 8];
+  
   // INVALID tier is reserved for applications that failed the hard gate, matching the status.
   const tier =
-    status === "INVALID"
+    rawStatus === "INVALID"
       ? "INVALID"
       : SYNTHETIC_TIERS[index % SYNTHETIC_TIERS.length];
   const hasEvaluation =
-    status !== "PENDING" && status !== "INVALID" && status !== "ERROR";
+    rawStatus !== "PENDING" && rawStatus !== "INVALID" && rawStatus !== "ERROR";
   const createdAt = new Date(
     Date.UTC(2025, index % 12, (index % 27) + 1, 9, 0, 0),
   ).toISOString();
@@ -631,8 +629,8 @@ function buildSyntheticApplication(index: number): MockApplication {
           : `https://github.com/${name.toLowerCase().replace(/\s+/g, "-")}`,
     },
     screening: {
-      hardGatePassed: status !== "INVALID",
-      hardGateReason: status === "INVALID" ? "CV could not be parsed." : null,
+      hardGatePassed: rawStatus !== "INVALID",
+      hardGateReason: rawStatus === "INVALID" ? "CV could not be parsed." : null,
     },
     evaluation: hasEvaluation
       ? {
