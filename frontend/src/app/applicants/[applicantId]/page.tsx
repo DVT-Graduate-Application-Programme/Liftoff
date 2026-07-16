@@ -631,14 +631,14 @@ export default function DetailedApplicantInfo() {
       <div 
         ref={containerRef}
         className={cn(
-          "w-full max-w-[1400px] flex flex-col md:flex-row items-stretch justify-center pt-10",
+          "w-full max-w-[1400px] flex flex-col md:flex-row items-stretch justify-center pt-10 md:h-[calc(100vh_-_10rem)] md:min-h-0",
           isResizing && "select-none cursor-col-resize"
         )}
       >
         {/* Document Viewer Container */}
         <section 
           style={isMobile ? undefined : { width: `${leftWidth}%` }}
-          className="flex w-full md:h-[calc(100vh_-_10rem)] flex-col md:pr-4"
+          className="flex w-full md:h-full flex-col md:pr-4 min-h-0"
         >
           <Card className="flex-1 flex flex-col min-h-0">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
@@ -686,7 +686,7 @@ export default function DetailedApplicantInfo() {
         {/*Candidate INFO Container*/}
         <div 
           style={isMobile ? undefined : { width: `${100 - leftWidth}%` }}
-          className="flex w-full flex-col gap-4 md:pl-4 md:h-[calc(100vh_-_10rem)] md:min-h-0"
+          className="flex w-full flex-col gap-4 md:pl-4 md:h-full md:min-h-0"
         >
           {/* Candidate Summary Section */}
           <section className="flex flex-col gap-4 md:flex-1 md:min-h-0 md:overflow-y-auto md:pr-1">
