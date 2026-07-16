@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -15,6 +15,7 @@ import {
   Rocket,
   Sparkles,
   Star,
+  RefreshCw,
 } from "lucide-react";
 import {
   Card,
@@ -43,6 +44,7 @@ import { useRateApplication } from "@/hooks/use-rate-application";
 import { useShortlistApplication } from "@/hooks/use-shortlist-application";
 import { useAcceptApplication } from "@/hooks/use-accept-application";
 import { useRejectApplication } from "@/hooks/use-reject-application";
+import { useReevaluateApplication } from "@/hooks/use-reevaluate-application";
 import type { Evaluation, EvaluationCategoryScores, EvaluationScore } from "@/types/api";
 import { SCORE_CATEGORIES } from "@/app/landing/components/applicant-details/constants";
 import { DocumentViewer } from "./components/document-viewer/document-viewer";
@@ -84,7 +86,7 @@ function ScoreCategoryRow({
   );
 }
 
-function EvaluationSummary({ evaluation }: { evaluation: Evaluation }) {
+function EvaluationSummary({ evaluation, applicationId }: { evaluation: Evaluation; applicationId: string }) {
   const categoryScores = evaluation.categoryScoresJson;
   const bonusTotal = evaluation.bonusPointsJson?.total ?? 0;
   const keyStrengths = evaluation.keyStrengthsJson ?? [];
@@ -106,6 +108,9 @@ function EvaluationSummary({ evaluation }: { evaluation: Evaluation }) {
         <CardTitle className="flex items-center gap-2">
           <Sparkles className="size-4" />
           AI Summary
+          <div className="ml-2">
+            <ReevaluateButton applicantId={applicationId} />
+          </div>
         </CardTitle>
         <CardAction className="flex flex-col items-end gap-1">
           Overall Score
@@ -306,6 +311,45 @@ function CandidateReview({ applicationId }: { applicationId: string }) {
   );
 }
 
+function ReevaluateButton({ applicantId }: { applicantId: string }) {
+  const [open, setOpen] = useState(false);
+  const reevaluate = useReevaluateApplication(applicantId);
+
+  const handleConfirm = () => {
+    reevaluate.mutate(undefined, {
+      onSuccess: () => setOpen(false)
+    });
+  };
+
+  return (
+    <>
+      <Button variant="outline" size="sm" onClick={() => setOpen(true)} className="gap-2">
+        <RefreshCw className={cn("size-4", reevaluate.isPending && "animate-spin")} />
+        Re-evaluate
+      </Button>
+
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-background border rounded-lg shadow-lg w-full max-w-md p-6 flex flex-col gap-4 animate-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-semibold">Confirm Re-evaluation</h3>
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to re-evaluate this applicant? This will reset the AI summary and trigger a new analysis based on the latest uploaded documents.
+            </p>
+            <div className="flex justify-end gap-3 mt-4">
+              <Button variant="ghost" onClick={() => setOpen(false)} disabled={reevaluate.isPending}>
+                Cancel
+              </Button>
+              <Button onClick={handleConfirm} disabled={reevaluate.isPending}>
+                {reevaluate.isPending ? "Re-evaluating..." : "Confirm"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function DetailedApplicantInfo() {
   const params = useParams<{ applicantId: string }>();
   const applicantId = params.applicantId;
@@ -313,6 +357,45 @@ export default function DetailedApplicantInfo() {
   const detailQuery = useApplicationDetail(applicantId);
   const applicantQuery = useApplicant(applicantId);
   const evaluationQuery = useEvaluation(applicantId);
+
+  const [leftWidth, setLeftWidth] = useState(50); // percentage
+  const [isResizing, setIsResizing] = useState(false);
+  const [isMobile, setIsMobile] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const percentage = ((e.clientX - rect.left) / rect.width) * 100;
+      if (percentage >= 25 && percentage <= 75) {
+        setLeftWidth(percentage);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isResizing]);
 
   if (detailQuery.isError) {
     const error = detailQuery.error;
@@ -350,16 +433,25 @@ export default function DetailedApplicantInfo() {
       {detailQuery.isLoading || applicantQuery.isLoading ? (
         <Skeleton className="h-9 w-64" />
       ) : (
-        <h1 className="font-heading text-3xl font-semibold text-foreground">{candidateName ?? "Applicant"}</h1>
+        <h1 className="font-heading text-3xl font-semibold text-foreground mb-2">{candidateName ?? "Applicant"}</h1>
       )}
       {evaluationQuery.data?.institutionJson && (
         <p className="text-sm text-muted-foreground">
           {evaluationQuery.data.institutionJson.degreeName} · {evaluationQuery.data.institutionJson.name}
         </p>
       )}
-      <div className="w-full flex flex-col md:flex-row items-start justify-center gap-10 pt-10">
+      <div 
+        ref={containerRef}
+        className={cn(
+          "w-full flex flex-col md:flex-row items-stretch justify-center pt-10",
+          isResizing && "select-none cursor-col-resize"
+        )}
+      >
         {/* Document Viewer Container */}
-        <section className="flex w-full md:max-w-xl md:h-[calc(100vh_-_10rem)] flex-col gap-3">
+        <section 
+          style={isMobile ? undefined : { width: `${leftWidth}%` }}
+          className="flex w-full md:h-[calc(100vh_-_10rem)] flex-col gap-3 md:pr-4"
+        >
           <h2 className="font-heading text-xs font-semibold uppercase tracking-wide text-muted-foreground pl-2">
             Applicant documents
           </h2>
@@ -385,8 +477,22 @@ export default function DetailedApplicantInfo() {
           </Tabs>
         </section>
 
+        {/* Resize Handle */}
+        <div
+          onMouseDown={() => setIsResizing(true)}
+          className={cn(
+            "hidden md:flex w-2 cursor-col-resize hover:bg-primary/20 items-center justify-center transition-colors rounded mx-1",
+            isResizing && "bg-primary/20"
+          )}
+        >
+          <div className="w-[2px] h-10 rounded bg-muted-foreground/30" />
+        </div>
+
         {/*Candidate INFO Container*/}
-        <div className="flex w-full md:max-w-xl flex-col gap-4">
+        <div 
+          style={isMobile ? undefined : { width: `${100 - leftWidth}%` }}
+          className="flex w-full flex-col gap-4 md:pl-4 overflow-y-auto md:h-[calc(100vh_-_10rem)]"
+        >
           {/* Candidate Summary Section */}
           <section className="flex flex-col gap-4">
             {evaluationQuery.isLoading ? (
@@ -404,7 +510,7 @@ export default function DetailedApplicantInfo() {
                 description="This candidate has not been evaluated by the Hiring Agent yet."
               />
             ) : (
-              <EvaluationSummary evaluation={evaluationQuery.data} />
+              <EvaluationSummary evaluation={evaluationQuery.data} applicationId={applicantId} />
             )}
           </section>
 

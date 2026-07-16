@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Routing;
 using System.Net.Http;
 using System.Net.Http.Json;
 using Microsoft.Graph.Models;
+using System.IO;
+using System.Linq;
 
 namespace Api.EndPoints.Applications;
 
@@ -32,22 +34,16 @@ public static class IngestEndpoints
         MediatR.IMediator mediator,
         CancellationToken ct)
     {
-        var command = new IngestManualApplicationCommand
-        {
-            CandidateName = request.CandidateName,
-            CandidateEmail = request.CandidateEmail,
-            IdempotencyKey = httpRequest.Headers["Idempotency-Key"].ToString(),
-            HasCvFile = request.CvFile is not null,
-            HasTranscriptFile = request.TranscriptFile is not null
-        };
+        using var cvStream = request.CvFile.OpenReadStream();
+        using var transcriptStream = request.TranscriptFile?.OpenReadStream();
 
         var command2 = new SendApplicationCommand
         {
             CandidateName = request.CandidateName,
             CandidateEmail = request.CandidateEmail,
             IdempotencyKey = httpRequest.Headers["Idempotency-Key"].ToString(),
-            CVurl = request.CvFile,
-            TranscriptUrl = request.TranscriptFile
+            CvStream = cvStream,
+            TranscriptStream = transcriptStream
         };
 
         var result = await mediator.Send(command2, ct);
@@ -72,7 +68,7 @@ public static class IngestEndpoints
     }
 
 
-    private static async Task NotifyHiringAgent(Guid applicationId)
+    public static async Task NotifyHiringAgent(Guid applicationId)
     {
         const string fastApiBaseUrl = "http://hiring-agent:8001";
         try
@@ -89,5 +85,4 @@ public static class IngestEndpoints
             // swallow — don't let a notify failure crash ingest
         }
     }
-
 }

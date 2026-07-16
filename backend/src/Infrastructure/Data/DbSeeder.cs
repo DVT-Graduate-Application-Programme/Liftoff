@@ -167,14 +167,14 @@ public static class DbSeeder
         };
 
         // ──────────────────────────────────────────────
-        // Candidate 3 – Priya Sharma (Score 73 + 2 bonus = 75)
+        // Candidate 3 – Elena Rodriguez (Score 73 + 2 bonus = 75)
         // ──────────────────────────────────────────────
         var app3 = new ApplicationRecord
         {
             Id = App3Id,
             EmailMessageId = "seed-msg-003",
-            CandidateName = "Priya Sharma",
-            CandidateEmail = "priya.sharma@example.com",
+            CandidateName = "Elena Rodriguez",
+            CandidateEmail = "Elena.Rodriguez@example.com",
             CandidateGitHubUrl = "https://github.com/josephexample-dev",
             Status = "shortlisted",
             Tier = "Borderline",

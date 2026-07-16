@@ -257,9 +257,13 @@ export default function AllCandidateCard({
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
             Applied
           </span>
-          {daysAgo !== null && daysAgo >= 1 ? (
+          {daysAgo !== null && daysAgo >= 0 ? (
             <span className="max-w-full whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
-              {daysAgo} day(s) ago
+              {daysAgo === 0
+                ? "Today"
+                : daysAgo === 1
+                  ? "1 day ago"
+                  : `${daysAgo} days ago`}
             </span>
           ) : (
             <span className="text-sm font-semibold text-muted-foreground">–</span>

@@ -240,6 +240,7 @@ function AllCandidates() {
     },
   ].filter(Boolean) as ActiveFilter[];
 
+
   const { selectApplication } = useApplicantSelection();
   const { setOpen } = useSidebar();
   const claimMutation = useClaimApplication();
