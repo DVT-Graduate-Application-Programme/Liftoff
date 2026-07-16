@@ -686,10 +686,10 @@ export default function DetailedApplicantInfo() {
         {/*Candidate INFO Container*/}
         <div 
           style={isMobile ? undefined : { width: `${100 - leftWidth}%` }}
-          className="flex w-full flex-col gap-4 md:pl-4 overflow-y-auto md:h-[calc(100vh_-_10rem)]"
+          className="flex w-full flex-col gap-4 md:pl-4 md:h-[calc(100vh_-_10rem)] md:min-h-0"
         >
           {/* Candidate Summary Section */}
-          <section className="flex flex-col gap-4">
+          <section className="flex flex-col gap-4 md:flex-1 md:min-h-0 md:overflow-y-auto md:pr-1">
             {evaluationQuery.isLoading ? (
               <Card>
                 <CardContent className="flex flex-col gap-2 py-6">
