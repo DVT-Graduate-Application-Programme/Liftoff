@@ -52,7 +52,7 @@ export default function ApplyPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (!form.cv) {
       setError("CV file is required.");
