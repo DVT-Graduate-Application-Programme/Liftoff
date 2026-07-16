@@ -1,3 +1,5 @@
+using Domain.Entities;
+
 namespace Application.Queries.GetDashboardApplications;
 
 public static class DashboardSampleData
@@ -8,7 +10,7 @@ public static class DashboardSampleData
         {
             ApplicationId = "b7f1d2c4-8f3a-4d2b-9f1a-2c3d4e5f6789",
             CandidateName = "Thabo Mokoena",
-            CurrentStatus = "VALID",
+            CurrentStatus = ApplicationStatus.Pending,
             Tier = "STRONG",
             HardGatePassed = true,
             HiringAgentTotalScore = 64,
@@ -24,7 +26,7 @@ public static class DashboardSampleData
         {
             ApplicationId = "a1b2c3d4-1234-5678-abcd-ef0123456789",
             CandidateName = "Lerato Dlamini",
-            CurrentStatus = "SHORTLISTED",
+            CurrentStatus = ApplicationStatus.Shortlisted,
             Tier = "STRONG",
             HardGatePassed = true,
             HiringAgentTotalScore = 71,
@@ -40,7 +42,7 @@ public static class DashboardSampleData
         {
             ApplicationId = "c9d8e7f6-9876-5432-dcba-fedcba987654",
             CandidateName = "Sipho Ndlovu",
-            CurrentStatus = "VALID",
+            CurrentStatus = ApplicationStatus.Pending,
             Tier = "BORDERLINE",
             HardGatePassed = true,
             HiringAgentTotalScore = 41,
@@ -56,7 +58,7 @@ public static class DashboardSampleData
         {
             ApplicationId = "f1e2d3c4-aaaa-bbbb-cccc-111122223333",
             CandidateName = "Ayanda Khumalo",
-            CurrentStatus = "MANUAL_REVIEW",
+            CurrentStatus = ApplicationStatus.Pending,
             Tier = "BORDERLINE",
             HardGatePassed = true,
             HiringAgentTotalScore = 38,
@@ -72,7 +74,7 @@ public static class DashboardSampleData
         {
             ApplicationId = "e5f6a7b8-5555-6666-7777-888899990000",
             CandidateName = "Nomsa Vilakazi",
-            CurrentStatus = "INVALID",
+            CurrentStatus = ApplicationStatus.Rejected,
             Tier = "INVALID",
             HardGatePassed = false,
             HiringAgentTotalScore = 0,
@@ -88,7 +90,7 @@ public static class DashboardSampleData
         {
             ApplicationId = "d4c3b2a1-dddd-eeee-ffff-000011112222",
             CandidateName = "Kagiso Sithole",
-            CurrentStatus = "PROCESSING",
+            CurrentStatus = ApplicationStatus.Pending,
             Tier = "STRONG",
             HardGatePassed = true,
             HiringAgentTotalScore = 58,
@@ -104,7 +106,7 @@ public static class DashboardSampleData
         {
             ApplicationId = "b3a2c1d0-1111-2222-3333-444455556666",
             CandidateName = "Thandeka Moyo",
-            CurrentStatus = "PENDING",
+            CurrentStatus = ApplicationStatus.Pending,
             Tier = "WEAK",
             HardGatePassed = false,
             HiringAgentTotalScore = 0,

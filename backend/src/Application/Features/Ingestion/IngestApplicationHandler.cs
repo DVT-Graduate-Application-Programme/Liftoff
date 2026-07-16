@@ -52,7 +52,7 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
         {
             EmailMessageId = request.MessageId,
             CandidateEmail = request.From,
-            Status = "PENDING",
+            Status = ApplicationStatus.Pending,
             CreatedAt = now,
             UpdatedAt = now
         };

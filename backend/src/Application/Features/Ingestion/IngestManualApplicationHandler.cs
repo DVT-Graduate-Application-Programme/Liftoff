@@ -47,7 +47,7 @@ public class IngestManualApplicationHandler
             CandidateEmail = request.CandidateEmail,
             CvAttachmentId = request.HasCvFile ? $"manual-cv:{Guid.NewGuid()}" : null,
             TranscriptAttachmentId = request.HasTranscriptFile ? $"manual-transcript:{Guid.NewGuid()}" : null,
-            Status = "PENDING",
+            Status = ApplicationStatus.Pending,
             CreatedAt = now,
             UpdatedAt = now
         };

@@ -48,7 +48,7 @@ public class SendApplicationHandler
             CandidateEmail = request.CandidateEmail,
             CvAttachmentId = null,
             TranscriptAttachmentId = null,
-            Status = "PENDING",
+            Status = ApplicationStatus.Pending,
             CreatedAt = now,
             UpdatedAt = now
         };
