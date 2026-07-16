@@ -17,6 +17,7 @@ import {
   Star,
   RefreshCw,
   FileText,
+  History,
 } from "lucide-react";
 import {
   Card,
@@ -35,7 +36,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ApiError } from "@/lib/api-client";
+import { ApiError, apiFetch } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { useApplicationDetail } from "@/hooks/use-application-detail";
 import { useApplicant } from "@/hooks/use-applicant";
@@ -46,7 +47,11 @@ import { useShortlistApplication } from "@/hooks/use-shortlist-application";
 import { useAcceptApplication } from "@/hooks/use-accept-application";
 import { useRejectApplication } from "@/hooks/use-reject-application";
 import { useReevaluateApplication } from "@/hooks/use-reevaluate-application";
-import type { Evaluation, EvaluationCategoryScores, EvaluationScore } from "@/types/api";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
+import { useApplicationLogs } from "@/hooks/use-recruiter-logs";
+import { ACTIVE_RECRUITER_ID } from "@/hooks/use-claim-application";
+import type { Evaluation, EvaluationCategoryScores, EvaluationScore, Ownership } from "@/types/api";
 import { SCORE_CATEGORIES } from "@/app/landing/components/applicant-details/constants";
 import { DocumentViewer } from "./components/document-viewer/document-viewer";
 
@@ -212,30 +217,45 @@ function StarRatingInput({
   onChange: (rating: number) => void;
   disabled?: boolean;
 }) {
+  const [hoveredValue, setHoveredValue] = useState<number | null>(null);
+
   return (
     <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button
-          key={star}
-          type="button"
-          disabled={disabled}
-          onClick={() => { onChange(star); }}
-          aria-label={`Rate ${String(star)} star${star > 1 ? "s" : ""}`}
-          className="disabled:opacity-50"
-        >
-          <Star
-            className={cn(
-              "size-6 text-muted-foreground transition-colors",
-              star <= value && "fill-primary text-primary",
-            )}
-          />
-        </button>
-      ))}
+      {[1, 2, 3, 4, 5].map((star) => {
+        const isHighlighted = hoveredValue !== null ? star <= hoveredValue : star <= value;
+        return (
+          <button
+            key={star}
+            type="button"
+            disabled={disabled}
+            onClick={() => { onChange(star); }}
+            onMouseEnter={() => { if (!disabled) setHoveredValue(star); }}
+            onMouseLeave={() => { if (!disabled) setHoveredValue(null); }}
+            aria-label={`Rate ${String(star)} star${star > 1 ? "s" : ""}`}
+            className="disabled:opacity-50 transition-transform duration-100 hover:scale-110 focus:outline-none"
+          >
+            <Star
+              className={cn(
+                "size-6 text-muted-foreground transition-colors",
+                isHighlighted && "fill-primary text-primary",
+              )}
+            />
+          </button>
+        );
+      })}
     </div>
   );
 }
 
+interface RateResponse {
+  recruiterRating: number | null;
+  recruiterRatingNote: string | null;
+  ratedByRecruiterId: string | null;
+  ratedAt: string | null;
+}
+
 function CandidateReview({ applicationId }: { applicationId: string }) {
+  const queryClient = useQueryClient();
   const ownershipQuery = useOwnership(applicationId);
   const rateMutation = useRateApplication(applicationId);
   const shortlistMutation = useShortlistApplication(applicationId);
@@ -249,8 +269,27 @@ function CandidateReview({ applicationId }: { applicationId: string }) {
   const notes = notesOverride ?? ownershipQuery.data?.recruiterRatingNote ?? "";
   const shortlistedAt = ownershipQuery.data?.shortlistedAt;
 
+  // Mutation to save notes only
+  const notesMutation = useMutation({
+    mutationFn: (notesText: string) =>
+      apiFetch<RateResponse>(`/api/applications/${applicationId}/ownership/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recruiterIdentity: ACTIVE_RECRUITER_ID, notes: notesText }),
+      }),
+    onSuccess: (data) => {
+      queryClient.setQueryData<Ownership | undefined>(queryKeys.ownership(applicationId), (prev) =>
+        prev ? { ...prev, ...data } : prev,
+      );
+      setNotesOverride(null);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
+    },
+  });
+
+  const isNotesChanged = notesOverride !== null && notesOverride !== (ownershipQuery.data?.recruiterRatingNote ?? "");
+
   return (
-    <Card>
+    <Card className="shrink-0">
       <CardHeader>
         <CardTitle>Candidate Review</CardTitle>
       </CardHeader>
@@ -278,7 +317,13 @@ function CandidateReview({ applicationId }: { applicationId: string }) {
               variant="outline"
               size="sm"
               disabled={shortlistMutation.isPending || !!shortlistedAt}
-              onClick={() => { shortlistMutation.mutate(undefined); }}
+              onClick={() => {
+                shortlistMutation.mutate(undefined, {
+                  onSuccess: () => {
+                    void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
+                  }
+                });
+              }}
             >
               {shortlistedAt ? "Shortlisted" : shortlistMutation.isPending ? "Shortlisting..." : "Shortlist"}
             </Button>
@@ -286,7 +331,13 @@ function CandidateReview({ applicationId }: { applicationId: string }) {
               variant="outline"
               size="sm"
               disabled={acceptMutation.isPending}
-              onClick={() => { acceptMutation.mutate(undefined); }}
+              onClick={() => {
+                acceptMutation.mutate(undefined, {
+                  onSuccess: () => {
+                    void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
+                  }
+                });
+              }}
             >
               {acceptMutation.isPending ? "Accepting..." : "Accept"}
             </Button>
@@ -294,18 +345,154 @@ function CandidateReview({ applicationId }: { applicationId: string }) {
               variant="outline"
               size="sm"
               disabled={rejectMutation.isPending}
-              onClick={() => { rejectMutation.mutate(undefined); }}
+              onClick={() => {
+                rejectMutation.mutate(undefined, {
+                  onSuccess: () => {
+                    void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
+                  }
+                });
+              }}
             >
               {rejectMutation.isPending ? "Rejecting..." : "Reject"}
             </Button>
           </div>
 
-          <Button
-            disabled={rating === 0 || rateMutation.isPending}
-            onClick={() => { rateMutation.mutate({ rating, notes: notes.length > 0 ? notes : undefined }); }}
-          >
-            {rateMutation.isPending ? "Submitting..." : "Submit Rating"}
-          </Button>
+          <div className="flex gap-2">
+            {isNotesChanged && (
+              <Button
+                variant="outline"
+                disabled={notesMutation.isPending}
+                onClick={() => { notesMutation.mutate(notes); }}
+              >
+                {notesMutation.isPending ? "Saving..." : "Save Notes"}
+              </Button>
+            )}
+            <Button
+              disabled={rating === 0 || rateMutation.isPending}
+              onClick={() => {
+                rateMutation.mutate(
+                  { rating, notes: notes.length > 0 ? notes : undefined },
+                  {
+                    onSuccess: () => {
+                      setRatingOverride(null);
+                      setNotesOverride(null);
+                      void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
+                    }
+                  }
+                );
+              }}
+            >
+              {rateMutation.isPending ? "Submitting..." : "Submit Rating"}
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ApplicationLogs({ applicationId }: { applicationId: string }) {
+  const { data: logs, isLoading, isError, refetch } = useApplicationLogs(applicationId);
+
+  if (isLoading) {
+    return (
+      <Card className="w-full mt-6 shrink-0">
+        <CardHeader>
+          <CardTitle className="text-lg">Activity History</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-2">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Card className="w-full mt-6 shrink-0">
+        <CardContent className="py-6">
+          <ErrorState message="Could not load activity logs." onRetry={() => void refetch()} />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!logs || logs.length === 0) {
+    return (
+      <Card className="w-full mt-6 shrink-0">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <History className="size-5" />
+            Activity History
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-center py-6 text-sm text-muted-foreground">
+          No activity logs recorded for this applicant yet.
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const getActionBadge = (actionType: string) => {
+    switch (actionType.toUpperCase()) {
+      case "ACCEPT":
+        return <Badge className="bg-primary/20 text-primary border-primary/30">Accepted</Badge>;
+      case "REJECT":
+        return <Badge variant="destructive" className="bg-destructive/20 text-destructive border-destructive/30">Rejected</Badge>;
+      case "SHORTLIST":
+        return <Badge className="bg-chart-4/20 text-chart-4 border-chart-4/30">Shortlisted</Badge>;
+      case "CLAIM":
+        return <Badge variant="secondary">Claimed</Badge>;
+      case "RATING":
+        return <Badge variant="outline" className="border-primary text-primary">Rated</Badge>;
+      case "NOTES":
+        return <Badge variant="outline" className="text-muted-foreground">Notes Added</Badge>;
+      default:
+        return <Badge variant="outline">{actionType}</Badge>;
+    }
+  };
+
+  return (
+    <Card className="w-full mt-8 shrink-0">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <History className="size-5" />
+          Activity History
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="relative border-l border-muted pl-6 ml-2 flex flex-col gap-6">
+          {logs.map((log) => (
+            <div key={log.id} className="relative">
+              {/* Timeline marker */}
+              <div className="absolute -left-[31px] mt-1.5 size-2.5 rounded-full border-2 border-background bg-primary" />
+              
+              <div className="flex flex-col gap-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-semibold text-foreground">
+                    {log.recruiterIdentity}
+                  </span>
+                  {getActionBadge(log.actionType)}
+                  {log.ratingValue !== null && (
+                    <div className="flex items-center gap-0.5 text-xs text-primary">
+                      <Star className="size-3.5 fill-primary text-primary" />
+                      <span className="font-semibold">{log.ratingValue.toFixed(1)}</span>
+                    </div>
+                  )}
+                  <span className="ml-auto text-[10px] text-muted-foreground">
+                    {new Date(log.actionedAt).toLocaleString()}
+                  </span>
+                </div>
+                
+                {log.reason && (
+                  <p className="text-xs text-muted-foreground bg-muted/40 p-2.5 rounded-lg border border-muted/50 mt-1 max-w-full break-words">
+                    {log.reason}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>
@@ -526,6 +713,13 @@ export default function DetailedApplicantInfo() {
           <CandidateReview applicationId={applicantId} />
         </div>
       </div>
+
+      {/* Under the split: Applicant Logs */}
+      {applicantId && (
+        <div className="w-full mt-6 max-w-[1400px]">
+          <ApplicationLogs applicationId={applicantId} />
+        </div>
+      )}
     </div>
   );
 }

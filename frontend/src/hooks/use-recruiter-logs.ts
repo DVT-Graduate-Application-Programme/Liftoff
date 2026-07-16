@@ -20,3 +20,11 @@ export function useRecruiterLogs() {
     queryFn: () => apiFetch<RecruiterActionLog[]>("/api/applications/logs"),
   });
 }
+
+export function useApplicationLogs(applicationId: string) {
+  return useQuery({
+    queryKey: queryKeys.applicationLogs(applicationId),
+    queryFn: () => apiFetch<RecruiterActionLog[]>(`/api/applications/${applicationId}/logs`),
+    enabled: Boolean(applicationId),
+  });
+}
