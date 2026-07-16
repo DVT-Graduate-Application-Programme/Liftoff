@@ -1,11 +1,12 @@
 export type CandidateTier = "STRONG" | "BORDERLINE" | "WEAK";
 
-export type CandidateStatus =
-  | "PENDING"
-  | "evaluated"
-  | "forwarded"
-  | "rejected"
-  | "shortlisted";
+export const CandidateStatuses = {
+  Pending: "Pending",
+  Rejected: "Rejected",
+  Shortlisted: "Shortlisted",
+} as const;
+
+export type CandidateStatus = typeof CandidateStatuses[keyof typeof CandidateStatuses];
 
 export interface CandidateApplication {
   applicationId: string;
