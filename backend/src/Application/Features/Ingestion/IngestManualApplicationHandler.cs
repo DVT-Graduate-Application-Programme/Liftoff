@@ -20,12 +20,12 @@ public class IngestManualApplicationHandler
     {
         if (string.IsNullOrWhiteSpace(request.CandidateName))
         {
-            throw new ArgumentException("CandidateName is required to ingest an application.", nameof(request));
+            throw new ArgumentException("CandidateName is required to ingest an application.", nameof(request.CandidateName));
         }
 
         if (string.IsNullOrWhiteSpace(request.CandidateEmail))
         {
-            throw new ArgumentException("CandidateEmail is required to ingest an application.", nameof(request));
+            throw new ArgumentException("CandidateEmail is required to ingest an application.", nameof(request.CandidateEmail));
         }
 
         var emailMessageId = BuildEmailMessageId(request);
