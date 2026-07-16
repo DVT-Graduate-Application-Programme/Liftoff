@@ -474,7 +474,7 @@ function ApplicationLogs({ applicationId }: { applicationId: string }) {
                     {log.recruiterIdentity}
                   </span>
                   {getActionBadge(log.actionType)}
-                  {log.ratingValue !== null && log.ratingValue !== undefined && (
+                  {log.ratingValue !== null && (
                     <div className="flex items-center gap-0.5 text-xs text-primary">
                       <Star className="size-3.5 fill-primary text-primary" />
                       <span className="font-semibold">{log.ratingValue.toFixed(1)}</span>
