@@ -159,14 +159,15 @@ CREATE TABLE public."AuditLogs" (
 CREATE TABLE public."Recruiters" (
     "Id"                UUID            NOT NULL DEFAULT gen_random_uuid(),
 
-    -- Identity provider identifier (Azure AD / Entra ID / Auth0 etc.)
+    -- Identity provider identifier (Azure AD / Entra ID)
     "IdentityId"        VARCHAR(255)    NOT NULL,
 
     "FirstName"         VARCHAR(100)    NOT NULL,
     "LastName"          VARCHAR(100)    NOT NULL,
     "Email"             VARCHAR(255)    NOT NULL,
 
-    -- Auditing
+    "IsActive"          BOOLEAN         NOT NULL DEFAULT TRUE,
+
     "CreatedAt"         TIMESTAMPTZ     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "UpdatedAt"         TIMESTAMPTZ     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
