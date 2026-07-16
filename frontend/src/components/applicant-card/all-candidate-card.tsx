@@ -8,8 +8,8 @@ type AllCandidateCardProps = {
   name: string;
   institute?: string;
   subtitle?: string;
-  academicAverage?: number;
-  systemScore: number;
+  academicAverage?: number | null;
+  systemScore: number | null;
   scoreLabel?: string;
   scoreClassName?: string;
   statusLabel?: string;
@@ -32,7 +32,8 @@ type AllCandidateCardProps = {
   isSecondaryActionLoading?: boolean;
 };
 
-function getScoreColor(score: number) {
+function getScoreColor(score: number | null | undefined) {
+  if (score === null || score === undefined) return "text-muted-foreground";
   if (score >= 80) return "text-primary";
   if (score >= 65) return "text-chart-4";
   return "text-destructive";
@@ -69,10 +70,18 @@ function ScoreTag({
   isDefault = true,
   className,
 }: {
-  score: number;
+  score: number | null | undefined;
   isDefault?: boolean;
   className?: string;
 }) {
+  if (score === null || score === undefined || Number.isNaN(score)) {
+    return (
+      <div className="flex min-w-12 justify-center">
+        <span className="text-sm font-semibold text-muted-foreground">–</span>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-w-12 justify-center">
       <span

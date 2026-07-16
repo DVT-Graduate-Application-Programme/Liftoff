@@ -2,16 +2,12 @@ import type { CandidateApplication } from "@/types/candidate";
 
 const statusLabels: Record<string, string> = {
   pending: "Pending",
-  evaluated: "Evaluated",
-  forwarded: "Forwarded",
   rejected: "Rejected",
   shortlisted: "Shortlisted",
 };
 
 const statusTones: Record<string, "positive" | "warning" | "negative" | "neutral"> = {
   pending: "neutral",
-  evaluated: "warning",
-  forwarded: "warning",
   rejected: "negative",
   shortlisted: "positive",
 };

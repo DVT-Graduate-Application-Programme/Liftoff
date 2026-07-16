@@ -15,7 +15,8 @@ type ApplicantDetailsSidebarProps = {
   tabKey?: SelectionTabKey | null;
 };
 
-function formatDecimal(value: number) {
+function formatDecimal(value: number | null | undefined) {
+  if (value === null || value === undefined || Number.isNaN(value)) return "0.0";
   return value.toFixed(1);
 }
 

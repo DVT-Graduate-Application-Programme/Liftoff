@@ -31,11 +31,9 @@ type Filters = Omit<ApplicationFilters, "search" | "limit" | "cursor">;
 
 const STATUS_OPTIONS: [string, string][] = [
   ["", "All statuses"],
-  ["PENDING", "Pending"],
-  ["evaluated", "Evaluated"],
-  ["forwarded", "Forwarded"],
-  ["rejected", "Rejected"],
-  ["shortlisted", "Shortlisted"],
+  ["Pending", "Pending"],
+  ["Rejected", "Rejected"],
+  ["Shortlisted", "Shortlisted"],
 ];
 
 function AllCandidateListCard({

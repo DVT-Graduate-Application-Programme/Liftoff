@@ -52,11 +52,9 @@ function SelectedApplicantDetailsSidebar() {
 // keeping History's own client-side filtering and date-range control.
 const HISTORY_STATUS_OPTIONS: [string, string][] = [
   ["All", "All statuses"],
-  ["PENDING", "Pending"],
-  ["VALID", "Valid"],
-  ["INVALID", "Invalid"],
-  ["SHORTLISTED", "Shortlisted"],
-  ["MANUAL_REVIEW", "Manual review"],
+  ["Pending", "Pending"],
+  ["Rejected", "Rejected"],
+  ["Shortlisted", "Shortlisted"],
 ];
 
 const HISTORY_SCORE_OPTIONS: [string, string][] = [
@@ -173,9 +171,9 @@ function CandidateHistoryCard({
 
   const getStatusTone = (status: string) => {
     const s = status.toUpperCase();
-    if (s === "SHORTLISTED" || s === "HIRED" || s === "VALID") return "positive";
-    if (s === "INVALID" || s === "REJECTED") return "negative";
-    return "warning";
+    if (s === "SHORTLISTED") return "positive";
+    if (s === "REJECTED") return "negative";
+    return "neutral";
   };
 
   const getTierTone = (tier: string) => {
