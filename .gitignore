@@ -44,6 +44,9 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+!frontend/src/app/logs/
+!frontend/src/app/api/applications/logs/
+
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

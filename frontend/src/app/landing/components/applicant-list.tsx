@@ -25,6 +25,7 @@ import {
   groupApplicationsByDate,
   getStatusLabel,
   getStatusTone,
+  parseEducationEvidence,
   toScorePercent,
 } from "./candidate-list-utils";
 import type { Evaluation } from "@/types/api";
@@ -73,18 +74,6 @@ function getEducationSubtitle(evaluation: Evaluation | null | undefined, fallbac
   return educationEvidence || fallback;
 }
 
-function parseEducationDisplay(education: string) {
-  const parts = education
-    .split(",")
-    .map((part) => part.trim())
-    .filter(Boolean);
-
-  return {
-    degree: parts[0] ?? education,
-    university: parts[1] ?? "",
-  };
-}
-
 function PendingApplicationCard({
   application,
   enableClaim,
@@ -107,18 +96,23 @@ function PendingApplicationCard({
     claimMutation.isPending &&
     claimMutation.variables === application.applicationId;
 
-  const education = parseEducationDisplay(
+  const education = parseEducationEvidence(
     getEducationSubtitle(evaluationQuery.data, application.cvSummary),
   );
+
+  const academicAverage =
+    evaluationQuery.data?.institutionJson?.academic_average ??
+    evaluationQuery.data?.categoryScoresJson.education.score ??
+    application.academicAverage;
 
   return (
     <PendingCandidateCard
       key={application.applicationId}
       name={application.candidateName}
-      institute={education.degree}
-      secondaryInstitute={education.university}
+      institute={education.degree || application.cvSummary}
+      secondaryInstitute={education.institution || undefined}
       systemScore={toScorePercent(application.hiringAgentTotalScore)}
-      academicAverage={application.academicAverage}
+      academicAverage={academicAverage}
       createdAt={application.createdAt}
       showInstitute
       {...(enableClaim

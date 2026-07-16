@@ -23,6 +23,7 @@ export function useRejectApplication(applicationId: string) {
       void queryClient.invalidateQueries({ queryKey: queryKeys.ownership(applicationId) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.applicationDetail(applicationId) });
       void queryClient.invalidateQueries({ queryKey: ["applications"] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.logs() });
     },
   });
 }

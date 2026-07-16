@@ -36,8 +36,29 @@ public class IngestEvaluationHandler
 
         var totalScore = DeriveTotalScore(request.Scores);
 
+        InstitutionDto? institutionDto = null;
+        if (request.Institution != null)
+        {
+            var degree = !string.IsNullOrEmpty(request.Institution.DegreeName)
+                ? request.Institution.DegreeName
+                : request.Institution.DegreeNameSnake;
+            var average = request.Institution.AcademicAverage > 0
+                ? request.Institution.AcademicAverage
+                : request.Institution.AcademicAverageSnake;
+
+            institutionDto = new InstitutionDto
+            {
+                Name = request.Institution.Name,
+                DegreeName = degree,
+                DegreeNameSnake = degree,
+                AcademicAverage = average,
+                AcademicAverageSnake = average
+            };
+        }
+
         var evaluation = new HiringAgentEvaluation
         {
+            InstitutionJson = institutionDto != null ? ToJsonDocument(institutionDto) : null,
             CategoryScoresJson = ToJsonDocument(request.Scores),
             EvidenceJson = ToJsonDocument(BuildEvidence(request.Scores)),
             BonusPointsJson = ToJsonDocument(request.BonusPoints),

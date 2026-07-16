@@ -464,6 +464,8 @@ class OllamaProvider:
 class GeminiProvider:
     """Google Gemini API provider implementation."""
 
+    _last_call_time = 0.0
+
     def __init__(self, api_key: str):
         import google.generativeai as genai
 
@@ -508,6 +510,14 @@ class GeminiProvider:
 
         for attempt in range(MAX_RETRIES):
             try:
+                # Enforce rate limit: max 15 RPM (1 request every 4 seconds)
+                # We use 4.5s to be safe
+                elapsed = time.time() - GeminiProvider._last_call_time
+                if elapsed < 4.5:
+                    time.sleep(4.5 - elapsed)
+                
+                GeminiProvider._last_call_time = time.time()
+
                 # Send the chat request
                 response = gemini_model.generate_content(gemini_messages)
 
