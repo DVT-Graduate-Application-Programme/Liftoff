@@ -689,7 +689,7 @@ export default function DetailedApplicantInfo() {
           className="flex w-full flex-col gap-4 md:pl-4 md:h-full md:min-h-0"
         >
           {/* Candidate Summary Section */}
-          <section className="flex flex-col gap-4 md:flex-1 md:min-h-0 md:overflow-y-auto md:pr-1">
+          <section className="flex flex-col gap-4 flex-1 h-0 min-h-0 overflow-y-auto pr-1">
             {evaluationQuery.isLoading ? (
               <Card>
                 <CardContent className="flex flex-col gap-2 py-6">
