@@ -43,7 +43,7 @@ export default function LogsPage() {
         />
       ) : !logs || logs.length === 0 ? (
         <EmptyState
-          icon={ScrollText}
+          icon={<ScrollText className="size-5" />}
           title="No logs found"
           description="There are currently no recruiter actions recorded."
         />
