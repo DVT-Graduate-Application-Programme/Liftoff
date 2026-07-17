@@ -43,7 +43,7 @@ public static class ApplicationEndpoints
         })
         .WithName("GetRecruiters");
 
-        group.MapPost("/recruiter", async (Recruiter recruiter, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapPost("/recruiter", async (RecruiterPostDto recruiter, IApplicationRecordRepository repo, CancellationToken ct) =>
         {
             if (string.IsNullOrWhiteSpace(recruiter.FirstName) || string.IsNullOrWhiteSpace(recruiter.LastName) || string.IsNullOrWhiteSpace(recruiter.Email))
             {

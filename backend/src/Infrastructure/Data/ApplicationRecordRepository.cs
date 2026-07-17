@@ -602,8 +602,16 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             .ToListAsync(cancellationToken);
     }
 
-    public Task AddRecruiterAsync(Recruiter recruiter, CancellationToken cancellationToken = default)
+    public Task AddRecruiterAsync(RecruiterPostDto recruiter, CancellationToken cancellationToken = default)
     {
-        return _dbContext.Recruiters.AddAsync(recruiter, cancellationToken).AsTask();
+        var recruiterEntity = new Recruiter
+        {
+            FirstName = recruiter.FirstName,
+            LastName = recruiter.LastName,
+            Email = recruiter.Email,
+            IdentityId = recruiter.Email
+        };
+
+        return _dbContext.Recruiters.AddAsync(recruiterEntity, cancellationToken).AsTask();
     }
 }
