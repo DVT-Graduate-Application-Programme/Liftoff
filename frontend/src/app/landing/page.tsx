@@ -2,7 +2,11 @@
 
 import { Suspense, useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import AllCandidates from "./components/all-candidates";
@@ -32,7 +36,10 @@ function SelectedApplicantDetailsSidebar() {
       applicantId={selectedApplicationId}
       candidateName={applicantQuery.data?.candidateName ?? "Applicant"}
       evaluation={evaluationQuery.data ?? null}
-      isLoadingEvaluation={Boolean(selectedApplicationId) && (applicantQuery.isLoading || evaluationQuery.isLoading)}
+      isLoadingEvaluation={
+        Boolean(selectedApplicationId) &&
+        (applicantQuery.isLoading || evaluationQuery.isLoading)
+      }
       evaluationMessage={evaluationMessage}
       tabKey={selectedTabKey}
     />
@@ -53,12 +60,14 @@ function DashboardTabs() {
     const tab = searchParams.get("tab");
     return isTabValue(tab) ? tab : "pending";
   }, [searchParams]);
+  const { setOpen } = useSidebar();
 
   const handleTabChange = useCallback(
     (value: string) => {
       router.replace(`/landing?tab=${value}`, { scroll: false });
+      setOpen(false);
     },
-    [router],
+    [router, setOpen],
   );
 
   return (

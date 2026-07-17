@@ -120,8 +120,6 @@ export default function AllCandidateCard({
   scoreClassName,
   statusLabel = "Pending",
   statusTone,
-  tierLabel,
-  tierTone,
   layout = "default",
   showInstitute = true,
   reviewedAt,
@@ -139,11 +137,9 @@ export default function AllCandidateCard({
 }: AllCandidateCardProps) {
   const currentStatusTone = statusTone ?? "positive";
   const statusStyle = statusStyles[currentStatusTone];
-  const currentTierTone = tierTone ?? "neutral";
-  const tierStyle = statusStyles[currentTierTone];
   const daysAgo = createdAt ? getDaysAgo(createdAt) : null;
   const displaySubtitle = subtitle ?? institute;
-  const displayTier = tierLabel;
+
 
   return (
     <div
@@ -179,30 +175,17 @@ export default function AllCandidateCard({
 
       {layout === "history" ? (
         <>
-          <div className="flex w-20 shrink-0 flex-col items-center justify-center gap-0.5">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-              Tier
-            </span>
-            <span
-              className={cn(
-                "max-w-full rounded-full px-2 py-1 text-xs font-semibold",
-                "inline-flex items-center justify-between text-center leading-tight whitespace-normal",
-                tierStyle.text,
-                tierStyle.background,
-              )}
-            >
-              {displayTier ?? "Unknown"}
-            </span>
-          </div>
-
           <div className="min-w-0 flex-1 flex flex-col pl-4">
             <h4 className="break-words font-semibold leading-tight text-foreground">
               {name}
             </h4>
-            {showInstitute && displaySubtitle && (
-              <p className="mt-0.5 break-words text-xs text-muted-foreground">
-                {displaySubtitle}
-              </p>
+            {showInstitute && (
+              <div className="mt-0.5 flex flex-col gap-0.5 text-xs text-muted-foreground">
+                {displaySubtitle ? (
+                  <p className="whitespace-normal break-words">{displaySubtitle}</p>
+                ) : null}
+                <p className="whitespace-normal break-words">{institute}</p>
+              </div>
             )}
             {recruiterName && (
               <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">

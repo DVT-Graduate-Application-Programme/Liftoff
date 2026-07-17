@@ -59,20 +59,11 @@ const HISTORY_STATUS_OPTIONS: [string, string][] = [
   ["MANUAL_REVIEW", "Manual review"],
 ];
 
-const HISTORY_SCORE_OPTIONS: [string, string][] = [
-  ["All", "All tiers"],
-  ["STRONG", "Strong"],
-  ["BORDERLINE", "Borderline"],
-  ["WEAK", "Weak"],
-];
-
 function HistoryFilterBar({
   filtersOpen,
   onToggleFilters,
   status,
   onStatusChange,
-  score,
-  onScoreChange,
   dateRange,
   onDateRangeChange,
   activeFilters,
@@ -106,13 +97,10 @@ function HistoryFilterBar({
       {filtersOpen && (
         <div
           id="history-filters"
-          className="grid gap-4 rounded-xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-4"
+          className="grid gap-4 rounded-xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3"
         >
           <FilterField label="Status">
             <FilterSelect value={status} onChange={onStatusChange} options={HISTORY_STATUS_OPTIONS} />
-          </FilterField>
-          <FilterField label="System Score">
-            <FilterSelect value={score} onChange={onScoreChange} options={HISTORY_SCORE_OPTIONS} />
           </FilterField>
           <FilterField label="Received from">
             <input
@@ -191,20 +179,17 @@ function CandidateHistoryCard({
   );
   const institutionName = evaluationQuery.data?.institutionJson?.name ?? education.institution;
   const degreeName = evaluationQuery.data?.institutionJson?.degreeName ?? education.degree;
-  const subtitle =
-    degreeName && institutionName
-      ? `${degreeName} · ${institutionName}`
-      : degreeName || institutionName || "Applicant";
 
   const academicAverage =
     evaluationQuery.data?.institutionJson?.academic_average ??
     evaluationQuery.data?.categoryScoresJson.education.score;
 
   return (
-      <AllCandidateCard
+    <AllCandidateCard
       key={candidate.applicationId}
       name={candidate.candidateName}
-      subtitle={subtitle}
+      institute={institutionName}
+      subtitle={degreeName}
       academicAverage={academicAverage}
       systemScore={candidate.hiringAgentTotalScore}
       scoreLabel="Sys Score"
@@ -291,7 +276,7 @@ export default function HistoryPage() {
   const applications = data?.applications || [];
 
   let filteredCandidates = applications;
-  
+
   if (filterDecision !== "All") {
     filteredCandidates = filteredCandidates.filter(
       (c: CandidateApplication) =>
@@ -317,7 +302,7 @@ export default function HistoryPage() {
   }
 
   let groups: { label: string; candidates: CandidateApplication[] }[] = [];
-  
+
   if (filteredCandidates.length > 0) {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
