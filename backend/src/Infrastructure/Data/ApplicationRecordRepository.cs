@@ -599,13 +599,11 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
     {
         return _dbContext.Recruiters
             .AsNoTracking()
-            .Select(r => new Recruiter
-            {
-                Id = r.Id,
-                FirstName = r.FullName,
-                Email = r.Email,
-                IsActive = r.IsActive
-            })
             .ToListAsync(cancellationToken);
+    }
+
+    public Task AddRecruiterAsync(Recruiter recruiter, CancellationToken cancellationToken = default)
+    {
+        return _dbContext.Recruiters.AddAsync(recruiter, cancellationToken).AsTask();
     }
 }
