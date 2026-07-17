@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sidebar, SidebarContent, SidebarGroup } from "@/components/ui/sidebar";
@@ -5,6 +7,8 @@ import type { ApplicantDetailsEvaluation } from "./mock-applicant-details";
 import { CloseApplicantDetailsSidebarButton } from "./applicant-details-sidebar-controls";
 import { SCORE_CATEGORIES } from "./constants";
 import type { SelectionTabKey } from "@/components/providers/applicant-selection-provider";
+import { useApplicationLogs } from "@/hooks/use-recruiter-logs";
+import { ScrollText } from "lucide-react";
 
 type ApplicantDetailsSidebarProps = {
   applicantId?: string | null;
@@ -33,6 +37,12 @@ export function ApplicantDetailsSidebar({
   const hasEvaluation = Boolean(categoryScores);
   const bonusTotal = evaluation?.bonusPointsJson?.total ?? 0;
   const keyStrengths = evaluation?.keyStrengthsJson ?? [];
+  const showNotesSection = tabKey === "accepted";
+  const { data: applicationLogs, isLoading: isLoadingNotes } = useApplicationLogs(applicantId ?? "");
+  const notes = (applicationLogs ?? []).filter((log) => {
+    const actionType = log.actionType.toUpperCase();
+    return (actionType === "NOTES" || actionType === "RATING") && Boolean(log.reason);
+  });
   const scoreTotal = categoryScores
     ? SCORE_CATEGORIES.reduce(
         (total, { key }) => total + (categoryScores[key]?.score ?? 0),
@@ -126,6 +136,58 @@ export function ApplicantDetailsSidebar({
                   "No evaluation available for this application yet."}
               </div>
             )}
+            {showNotesSection && applicantId ? (
+              <div className="space-y-3 rounded-md border border-sidebar-border bg-sidebar-accent/20 p-5">
+                <div className="space-y-1">
+                  <p className="font-heading text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                    Notes
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Recruiter notes recorded in the activity log for this accepted candidate.
+                  </p>
+                </div>
+                {isLoadingNotes ? (
+                  <div className="rounded-md border border-sidebar-border bg-sidebar/60 p-4 text-sm text-muted-foreground">
+                    Loading notes...
+                  </div>
+                ) : notes.length > 0 ? (
+                  <div className="space-y-3">
+                    {notes.map((note) => (
+                      <div
+                        key={note.id}
+                        className="space-y-2 rounded-md border border-sidebar-border bg-sidebar p-4"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="space-y-0.5">
+                            <p className="text-sm font-medium text-sidebar-foreground">
+                              {note.recruiterIdentity}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(note.actionedAt).toLocaleString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false,
+                              })}
+                            </p>
+                          </div>
+                          <ScrollText className="size-4 shrink-0 text-muted-foreground" />
+                        </div>
+                        <p className="text-sm leading-relaxed text-sidebar-foreground">
+                          {note.reason}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-md border border-dashed border-sidebar-border bg-sidebar p-4 text-sm text-muted-foreground">
+                    No recruiter notes recorded yet.
+                  </div>
+                )}
+              </div>
+            ) : null}
           </div>
           <Button
             type="button"
