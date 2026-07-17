@@ -120,8 +120,6 @@ export default function AllCandidateCard({
   scoreClassName,
   statusLabel = "Pending",
   statusTone,
-  tierLabel,
-  tierTone,
   layout = "default",
   showInstitute = true,
   createdAt,
@@ -137,11 +135,9 @@ export default function AllCandidateCard({
 }: AllCandidateCardProps) {
   const currentStatusTone = statusTone ?? "positive";
   const statusStyle = statusStyles[currentStatusTone];
-  const currentTierTone = tierTone ?? "neutral";
-  const tierStyle = statusStyles[currentTierTone];
   const daysAgo = createdAt ? getDaysAgo(createdAt) : null;
   const displaySubtitle = subtitle ?? institute;
-  const displayTier = tierLabel;
+
 
   return (
     <div
