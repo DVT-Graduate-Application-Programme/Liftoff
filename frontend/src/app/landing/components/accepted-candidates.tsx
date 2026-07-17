@@ -60,14 +60,16 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
       createdAt={application.createdAt}
       wrapInstitute
       wrapReviewedAt
-      actionLabel="View details"
+      actionLabel="View AI Summary"
+      actionVariant="default"
       onActionClick={() => {
-        router.push(`/applicants/${application.applicationId}?from=accepted`);
-      }}
-      secondaryActionLabel="View AI Summary"
-      onSecondaryActionClick={() => {
         selectApplication(application.applicationId, "accepted");
       }}
+      secondaryActionLabel="View details"
+      onSecondaryActionClick={() => {
+        router.push(`/applicants/${application.applicationId}?from=accepted`);
+      }}
+      stackActions
       onClick={() => {
         router.push(`/applicants/${application.applicationId}?from=accepted`);
       }}
