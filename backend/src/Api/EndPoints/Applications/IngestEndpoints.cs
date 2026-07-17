@@ -34,54 +34,53 @@ public static class IngestEndpoints
         MediatR.IMediator mediator,
         CancellationToken ct)
     {
-        Stream cvStream;
+        Stream? cvStream = null;
         Stream? transcriptStream = null;
 
-        // Resolve CV File/URL
-        if (httpRequest.Form.Files.GetFile("CvFile") is { } cvFormFile)
+        try
         {
-            cvStream = cvFormFile.OpenReadStream();
-        }
-        else if (httpRequest.Form.TryGetValue("CvFile", out var cvUrlValues) &&
-                 cvUrlValues.ToString() is { } cvUrl &&
-                 !string.IsNullOrWhiteSpace(cvUrl))
-        {
-            try
+            // Resolve CV File/URL
+            if (httpRequest.Form.Files.GetFile("CvFile") is { } cvFormFile)
             {
-                cvStream = await Client.GetStreamAsync(cvUrl, ct);
+                cvStream = cvFormFile.OpenReadStream();
             }
-            catch (System.Exception ex)
+            else if (httpRequest.Form.TryGetValue("CvFile", out var cvUrlValues) &&
+                     cvUrlValues.ToString() is { } cvUrl &&
+                     !string.IsNullOrWhiteSpace(cvUrl))
             {
-                return Results.BadRequest($"Failed to download CV from URL: {ex.Message}");
+                try
+                {
+                    cvStream = await Client.GetStreamAsync(cvUrl, ct);
+                }
+                catch (System.Exception ex)
+                {
+                    return Results.BadRequest($"Failed to download CV from URL: {ex.Message}");
+                }
             }
-        }
-        else
-        {
-            return Results.BadRequest("CvFile is required (either as an uploaded file or a Google Drive download URL).");
-        }
+            else
+            {
+                return Results.BadRequest("CvFile is required (either as an uploaded file or a Google Drive download URL).");
+            }
 
-        // Resolve Transcript File/URL
-        if (httpRequest.Form.Files.GetFile("TranscriptFile") is { } transcriptFormFile)
-        {
-            transcriptStream = transcriptFormFile.OpenReadStream();
-        }
-        else if (httpRequest.Form.TryGetValue("TranscriptFile", out var transcriptUrlValues) &&
-                 transcriptUrlValues.ToString() is { } transcriptUrl &&
-                 !string.IsNullOrWhiteSpace(transcriptUrl))
-        {
-            try
+            // Resolve Transcript File/URL
+            if (httpRequest.Form.Files.GetFile("TranscriptFile") is { } transcriptFormFile)
             {
-                transcriptStream = await Client.GetStreamAsync(transcriptUrl, ct);
+                transcriptStream = transcriptFormFile.OpenReadStream();
             }
-            catch (System.Exception ex)
+            else if (httpRequest.Form.TryGetValue("TranscriptFile", out var transcriptUrlValues) &&
+                     transcriptUrlValues.ToString() is { } transcriptUrl &&
+                     !string.IsNullOrWhiteSpace(transcriptUrl))
             {
-                return Results.BadRequest($"Failed to download Transcript from URL: {ex.Message}");
+                try
+                {
+                    transcriptStream = await Client.GetStreamAsync(transcriptUrl, ct);
+                }
+                catch (System.Exception ex)
+                {
+                    return Results.BadRequest($"Failed to download Transcript from URL: {ex.Message}");
+                }
             }
-        }
 
-        using (cvStream)
-        using (transcriptStream)
-        {
             var command2 = new SendApplicationCommand
             {
                 CandidateName = request.CandidateName,
@@ -109,6 +108,17 @@ public static class IngestEndpoints
             }
 
             return Results.Accepted(value: result);
+        }
+        finally
+        {
+            if (cvStream is not null)
+            {
+                await cvStream.DisposeAsync();
+            }
+            if (transcriptStream is not null)
+            {
+                await transcriptStream.DisposeAsync();
+            }
         }
     }
 
