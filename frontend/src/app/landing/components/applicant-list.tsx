@@ -3,7 +3,10 @@
 import { useMemo, type ReactElement, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
-import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
+import {
+  useApplicantSelection,
+  type SelectionTabKey,
+} from "@/components/providers/applicant-selection-provider";
 import { useInfiniteApplications } from "@/hooks/use-infinite-applications";
 import { useEvaluation } from "@/hooks/use-evaluation";
 import {
@@ -77,14 +80,12 @@ function getEducationSubtitle(evaluation: Evaluation | null | undefined, fallbac
 function PendingApplicationCard({
   application,
   enableClaim,
-  selectApplication,
-  setOpen,
+  openDetails,
   claimMutation,
 }: {
   application: CandidateApplication;
   enableClaim: boolean;
-  selectApplication: (applicationId: string) => void;
-  setOpen: (open: boolean) => void;
+  openDetails: (applicationId: string) => void;
   claimMutation: ReturnType<typeof useClaimApplication>;
 }) {
   const router = useRouter();
@@ -134,8 +135,7 @@ function PendingApplicationCard({
       }}
 
       onActionClick={() => {
-        selectApplication(application.applicationId);
-        setOpen(true);
+        openDetails(application.applicationId);
       }}
     />
   );
@@ -155,7 +155,16 @@ export function ApplicantList({
   const router = useRouter();
   const { search } = useApplicantSearch();
   const { selectApplication } = useApplicantSelection();
-  const { setOpen } = useSidebar();
+  const { setOpen, setOpenMobile } = useSidebar();
+
+  // Opens the details panel. The Sidebar mounts one branch at a time — a mobile
+  // Sheet (openMobile) or a desktop offcanvas (open) — so set both to reliably
+  // open whichever is live.
+  const openDetails = (applicationId: string, tab?: SelectionTabKey) => {
+    selectApplication(applicationId, tab);
+    setOpen(true);
+    setOpenMobile(true);
+  };
   const {
     data,
     isLoading,
@@ -236,8 +245,7 @@ export function ApplicantList({
           key={application.applicationId}
           application={application}
           enableClaim={enableClaim}
-          selectApplication={selectApplication}
-          setOpen={setOpen}
+          openDetails={openDetails}
           claimMutation={claimMutation}
         />
       );
@@ -272,8 +280,7 @@ export function ApplicantList({
         router.push(`/applicants/${application.applicationId}`);
       },
       onActionClick: () => {
-        selectApplication(application.applicationId, tabKey);
-        setOpen(true);
+        openDetails(application.applicationId, tabKey);
       },
     };
 
@@ -320,7 +327,7 @@ export function ApplicantList({
                   {countLabel(bucketApplications.length)}
                 </span>
               </div>
-              <div className="grid grid-cols-1 gap-4">
+              <div className="@container grid grid-cols-1 gap-4">
                 {bucketApplications.length > 0 ? (
                   bucketApplications.map(renderCardItem)
                 ) : (
@@ -340,7 +347,7 @@ export function ApplicantList({
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="@container flex flex-col gap-3">
       {applications.map(renderCardItem)}
       {loadMoreButton}
     </div>
