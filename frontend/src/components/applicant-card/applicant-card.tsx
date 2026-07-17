@@ -25,11 +25,13 @@ type ApplicantCardProps = {
   recruiterName?: string;
   actionLabel?: string;
   onActionClick?: () => void;
+  actionVariant?: "default" | "outline" | "secondary" | "ghost" | "destructive" | "link";
   onClick?: () => void;
   secondaryActionLabel?: string;
   onSecondaryActionClick?: () => void;
   isSecondaryActionDisabled?: boolean;
   isSecondaryActionLoading?: boolean;
+  stackActions?: boolean;
 };
 
 function getScoreColor(score: number) {
@@ -122,11 +124,13 @@ export default function ApplicantCard({
   recruiterName,
   actionLabel = "Show AI Summary",
   onActionClick,
+  actionVariant = "outline",
   onClick,
   secondaryActionLabel,
   onSecondaryActionClick,
   isSecondaryActionDisabled = false,
   isSecondaryActionLoading = false,
+  stackActions = false,
 }: ApplicantCardProps) {
   const initials = name
     .split(" ")
@@ -277,13 +281,21 @@ export default function ApplicantCard({
         )}
       </div>
 
-      <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:pl-2">
+      <div
+        className={cn(
+          "flex w-full shrink-0 gap-2 sm:w-auto sm:pl-2",
+          stackActions ? "flex-col" : "flex-col sm:flex-row sm:items-center",
+        )}
+      >
         {secondaryActionLabel ? (
           <Button
             type="button"
             variant="secondary"
             size="sm"
-            className="w-full justify-center gap-1.5 text-xs sm:w-32"
+            className={cn(
+              "justify-center gap-1.5 text-xs",
+              stackActions ? "w-full" : "w-full sm:w-32",
+            )}
             disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
             onClick={(event) => {
               event.stopPropagation();
@@ -297,11 +309,12 @@ export default function ApplicantCard({
         ) : null}
         <Button
           type="button"
-          variant="outline"
+          variant={actionVariant}
           size="sm"
           className={cn(
             "gap-1.5 text-xs w-full sm:w-auto",
-            secondaryActionLabel ? "sm:w-32 justify-center" : undefined,
+            actionVariant === "default" ? "text-white hover:bg-primary/80" : undefined,
+            secondaryActionLabel ? (stackActions ? "justify-center" : "sm:w-32 justify-center") : undefined,
           )}
           onClick={(event) => {
             event.stopPropagation();
