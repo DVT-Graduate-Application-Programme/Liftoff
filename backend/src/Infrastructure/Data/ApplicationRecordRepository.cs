@@ -594,4 +594,18 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             .Select(flag => flag.GetString()!)
             .ToList();
     }
+
+    public Task<List<Recruiter>> GetRecruitersAsync(CancellationToken cancellationToken = default)
+    {
+        return _dbContext.Recruiters
+            .AsNoTracking()
+            .Select(r => new Recruiter
+            {
+                Id = r.Id,
+                FirstName = r.FullName,
+                Email = r.Email,
+                IsActive = r.IsActive
+            })
+            .ToListAsync(cancellationToken);
+    }
 }
