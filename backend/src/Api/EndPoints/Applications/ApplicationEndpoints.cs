@@ -35,10 +35,10 @@ public static class ApplicationEndpoints
 
         group.MapGet("/recruiter", async (IApplicationRecordRepository repo, CancellationToken ct) =>
         {
-            var summary = await repo.GetApplicationSummaryAsync(id, ct);
-            return summary is not null ? Results.Ok(summary) : Results.NotFound();
+            var recruiters = await repo.GetRecruitersAsync(ct);
+            return recruiters is not null ? Results.Ok(recruiters) : Results.NotFound();
         })
-        .WithName("GetApplicationSummary");
+        .WithName("GetRecruiters");
 
         // GET /api/applications/{id}/applicant
         // Returns the applicant's personal information for a given application ID
