@@ -43,6 +43,7 @@ export function ApplicantDetailsSidebar({
     const actionType = log.actionType.toUpperCase();
     return (actionType === "NOTES" || actionType === "RATING") && Boolean(log.reason);
   });
+  const latestNote = notes[0] ?? null;
   const scoreTotal = categoryScores
     ? SCORE_CATEGORIES.reduce(
         (total, { key }) => total + (categoryScores[key]?.score ?? 0),
@@ -147,36 +148,31 @@ export function ApplicantDetailsSidebar({
                   <div className="rounded-md border border-sidebar-border bg-sidebar/60 p-4 text-sm text-muted-foreground">
                     Loading notes...
                   </div>
-                ) : notes.length > 0 ? (
+                ) : latestNote ? (
                   <div className="space-y-3">
-                    {notes.map((note) => (
-                      <div
-                        key={note.id}
-                        className="space-y-2 rounded-md border border-sidebar-border bg-sidebar p-4"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="space-y-0.5">
-                            <p className="text-sm font-medium text-sidebar-foreground">
-                              {note.recruiterIdentity}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(note.actionedAt).toLocaleString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: false,
-                              })}
-                            </p>
-                          </div>
-                          <ScrollText className="size-4 shrink-0 text-muted-foreground" />
+                    <div className="rounded-md border border-sidebar-border bg-sidebar p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-0.5">
+                          <p className="text-sm font-medium text-sidebar-foreground">
+                            {latestNote.recruiterIdentity}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(latestNote.actionedAt).toLocaleString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: false,
+                            })}
+                          </p>
                         </div>
-                        <p className="text-sm leading-relaxed text-sidebar-foreground">
-                          {note.reason}
-                        </p>
+                        <ScrollText className="size-4 shrink-0 text-muted-foreground" />
                       </div>
-                    ))}
+                      <p className="text-sm leading-relaxed text-sidebar-foreground">
+                        {latestNote.reason}
+                      </p>
+                    </div>
                   </div>
                 ) : (
                   <div className="rounded-md border border-dashed border-sidebar-border bg-sidebar p-4 text-sm text-muted-foreground">
