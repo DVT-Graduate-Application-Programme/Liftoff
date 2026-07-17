@@ -89,37 +89,31 @@ function AllCandidateListCard({
 function AllCandidates() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [status, setStatus] = useState("");
-  const [tier, setTier] = useState("");
   const [minScore, setMinScore] = useState("");
   const [hardGate, setHardGate] = useState("all");
   const [claimed, setClaimed] = useState("all");
-  const [shortlisted, setShortlisted] = useState("all");
   const [dateRange, setDateRange] = useState("all");
   const [sort, setSort] = useState<SortOption>("date_desc");
 
   const filters = useMemo(() => {
     const next: Filters = { sort };
     if (status) next.status = status;
-    if (tier) next.tier = tier;
     if (minScore) next.minScore = Number(minScore);
     if (hardGate !== "all") next.hardGatePassed = hardGate === "passed";
     if (claimed !== "all") next.claimed = claimed === "claimed";
-    if (shortlisted !== "all") next.shortlisted = shortlisted === "shortlisted";
     if (dateRange !== "all") {
       const from = new Date();
       from.setDate(from.getDate() - Number(dateRange));
       next.dateFrom = from.toISOString();
     }
     return next;
-  }, [claimed, dateRange, hardGate, minScore, shortlisted, sort, status, tier]);
+  }, [claimed, dateRange, hardGate, minScore, sort, status]);
 
   const clearFilters = () => {
     setStatus("");
-    setTier("");
     setMinScore("");
     setHardGate("all");
     setClaimed("all");
-    setShortlisted("all");
     setDateRange("all");
   };
 
@@ -139,19 +133,6 @@ function AllCandidates() {
       onChange: setMinScore,
       options: [],
       placeholder: "Any score",
-    },
-    {
-      key: "tier",
-      label: "Candidate tier",
-      value: tier,
-      onChange: setTier,
-      options: [
-        ["", "All tiers"],
-        ["A", "A"],
-        ["B", "B"],
-        ["C", "C"],
-        ["D", "D"],
-      ],
     },
     {
       key: "hardGate",
@@ -176,17 +157,6 @@ function AllCandidates() {
       ],
     },
     {
-      key: "shortlisted",
-      label: "Shortlist",
-      value: shortlisted,
-      onChange: setShortlisted,
-      options: [
-        ["all", "All candidates"],
-        ["shortlisted", "Shortlisted"],
-        ["not-shortlisted", "Not shortlisted"],
-      ],
-    },
-    {
       key: "dateRange",
       label: "Received",
       value: dateRange,
@@ -206,12 +176,6 @@ function AllCandidates() {
         setStatus("");
       },
     },
-    tier && {
-      label: `Tier: ${tier.toLowerCase()}`,
-      onClear: () => {
-        setTier("");
-      },
-    },
     minScore && {
       label: `Score: ${minScore}+`,
       onClear: () => {
@@ -228,12 +192,6 @@ function AllCandidates() {
       label: claimed === "claimed" ? "Claimed" : "Unclaimed",
       onClear: () => {
         setClaimed("all");
-      },
-    },
-    shortlisted !== "all" && {
-      label: shortlisted === "shortlisted" ? "Shortlisted" : "Not shortlisted",
-      onClear: () => {
-        setShortlisted("all");
       },
     },
     dateRange !== "all" && {
