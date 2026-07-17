@@ -42,6 +42,8 @@ public interface IApplicationRecordRepository
         string? cvSummary,
         JsonDocument? flagsJson,
         CancellationToken cancellationToken = default);
+    Task<bool> ResetEvaluationAsync(Guid id, CancellationToken cancellationToken = default);
     Task AddAuditLogAsync(AuditLog auditLog, CancellationToken cancellationToken = default);
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }
+

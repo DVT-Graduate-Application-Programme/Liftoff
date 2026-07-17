@@ -94,7 +94,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of London", "degreeName": "BSc (Hons) Computer Science", "classification": "First Class" }
+                { "name": "University of London", "degreeName": "BSc (Hons) Computer Science", "academic_average": 78.3 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -153,7 +153,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Salford", "degreeName": "BSc Computer Science", "classification": "2:2" }
+                { "name": "University of Salford", "degreeName": "BSc Computer Science", "academic_average": 66.7 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -167,14 +167,14 @@ public static class DbSeeder
         };
 
         // ──────────────────────────────────────────────
-        // Candidate 3 – Priya Sharma (Score 73 + 2 bonus = 75)
+        // Candidate 3 – Elena Rodriguez (Score 73 + 2 bonus = 75)
         // ──────────────────────────────────────────────
         var app3 = new ApplicationRecord
         {
             Id = App3Id,
             EmailMessageId = "seed-msg-003",
-            CandidateName = "Priya Sharma",
-            CandidateEmail = "priya.sharma@example.com",
+            CandidateName = "Elena Rodriguez",
+            CandidateEmail = "Elena.Rodriguez@example.com",
             CandidateGitHubUrl = "https://github.com/josephexample-dev",
             Status = "shortlisted",
             Tier = "Borderline",
@@ -214,7 +214,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Manchester", "degreeName": "BSc (Hons) Computer Science", "classification": "2:1" }
+                { "name": "University of Manchester", "degreeName": "BSc (Hons) Computer Science", "academic_average": 85.0 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 2.0, "breakdown": "Personal Portfolio Website URL: +2" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -274,7 +274,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Edinburgh", "degreeName": "BSc (Hons) Computer Science", "classification": "First Class" }
+                { "name": "University of Edinburgh", "degreeName": "BSc (Hons) Computer Science", "academic_average": 76.0 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 3.0, "breakdown": "Published npm package with verifiable downloads: +3" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -332,7 +332,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Leeds", "degreeName": "BSc Computer Science", "classification": "2:1" }
+                { "name": "University of Leeds", "degreeName": "BSc Computer Science", "academic_average": 66.3 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -391,7 +391,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Bedfordshire", "degreeName": "BA Media Studies", "classification": "2:2" }
+                { "name": "University of Bedfordshire", "degreeName": "BA Media Studies", "academic_average": 55.0 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -451,7 +451,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Warwick", "degreeName": "BSc (Hons) Software Engineering", "classification": "First Class" }
+                { "name": "University of Warwick", "degreeName": "BSc (Hons) Software Engineering", "academic_average": 75.0 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -509,7 +509,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Hertfordshire", "degreeName": "BSc Computer Science", "classification": "2:2" }
+                { "name": "University of Hertfordshire", "degreeName": "BSc Computer Science", "academic_average": 57.7 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -567,7 +567,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Northampton", "degreeName": "BSc Information Technology", "classification": "2:2" }
+                { "name": "University of Northampton", "degreeName": "BSc Information Technology", "academic_average": 55.3 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -590,7 +590,7 @@ public static class DbSeeder
             CandidateName = "Tomás Reyes",
             CandidateEmail = "tomas.reyes@example.com",
             CandidateGitHubUrl = null,
-            Status = "rejected",
+            Status = "pending",
             Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "Degree is in Culinary Arts – not an IT, Computer Science, or STEM discipline. No evidence of self-taught programming or compensating technical experience.",
@@ -626,7 +626,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "Westminster Kingsway College", "degreeName": "Level 5 Diploma in Professional Culinary Arts", "classification": "Distinction" }
+                { "name": "Westminster Kingsway College", "degreeName": "Level 5 Diploma in Professional Culinary Arts", "academic_average": 65.0 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -640,7 +640,7 @@ public static class DbSeeder
         };
 
         // ──────────────────────────────────────────────
-        // Candidate 11 – Harriet Langley (MBA) – hard gate fail, rejected
+        // Candidate 11 – Harriet Langley (MBA) – hard gate fail, pending
         // ──────────────────────────────────────────────
         var app11 = new ApplicationRecord
         {
@@ -649,7 +649,7 @@ public static class DbSeeder
             CandidateName = "Harriet Langley",
             CandidateEmail = "harriet.langley@example.com",
             CandidateGitHubUrl = null,
-            Status = "rejected",
+            Status = "pending",
             Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "MBA is a postgraduate business qualification, not an IT or STEM degree. Undergraduate degree is in History. No compensating technical background identified.",
@@ -685,7 +685,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "London Business School", "degreeName": "MBA (Digital Business)", "classification": "Distinction" }
+                { "name": "London Business School", "degreeName": "MBA (Digital Business)", "academic_average": 83.3 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -744,7 +744,7 @@ public static class DbSeeder
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Plymouth", "degreeName": "BSc Physical Geography", "classification": "2:2" }
+                { "name": "University of Plymouth", "degreeName": "BSc Physical Geography", "academic_average": 56.0 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -763,8 +763,8 @@ public static class DbSeeder
         var actions = new List<RecruiterAction>
         {
             // App1: Rating and Notes
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "recruiter-demo", ActionType = "RATING", RatingValue = 5, Reason = "Exceptional profile, great potential.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "manager-demo", ActionType = "NOTES", Reason = "Left a voicemail to schedule technical round.", ActionedAt = DateTimeOffset.UtcNow.AddHours(-5) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "RATING", RatingValue = 5, Reason = "Exceptional profile, great potential.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "NOTES", Reason = "Left a voicemail to schedule technical round.", ActionedAt = DateTimeOffset.UtcNow.AddHours(-5) },
             
             // App3: Shortlisted
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Strong candidate, advancing to interview.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
@@ -773,11 +773,11 @@ public static class DbSeeder
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, RecruiterIdentity = "manager-seed-002", ActionType = "FORWARD", PreviousStatus = "evaluated", NewStatus = "forwarded", Reason = "Forwarding to engineering lead for review.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-3) },
 
             // App6: Rejected
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App6Id, RecruiterIdentity = "recruiter-demo", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Lacks required technical skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-1) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App6Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Lacks required technical skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-1) },
             
             // App7: Shortlisted and Rated
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "recruiter-demo", ActionType = "RATING", RatingValue = 4, Reason = "Good algorithm skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-4) },
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "recruiter-demo", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Passed initial screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "RATING", RatingValue = 4, Reason = "Good algorithm skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-4) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Passed initial screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
             
             // App10: Rejected
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App10Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Does not meet baseline experience.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-7) },

@@ -1,23 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import { findApplication } from "../../_lib/mockData";
-import { checkReservedTestIds, notFound, simulateLatency } from "../../_lib/helpers";
+import { backendUrl } from "../../_lib/backend";
+
+interface BackendApplicationDetails {
+  id: string;
+  status: string;
+  tier: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ applicationId: string }> }) {
-  await simulateLatency();
-
   const { applicationId } = await params;
+  const res = await fetch(backendUrl(`/api/applications/${applicationId}`));
 
-  const reserved = checkReservedTestIds(applicationId);
-  if (reserved) return reserved;
+  if (!res.ok) {
+    return new NextResponse(null, { status: res.status });
+  }
 
-  const app = findApplication(applicationId);
-  if (!app) return notFound();
+  const data = (await res.json()) as BackendApplicationDetails;
 
   return NextResponse.json({
-    applicationId: app.applicationId,
-    currentStatus: app.currentStatus,
-    tier: app.tier,
-    createdAt: app.createdAt,
-    updatedAt: app.updatedAt,
+    applicationId: data.id,
+    currentStatus: data.status,
+    tier: data.tier,
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
   });
 }

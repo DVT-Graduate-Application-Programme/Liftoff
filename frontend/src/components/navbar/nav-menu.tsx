@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, History } from "lucide-react";
+import { LayoutDashboard, History, ScrollText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
@@ -17,8 +17,8 @@ type NavMenuProps = {
 
 const navItems: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/landing" },
-  { label: "Applicants", icon: Users, href: "/applicants" },
   { label: "Review History", icon: History, href: "/history" },
+  { label: "Recruiter Logs", icon: ScrollText, href: "/logs" },
 ];
 
 export function NavMenu({ onItemNavigate }: NavMenuProps) {

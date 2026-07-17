@@ -1,3 +1,8 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
 import {
   AlertTriangle,
   Award,
@@ -5,9 +10,14 @@ import {
   CheckCircle2,
   Code2,
   GitBranch,
+  GraduationCap,
   MinusCircle,
   Rocket,
   Sparkles,
+  Star,
+  RefreshCw,
+  FileText,
+  History,
 } from "lucide-react";
 import {
   Card,
@@ -19,40 +29,39 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { findApplication } from "@/app/api/_lib/mockData";
-import { notFound } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ApiError, apiFetch } from "@/lib/api-client";
+import { cn } from "@/lib/utils";
+import { useApplicationDetail } from "@/hooks/use-application-detail";
+import { useApplicant } from "@/hooks/use-applicant";
+import { useEvaluation } from "@/hooks/use-evaluation";
+import { useOwnership } from "@/hooks/use-ownership";
+import { useRateApplication } from "@/hooks/use-rate-application";
+import { useShortlistApplication } from "@/hooks/use-shortlist-application";
+import { useAcceptApplication } from "@/hooks/use-accept-application";
+import { useRejectApplication } from "@/hooks/use-reject-application";
+import { useReevaluateApplication } from "@/hooks/use-reevaluate-application";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
+import { useApplicationLogs } from "@/hooks/use-recruiter-logs";
+import { ACTIVE_RECRUITER_ID } from "@/hooks/use-claim-application";
+import type { Evaluation, EvaluationCategoryScores, EvaluationScore, Ownership } from "@/types/api";
+import { SCORE_CATEGORIES } from "@/app/landing/components/applicant-details/constants";
+import { DocumentViewer } from "./components/document-viewer/document-viewer";
 
-type Evaluation = NonNullable<ReturnType<typeof findApplication>>["evaluation"];
-type Scores = NonNullable<Evaluation>["scores"];
-type ScoreCategory = Scores[keyof Scores];
-
-const scoreCategoryMeta: Record<
-  keyof Scores,
-  { label: string; icon: typeof GitBranch }
-> = {
-  open_source: { label: "Open Source", icon: GitBranch },
-  self_projects: { label: "Self Projects", icon: Rocket },
-  production: { label: "Production Experience", icon: Building2 },
-  technical_skills: { label: "Technical Skills", icon: Code2 },
+const scoreCategoryMeta: Record<keyof EvaluationCategoryScores, { icon: typeof GitBranch }> = {
+  education: { icon: GraduationCap },
+  open_source: { icon: GitBranch },
+  self_projects: { icon: Rocket },
+  production: { icon: Building2 },
+  technical_skills: { icon: Code2 },
 };
-
-function formatBreakdownLabel(key: string) {
-  return key
-    .split("_")
-    .map((word) => word[0].toUpperCase() + word.slice(1))
-    .join(" ");
-}
 
 function ScoreCategoryRow({
   label,
@@ -61,7 +70,7 @@ function ScoreCategoryRow({
 }: {
   label: string;
   icon: typeof GitBranch;
-  category: ScoreCategory;
+  category: EvaluationScore;
 }) {
   return (
     <div className="flex flex-col gap-2">
@@ -83,245 +92,634 @@ function ScoreCategoryRow({
   );
 }
 
-export default async function DetailedApplicantInfo({
-  params,
+function EvaluationSummary({ evaluation, applicationId }: { evaluation: Evaluation; applicationId: string }) {
+  const categoryScores = evaluation.categoryScoresJson;
+  const bonusTotal = evaluation.bonusPointsJson?.total ?? 0;
+  const keyStrengths = evaluation.keyStrengthsJson ?? [];
+  const areasForImprovement = evaluation.areasForImprovementJson ?? [];
+
+  const totalScore = SCORE_CATEGORIES.reduce(
+    (sum, { key }) => sum + categoryScores[key].score,
+    0,
+  );
+  const maxScore = SCORE_CATEGORIES.reduce(
+    (sum, { key }) => sum + categoryScores[key].max,
+    0,
+  );
+  const overallScore = Math.max(0, totalScore + bonusTotal);
+
+  return (
+    <Card className="flex-1 flex flex-col min-h-0">
+      <CardHeader className="shrink-0">
+        <CardTitle className="flex items-center gap-2">
+          <Sparkles className="size-4" />
+          AI Summary
+          <div className="ml-2">
+            <ReevaluateButton applicantId={applicationId} />
+          </div>
+        </CardTitle>
+        <CardAction className="flex flex-col items-end gap-1">
+          Overall Score
+          <span className="text-base font-semibold text-foreground">
+            {overallScore.toFixed(1)}
+            <span className="text-xs font-normal text-muted-foreground">
+              {" "}
+              / {maxScore}
+            </span>
+          </span>
+        </CardAction>
+      </CardHeader>
+      
+      <CardContent className="flex-1 overflow-y-auto flex flex-col gap-5 pr-3">
+        {evaluation.aiSummary && (
+          <>
+            <p className="text-sm leading-relaxed text-foreground">{evaluation.aiSummary}</p>
+            <Separator />
+          </>
+        )}
+
+        <div className="flex flex-col gap-4">
+          {SCORE_CATEGORIES.map(({ key, label }) => (
+            <ScoreCategoryRow
+              key={key}
+              label={label}
+              icon={scoreCategoryMeta[key].icon}
+              category={categoryScores[key]}
+            />
+          ))}
+        </div>
+
+        <Separator />
+
+        <div className="flex flex-col gap-2">
+          <span className="flex items-center gap-2 text-sm font-medium">
+            <Award className="size-4 text-muted-foreground" />
+            Bonus Points
+            <Badge variant="secondary" className="ml-auto">
+              +{bonusTotal.toFixed(1)}
+            </Badge>
+          </span>
+          {evaluation.bonusPointsJson?.breakdown && (
+            <p className="pl-6 text-xs text-muted-foreground">
+              {evaluation.bonusPointsJson.breakdown}
+            </p>
+          )}
+        </div>
+
+        {evaluation.deductionsJson?.promptInjectionDetected && (
+          <div className="flex flex-col gap-2">
+            <span className="flex items-center gap-2 text-sm font-medium">
+              <MinusCircle className="size-4 text-muted-foreground" />
+              Prompt Injection Detected
+            </span>
+            <p className="pl-6 text-xs text-muted-foreground">
+              {evaluation.deductionsJson.promptInjectionEvidence}
+            </p>
+          </div>
+        )}
+
+        <Separator />
+
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium">Key Strengths</span>
+          <ul className="flex flex-col gap-2">
+            {keyStrengths.map((strength) => (
+              <li key={strength} className="flex items-center gap-2 text-sm">
+                <CheckCircle2 className="size-4 shrink-0 text-primary" />
+                {strength}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium">Areas for Improvement</span>
+          <ul className="flex flex-col gap-2">
+            {areasForImprovement.map((area) => (
+              <li key={area} className="flex items-center gap-2 text-sm">
+                <AlertTriangle className="size-4 shrink-0 text-muted-foreground" />
+                {area}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function StarRatingInput({
+  value,
+  onChange,
+  disabled,
 }: {
-  params: Promise<{ applicantId: string }>;
+  value: number;
+  onChange: (rating: number) => void;
+  disabled?: boolean;
 }) {
-  const { applicantId } = await params;
-  const application = findApplication(applicantId);
+  const [hoveredValue, setHoveredValue] = useState<number | null>(null);
 
-  if (!application) {
-    notFound();
-  }
+  return (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((star) => {
+        const isHighlighted = hoveredValue !== null ? star <= hoveredValue : star <= value;
+        return (
+          <button
+            key={star}
+            type="button"
+            disabled={disabled}
+            onClick={() => { onChange(star); }}
+            onMouseEnter={() => { if (!disabled) setHoveredValue(star); }}
+            onMouseLeave={() => { if (!disabled) setHoveredValue(null); }}
+            aria-label={`Rate ${String(star)} star${star > 1 ? "s" : ""}`}
+            className="disabled:opacity-50 transition-transform duration-100 hover:scale-110 focus:outline-none"
+          >
+            <Star
+              className={cn(
+                "size-6 text-muted-foreground transition-colors",
+                isHighlighted && "fill-primary text-primary",
+              )}
+            />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
-  const { applicant, evaluation } = application;
+interface RateResponse {
+  recruiterRating: number | null;
+  recruiterRatingNote: string | null;
+  ratedByRecruiterId: string | null;
+  ratedAt: string | null;
+}
 
-  if (!evaluation) {
+function CandidateReview({ applicationId }: { applicationId: string }) {
+  const queryClient = useQueryClient();
+  const ownershipQuery = useOwnership(applicationId);
+  const rateMutation = useRateApplication(applicationId);
+  const shortlistMutation = useShortlistApplication(applicationId);
+  const acceptMutation = useAcceptApplication(applicationId);
+  const rejectMutation = useRejectApplication(applicationId);
+
+  const [ratingOverride, setRatingOverride] = useState<number | null>(null);
+  const [notesOverride, setNotesOverride] = useState<string | null>(null);
+
+  const rating = ratingOverride ?? ownershipQuery.data?.recruiterRating ?? 0;
+  const notes = notesOverride ?? ownershipQuery.data?.recruiterRatingNote ?? "";
+  const shortlistedAt = ownershipQuery.data?.shortlistedAt;
+
+  // Mutation to save notes only
+  const notesMutation = useMutation({
+    mutationFn: (notesText: string) =>
+      apiFetch<RateResponse>(`/api/applications/${applicationId}/ownership/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recruiterIdentity: ACTIVE_RECRUITER_ID, notes: notesText }),
+      }),
+    onSuccess: (data) => {
+      queryClient.setQueryData<Ownership | undefined>(queryKeys.ownership(applicationId), (prev) =>
+        prev ? { ...prev, ...data } : prev,
+      );
+      setNotesOverride(null);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
+    },
+  });
+
+  const isNotesChanged = notesOverride !== null && notesOverride !== (ownershipQuery.data?.recruiterRatingNote ?? "");
+
+  return (
+    <Card className="shrink-0">
+      <CardHeader>
+        <CardTitle>Candidate Review</CardTitle>
+      </CardHeader>
+
+      <CardContent className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <Label>Rating</Label>
+          <StarRatingInput value={rating} onChange={setRatingOverride} disabled={ownershipQuery.isLoading} />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="notes">Notes</Label>
+          <Textarea
+            id="notes"
+            placeholder="Add any additional notes..."
+            value={notes}
+            onChange={(e) => { setNotesOverride(e.target.value); }}
+            disabled={ownershipQuery.isLoading}
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={shortlistMutation.isPending || !!shortlistedAt}
+              onClick={() => {
+                shortlistMutation.mutate(undefined, {
+                  onSuccess: () => {
+                    void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
+                  }
+                });
+              }}
+            >
+              {shortlistedAt ? "Shortlisted" : shortlistMutation.isPending ? "Shortlisting..." : "Shortlist"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={acceptMutation.isPending}
+              onClick={() => {
+                acceptMutation.mutate(undefined, {
+                  onSuccess: () => {
+                    void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
+                  }
+                });
+              }}
+            >
+              {acceptMutation.isPending ? "Accepting..." : "Accept"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={rejectMutation.isPending}
+              onClick={() => {
+                rejectMutation.mutate(undefined, {
+                  onSuccess: () => {
+                    void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
+                  }
+                });
+              }}
+            >
+              {rejectMutation.isPending ? "Rejecting..." : "Reject"}
+            </Button>
+          </div>
+
+          <div className="flex gap-2">
+            {isNotesChanged && (
+              <Button
+                variant="outline"
+                disabled={notesMutation.isPending}
+                onClick={() => { notesMutation.mutate(notes); }}
+              >
+                {notesMutation.isPending ? "Saving..." : "Save Notes"}
+              </Button>
+            )}
+            <Button
+              disabled={rating === 0 || rateMutation.isPending}
+              onClick={() => {
+                rateMutation.mutate(
+                  { rating, notes: notes.length > 0 ? notes : undefined },
+                  {
+                    onSuccess: () => {
+                      setRatingOverride(null);
+                      setNotesOverride(null);
+                      void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
+                    }
+                  }
+                );
+              }}
+            >
+              {rateMutation.isPending ? "Submitting..." : "Submit Rating"}
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ApplicationLogs({ applicationId }: { applicationId: string }) {
+  const { data: logs, isLoading, isError, refetch } = useApplicationLogs(applicationId);
+
+  if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 p-8">
-        <h1 className="font-heading text-3xl font-semibold text-foreground">
-          {applicant.candidateName}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          No AI evaluation is available for this applicant yet.
-        </p>
-      </div>
+      <Card className="w-full mt-6 shrink-0">
+        <CardHeader>
+          <CardTitle className="text-lg">Activity History</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-2">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </CardContent>
+      </Card>
     );
   }
 
-  const totalScore = Object.values(evaluation.scores).reduce(
-    (sum, category) => sum + category.score,
-    0,
+  if (isError) {
+    return (
+      <Card className="w-full mt-6 shrink-0">
+        <CardContent className="py-6">
+          <ErrorState message="Could not load activity logs." onRetry={() => void refetch()} />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!logs || logs.length === 0) {
+    return (
+      <Card className="w-full mt-6 shrink-0">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <History className="size-5" />
+            Activity History
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-center py-6 text-sm text-muted-foreground">
+          No activity logs recorded for this applicant yet.
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const getActionBadge = (actionType: string) => {
+    switch (actionType.toUpperCase()) {
+      case "ACCEPT":
+        return <Badge className="bg-primary/20 text-primary border-primary/30">Accepted</Badge>;
+      case "REJECT":
+        return <Badge variant="destructive" className="bg-destructive/20 text-destructive border-destructive/30">Rejected</Badge>;
+      case "SHORTLIST":
+        return <Badge className="bg-chart-4/20 text-chart-4 border-chart-4/30">Shortlisted</Badge>;
+      case "CLAIM":
+        return <Badge variant="secondary">Claimed</Badge>;
+      case "RATING":
+        return <Badge variant="outline" className="border-primary text-primary">Rated</Badge>;
+      case "NOTES":
+        return <Badge variant="outline" className="text-muted-foreground">Notes Added</Badge>;
+      default:
+        return <Badge variant="outline">{actionType}</Badge>;
+    }
+  };
+
+  return (
+    <Card className="w-full mt-8 shrink-0">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <History className="size-5" />
+          Activity History
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="relative border-l border-muted pl-6 ml-2 flex flex-col gap-6">
+          {logs.map((log) => (
+            <div key={log.id} className="relative">
+              {/* Timeline marker */}
+              <div className="absolute -left-[31px] mt-1.5 size-2.5 rounded-full border-2 border-background bg-primary" />
+              
+              <div className="flex flex-col gap-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-semibold text-foreground">
+                    {log.recruiterIdentity}
+                  </span>
+                  {getActionBadge(log.actionType)}
+                  {log.ratingValue !== null && (
+                    <div className="flex items-center gap-0.5 text-xs text-primary">
+                      <Star className="size-3.5 fill-primary text-primary" />
+                      <span className="font-semibold">{log.ratingValue.toFixed(1)}</span>
+                    </div>
+                  )}
+                  <span className="ml-auto text-[10px] text-muted-foreground">
+                    {new Date(log.actionedAt).toLocaleString()}
+                  </span>
+                </div>
+                
+                {log.reason && (
+                  <p className="text-xs text-muted-foreground bg-muted/40 p-2.5 rounded-lg border border-muted/50 mt-1 max-w-full break-words">
+                    {log.reason}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
-  const maxScore = Object.values(evaluation.scores).reduce(
-    (sum, category) => sum + category.max,
-    0,
+}
+
+function ReevaluateButton({ applicantId }: { applicantId: string }) {
+  const [open, setOpen] = useState(false);
+  const reevaluate = useReevaluateApplication(applicantId);
+
+  const handleConfirm = () => {
+    reevaluate.mutate(undefined, {
+      onSuccess: () => { setOpen(false); }
+    });
+  };
+
+  return (
+    <>
+      <Button variant="outline" size="sm" onClick={() => { setOpen(true); }} className="gap-2">
+        <RefreshCw className={cn("size-4", reevaluate.isPending && "animate-spin")} />
+        Re-evaluate
+      </Button>
+
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-background border rounded-lg shadow-lg w-full max-w-md p-6 flex flex-col gap-4 animate-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-semibold">Confirm Re-evaluation</h3>
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to re-evaluate this applicant? This will reset the AI summary and trigger a new analysis based on the latest uploaded documents.
+            </p>
+            <div className="flex justify-end gap-3 mt-4">
+              <Button variant="ghost" onClick={() => { setOpen(false); }} disabled={reevaluate.isPending}>
+                Cancel
+              </Button>
+              <Button onClick={handleConfirm} disabled={reevaluate.isPending}>
+                {reevaluate.isPending ? "Re-evaluating..." : "Confirm"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
-  const overallScore = Math.max(
-    0,
-    totalScore + evaluation.bonusPoints.total - evaluation.deductions.total,
-  );
+}
+
+export default function DetailedApplicantInfo() {
+  const params = useParams<{ applicantId: string }>();
+  const applicantId = params.applicantId;
+
+  const detailQuery = useApplicationDetail(applicantId);
+  const applicantQuery = useApplicant(applicantId);
+  const evaluationQuery = useEvaluation(applicantId);
+
+  const [leftWidth, setLeftWidth] = useState(50); // percentage
+  const [isResizing, setIsResizing] = useState(false);
+  const [isMobile, setIsMobile] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => { window.removeEventListener("resize", checkMobile); };
+  }, []);
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const percentage = ((e.clientX - rect.left) / rect.width) * 100;
+      if (percentage >= 25 && percentage <= 75) {
+        setLeftWidth(percentage);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isResizing]);
+
+  if (detailQuery.isError) {
+    const error = detailQuery.error;
+    if (error instanceof ApiError && error.status === 404) {
+      return (
+        <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-lg">
+            <EmptyState
+              title="Applicant not found"
+              description="This application may have been removed."
+              action={
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/history">Back to history</Link>
+                </Button>
+              }
+            />
+          </div>
+        </main>
+      );
+    }
+
+    return (
+      <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-lg">
+          <ErrorState message="Couldn't load this applicant." onRetry={() => { void detailQuery.refetch(); }} />
+        </div>
+      </main>
+    );
+  }
+
+  const candidateName = detailQuery.isLoading || applicantQuery.isLoading ? undefined : applicantQuery.data?.candidateName;
 
   return (
     <div className="flex flex-col items-center justify-center p-8">
-      <h1 className="font-heading text-3xl font-semibold text-foreground">
-        {applicant.candidateName}
-      </h1>
-      <p className="text-sm text-muted-foreground">
-        {evaluation.institution.degreeName} · {evaluation.institution.name}
-      </p>
-      <div className="w-full flex flex-col md:flex-row justify-center gap-10 pt-10">
+      {detailQuery.isLoading || applicantQuery.isLoading ? (
+        <Skeleton className="h-9 w-64" />
+      ) : (
+        <h1 className="font-heading text-3xl font-semibold text-foreground mb-2">{candidateName ?? "Applicant"}</h1>
+      )}
+      {evaluationQuery.data?.institutionJson && (
+        <p className="text-sm text-muted-foreground">
+          {evaluationQuery.data.institutionJson.degreeName} · {evaluationQuery.data.institutionJson.name}
+        </p>
+      )}
+      <div 
+        ref={containerRef}
+        className={cn(
+          "w-full max-w-[1400px] flex flex-col md:flex-row items-stretch justify-center pt-10 md:h-[calc(100vh_-_10rem)] md:min-h-0",
+          isResizing && "select-none cursor-col-resize"
+        )}
+      >
         {/* Document Viewer Container */}
-        <section className="flex w-full md:max-w-xl flex-col gap-3">
-          <h2 className="font-heading text-xs font-semibold uppercase tracking-wide text-muted-foreground pl-2">
-            Applicant documents
-          </h2>
-          <Tabs defaultValue="cv" className="flex-1 gap-3">
-            <TabsList className="self-center">
-              <TabsTrigger value="cv">CV</TabsTrigger>
-              <TabsTrigger value="transcript">Transcript</TabsTrigger>
-            </TabsList>
-            <TabsContent value="cv" className="flex-1">
-              <Card className="h-full items-center justify-center">
-                <CardContent className="flex flex-1 items-center justify-center">
-                  <p className="text-sm text-muted-foreground">CV</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="transcript" className="flex-1">
-              <Card className="h-full items-center justify-center">
-                <CardContent className="flex flex-1 items-center justify-center">
-                  <p className="text-sm text-muted-foreground">Transcript</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+        <section 
+          style={isMobile ? undefined : { width: `${String(leftWidth)}%` }}
+          className="flex w-full md:h-full flex-col md:pr-4 min-h-0"
+        >
+          <Card className="flex-1 flex flex-col min-h-0">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                <FileText className="size-4" />
+                Applicant Documents
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col min-h-0 gap-3">
+              <Tabs defaultValue="cv" className="flex-1 flex flex-col min-h-0 gap-3">
+                <TabsList className="self-start">
+                  <TabsTrigger value="cv">CV</TabsTrigger>
+                  <TabsTrigger value="transcript">Transcript</TabsTrigger>
+                </TabsList>
+                <TabsContent value="cv" className="flex-1 min-h-0 mt-0">
+                  <DocumentViewer
+                    url={`/api/applications/${applicantId}/cv`}
+                    label="CV"
+                    className="h-full min-h-64"
+                  />
+                </TabsContent>
+                <TabsContent value="transcript" className="flex-1 min-h-0 mt-0">
+                  <DocumentViewer
+                    url={`/api/applications/${applicantId}/transcript`}
+                    label="Transcript"
+                    className="h-full min-h-64"
+                  />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
         </section>
 
+        {/* Resize Handle */}
+        <div
+          onMouseDown={() => { setIsResizing(true); }}
+          className={cn(
+            "hidden md:flex w-2 cursor-col-resize hover:bg-primary/20 items-center justify-center transition-colors rounded mx-1",
+            isResizing && "bg-primary/20"
+          )}
+        >
+          <div className="w-[2px] h-10 rounded bg-muted-foreground/30" />
+        </div>
+
         {/*Candidate INFO Container*/}
-        <div className="flex w-full md:max-w-xl flex-col gap-4">
-          {/* Canidate Summary Section */}
-          <section className="flex flex-col gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="size-4" />
-                  AI Summary
-                </CardTitle>
-                <CardAction className="flex flex-col items-end gap-1">
-                  Overall Score
-                  <span className="text-base font-semibold text-foreground">
-                    {overallScore.toFixed(1)}
-                    <span className="text-xs font-normal text-muted-foreground">
-                      {" "}
-                      / {maxScore}
-                    </span>
-                  </span>
-                </CardAction>
-              </CardHeader>
-              <Separator />
-              <CardContent className="flex flex-col gap-5">
-                <div className="flex flex-col gap-4">
-                  {(Object.keys(evaluation.scores) as Array<keyof Scores>).map(
-                    (key) => (
-                      <ScoreCategoryRow
-                        key={key}
-                        label={scoreCategoryMeta[key].label}
-                        icon={scoreCategoryMeta[key].icon}
-                        category={evaluation.scores[key]}
-                      />
-                    ),
-                  )}
-                </div>
-
-                <Separator />
-
-                <div className="flex flex-col gap-2">
-                  <span className="flex items-center gap-2 text-sm font-medium">
-                    <Award className="size-4 text-muted-foreground" />
-                    Bonus Points
-                    <Badge variant="secondary" className="ml-auto">
-                      +{evaluation.bonusPoints.total.toFixed(1)}
-                    </Badge>
-                  </span>
-                  <ul className="flex flex-col gap-1 pl-6 text-xs text-muted-foreground">
-                    {Object.entries(evaluation.bonusPoints.breakdown).map(
-                      ([key, value]) => (
-                        <li key={key}>
-                          {formatBreakdownLabel(key)}: +{value}
-                        </li>
-                      ),
-                    )}
-                  </ul>
-                </div>
-
-                {evaluation.deductions.reasons.length > 0 && (
-                  <div className="flex flex-col gap-2">
-                    <span className="flex items-center gap-2 text-sm font-medium">
-                      <MinusCircle className="size-4 text-muted-foreground" />
-                      Deductions
-                      <Badge variant="secondary" className="ml-auto">
-                        -{evaluation.deductions.total.toFixed(1)}
-                      </Badge>
-                    </span>
-                    <ul className="flex flex-col gap-1 pl-6 text-xs text-muted-foreground">
-                      {evaluation.deductions.reasons.map((reason) => (
-                        <li key={reason}>{reason}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <Separator />
-
-                <div className="flex flex-col gap-2">
-                  <span className="text-sm font-medium">Key Strengths</span>
-                  <ul className="flex flex-col gap-2">
-                    {evaluation.keyStrengths.map((strength) => (
-                      <li
-                        key={strength}
-                        className="flex items-center gap-2 text-sm"
-                      >
-                        <CheckCircle2 className="size-4 shrink-0 text-primary" />
-                        {strength}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <span className="text-sm font-medium">
-                    Areas for Improvement
-                  </span>
-                  <ul className="flex flex-col gap-2">
-                    {evaluation.areasForImprovement.map((area) => (
-                      <li
-                        key={area}
-                        className="flex items-center gap-2 text-sm"
-                      >
-                        <AlertTriangle className="size-4 shrink-0 text-muted-foreground" />
-                        {area}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
+        <div 
+          style={isMobile ? undefined : { width: `${String(100 - leftWidth)}%` }}
+          className="flex w-full flex-col gap-4 md:pl-4 md:h-full md:min-h-0"
+        >
+          {/* Candidate Summary Section */}
+          <section className="flex flex-col gap-4 flex-1 h-0 min-h-0">
+            {evaluationQuery.isLoading ? (
+              <Card>
+                <CardContent className="flex flex-col gap-2 py-6">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </CardContent>
+              </Card>
+            ) : evaluationQuery.isError ? (
+              <ErrorState message="Couldn't load evaluation." onRetry={() => { void evaluationQuery.refetch(); }} />
+            ) : !evaluationQuery.data ? (
+              <EmptyState
+                title="Not yet evaluated"
+                description="This candidate has not been evaluated by the Hiring Agent yet."
+              />
+            ) : (
+              <EvaluationSummary evaluation={evaluationQuery.data} applicationId={applicantId} />
+            )}
           </section>
 
           {/* Candidate Rating section*/}
-          <Card>
-            <CardHeader>
-              <CardTitle>Candidate Review</CardTitle>
-            </CardHeader>
-
-            <CardContent className="flex flex-col gap-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="potential-select">Potential Candidate</Label>
-                  <Select name="potential">
-                    <SelectTrigger id="potential-select" className="w-full">
-                      <SelectValue placeholder="Is this a potential candidate?" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Yes">Yes</SelectItem>
-                      <SelectItem value="Maybe">Maybe</SelectItem>
-                      <SelectItem value="No">No</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="tier-select">Candidate Tier</Label>
-                  <Select name="tier">
-                    <SelectTrigger id="tier-select" className="w-full">
-                      <SelectValue placeholder="Weigh the candidate by tier" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Strong">Strong</SelectItem>
-                      <SelectItem value="Borderline">Borderline</SelectItem>
-                      <SelectItem value="Weak">Weak</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="notes">Notes</Label>
-                <Textarea
-                  id="notes"
-                  placeholder="Add any additional notes..."
-                />
-              </div>
-
-              <div className="flex justify-end pt-2">
-                <Button>Submit</Button>
-              </div>
-            </CardContent>
-          </Card>
+          <CandidateReview applicationId={applicantId} />
         </div>
       </div>
+
+      {/* Under the split: Applicant Logs */}
+      {applicantId && (
+        <div className="w-full mt-6 max-w-[1400px]">
+          <ApplicationLogs applicationId={applicantId} />
+        </div>
+      )}
     </div>
   );
 }

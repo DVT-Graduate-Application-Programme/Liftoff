@@ -1,12 +1,18 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sidebar, SidebarContent, SidebarGroup } from "@/components/ui/sidebar";
 import type { ApplicantDetailsEvaluation } from "./mock-applicant-details";
 import { CloseApplicantDetailsSidebarButton } from "./applicant-details-sidebar-controls";
 import { SCORE_CATEGORIES } from "./constants";
+import type { SelectionTabKey } from "@/components/providers/applicant-selection-provider";
 
 type ApplicantDetailsSidebarProps = {
+  applicantId?: string | null;
   candidateName: string;
-  evaluation: ApplicantDetailsEvaluation;
+  evaluation: ApplicantDetailsEvaluation | null;
+  isLoadingEvaluation?: boolean;
+  evaluationMessage?: string | null;
+  tabKey?: SelectionTabKey | null;
 };
 
 function formatDecimal(value: number) {
@@ -14,21 +20,34 @@ function formatDecimal(value: number) {
 }
 
 export function ApplicantDetailsSidebar({
+  applicantId = null,
   candidateName,
   evaluation,
+  isLoadingEvaluation = false,
+  evaluationMessage = null,
+  tabKey = null,
 }: ApplicantDetailsSidebarProps) {
-  const scoreTotal = SCORE_CATEGORIES.reduce(
-    (total, { key }) => total + evaluation.scores[key].score,
-    0,
-  );
-  const scoreMax = SCORE_CATEGORIES.reduce(
-    (total, { key }) => total + evaluation.scores[key].max,
-    0,
-  );
-  const overallScore = Math.max(
-    0,
-    scoreTotal + evaluation.bonusPoints.total - evaluation.deductions.total,
-  );
+  const categoryScores: Partial<
+    ApplicantDetailsEvaluation["categoryScoresJson"]
+  > | null = evaluation?.categoryScoresJson ?? null;
+  const hasEvaluation = Boolean(categoryScores);
+  const bonusTotal = evaluation?.bonusPointsJson?.total ?? 0;
+  const keyStrengths = evaluation?.keyStrengthsJson ?? [];
+  const scoreTotal = categoryScores
+    ? SCORE_CATEGORIES.reduce(
+        (total, { key }) => total + (categoryScores[key]?.score ?? 0),
+        0,
+      )
+    : 0;
+  const scoreMax = categoryScores
+    ? SCORE_CATEGORIES.reduce(
+        (total, { key }) => total + (categoryScores[key]?.max ?? 0),
+        0,
+      )
+    : 0;
+  const overallScore = categoryScores
+    ? Math.max(0, scoreTotal + bonusTotal)
+    : 0;
 
   return (
     <Sidebar
@@ -50,59 +69,77 @@ export function ApplicantDetailsSidebar({
               </div>
               <CloseApplicantDetailsSidebarButton />
             </div>
-            <div className="space-y-4 rounded-md border border-sidebar-border bg-sidebar-accent/20 p-5 text-base">
-              <p className="flex items-baseline justify-between gap-4">
-                <span className="font-medium">Overall Score</span>
-                <span className="font-mono text-sm font-semibold">
-                  {formatDecimal(overallScore)}/{scoreMax}
-                </span>
-              </p>
-              {SCORE_CATEGORIES.map(({ key, label }) => {
-                const category = evaluation.scores[key];
-
-                return (
-                  <p
-                    key={key}
-                    className="flex items-baseline justify-between gap-4 text-sm"
-                  >
-                    <span className="font-medium">{label}</span>
-                    <span className="font-mono">
-                      {formatDecimal(category.score)}/{category.max}
+            {isLoadingEvaluation ? (
+              <div className="rounded-md border border-sidebar-border bg-sidebar-accent/20 p-5 text-sm text-muted-foreground">
+                Loading evaluation summary...
+              </div>
+            ) : hasEvaluation && categoryScores ? (
+              <>
+                <div className="space-y-4 rounded-md border border-sidebar-border bg-sidebar-accent/20 p-5 text-base">
+                  <p className="flex items-baseline justify-between gap-4">
+                    <span className="font-medium">Overall Score</span>
+                    <span className="font-mono text-sm font-semibold">
+                      {formatDecimal(overallScore)}/{scoreMax}
                     </span>
                   </p>
-                );
-              })}
-              <p className="flex items-baseline justify-between gap-4">
-                <span className="font-medium text-sm">Bonus Points</span>
-                <span className="font-mono text-sm">
-                  {formatDecimal(evaluation.bonusPoints.total)}
-                </span>
-              </p>
-              {evaluation.deductions.total > 0 ? (
-                <p className="flex items-baseline justify-between gap-4">
-                  <span className="font-medium">Deductions</span>
-                  <span className="font-mono text-destructive">
-                    -{formatDecimal(evaluation.deductions.total)}
-                  </span>
-                </p>
-              ) : null}
-            </div>
-            <div className="space-y-2">
-              <p className="font-heading text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                Key strengths
-              </p>
-              <ol className="list-decimal space-y-1.5 pl-5 text-sm leading-6">
-                {evaluation.keyStrengths.map((strength) => (
-                  <li key={strength}>{strength}</li>
-                ))}
-              </ol>
-            </div>
+                  {SCORE_CATEGORIES.map(({ key, label }) => {
+                    const category = categoryScores[key];
+                    if (!category) {
+                      return null;
+                    }
+
+                    return (
+                      <p
+                        key={key}
+                        className="flex items-baseline justify-between gap-4 text-sm"
+                      >
+                        <span className="font-medium">{label}</span>
+                        <span className="font-mono">
+                          {formatDecimal(category.score)}/{category.max}
+                        </span>
+                      </p>
+                    );
+                  })}
+                  <p className="flex items-baseline justify-between gap-4">
+                    <span className="font-medium text-sm">Bonus Points</span>
+                    <span className="font-mono text-sm">
+                      {formatDecimal(bonusTotal)}
+                    </span>
+                  </p>
+                </div>
+                {keyStrengths.length > 0 ? (
+                  <div className="space-y-2">
+                    <p className="font-heading text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                      Key strengths
+                    </p>
+                    <ol className="list-decimal space-y-1.5 pl-5 text-sm leading-6">
+                      {keyStrengths.map((strength) => (
+                        <li key={strength}>{strength}</li>
+                      ))}
+                    </ol>
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              <div className="rounded-md border border-sidebar-border bg-sidebar-accent/20 p-5 text-sm text-muted-foreground">
+                {evaluationMessage ??
+                  "No evaluation available for this application yet."}
+              </div>
+            )}
           </div>
           <Button
             type="button"
+            asChild={Boolean(applicantId)}
+            disabled={!applicantId}
             className="mt-6 h-11 w-full text-base font-medium"
           >
-            View CV and Transcript
+            {applicantId ? (
+              <Link href={tabKey ? `/applicants/${applicantId}?from=${tabKey}` : `/applicants/${applicantId}`}>
+                View CV and Transcript
+              </Link>
+            ) : (
+              "View CV and Transcript"
+            )}
           </Button>
         </SidebarGroup>
       </SidebarContent>

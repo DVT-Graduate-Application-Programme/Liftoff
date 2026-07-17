@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Routing;
 using System.Net.Http;
 using System.Net.Http.Json;
 using Microsoft.Graph.Models;
+using System.IO;
+using System.Linq;
 
 namespace Api.EndPoints.Applications;
 
@@ -32,47 +34,96 @@ public static class IngestEndpoints
         MediatR.IMediator mediator,
         CancellationToken ct)
     {
-        var command = new IngestManualApplicationCommand
-        {
-            CandidateName = request.CandidateName,
-            CandidateEmail = request.CandidateEmail,
-            IdempotencyKey = httpRequest.Headers["Idempotency-Key"].ToString(),
-            HasCvFile = request.CvFile is not null,
-            HasTranscriptFile = request.TranscriptFile is not null
-        };
+        Stream? cvStream = null;
+        Stream? transcriptStream = null;
 
-        var command2 = new SendApplicationCommand
+        try
         {
-            CandidateName = request.CandidateName,
-            CandidateEmail = request.CandidateEmail,
-            IdempotencyKey = httpRequest.Headers["Idempotency-Key"].ToString(),
-            CVurl = request.CvFile,
-            TranscriptUrl = request.TranscriptFile
-        };
-
-        var result = await mediator.Send(command2, ct);
-
-        if(result is not null && !string.IsNullOrWhiteSpace(result.ApplicationId.ToString()))
-        {
-            // applciation created successfully
-            try
+            // Resolve CV File/URL
+            if (httpRequest.Form.Files.GetFile("CvFile") is { } cvFormFile)
             {
-               await NotifyHiringAgent(result.ApplicationId);
+                cvStream = cvFormFile.OpenReadStream();
             }
-            catch (System.Exception)
+            else if (httpRequest.Form.TryGetValue("CvFile", out var cvUrlValues) &&
+                     cvUrlValues.ToString() is { } cvUrl &&
+                     !string.IsNullOrWhiteSpace(cvUrl))
             {
-                
-                throw;
+                try
+                {
+                    cvStream = await Client.GetStreamAsync(cvUrl, ct);
+                }
+                catch (System.Exception ex)
+                {
+                    return Results.BadRequest($"Failed to download CV from URL: {ex.Message}");
+                }
             }
-        
+            else
+            {
+                return Results.BadRequest("CvFile is required (either as an uploaded file or a Google Drive download URL).");
+            }
+
+            // Resolve Transcript File/URL
+            if (httpRequest.Form.Files.GetFile("TranscriptFile") is { } transcriptFormFile)
+            {
+                transcriptStream = transcriptFormFile.OpenReadStream();
+            }
+            else if (httpRequest.Form.TryGetValue("TranscriptFile", out var transcriptUrlValues) &&
+                     transcriptUrlValues.ToString() is { } transcriptUrl &&
+                     !string.IsNullOrWhiteSpace(transcriptUrl))
+            {
+                try
+                {
+                    transcriptStream = await Client.GetStreamAsync(transcriptUrl, ct);
+                }
+                catch (System.Exception ex)
+                {
+                    return Results.BadRequest($"Failed to download Transcript from URL: {ex.Message}");
+                }
+            }
+
+            var command2 = new SendApplicationCommand
+            {
+                CandidateName = request.CandidateName,
+                CandidateEmail = request.CandidateEmail,
+                IdempotencyKey = httpRequest.Headers["Idempotency-Key"].ToString(),
+                CvStream = cvStream,
+                TranscriptStream = transcriptStream
+            };
+
+            var result = await mediator.Send(command2, ct);
+
+            if(result is not null && !string.IsNullOrWhiteSpace(result.ApplicationId.ToString()))
+            {
+                // applciation created successfully
+                try
+                {
+                   await NotifyHiringAgent(result.ApplicationId);
+                }
+                catch (System.Exception)
+                {
+                    
+                    throw;
+                }
+            
+            }
+
+            return Results.Accepted(value: result);
         }
-
-       
-        return Results.Accepted(value: result);
+        finally
+        {
+            if (cvStream is not null)
+            {
+                await cvStream.DisposeAsync();
+            }
+            if (transcriptStream is not null)
+            {
+                await transcriptStream.DisposeAsync();
+            }
+        }
     }
 
 
-    private static async Task NotifyHiringAgent(Guid applicationId)
+    public static async Task NotifyHiringAgent(Guid applicationId)
     {
         const string fastApiBaseUrl = "http://hiring-agent:8001";
         try
@@ -89,5 +140,4 @@ public static class IngestEndpoints
             // swallow — don't let a notify failure crash ingest
         }
     }
-
 }
