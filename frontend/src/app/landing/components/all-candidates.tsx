@@ -35,7 +35,6 @@ const STATUS_OPTIONS: [string, string][] = [
   ["evaluated", "Evaluated"],
   ["forwarded", "Forwarded"],
   ["rejected", "Rejected"],
-  ["shortlisted", "Shortlisted"],
 ];
 
 function AllCandidateListCard({
@@ -61,29 +60,33 @@ function AllCandidateListCard({
     evaluationQuery.data?.institutionJson?.academic_average ??
     evaluationQuery.data?.categoryScoresJson.education.score;
 
-  return (
-    <AllCandidateCard
-      key={application.applicationId}
-      name={application.candidateName}
-      institute={education.degree || application.cvSummary}
-      subtitle={education.institution || undefined}
-      systemScore={toScorePercent(application.hiringAgentTotalScore)}
-      academicAverage={academicAverage}
-      statusLabel={getStatusLabel(application.currentStatus)}
-      statusTone={getStatusTone(application.currentStatus)}
-      reviewedAt={formatDate(application.createdAt)}
-      showReviewedAt={false}
-      createdAt={application.createdAt}
-      recruiterName={getRecruiterLabel(application)}
-      secondaryActionLabel={
-        isClaimedByActiveRecruiter ? "Claimed" : "Claim for review"
-      }
-      isSecondaryActionDisabled={isClaimedByActiveRecruiter || isClaiming}
-      isSecondaryActionLoading={isClaiming}
-      onSecondaryActionClick={isClaimedByActiveRecruiter ? undefined : onClaim}
-      onActionClick={onOpen}
-    />
-  );
+  if (application.currentStatus !== "shortlisted") {
+    return (
+      <AllCandidateCard
+        key={application.applicationId}
+        name={application.candidateName}
+        institute={education.degree || application.cvSummary}
+        subtitle={education.institution || undefined}
+        systemScore={toScorePercent(application.hiringAgentTotalScore)}
+        academicAverage={academicAverage}
+        statusLabel={getStatusLabel(application.currentStatus)}
+        statusTone={getStatusTone(application.currentStatus)}
+        reviewedAt={formatDate(application.createdAt)}
+        showReviewedAt={false}
+        createdAt={application.createdAt}
+        recruiterName={getRecruiterLabel(application)}
+        secondaryActionLabel={
+          isClaimedByActiveRecruiter ? "Claimed" : "Claim for review"
+        }
+        isSecondaryActionDisabled={isClaimedByActiveRecruiter || isClaiming}
+        isSecondaryActionLoading={isClaiming}
+        onSecondaryActionClick={
+          isClaimedByActiveRecruiter ? undefined : onClaim
+        }
+        onActionClick={onOpen}
+      />
+    );
+  }
 }
 
 function AllCandidates() {
@@ -234,6 +237,7 @@ function AllCandidates() {
           const isClaiming =
             claimMutation.isPending &&
             claimMutation.variables === application.applicationId;
+          // const notShortListed = application.currentStatus !== "shortlisted";
 
           return (
             <AllCandidateListCard
