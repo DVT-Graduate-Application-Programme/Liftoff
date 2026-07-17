@@ -72,26 +72,31 @@ function DashboardTabs() {
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-      <TabsList className="mb-3 flex w-full justify-between gap-2">
-        <TabsTrigger
-          value="pending"
-          className="flex-1 rounded-t-md px-4 py-2 text-sm font-semibold text-muted-foreground data-active:border-b-2 data-active:border-primary data-active:text-foreground"
-        >
-          Pending Candidates
-        </TabsTrigger>
-        <TabsTrigger
-          value="all"
-          className="flex-1 rounded-t-md px-4 py-2 text-sm font-semibold text-muted-foreground data-active:border-b-2 data-active:border-primary data-active:text-foreground"
-        >
-          All Candidates
-        </TabsTrigger>
-        <TabsTrigger
-          value="accepted"
-          className="flex-1 rounded-t-md px-4 py-2 text-sm font-semibold text-muted-foreground data-active:border-b-2 data-active:border-primary data-active:text-foreground"
-        >
-          Accepted Candidates
-        </TabsTrigger>
-      </TabsList>
+      <div className="sticky top-0 z-20 -mx-4 -mt-4 mb-3 bg-background px-4 pt-4 pb-3">
+        <TabsList className="flex w-full justify-between gap-2">
+          <TabsTrigger
+            value="pending"
+            className="min-w-0 flex-1 rounded-t-md px-2 py-2 text-sm font-semibold text-muted-foreground data-active:border-b-2 data-active:border-primary data-active:text-foreground sm:px-4"
+          >
+            <span className="sm:hidden">Pending</span>
+            <span className="hidden sm:inline">Pending Candidates</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="all"
+            className="min-w-0 flex-1 rounded-t-md px-2 py-2 text-sm font-semibold text-muted-foreground data-active:border-b-2 data-active:border-primary data-active:text-foreground sm:px-4"
+          >
+            <span className="sm:hidden">All</span>
+            <span className="hidden sm:inline">All Candidates</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="accepted"
+            className="min-w-0 flex-1 rounded-t-md px-2 py-2 text-sm font-semibold text-muted-foreground data-active:border-b-2 data-active:border-primary data-active:text-foreground sm:px-4"
+          >
+            <span className="sm:hidden">Accepted</span>
+            <span className="hidden sm:inline">Accepted Candidates</span>
+          </TabsTrigger>
+        </TabsList>
+      </div>
       <TabsContent value="pending">
         <PendingCandidates />
       </TabsContent>
@@ -108,8 +113,8 @@ function DashboardTabs() {
 const Page = () => {
   return (
     <ApplicantSelectionProvider>
-      <div className="w-full overflow-hidden">
-        <SidebarProvider defaultOpen={false} className="min-h-0 w-full">
+      <div className="h-[calc(100svh-4rem)] w-full overflow-hidden">
+        <SidebarProvider defaultOpen={false} className="h-full min-h-0 w-full">
           <div className="flex h-full min-h-0 w-full overflow-hidden">
             <SidebarInset className="flex-1 overflow-y-auto min-w-1/3">
               <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-4">
