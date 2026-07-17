@@ -25,6 +25,27 @@ public class IngestEvaluationCommand : IRequest<IngestEvaluationResult>
 
     [JsonPropertyName("areas_for_improvement")]
     public List<string> AreasForImprovement { get; set; } = [];
+
+    [JsonPropertyName("institution")]
+    public InstitutionDto? Institution { get; set; }
+}
+
+public class InstitutionDto
+{
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("degreeName")]
+    public string DegreeName { get; set; } = string.Empty;
+
+    [JsonPropertyName("degree_name")]
+    public string DegreeNameSnake { get; set; } = string.Empty;
+
+    [JsonPropertyName("academicAverage")]
+    public double AcademicAverage { get; set; }
+
+    [JsonPropertyName("academic_average")]
+    public double AcademicAverageSnake { get; set; }
 }
 
 public class EvaluationScoresDto

@@ -48,15 +48,16 @@ def get_resume(candidate_id: UUID) -> Resume:
         response.raise_for_status()
         metadata = response.json()
 
-        cv_url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/cv/v2"
-        transcript_url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/transcript/v2"
+        cv_url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/cv"
+        transcript_url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/transcript"
 
-        transcript_check = client.get(transcript_url) # if transript is available 
+        transcript_check = client.get(transcript_url) # if transript is available
         if transcript_check.status_code == 404:
             transcript_url = None
 
     return Resume(
         id=candidate_id,
+        message_id=str(candidate_id),
         candidate_name=metadata.get("candidateName", "Unknown"),
         document_url=cv_url,
         transcript_url=transcript_url,
@@ -77,7 +78,7 @@ def get_all_resumes() -> list[Resume]:
     return [Resume.model_validate(item) for item in response.json()]
 
 
-def send_eval(eval_data: EvaluationData, message_id: UUID, prompt_version: str):
+def send_eval(eval_data: EvaluationData, message_id: UUID, prompt_version: str, institution: dict = None):
     """
     After AI has completed processing, return results and post to API ingest layer.
     message_id must be the ID returned by the C# Ingest API when the PENDING record was created.
@@ -91,6 +92,9 @@ def send_eval(eval_data: EvaluationData, message_id: UUID, prompt_version: str):
         "application_id": str(message_id),
         **eval_dict # This unpacks scores, bonus_points, key_strengths, etc. into the root
     }
+
+    if institution:
+        final_payload["institution"] = institution
 
     ## TODO: add auth token check on endpoint
 

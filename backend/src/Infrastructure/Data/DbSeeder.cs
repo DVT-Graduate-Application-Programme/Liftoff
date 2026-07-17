@@ -181,14 +181,14 @@ public static class DbSeeder
         };
 
         // ──────────────────────────────────────────────
-        // Candidate 3 – Priya Sharma (Score 73 + 2 bonus = 75)
+        // Candidate 3 – Elena Rodriguez (Score 73 + 2 bonus = 75)
         // ──────────────────────────────────────────────
         var app3 = new ApplicationRecord
         {
             Id = App3Id,
             EmailMessageId = "seed-msg-003",
-            CandidateName = "Priya Sharma",
-            CandidateEmail = "priya.sharma@example.com",
+            CandidateName = "Elena Rodriguez",
+            CandidateEmail = "Elena.Rodriguez@example.com",
             CandidateGitHubUrl = "https://github.com/josephexample-dev",
             Status = "shortlisted",
             Tier = "Borderline",
@@ -604,7 +604,7 @@ public static class DbSeeder
             CandidateName = "Tomás Reyes",
             CandidateEmail = "tomas.reyes@example.com",
             CandidateGitHubUrl = null,
-            Status = "rejected",
+            Status = "pending",
             Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "Degree is in Culinary Arts – not an IT, Computer Science, or STEM discipline. No evidence of self-taught programming or compensating technical experience.",
@@ -654,7 +654,7 @@ public static class DbSeeder
         };
 
         // ──────────────────────────────────────────────
-        // Candidate 11 – Harriet Langley (MBA) – hard gate fail, rejected
+        // Candidate 11 – Harriet Langley (MBA) – hard gate fail, pending
         // ──────────────────────────────────────────────
         var app11 = new ApplicationRecord
         {
@@ -663,7 +663,7 @@ public static class DbSeeder
             CandidateName = "Harriet Langley",
             CandidateEmail = "harriet.langley@example.com",
             CandidateGitHubUrl = null,
-            Status = "rejected",
+            Status = "pending",
             Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "MBA is a postgraduate business qualification, not an IT or STEM degree. Undergraduate degree is in History. No compensating technical background identified.",
@@ -777,8 +777,8 @@ public static class DbSeeder
         var actions = new List<RecruiterAction>
         {
             // App1: Rating and Notes
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "recruiter-demo", ActionType = "RATING", RatingValue = 5, Reason = "Exceptional profile, great potential.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "manager-demo", ActionType = "NOTES", Reason = "Left a voicemail to schedule technical round.", ActionedAt = DateTimeOffset.UtcNow.AddHours(-5) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "RATING", RatingValue = 5, Reason = "Exceptional profile, great potential.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "NOTES", Reason = "Left a voicemail to schedule technical round.", ActionedAt = DateTimeOffset.UtcNow.AddHours(-5) },
             
             // App3: Shortlisted
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Strong candidate, advancing to interview.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
@@ -787,11 +787,11 @@ public static class DbSeeder
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, RecruiterIdentity = "manager-seed-002", ActionType = "FORWARD", PreviousStatus = "evaluated", NewStatus = "forwarded", Reason = "Forwarding to engineering lead for review.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-3) },
 
             // App6: Rejected
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App6Id, RecruiterIdentity = "recruiter-demo", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Lacks required technical skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-1) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App6Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Lacks required technical skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-1) },
             
             // App7: Shortlisted and Rated
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "recruiter-demo", ActionType = "RATING", RatingValue = 4, Reason = "Good algorithm skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-4) },
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "recruiter-demo", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Passed initial screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "RATING", RatingValue = 4, Reason = "Good algorithm skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-4) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Passed initial screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
             
             // App10: Rejected
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App10Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Does not meet baseline experience.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-7) },
