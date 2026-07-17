@@ -155,8 +155,9 @@ function AllCandidates() {
       onChange: setClaimed,
       options: [
         ["all", "All candidates"],
-        ["unclaimed", "Unclaimed"],
-        ["claimed", "Claimed"],
+        ["rose@dvtsoftware.com", "Rose"],
+        ["phindi@dvtsoftware.com", "Phindi"],
+        ["recruiter-123", "Recruiter 123"],
       ],
     },
     {
