@@ -53,7 +53,8 @@ function AllCandidateListCard({
 }) {
   const evaluationQuery = useEvaluation(application.applicationId);
   const education = parseEducationEvidence(
-    evaluationQuery.data?.evidenceJson?.education.trim() || application.cvSummary,
+    evaluationQuery.data?.evidenceJson?.education.trim() ||
+      application.cvSummary,
   );
 
   const academicAverage =
@@ -71,10 +72,12 @@ function AllCandidateListCard({
       statusLabel={getStatusLabel(application.currentStatus)}
       statusTone={getStatusTone(application.currentStatus)}
       reviewedAt={formatDate(application.createdAt)}
-      showReviewedAt
+      showReviewedAt={false}
       createdAt={application.createdAt}
       recruiterName={getRecruiterLabel(application)}
-      secondaryActionLabel={isClaimedByActiveRecruiter ? "Claimed" : "Claim for review"}
+      secondaryActionLabel={
+        isClaimedByActiveRecruiter ? "Claimed" : "Claim for review"
+      }
       isSecondaryActionDisabled={isClaimedByActiveRecruiter || isClaiming}
       isSecondaryActionLoading={isClaiming}
       onSecondaryActionClick={isClaimedByActiveRecruiter ? undefined : onClaim}
@@ -240,7 +243,6 @@ function AllCandidates() {
       },
     },
   ].filter(Boolean) as ActiveFilter[];
-
 
   const { selectApplication } = useApplicantSelection();
   const { setOpen } = useSidebar();
