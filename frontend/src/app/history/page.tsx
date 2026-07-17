@@ -59,13 +59,6 @@ const HISTORY_STATUS_OPTIONS: [string, string][] = [
   ["MANUAL_REVIEW", "Manual review"],
 ];
 
-const HISTORY_SCORE_OPTIONS: [string, string][] = [
-  ["All", "All tiers"],
-  ["STRONG", "Strong"],
-  ["BORDERLINE", "Borderline"],
-  ["WEAK", "Weak"],
-];
-
 function HistoryFilterBar({
   filtersOpen,
   onToggleFilters,
@@ -186,10 +179,6 @@ function CandidateHistoryCard({
   );
   const institutionName = evaluationQuery.data?.institutionJson?.name ?? education.institution;
   const degreeName = evaluationQuery.data?.institutionJson?.degreeName ?? education.degree;
-  const subtitle =
-    degreeName && institutionName
-      ? `${degreeName} · ${institutionName}`
-      : degreeName || institutionName || "Applicant";
 
   const academicAverage =
     evaluationQuery.data?.institutionJson?.academic_average ??
