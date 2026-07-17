@@ -237,7 +237,6 @@ function AllCandidates() {
           const isClaiming =
             claimMutation.isPending &&
             claimMutation.variables === application.applicationId;
-          // const notShortListed = application.currentStatus !== "shortlisted";
 
           return (
             <AllCandidateListCard
