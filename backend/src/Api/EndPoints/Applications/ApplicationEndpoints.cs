@@ -1,4 +1,7 @@
 using Application.Interfaces;
+
+using Domain.Entities;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -39,6 +42,20 @@ public static class ApplicationEndpoints
             return recruiters is not null ? Results.Ok(recruiters) : Results.NotFound();
         })
         .WithName("GetRecruiters");
+
+        group.MapPost("/recruiter", async (Recruiter recruiter, IApplicationRecordRepository repo, CancellationToken ct) =>
+        {
+            if (string.IsNullOrWhiteSpace(recruiter.FirstName) || string.IsNullOrWhiteSpace(recruiter.LastName) || string.IsNullOrWhiteSpace(recruiter.Email))
+            {
+                return Results.BadRequest("Recruiter First Name, Last Name, and Email are required.");
+            }
+
+            await repo.AddRecruiterAsync(recruiter, ct);
+
+            await repo.SaveChangesAsync(ct);
+            return Results.Created($"/api/applications/recruiter/{recruiter.Email}", recruiter);
+        })
+        .WithName("AddRecruiter");
 
         // GET /api/applications/{id}/applicant
         // Returns the applicant's personal information for a given application ID
