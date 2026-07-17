@@ -57,6 +57,7 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
       scoreLabel="System Score"
       secondaryScoreLabel="Academic Avg"
       showStatus={false}
+      statusTone="neutral"
       showReviewedAt
       reviewedAt={formatDate(reviewedAt)}
       createdAt={application.createdAt}
