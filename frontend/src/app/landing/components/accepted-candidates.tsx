@@ -6,6 +6,7 @@ import type { ApplicationFilters } from "@/types/api";
 import { useApplicationDetail } from "@/hooks/use-application-detail";
 import { useEvaluation } from "@/hooks/use-evaluation";
 import { useOwnership } from "@/hooks/use-ownership";
+import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
 import ApplicantCard from "@/components/applicant-card/applicant-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ApplicantList } from "./applicant-list";
@@ -17,6 +18,7 @@ type Filters = Omit<ApplicationFilters, "status" | "search" | "limit" | "cursor"
 
 function AcceptedCandidateCard({ application }: { application: CandidateApplication }) {
   const router = useRouter();
+  const { selectApplication } = useApplicantSelection();
   const detailQuery = useApplicationDetail(application.applicationId);
   const evaluationQuery = useEvaluation(application.applicationId);
   const ownershipQuery = useOwnership(application.applicationId);
@@ -61,6 +63,10 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
       actionLabel="View details"
       onActionClick={() => {
         router.push(`/applicants/${application.applicationId}?from=accepted`);
+      }}
+      secondaryActionLabel="View AI Summary"
+      onSecondaryActionClick={() => {
+        selectApplication(application.applicationId, "accepted");
       }}
       onClick={() => {
         router.push(`/applicants/${application.applicationId}?from=accepted`);
