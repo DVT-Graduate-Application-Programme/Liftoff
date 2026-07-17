@@ -94,19 +94,21 @@ public static class IngestEndpoints
 
             var result = await mediator.Send(command2, ct);
 
-            if(result is not null && !string.IsNullOrWhiteSpace(result.ApplicationId.ToString()))
+            if (result is not null && !string.IsNullOrWhiteSpace(result.ApplicationId.ToString()))
             {
                 // applciation created successfully
                 try
                 {
-                   await NotifyHiringAgent(result.ApplicationId);
+                    await NotifyHiringAgent(result.ApplicationId);
+                    // assign recruiter
+                    await recruiterAssignmentService.AssignRecruiterAsync(result.ApplicationId, ct);
                 }
                 catch (System.Exception)
                 {
-                    
+
                     throw;
                 }
-            
+
             }
 
             return Results.Accepted(value: result);
@@ -123,10 +125,8 @@ public static class IngestEndpoints
             }
         }
 
-        // assign recruiter
-        await recruiterAssignmentService.AssignRecruiterAsync(result.ApplicationId, ct);
 
-        return Results.Accepted(value: result);
+
     }
 
 
