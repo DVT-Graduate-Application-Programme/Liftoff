@@ -14,17 +14,20 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
     private readonly IGraphEmailService _graphEmailService;
     private readonly IAttachmentClassificationService _classificationService;
     private readonly IApplicationRecordRepository _repository;
+    private readonly IRecruiterAssignmentService _recruiterAssignmentService;
     private readonly ILogger<IngestApplicationHandler> _logger;
 
     public IngestApplicationHandler(
         IGraphEmailService graphEmailService,
         IAttachmentClassificationService classificationService,
         IApplicationRecordRepository repository,
+        IRecruiterAssignmentService recruiterAssignmentService,
         ILogger<IngestApplicationHandler> logger)
     {
         _graphEmailService = graphEmailService;
         _classificationService = classificationService;
         _repository = repository;
+        _recruiterAssignmentService = recruiterAssignmentService;
         _logger = logger;
     }
 
@@ -89,6 +92,9 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
             "ApplicationRecord saved for MessageId {MessageId} with Id {ApplicationId}.",
             request.MessageId,
             applicationRecord.Id);
+
+        // 4. Auto-assign a recruiter via round-robin
+        await _recruiterAssignmentService.AssignRecruiterAsync(applicationRecord.Id, cancellationToken);
 
         return true;
     }
