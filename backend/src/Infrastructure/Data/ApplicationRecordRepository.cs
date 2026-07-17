@@ -403,7 +403,11 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
                 a.ClaimedByRecruiterId,
                 a.ShortlistedByRecruiterId,
                 a.RecruiterRating,
-                a.CreatedAt
+                a.CreatedAt,
+                LatestEvaluation = a.HiringAgentEvaluations
+                    .OrderByDescending(e => e.ProcessedAt)
+                    .Select(e => new { e.InstitutionJson, e.CategoryScoresJson })
+                    .FirstOrDefault()
             })
             .ToListAsync(cancellationToken);
 
@@ -422,10 +426,49 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
                 ClaimedByRecruiterId = a.ClaimedByRecruiterId,
                 ShortlistedByRecruiterId = a.ShortlistedByRecruiterId,
                 RecruiterRating = a.RecruiterRating,
+                AcademicAverage = GetAcademicAverage(a.LatestEvaluation?.InstitutionJson, a.LatestEvaluation?.CategoryScoresJson),
                 CreatedAt = a.CreatedAt.UtcDateTime
             })
             .ToList();
     }
+
+    private static double? GetAcademicAverage(JsonDocument? instJson, JsonDocument? scoreJson)
+    {
+        if (instJson != null)
+        {
+            try
+            {
+                var root = instJson.RootElement;
+                if (root.TryGetProperty("academic_average", out var avgProp) && avgProp.TryGetDouble(out var val))
+                {
+                    return val;
+                }
+                if (root.TryGetProperty("academicAverage", out var avgPropCamel) && avgPropCamel.TryGetDouble(out var valCamel))
+                {
+                    return valCamel;
+                }
+            }
+            catch { }
+        }
+
+        if (scoreJson != null)
+        {
+            try
+            {
+                var root = scoreJson.RootElement;
+                if (root.TryGetProperty("education", out var eduProp) && 
+                    eduProp.TryGetProperty("score", out var scoreProp) && 
+                    scoreProp.TryGetDouble(out var val))
+                {
+                    return val;
+                }
+            }
+            catch { }
+        }
+
+        return null;
+    }
+
 
     public async Task<DashboardMetricsDto> GetDashboardMetricsAsync(CancellationToken cancellationToken = default)
     {
@@ -494,6 +537,37 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         applicationRecord.UpdatedAt = DateTimeOffset.UtcNow;
 
         await _dbContext.HiringAgentEvaluations.AddAsync(evaluation, cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> ResetEvaluationAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var applicationRecord = await _dbContext.ApplicationRecords
+            .Include(r => r.HiringAgentEvaluations)
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+
+        if (applicationRecord is null)
+        {
+            return false;
+        }
+
+        // Remove any existing evaluations
+        if (applicationRecord.HiringAgentEvaluations.Any())
+        {
+            _dbContext.HiringAgentEvaluations.RemoveRange(applicationRecord.HiringAgentEvaluations);
+        }
+
+        // Reset fields
+        applicationRecord.Tier = null;
+        applicationRecord.HardGatePassed = null;
+        applicationRecord.HardGateReason = null;
+        applicationRecord.HiringAgentTotalScore = null;
+        applicationRecord.HiringAgentExplanation = null;
+        applicationRecord.CvSummary = null;
+        applicationRecord.FlagsJson = null;
+        applicationRecord.Status = "PENDING";
+        applicationRecord.UpdatedAt = DateTimeOffset.UtcNow;
+
         return true;
     }
 

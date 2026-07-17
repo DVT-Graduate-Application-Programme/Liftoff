@@ -24,6 +24,7 @@ import {
   getStatusTone,
   formatDate,
   getRecruiterLabel,
+  parseEducationEvidence,
 } from "./candidate-list-utils";
 
 type Filters = Omit<ApplicationFilters, "search" | "limit" | "cursor">;
@@ -51,22 +52,22 @@ function AllCandidateListCard({
   onOpen: () => void;
 }) {
   const evaluationQuery = useEvaluation(application.applicationId);
-  const education = (() => {
-    const raw = evaluationQuery.data?.evidenceJson?.education.trim() || application.cvSummary;
-    const parts = raw.split(",").map((part) => part.trim()).filter(Boolean);
-    return {
-      degree: parts[0] ?? raw,
-      university: parts[1] ?? "",
-    };
-  })();
+  const education = parseEducationEvidence(
+    evaluationQuery.data?.evidenceJson?.education.trim() || application.cvSummary,
+  );
+
+  const academicAverage =
+    evaluationQuery.data?.institutionJson?.academic_average ??
+    evaluationQuery.data?.categoryScoresJson.education.score;
 
   return (
     <AllCandidateCard
       key={application.applicationId}
       name={application.candidateName}
-      institute={education.degree}
-      subtitle={education.university || undefined}
+      institute={education.degree || application.cvSummary}
+      subtitle={education.institution || undefined}
       systemScore={toScorePercent(application.hiringAgentTotalScore)}
+      academicAverage={academicAverage}
       statusLabel={getStatusLabel(application.currentStatus)}
       statusTone={getStatusTone(application.currentStatus)}
       reviewedAt={formatDate(application.createdAt)}
@@ -239,6 +240,7 @@ function AllCandidates() {
       },
     },
   ].filter(Boolean) as ActiveFilter[];
+
 
   const { selectApplication } = useApplicantSelection();
   const { setOpen } = useSidebar();

@@ -29,13 +29,26 @@ export const formatDate = (isoDate: string) =>
     year: "numeric",
   });
 
-export const toScorePercent = (score: number) => Math.round(score);
+export const toScorePercent = (score: number) => Math.round(score * 10) / 10;
 
 export const getRecruiterLabel = (application: CandidateApplication) =>
   application.shortlistedByRecruiterId ??
   application.claimedByRecruiterId ??
   application.ratedByRecruiterId ??
   "phindi@dvtsoftware.com";
+
+export function parseEducationEvidence(educationEvidence?: string | null) {
+  const parts = (educationEvidence ?? "")
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return {
+    degree: parts[0] ?? "",
+    institution: parts[1] ?? "",
+    average: parts[2] ?? "",
+  };
+}
 
 export type DateBucket = "today" | "thisWeek" | "lastWeek" | "older";
 

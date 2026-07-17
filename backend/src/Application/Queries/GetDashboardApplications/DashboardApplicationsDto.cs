@@ -14,5 +14,6 @@ public class DashboardApplicationDto
     public string? ClaimedByRecruiterId { get; set; }
     public string? ShortlistedByRecruiterId { get; set; }
     public int? RecruiterRating { get; set; }
+    public double? AcademicAverage { get; set; }
     public DateTime CreatedAt { get; set; }
 }
