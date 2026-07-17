@@ -139,11 +139,8 @@ export function ApplicantDetailsSidebar({
             {showNotesSection && applicantId ? (
               <div className="space-y-3 rounded-md border border-sidebar-border bg-sidebar-accent/20 p-5">
                 <div className="space-y-1">
-                  <p className="font-heading text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                  <p className="font-heading text-2xl font-semibold text-sidebar-foreground leading-tight">
                     Notes
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Recruiter notes recorded in the activity log for this accepted candidate.
                   </p>
                 </div>
                 {isLoadingNotes ? (
