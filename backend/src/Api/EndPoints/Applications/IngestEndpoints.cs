@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Routing;
 using System.Net.Http;
 using System.Net.Http.Json;
 using Microsoft.Graph.Models;
+using Application.Interfaces;
 using System.IO;
 using System.Linq;
 
@@ -32,6 +33,7 @@ public static class IngestEndpoints
         [FromForm] global::SendApplicationRequest request,
         HttpRequest httpRequest,
         MediatR.IMediator mediator,
+        IRecruiterAssignmentService recruiterAssignmentService,
         CancellationToken ct)
     {
         Stream? cvStream = null;
@@ -92,19 +94,21 @@ public static class IngestEndpoints
 
             var result = await mediator.Send(command2, ct);
 
-            if(result is not null && !string.IsNullOrWhiteSpace(result.ApplicationId.ToString()))
+            if (result is not null && !string.IsNullOrWhiteSpace(result.ApplicationId.ToString()))
             {
                 // applciation created successfully
                 try
                 {
-                   await NotifyHiringAgent(result.ApplicationId);
+                    await NotifyHiringAgent(result.ApplicationId);
+                    // assign recruiter
+                    await recruiterAssignmentService.AssignRecruiterAsync(result.ApplicationId, ct);
                 }
                 catch (System.Exception)
                 {
-                    
+
                     throw;
                 }
-            
+
             }
 
             return Results.Accepted(value: result);
@@ -120,6 +124,9 @@ public static class IngestEndpoints
                 await transcriptStream.DisposeAsync();
             }
         }
+
+
+
     }
 
 

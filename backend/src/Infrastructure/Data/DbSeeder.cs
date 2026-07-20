@@ -23,6 +23,10 @@ public static class DbSeeder
     private static readonly Guid App11Id = new("b0000000-0000-0000-0000-000000000011");
     private static readonly Guid App12Id = new("b0000000-0000-0000-0000-000000000012");
 
+    // Fixed Recruiter GUIDs — stable across re-seeds
+    private static readonly Guid Recruiter1Id = new("c1000000-0000-0000-0000-000000000001");
+    private static readonly Guid Recruiter2Id = new("c2000000-0000-0000-0000-000000000002");
+
     private static readonly Guid Eval1Id  = new("e1000000-0000-0000-0000-000000000001");
     private static readonly Guid Eval2Id  = new("e2000000-0000-0000-0000-000000000002");
     private static readonly Guid Eval3Id  = new("e3000000-0000-0000-0000-000000000003");
@@ -47,6 +51,16 @@ public static class DbSeeder
 
         logger.LogInformation("[DbSeeder] Truncating existing data to re-seed POC data…");
         await db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"ApplicationRecords\" CASCADE;");
+
+        // Seed recruiters (idempotent — skip if already present)
+        logger.LogInformation("[DbSeeder] Seeding recruiters…");
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO public."Recruiters" ("Id", "IdentityId", "FirstName", "LastName", "Email", "IsActive", "CreatedAt", "UpdatedAt")
+            VALUES
+                ('c1000000-0000-0000-0000-000000000001', 'naledi.dlamini@dvt.co.za', 'Naledi',  'Dlamini', 'naledi.dlamini@dvt.co.za',  TRUE, NOW(), NOW()),
+                ('c2000000-0000-0000-0000-000000000002', 'sipho.ndlovu@dvt.co.za',     'Sipho',   'Ndlovu',  'sipho.ndlovu@dvt.co.za',    TRUE, NOW(), NOW())
+            ON CONFLICT ("IdentityId") DO NOTHING;
+            """);
 
         logger.LogInformation("[DbSeeder] Seeding POC data…");
 

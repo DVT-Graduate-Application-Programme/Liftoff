@@ -131,3 +131,5 @@ public class RecruiterActionLogDto
     public short? RatingValue { get; set; }
     public DateTimeOffset ActionedAt { get; set; }
 }
+
+
