@@ -6,6 +6,8 @@ import type { ApplicationFilters } from "@/types/api";
 import { useApplicationDetail } from "@/hooks/use-application-detail";
 import { useEvaluation } from "@/hooks/use-evaluation";
 import { useOwnership } from "@/hooks/use-ownership";
+import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
+import { useSidebar } from "@/components/ui/sidebar";
 import ApplicantCard from "@/components/applicant-card/applicant-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ApplicantList } from "./applicant-list";
@@ -17,6 +19,8 @@ type Filters = Omit<ApplicationFilters, "status" | "search" | "limit" | "cursor"
 
 function AcceptedCandidateCard({ application }: { application: CandidateApplication }) {
   const router = useRouter();
+  const { selectApplication } = useApplicantSelection();
+  const { setOpen, setOpenMobile } = useSidebar();
   const detailQuery = useApplicationDetail(application.applicationId);
   const evaluationQuery = useEvaluation(application.applicationId);
   const ownershipQuery = useOwnership(application.applicationId);
@@ -53,15 +57,24 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
       scoreLabel="System Score"
       secondaryScoreLabel="Academic Avg"
       showStatus={false}
+      statusTone="neutral"
       showReviewedAt
       reviewedAt={formatDate(reviewedAt)}
       createdAt={application.createdAt}
       wrapInstitute
       wrapReviewedAt
-      actionLabel="View details"
+      actionLabel="View AI Summary"
+      actionVariant="default"
       onActionClick={() => {
+        selectApplication(application.applicationId, "accepted");
+        setOpen(true);
+        setOpenMobile(true);
+      }}
+      secondaryActionLabel="View details"
+      onSecondaryActionClick={() => {
         router.push(`/applicants/${application.applicationId}?from=accepted`);
       }}
+      stackActions
       onClick={() => {
         router.push(`/applicants/${application.applicationId}?from=accepted`);
       }}
