@@ -159,7 +159,11 @@ export default function PendingCandidateCard({
             type="button"
             variant="secondary"
             size="sm"
-            className="w-30 justify-center gap-1 text-xs"
+            className={cn(
+              "w-30 justify-center gap-1 text-xs",
+              isSecondaryActionDisabled &&
+                "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
+            )}
             disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
             onClick={(event) => {
               event.stopPropagation();
