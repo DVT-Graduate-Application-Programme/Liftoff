@@ -11,6 +11,7 @@ function toQueryString(filters?: ApplicationFilters) {
   if (filters.tier) params.set("tier", filters.tier);
   if (filters.hardGatePassed !== undefined) params.set("hardGatePassed", String(filters.hardGatePassed));
   if (filters.claimed !== undefined) params.set("claimed", String(filters.claimed));
+  if (filters.recruiterIdentity) params.set("recruiterIdentity", filters.recruiterIdentity);
   if (filters.shortlisted !== undefined) params.set("shortlisted", String(filters.shortlisted));
   if (filters.dateFrom) params.set("dateFrom", filters.dateFrom);
   if (filters.dateTo) params.set("dateTo", filters.dateTo);
