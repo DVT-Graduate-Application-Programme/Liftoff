@@ -18,6 +18,7 @@ import {
   RefreshCw,
   FileText,
   History,
+  X,
 } from "lucide-react";
 import {
   Card,
@@ -43,7 +44,6 @@ import { useApplicant } from "@/hooks/use-applicant";
 import { useEvaluation } from "@/hooks/use-evaluation";
 import { useOwnership } from "@/hooks/use-ownership";
 import { useRateApplication } from "@/hooks/use-rate-application";
-import { useShortlistApplication } from "@/hooks/use-shortlist-application";
 import { useAcceptApplication } from "@/hooks/use-accept-application";
 import { useRejectApplication } from "@/hooks/use-reject-application";
 import { useReevaluateApplication } from "@/hooks/use-reevaluate-application";
@@ -254,11 +254,10 @@ interface RateResponse {
   ratedAt: string | null;
 }
 
-function CandidateReview({ applicationId }: { applicationId: string }) {
+function CandidateReview({ applicationId, currentStatus }: { applicationId: string; currentStatus?: string }) {
   const queryClient = useQueryClient();
   const ownershipQuery = useOwnership(applicationId);
   const rateMutation = useRateApplication(applicationId);
-  const shortlistMutation = useShortlistApplication(applicationId);
   const acceptMutation = useAcceptApplication(applicationId);
   const rejectMutation = useRejectApplication(applicationId);
 
@@ -267,7 +266,9 @@ function CandidateReview({ applicationId }: { applicationId: string }) {
 
   const rating = ratingOverride ?? ownershipQuery.data?.recruiterRating ?? 0;
   const notes = notesOverride ?? ownershipQuery.data?.recruiterRatingNote ?? "";
-  const shortlistedAt = ownershipQuery.data?.shortlistedAt;
+  const statusUpper = currentStatus?.toUpperCase() ?? "";
+  const isShortlisted = Boolean(ownershipQuery.data?.shortlistedAt) || /SHORTLIST|ACCEPT|HIRE/.test(statusUpper);
+  const isRejected = /REJECT/.test(statusUpper);
 
   // Mutation to save notes only
   const notesMutation = useMutation({
@@ -292,44 +293,54 @@ function CandidateReview({ applicationId }: { applicationId: string }) {
     <Card className="shrink-0">
       <CardHeader>
         <CardTitle>Candidate Review</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Decide, rate, and leave notes for this applicant
+        </p>
       </CardHeader>
 
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <Label>Rating</Label>
+          <Label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            Rating
+          </Label>
           <StarRatingInput value={rating} onChange={setRatingOverride} disabled={ownershipQuery.isLoading} />
         </div>
 
         <div className="flex flex-col gap-2">
-          <Label htmlFor="notes">Notes</Label>
+          <div className="flex items-center justify-between">
+            <Label
+              htmlFor="notes"
+              className="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+            >
+              Notes
+            </Label>
+            {isNotesChanged && (
+              <button
+                type="button"
+                disabled={notesMutation.isPending}
+                onClick={() => { notesMutation.mutate(notes); }}
+                className="text-sm font-medium text-primary hover:underline disabled:opacity-50"
+              >
+                {notesMutation.isPending ? "Saving..." : "Save"}
+              </button>
+            )}
+          </div>
           <Textarea
             id="notes"
-            placeholder="Add any additional notes..."
+            placeholder="Add notes about this candidate..."
             value={notes}
             onChange={(e) => { setNotesOverride(e.target.value); }}
             disabled={ownershipQuery.isLoading}
           />
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={shortlistMutation.isPending || !!shortlistedAt}
-              onClick={() => {
-                shortlistMutation.mutate(undefined, {
-                  onSuccess: () => {
-                    void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
-                  }
-                });
-              }}
-            >
-              {shortlistedAt ? "Shortlisted" : shortlistMutation.isPending ? "Shortlisting..." : "Shortlist"}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
+        <div className="flex flex-col gap-2 pt-2">
+          <Label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            Decision
+          </Label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
               disabled={acceptMutation.isPending}
               onClick={() => {
                 acceptMutation.mutate(undefined, {
@@ -338,12 +349,18 @@ function CandidateReview({ applicationId }: { applicationId: string }) {
                   }
                 });
               }}
+              className={cn(
+                "flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
+                isShortlisted
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-input hover:bg-accent hover:text-white",
+              )}
             >
-              {acceptMutation.isPending ? "Accepting..." : "Accept"}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
+              <Star className={cn("size-4", isShortlisted && "fill-primary")} />
+              {acceptMutation.isPending ? "Shortlisting..." : "Shortlist"}
+            </button>
+            <button
+              type="button"
               disabled={rejectMutation.isPending}
               onClick={() => {
                 rejectMutation.mutate(undefined, {
@@ -352,40 +369,37 @@ function CandidateReview({ applicationId }: { applicationId: string }) {
                   }
                 });
               }}
+              className={cn(
+                "flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
+                isRejected
+                  ? "border-destructive bg-destructive/10 text-destructive"
+                  : "border-input hover:bg-destructive hover:text-white",
+              )}
             >
+              <X className="size-4" />
               {rejectMutation.isPending ? "Rejecting..." : "Reject"}
-            </Button>
-          </div>
-
-          <div className="flex gap-2">
-            {isNotesChanged && (
-              <Button
-                variant="outline"
-                disabled={notesMutation.isPending}
-                onClick={() => { notesMutation.mutate(notes); }}
-              >
-                {notesMutation.isPending ? "Saving..." : "Save Notes"}
-              </Button>
-            )}
-            <Button
-              disabled={rating === 0 || rateMutation.isPending}
-              onClick={() => {
-                rateMutation.mutate(
-                  { rating, notes: notes.length > 0 ? notes : undefined },
-                  {
-                    onSuccess: () => {
-                      setRatingOverride(null);
-                      setNotesOverride(null);
-                      void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
-                    }
-                  }
-                );
-              }}
-            >
-              {rateMutation.isPending ? "Submitting..." : "Submit Rating"}
-            </Button>
+            </button>
           </div>
         </div>
+
+        <Button
+          className="h-11 w-full text-base font-medium"
+          disabled={rating === 0 || rateMutation.isPending}
+          onClick={() => {
+            rateMutation.mutate(
+              { rating, notes: notes.length > 0 ? notes : undefined },
+              {
+                onSuccess: () => {
+                  setRatingOverride(null);
+                  setNotesOverride(null);
+                  void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
+                }
+              }
+            );
+          }}
+        >
+          {rateMutation.isPending ? "Submitting..." : "Submit Rating"}
+        </Button>
       </CardContent>
     </Card>
   );
@@ -710,7 +724,7 @@ export default function DetailedApplicantInfo() {
           </section>
 
           {/* Candidate Rating section*/}
-          <CandidateReview applicationId={applicantId} />
+          <CandidateReview applicationId={applicantId} currentStatus={detailQuery.data?.currentStatus} />
         </div>
       </div>
 
