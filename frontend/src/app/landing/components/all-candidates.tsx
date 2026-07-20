@@ -15,6 +15,7 @@ import {
   ACTIVE_RECRUITER_ID,
   useClaimApplication,
 } from "@/hooks/use-claim-application";
+import { useRecruiters } from "@/hooks/use-recruiters";
 import { CandidateApplication } from "@/types/candidate";
 import AllCandidateCard from "@/components/applicant-card/all-candidate-card";
 import { useEvaluation } from "@/hooks/use-evaluation";
@@ -94,29 +95,32 @@ function AllCandidates() {
   const [status, setStatus] = useState("");
   const [minScore, setMinScore] = useState("");
   const [hardGate, setHardGate] = useState("all");
-  const [claimed, setClaimed] = useState("all");
+  const [ownership, setOwnership] = useState("all");
   const [dateRange, setDateRange] = useState("all");
   const [sort, setSort] = useState<SortOption>("date_desc");
+
+  const recruitersQuery = useRecruiters();
 
   const filters = useMemo(() => {
     const next: Filters = { sort };
     if (status) next.status = status;
     if (minScore) next.minScore = Number(minScore);
     if (hardGate !== "all") next.hardGatePassed = hardGate === "passed";
-    if (claimed !== "all") next.claimed = claimed === "claimed";
+    if (ownership === "unclaimed") next.claimed = false;
+    else if (ownership !== "all") next.recruiterIdentity = ownership;
     if (dateRange !== "all") {
       const from = new Date();
       from.setDate(from.getDate() - Number(dateRange));
       next.dateFrom = from.toISOString();
     }
     return next;
-  }, [claimed, dateRange, hardGate, minScore, sort, status]);
+  }, [dateRange, hardGate, minScore, ownership, sort, status]);
 
   const clearFilters = () => {
     setStatus("");
     setMinScore("");
     setHardGate("all");
-    setClaimed("all");
+    setOwnership("all");
     setDateRange("all");
   };
 
@@ -149,15 +153,16 @@ function AllCandidates() {
       ],
     },
     {
-      key: "claimed",
+      key: "ownership",
       label: "Ownership",
-      value: claimed,
-      onChange: setClaimed,
+      value: ownership,
+      onChange: setOwnership,
       options: [
         ["all", "All candidates"],
-        ["rose@dvtsoftware.com", "Rose"],
-        ["phindi@dvtsoftware.com", "Phindi"],
-        ["recruiter-123", "Recruiter 123"],
+        ["unclaimed", "Unclaimed"],
+        ...(recruitersQuery.data ?? [])
+          .filter((recruiter) => recruiter.isActive)
+          .map((recruiter): [string, string] => [recruiter.email, recruiter.fullName]),
       ],
     },
     {
@@ -192,10 +197,13 @@ function AllCandidates() {
         setHardGate("all");
       },
     },
-    claimed !== "all" && {
-      label: claimed === "claimed" ? "Claimed" : "Unclaimed",
+    ownership !== "all" && {
+      label:
+        ownership === "unclaimed"
+          ? "Unclaimed"
+          : `Owner: ${recruitersQuery.data?.find((recruiter) => recruiter.email === ownership)?.fullName ?? ownership}`,
       onClear: () => {
-        setClaimed("all");
+        setOwnership("all");
       },
     },
     dateRange !== "all" && {
