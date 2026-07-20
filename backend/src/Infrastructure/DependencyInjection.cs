@@ -26,6 +26,8 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString));
 
         services.AddScoped<IApplicationRecordRepository, ApplicationRecordRepository>();
+        services.AddScoped<IRecruiterRepository, RecruiterRepository>();
+        services.AddScoped<IRecruiterAssignmentService, RecruiterAssignmentService>();
         services.AddScoped<IGraphEmailService, GraphEmailService>();
         services.AddScoped<IAttachmentRetriever, UrlAttachmentRetriever>();
         return services;

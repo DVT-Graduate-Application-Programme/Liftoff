@@ -8,10 +8,14 @@ public class IngestManualApplicationHandler
     : IRequestHandler<IngestManualApplicationCommand, IngestManualApplicationResult>
 {
     private readonly IApplicationRecordRepository _repository;
+    private readonly IRecruiterAssignmentService _recruiterAssignmentService;
 
-    public IngestManualApplicationHandler(IApplicationRecordRepository repository)
+    public IngestManualApplicationHandler(
+        IApplicationRecordRepository repository,
+        IRecruiterAssignmentService recruiterAssignmentService)
     {
         _repository = repository;
+        _recruiterAssignmentService = recruiterAssignmentService;
     }
 
     public async Task<IngestManualApplicationResult> Handle(
@@ -32,6 +36,9 @@ public class IngestManualApplicationHandler
         var existingRecord = await _repository.GetByEmailMessageIdAsync(emailMessageId, cancellationToken);
         if (existingRecord is not null)
         {
+            // Ensure the existing application is assigned to a recruiter
+            await _recruiterAssignmentService.AssignRecruiterAsync(existingRecord.Id, cancellationToken);
+
             return new IngestManualApplicationResult
             {
                 ApplicationId = existingRecord.Id,
@@ -54,6 +61,9 @@ public class IngestManualApplicationHandler
 
         await _repository.AddAsync(applicationRecord, cancellationToken);
         await _repository.SaveChangesAsync(cancellationToken);
+
+        // Auto-assign a recruiter via round-robin
+        await _recruiterAssignmentService.AssignRecruiterAsync(applicationRecord.Id, cancellationToken);
 
         return new IngestManualApplicationResult
         {
