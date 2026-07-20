@@ -43,7 +43,7 @@ export function ApplicantDetailsSidebar({
     const actionType = log.actionType.toUpperCase();
     return (actionType === "NOTES" || actionType === "RATING") && Boolean(log.reason);
   });
-  const latestNote = notes[0] ?? null;
+  const latestNote = notes.at(0) ?? null;
   const scoreTotal = categoryScores
     ? SCORE_CATEGORIES.reduce(
         (total, { key }) => total + (categoryScores[key]?.score ?? 0),
