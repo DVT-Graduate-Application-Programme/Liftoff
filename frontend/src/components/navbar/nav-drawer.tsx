@@ -44,8 +44,21 @@ export function NavDrawer({
               />
             </div>
           </div>
-          <div className="mt-auto pt-3">
+          <div className="mt-auto pt-3 flex flex-col gap-3">
             <Separator />
+            <div className="flex items-center gap-3 px-2">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted">
+                <img
+                  src="https://github.com/shadcn.png"
+                  alt="User Avatar"
+                  className="aspect-square h-full w-full object-cover"
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium leading-none">Phindile</span>
+                <span className="text-xs text-muted-foreground mt-1.5">Phindi@DVTsoftware.com</span>
+              </div>
+            </div>
             <LogoutButton />
           </div>
         </div>
