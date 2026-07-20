@@ -12,10 +12,14 @@ namespace Infrastructure.Data;
 public class ApplicationRecordRepository : IApplicationRecordRepository
 {
     private readonly GradRecruitmentDbContext _dbContext;
+    private readonly IApplicationEventService _events;
 
-    public ApplicationRecordRepository(GradRecruitmentDbContext dbContext)
+    public ApplicationRecordRepository(
+        GradRecruitmentDbContext dbContext,
+        IApplicationEventService events)
     {
         _dbContext = dbContext;
+        _events = events;
     }
 
     public async Task<List<ApplicationRecord>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -145,6 +149,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             ActionedAt = now
         }, cancellationToken);
 
+        _events.PublishOwnershipChanged(id, "CLAIM");
+
         return new ApplicationOwnershipClaim
         {
             ClaimedByRecruiterId = recruiterIdentity,
@@ -186,6 +192,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             ActionedAt = now
         }, cancellationToken);
 
+        _events.PublishOwnershipChanged(id, "SHORTLIST");
+
         return new ApplicationOwnershipShortlist
         {
             ShortlistedByRecruiterId = recruiterIdentity,
@@ -226,6 +234,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             ActionedAt = now
         }, cancellationToken);
 
+        _events.PublishOwnershipChanged(id, newStatus);
+
         return new ApplicationStatusUpdate
         {
             ActionedByRecruiterId = recruiterIdentity,
@@ -261,6 +271,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             ActionedAt = now
         }, cancellationToken);
 
+        _events.PublishOwnershipChanged(id, "RATING");
+
         return new ApplicationRatingUpdate
         {
             RatedByRecruiterId = recruiterIdentity,
@@ -289,6 +301,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             Reason = notes,
             ActionedAt = now
         }, cancellationToken);
+
+        _events.PublishOwnershipChanged(id, "NOTES");
 
         return new ApplicationRatingUpdate
         {
@@ -502,6 +516,7 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
     public async Task AddAsync(ApplicationRecord record, CancellationToken cancellationToken = default)
     {
         await _dbContext.ApplicationRecords.AddAsync(record, cancellationToken);
+        _events.PublishApplicationIngested(record.Id);
     }
 
     public async Task<bool> AddEvaluationAsync(
@@ -537,6 +552,7 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         applicationRecord.UpdatedAt = DateTimeOffset.UtcNow;
 
         await _dbContext.HiringAgentEvaluations.AddAsync(evaluation, cancellationToken);
+        _events.PublishEvaluationSaved(applicationId);
         return true;
     }
 
@@ -568,6 +584,7 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         applicationRecord.Status = "PENDING";
         applicationRecord.UpdatedAt = DateTimeOffset.UtcNow;
 
+        _events.PublishEvaluationReset(id);
         return true;
     }
 
