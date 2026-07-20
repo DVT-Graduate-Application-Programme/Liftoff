@@ -77,6 +77,8 @@ Infrastructure.DependencyInjection.AddInfrastructure(builder.Services, builder.C
 
 var app = builder.Build();
 
+app.UseSerilogRequestLogging();
+
 await GradRecruitmentSchemaInitializer.EnsureSchemaAsync(app.Services);
 
 if (app.Environment.IsDevelopment())
