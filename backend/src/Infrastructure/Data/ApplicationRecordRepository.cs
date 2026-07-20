@@ -594,4 +594,24 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             .Select(flag => flag.GetString()!)
             .ToList();
     }
+
+    public Task<List<Recruiter>> GetRecruitersAsync(CancellationToken cancellationToken = default)
+    {
+        return _dbContext.Recruiters
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task AddRecruiterAsync(RecruiterPostDto recruiter, CancellationToken cancellationToken = default)
+    {
+        var recruiterEntity = new Recruiter
+        {
+            FirstName = recruiter.FirstName,
+            LastName = recruiter.LastName,
+            Email = recruiter.Email,
+            IdentityId = recruiter.Email
+        };
+
+        return _dbContext.Recruiters.AddAsync(recruiterEntity, cancellationToken).AsTask();
+    }
 }
