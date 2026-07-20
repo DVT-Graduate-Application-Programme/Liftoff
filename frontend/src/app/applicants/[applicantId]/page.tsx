@@ -44,7 +44,7 @@ import { useApplicant } from "@/hooks/use-applicant";
 import { useEvaluation } from "@/hooks/use-evaluation";
 import { useOwnership } from "@/hooks/use-ownership";
 import { useRateApplication } from "@/hooks/use-rate-application";
-import { useAcceptApplication } from "@/hooks/use-accept-application";
+import { useShortlistApplication } from "@/hooks/use-shortlist-application";
 import { useRejectApplication } from "@/hooks/use-reject-application";
 import { useReevaluateApplication } from "@/hooks/use-reevaluate-application";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
@@ -258,7 +258,7 @@ function CandidateReview({ applicationId, currentStatus }: { applicationId: stri
   const queryClient = useQueryClient();
   const ownershipQuery = useOwnership(applicationId);
   const rateMutation = useRateApplication(applicationId);
-  const acceptMutation = useAcceptApplication(applicationId);
+  const shortlistMutation = useShortlistApplication(applicationId);
   const rejectMutation = useRejectApplication(applicationId);
 
   const [ratingOverride, setRatingOverride] = useState<number | null>(null);
@@ -341,9 +341,9 @@ function CandidateReview({ applicationId, currentStatus }: { applicationId: stri
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
-              disabled={acceptMutation.isPending}
+              disabled={shortlistMutation.isPending}
               onClick={() => {
-                acceptMutation.mutate(undefined, {
+                shortlistMutation.mutate(undefined, {
                   onSuccess: () => {
                     void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
                   }
@@ -357,7 +357,7 @@ function CandidateReview({ applicationId, currentStatus }: { applicationId: stri
               )}
             >
               <Star className={cn("size-4", isShortlisted && "fill-primary")} />
-              {acceptMutation.isPending ? "Shortlisting..." : "Shortlist"}
+              {shortlistMutation.isPending ? "Shortlisting..." : "Shortlist"}
             </button>
             <button
               type="button"
