@@ -47,9 +47,9 @@ services:
       Ollama__BaseUrl: "http://host.docker.internal:11434"
       POSTGRES_HOST: db
       POSTGRES_PORT: "5432"
-      # SSE: tell the backend where to POST change notifications.
-      # When the frontend runs in Docker (docker compose up) use the service name.
-      # When the frontend runs locally (npm run dev) comment the line above and use:
+      # SSE: URL where the backend POSTs data-change notifications.
+      # frontend service name resolves correctly inside the Docker network.
+      # To run the frontend locally with npm run dev instead, swap this for:
       #   NOTIFICATIONS__NEXTJS__WEBHOOKURL: "http://host.docker.internal:3000/api/internal/notify"
       NOTIFICATIONS__NEXTJS__WEBHOOKURL: "http://frontend:3000/api/internal/notify"
     ports:
