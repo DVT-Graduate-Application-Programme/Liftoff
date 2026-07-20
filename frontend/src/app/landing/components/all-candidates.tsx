@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSession } from "next-auth/react";
 import type { ApplicationFilters } from "@/types/api";
 import { ApplicantList } from "./applicant-list";
 import {
@@ -25,6 +26,7 @@ import {
   formatDate,
   getRecruiterLabel,
   parseEducationEvidence,
+  getDisplayStatus,
 } from "./candidate-list-utils";
 
 type Filters = Omit<ApplicationFilters, "search" | "limit" | "cursor">;
@@ -59,6 +61,7 @@ function AllCandidateListCard({
   const academicAverage =
     evaluationQuery.data?.institutionJson?.academic_average ??
     evaluationQuery.data?.categoryScoresJson.education.score;
+  const displayStatus = getDisplayStatus(application);
 
   if (application.currentStatus !== "shortlisted") {
     return (
@@ -69,8 +72,8 @@ function AllCandidateListCard({
         subtitle={education.institution || undefined}
         systemScore={toScorePercent(application.hiringAgentTotalScore)}
         academicAverage={academicAverage}
-        statusLabel={getStatusLabel(application.currentStatus)}
-        statusTone={getStatusTone(application.currentStatus)}
+        statusLabel={getStatusLabel(displayStatus)}
+        statusTone={getStatusTone(displayStatus)}
         reviewedAt={formatDate(application.createdAt)}
         showReviewedAt={false}
         createdAt={application.createdAt}
@@ -90,6 +93,8 @@ function AllCandidateListCard({
 }
 
 function AllCandidates() {
+  const { data: session } = useSession();
+  const recruiterIdentity = session?.user?.email ?? ACTIVE_RECRUITER_ID;
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [status, setStatus] = useState("");
   const [minScore, setMinScore] = useState("");
@@ -156,7 +161,7 @@ function AllCandidates() {
       options: [
         ["all", "All candidates"],
         ["rose@dvtsoftware.com", "Rose"],
-        ["phindi@dvtsoftware.com", "Phindi"],
+        [recruiterIdentity, "Current recruiter"],
         ["recruiter-123", "Recruiter 123"],
       ],
     },
@@ -234,7 +239,7 @@ function AllCandidates() {
         enableClaim
         renderCard={(application: CandidateApplication) => {
           const isClaimedByActiveRecruiter =
-            application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
+            application.claimedByRecruiterId === recruiterIdentity;
           const isClaiming =
             claimMutation.isPending &&
             claimMutation.variables === application.applicationId;
