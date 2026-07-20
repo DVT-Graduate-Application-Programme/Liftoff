@@ -197,7 +197,7 @@ public static class DbSeeder
             HiringAgentTotalScore = 75.0m,
             HiringAgentExplanation = "Well-rounded candidate with solid GitHub presence, diverse projects, and relevant work history.",
             CvSummary = "BSc (Hons) Computer Science (2:1, University of Manchester). Weather-tracking app, library management system. Customer Assistant at Tesco (2 yrs). Personal portfolio website.",
-            ShortlistedByRecruiterId = "recruiter-seed-001",
+            ShortlistedByRecruiterId = "Rose@dvtsoftware.com",
             ShortlistedAt = DateTimeOffset.UtcNow.AddDays(-5),
             CreatedAt = DateTimeOffset.UtcNow.AddDays(-6),
             UpdatedAt = DateTimeOffset.UtcNow.AddDays(-5),
@@ -257,7 +257,7 @@ public static class DbSeeder
             HiringAgentTotalScore = 91.0m,
             HiringAgentExplanation = "Exceptional full-stack candidate. Ships production-grade React + Node.js apps, has two SWE internships, and maintains an open-source React form library with thousands of weekly downloads.",
             CvSummary = "BSc (Hons) Computer Science, University of Edinburgh, First Class. Full-stack intern at Monzo and Sky. Maintains 'react-snap-forms' npm package (8k weekly downloads). Final year project: real-time collaborative whiteboard.",
-            ShortlistedByRecruiterId = "recruiter-seed-001",
+            ShortlistedByRecruiterId = "Rose@dvtsoftware.com",
             ShortlistedAt = DateTimeOffset.UtcNow.AddDays(-4),
             CreatedAt = DateTimeOffset.UtcNow.AddDays(-12),
             UpdatedAt = DateTimeOffset.UtcNow.AddDays(-4),
@@ -434,7 +434,7 @@ public static class DbSeeder
             HiringAgentTotalScore = 80.0m,
             HiringAgentExplanation = "Strong full-stack profile with React/Spring Boot experience, a 6-month ThoughtWorks internship, and well-tested deployed projects. Comfortable across the entire stack.",
             CvSummary = "BSc (Hons) Software Engineering, University of Warwick, First Class. Full-stack intern at ThoughtWorks. Built a job board platform (React + Spring Boot + PostgreSQL, deployed on Heroku). Active OSS contributor.",
-            ShortlistedByRecruiterId = "recruiter-seed-002",
+            ShortlistedByRecruiterId = "Rose@dvtsoftware.com",
             ShortlistedAt = DateTimeOffset.UtcNow.AddDays(-3),
             CreatedAt = DateTimeOffset.UtcNow.AddDays(-11),
             UpdatedAt = DateTimeOffset.UtcNow.AddDays(-3),
@@ -781,10 +781,10 @@ public static class DbSeeder
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "NOTES", Reason = "Left a voicemail to schedule technical round.", ActionedAt = DateTimeOffset.UtcNow.AddHours(-5) },
             
             // App3: Shortlisted
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "SHORTLIST", PreviousStatus = "Pending", NewStatus = "Shortlisted", Reason = "Strong candidate, advancing to interview.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "SHORTLIST", PreviousStatus = "Pending", NewStatus = "Shortlisted", Reason = "Strong candidate, advancing to interview.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
 
             // App4: Shortlisted (was "forwarded" — mapped to Shortlisted)
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, RecruiterIdentity = "manager-seed-002", ActionType = "SHORTLIST", PreviousStatus = "Pending", NewStatus = "Shortlisted", Reason = "Forwarding to engineering lead for review.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-3) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "SHORTLIST", PreviousStatus = "Pending", NewStatus = "Shortlisted", Reason = "Forwarding to engineering lead for review.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-3) },
 
             // App6: Rejected
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App6Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "REJECT", PreviousStatus = "Pending", NewStatus = "Rejected", Reason = "Lacks required technical skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-1) },
@@ -794,13 +794,13 @@ public static class DbSeeder
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "SHORTLIST", PreviousStatus = "Pending", NewStatus = "Shortlisted", Reason = "Passed initial screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
             
             // App10: Rejected
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App10Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "Pending", NewStatus = "Rejected", Reason = "Does not meet baseline experience.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-7) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App10Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "REJECT", PreviousStatus = "Pending", NewStatus = "Rejected", Reason = "Does not meet baseline experience.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-7) },
             
             // App11: Rejected
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App11Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "Pending", NewStatus = "Rejected", Reason = "Failed automated technical assessment.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-6) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App11Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "REJECT", PreviousStatus = "Pending", NewStatus = "Rejected", Reason = "Failed automated technical assessment.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-6) },
             
             // App12: Rejected
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App12Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "Pending", NewStatus = "Rejected", Reason = "Poor cultural fit identified in pre-screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App12Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "REJECT", PreviousStatus = "Pending", NewStatus = "Rejected", Reason = "Poor cultural fit identified in pre-screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
         };
 
         db.RecruiterActions.AddRange(actions);
