@@ -1,13 +1,43 @@
 using Api.EndPoints.Applications;
 using Api.Internal;
+
 using Application.Interfaces;
+
 using Backend.Application.Interfaces;
 using Backend.Application.Queries.GetResumes;
 using Backend.Infrastructure.Storage;
+
 using Infrastructure.Data;
+
 using Scalar.AspNetCore;
 
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Use LOG_DIRECTORY if it's provided, otherwise default to backend/logs.
+var backendRoot = Path.GetFullPath(
+    Path.Combine(builder.Environment.ContentRootPath, "..", ".."));
+
+var logDirectory = Environment.GetEnvironmentVariable("LOG_DIRECTORY")
+    ?? Path.Combine(backendRoot, "logs");
+
+Directory.CreateDirectory(logDirectory);
+
+var logFilePath = Path.Combine(logDirectory, "liftoff-.log");
+
+builder.Host.UseSerilog((context, services, loggerConfiguration) =>
+{
+    loggerConfiguration
+        .ReadFrom.Configuration(context.Configuration)
+        .Enrich.FromLogContext()
+        .WriteTo.Console()
+        .WriteTo.File(
+            path: logFilePath,
+            rollingInterval: RollingInterval.Day,
+            retainedFileCountLimit: 7,
+            shared: true);
+});
 
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
@@ -30,7 +60,7 @@ builder.Services.AddScoped<IApplicationEventService, ApplicationWebhookNotifier>
 
 // ── Graph / AI ingestion pipeline – not needed for POC ──
 builder.Services.AddScoped<IResumeStorage, LocalResumeStorage>();
- builder.Services.AddScoped<IngestApplicationHandler>();
+builder.Services.AddScoped<IngestApplicationHandler>();
 
 builder.Services.AddMediatR(cfg =>
 {
