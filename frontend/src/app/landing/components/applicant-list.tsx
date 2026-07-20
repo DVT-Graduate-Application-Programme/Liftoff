@@ -26,6 +26,7 @@ import {
   formatDate,
   getRecruiterLabel,
   groupApplicationsByDate,
+  getDisplayStatus,
   getStatusLabel,
   getStatusTone,
   parseEducationEvidence,
@@ -253,6 +254,7 @@ export function ApplicantList({
 
     const { isClaimedByActiveRecruiter, isClaiming } =
       claimableApplication(application);
+    const displayStatus = getDisplayStatus(application);
     const commonProps = {
       name: application.candidateName,
       institute: application.cvSummary,
@@ -261,6 +263,7 @@ export function ApplicantList({
       showReviewedAt,
       createdAt: application.createdAt,
       recruiterName: getRecruiterLabel(application),
+      statusLabel: getStatusLabel(displayStatus),
       ...(enableClaim
         ? {
             secondaryActionLabel: isClaimedByActiveRecruiter
@@ -287,8 +290,7 @@ export function ApplicantList({
     return (
       <ApplicantCard
         key={application.applicationId}
-        statusLabel={getStatusLabel(application.currentStatus)}
-        statusTone={getStatusTone(application.currentStatus)}
+        statusTone={getStatusTone(displayStatus)}
         {...commonProps}
       />
     );
