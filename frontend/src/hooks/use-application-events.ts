@@ -31,35 +31,35 @@ export function useApplicationEvents() {
       switch (event) {
         case "application-ingested":
           // A new application arrived — invalidate every variant of the list.
-          queryClient.invalidateQueries({ queryKey: ["applications"] });
+          void queryClient.invalidateQueries({ queryKey: ["applications"] });
           break;
 
         case "evaluation-saved":
         case "evaluation-reset":
           // Evaluation data changed — refresh the detail panel and the eval card.
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: queryKeys.applicationDetail(applicationId),
           });
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: queryKeys.evaluation(applicationId),
           });
           // Also bump the list so status/tier/score columns update.
-          queryClient.invalidateQueries({ queryKey: ["applications"] });
+          void queryClient.invalidateQueries({ queryKey: ["applications"] });
           break;
 
         case "ownership-changed":
           // A recruiter acted — refresh ownership, detail, and the action log.
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: queryKeys.ownership(applicationId),
           });
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: queryKeys.applicationDetail(applicationId),
           });
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: queryKeys.applicationLogs(applicationId),
           });
           // Refresh list so claimed/shortlisted columns stay in sync.
-          queryClient.invalidateQueries({ queryKey: ["applications"] });
+          void queryClient.invalidateQueries({ queryKey: ["applications"] });
           break;
       }
     };

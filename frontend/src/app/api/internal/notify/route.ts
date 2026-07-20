@@ -23,7 +23,7 @@ export interface ApplicationSseEvent {
  * container can reach it. Do not expose port 3000 directly to the internet.
  */
 export async function POST(request: NextRequest) {
-  const body = (await request.json()) as ApplicationSseEvent;
+  const body = (await request.json()) as Partial<ApplicationSseEvent>;
 
   if (!body.event || !body.applicationId) {
     return NextResponse.json(

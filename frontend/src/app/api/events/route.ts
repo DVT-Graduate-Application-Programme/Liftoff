@@ -12,7 +12,7 @@ export const runtime = "nodejs";
  * until the client disconnects. Events are fanned out from the singleton
  * EventEmitter which the internal webhook POSTs into.
  */
-export async function GET(request: NextRequest) {
+export function GET(request: NextRequest) {
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
