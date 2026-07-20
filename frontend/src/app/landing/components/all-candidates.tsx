@@ -35,7 +35,6 @@ const STATUS_OPTIONS: [string, string][] = [
   ["evaluated", "Evaluated"],
   ["forwarded", "Forwarded"],
   ["rejected", "Rejected"],
-  ["shortlisted", "Shortlisted"],
 ];
 
 function AllCandidateListCard({
@@ -53,70 +52,71 @@ function AllCandidateListCard({
 }) {
   const evaluationQuery = useEvaluation(application.applicationId);
   const education = parseEducationEvidence(
-    evaluationQuery.data?.evidenceJson?.education.trim() || application.cvSummary,
+    evaluationQuery.data?.evidenceJson?.education.trim() ||
+      application.cvSummary,
   );
 
   const academicAverage =
     evaluationQuery.data?.institutionJson?.academic_average ??
     evaluationQuery.data?.categoryScoresJson.education.score;
 
-  return (
-    <AllCandidateCard
-      key={application.applicationId}
-      name={application.candidateName}
-      institute={education.degree || application.cvSummary}
-      subtitle={education.institution || undefined}
-      systemScore={toScorePercent(application.hiringAgentTotalScore)}
-      academicAverage={academicAverage}
-      statusLabel={getStatusLabel(application.currentStatus)}
-      statusTone={getStatusTone(application.currentStatus)}
-      reviewedAt={formatDate(application.createdAt)}
-      showReviewedAt
-      createdAt={application.createdAt}
-      recruiterName={getRecruiterLabel(application)}
-      secondaryActionLabel={isClaimedByActiveRecruiter ? "Claimed" : "Claim for review"}
-      isSecondaryActionDisabled={isClaimedByActiveRecruiter || isClaiming}
-      isSecondaryActionLoading={isClaiming}
-      onSecondaryActionClick={isClaimedByActiveRecruiter ? undefined : onClaim}
-      onActionClick={onOpen}
-    />
-  );
+  if (application.currentStatus !== "shortlisted") {
+    return (
+      <AllCandidateCard
+        key={application.applicationId}
+        name={application.candidateName}
+        institute={education.degree || application.cvSummary}
+        subtitle={education.institution || undefined}
+        systemScore={toScorePercent(application.hiringAgentTotalScore)}
+        academicAverage={academicAverage}
+        statusLabel={getStatusLabel(application.currentStatus)}
+        statusTone={getStatusTone(application.currentStatus)}
+        reviewedAt={formatDate(application.createdAt)}
+        showReviewedAt={false}
+        createdAt={application.createdAt}
+        recruiterName={getRecruiterLabel(application)}
+        secondaryActionLabel={
+          isClaimedByActiveRecruiter ? "Claimed" : "Claim for review"
+        }
+        isSecondaryActionDisabled={isClaimedByActiveRecruiter || isClaiming}
+        isSecondaryActionLoading={isClaiming}
+        onSecondaryActionClick={
+          isClaimedByActiveRecruiter ? undefined : onClaim
+        }
+        onActionClick={onOpen}
+      />
+    );
+  }
 }
 
 function AllCandidates() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [status, setStatus] = useState("");
-  const [tier, setTier] = useState("");
   const [minScore, setMinScore] = useState("");
   const [hardGate, setHardGate] = useState("all");
   const [claimed, setClaimed] = useState("all");
-  const [shortlisted, setShortlisted] = useState("all");
   const [dateRange, setDateRange] = useState("all");
   const [sort, setSort] = useState<SortOption>("date_desc");
 
   const filters = useMemo(() => {
     const next: Filters = { sort };
     if (status) next.status = status;
-    if (tier) next.tier = tier;
     if (minScore) next.minScore = Number(minScore);
     if (hardGate !== "all") next.hardGatePassed = hardGate === "passed";
     if (claimed !== "all") next.claimed = claimed === "claimed";
-    if (shortlisted !== "all") next.shortlisted = shortlisted === "shortlisted";
     if (dateRange !== "all") {
       const from = new Date();
       from.setDate(from.getDate() - Number(dateRange));
       next.dateFrom = from.toISOString();
     }
     return next;
-  }, [claimed, dateRange, hardGate, minScore, shortlisted, sort, status, tier]);
+  }, [claimed, dateRange, hardGate, minScore, sort, status]);
 
   const clearFilters = () => {
     setStatus("");
-    setTier("");
     setMinScore("");
     setHardGate("all");
     setClaimed("all");
-    setShortlisted("all");
     setDateRange("all");
   };
 
@@ -138,19 +138,6 @@ function AllCandidates() {
       placeholder: "Any score",
     },
     {
-      key: "tier",
-      label: "Candidate tier",
-      value: tier,
-      onChange: setTier,
-      options: [
-        ["", "All tiers"],
-        ["A", "A"],
-        ["B", "B"],
-        ["C", "C"],
-        ["D", "D"],
-      ],
-    },
-    {
       key: "hardGate",
       label: "Screening",
       value: hardGate,
@@ -168,19 +155,9 @@ function AllCandidates() {
       onChange: setClaimed,
       options: [
         ["all", "All candidates"],
-        ["unclaimed", "Unclaimed"],
-        ["claimed", "Claimed"],
-      ],
-    },
-    {
-      key: "shortlisted",
-      label: "Shortlist",
-      value: shortlisted,
-      onChange: setShortlisted,
-      options: [
-        ["all", "All candidates"],
-        ["shortlisted", "Shortlisted"],
-        ["not-shortlisted", "Not shortlisted"],
+        ["rose@dvtsoftware.com", "Rose"],
+        ["phindi@dvtsoftware.com", "Phindi"],
+        ["recruiter-123", "Recruiter 123"],
       ],
     },
     {
@@ -203,12 +180,6 @@ function AllCandidates() {
         setStatus("");
       },
     },
-    tier && {
-      label: `Tier: ${tier.toLowerCase()}`,
-      onClear: () => {
-        setTier("");
-      },
-    },
     minScore && {
       label: `Score: ${minScore}+`,
       onClear: () => {
@@ -227,12 +198,6 @@ function AllCandidates() {
         setClaimed("all");
       },
     },
-    shortlisted !== "all" && {
-      label: shortlisted === "shortlisted" ? "Shortlisted" : "Not shortlisted",
-      onClear: () => {
-        setShortlisted("all");
-      },
-    },
     dateRange !== "all" && {
       label: `Last ${dateRange} days`,
       onClear: () => {
@@ -240,7 +205,6 @@ function AllCandidates() {
       },
     },
   ].filter(Boolean) as ActiveFilter[];
-
 
   const { selectApplication } = useApplicantSelection();
   const { setOpen, setOpenMobile } = useSidebar();
