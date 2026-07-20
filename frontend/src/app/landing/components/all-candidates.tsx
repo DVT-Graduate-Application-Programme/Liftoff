@@ -243,7 +243,7 @@ function AllCandidates() {
 
 
   const { selectApplication } = useApplicantSelection();
-  const { setOpen } = useSidebar();
+  const { setOpen, setOpenMobile } = useSidebar();
   const claimMutation = useClaimApplication();
 
   return (
@@ -287,6 +287,7 @@ function AllCandidates() {
               onOpen={() => {
                 selectApplication(application.applicationId, "all");
                 setOpen(true);
+                setOpenMobile(true);
               }}
             />
           );

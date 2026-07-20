@@ -20,7 +20,7 @@ type Filters = Omit<ApplicationFilters, "status" | "search" | "limit" | "cursor"
 function AcceptedCandidateCard({ application }: { application: CandidateApplication }) {
   const router = useRouter();
   const { selectApplication } = useApplicantSelection();
-  const { setOpen } = useSidebar();
+  const { setOpen, setOpenMobile } = useSidebar();
   const detailQuery = useApplicationDetail(application.applicationId);
   const evaluationQuery = useEvaluation(application.applicationId);
   const ownershipQuery = useOwnership(application.applicationId);
@@ -68,6 +68,7 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
       onActionClick={() => {
         selectApplication(application.applicationId, "accepted");
         setOpen(true);
+        setOpenMobile(true);
       }}
       secondaryActionLabel="View details"
       onSecondaryActionClick={() => {
