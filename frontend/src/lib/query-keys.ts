@@ -9,4 +9,5 @@ export const queryKeys = {
   ownership: (id: string) => ["applications", id, "ownership"] as const,
   logs: () => ["logs"] as const,
   applicationLogs: (id: string) => ["applications", id, "logs"] as const,
+  recruiters: () => ["recruiters"] as const,
 };
