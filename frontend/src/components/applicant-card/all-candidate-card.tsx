@@ -122,8 +122,6 @@ export default function AllCandidateCard({
   statusTone,
   layout = "default",
   showInstitute = true,
-  reviewedAt,
-  showReviewedAt = true,
   createdAt,
   recruiterLabel,
   recruiterName,
@@ -182,7 +180,9 @@ export default function AllCandidateCard({
             {showInstitute && (
               <div className="mt-0.5 flex flex-col gap-0.5 text-xs text-muted-foreground">
                 {displaySubtitle ? (
-                  <p className="whitespace-normal break-words">{displaySubtitle}</p>
+                  <p className="whitespace-normal break-words">
+                    {displaySubtitle}
+                  </p>
                 ) : null}
                 <p className="whitespace-normal break-words">{institute}</p>
               </div>
@@ -198,12 +198,16 @@ export default function AllCandidateCard({
         </>
       ) : (
         <div className="min-w-0 flex-1 flex flex-col pl-4">
-          <h4 className="font-semibold leading-tight text-foreground">{name}</h4>
+          <h4 className="font-semibold leading-tight text-foreground">
+            {name}
+          </h4>
           {showInstitute && (
             <div className="mt-0.5 flex flex-col gap-0.5 text-xs text-muted-foreground">
               <p className="whitespace-normal break-words">{institute}</p>
               {displaySubtitle ? (
-                <p className="whitespace-normal break-words">{displaySubtitle}</p>
+                <p className="whitespace-normal break-words">
+                  {displaySubtitle}
+                </p>
               ) : null}
             </div>
           )}
@@ -232,7 +236,9 @@ export default function AllCandidateCard({
           {academicAverage !== undefined ? (
             <ScoreTag score={academicAverage} className={scoreClassName} />
           ) : (
-            <span className="text-sm font-semibold text-muted-foreground">–</span>
+            <span className="text-sm font-semibold text-muted-foreground">
+              –
+            </span>
           )}
         </div>
 
@@ -249,20 +255,9 @@ export default function AllCandidateCard({
                   : `${String(daysAgo)} days ago`}
             </span>
           ) : (
-            <span className="text-sm font-semibold text-muted-foreground">–</span>
-          )}
-        </div>
-
-        <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 md:flex">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-            Reviewed
-          </span>
-          {showReviewedAt && reviewedAt ? (
-            <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
-              {reviewedAt}
+            <span className="text-sm font-semibold text-muted-foreground">
+              –
             </span>
-          ) : (
-            <span className="text-sm font-semibold text-muted-foreground">–</span>
           )}
         </div>
       </div>
