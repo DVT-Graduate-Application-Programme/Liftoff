@@ -48,10 +48,11 @@ services:
       POSTGRES_HOST: db
       POSTGRES_PORT: "5432"
       # SSE: URL where the backend POSTs data-change notifications.
-      # frontend service name resolves correctly inside the Docker network.
-      # To run the frontend locally with npm run dev instead, swap this for:
-      #   NOTIFICATIONS__NEXTJS__WEBHOOKURL: "http://host.docker.internal:3000/api/internal/notify"
-      NOTIFICATIONS__NEXTJS__WEBHOOKURL: "http://frontend:3000/api/internal/notify"
+      # Default works out of the box when the frontend runs in Docker (docker compose up).
+      # If running the frontend locally with npm run dev, override before starting:
+      #   export NEXTJS_WEBHOOK_URL=http://host.docker.internal:3000/api/internal/notify
+      #   docker compose up backend db hiring-agent
+      NOTIFICATIONS__NEXTJS__WEBHOOKURL: "${NEXTJS_WEBHOOK_URL:-http://frontend:3000/api/internal/notify}"
     ports:
       - "5000:5000"
     depends_on:
