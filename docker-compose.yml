@@ -52,7 +52,6 @@ services:
       # When the frontend runs locally (npm run dev) comment the line above and use:
       #   NOTIFICATIONS__NEXTJS__WEBHOOKURL: "http://host.docker.internal:3000/api/internal/notify"
       NOTIFICATIONS__NEXTJS__WEBHOOKURL: "http://frontend:3000/api/internal/notify"
-      NOTIFICATIONS__NEXTJS__SHAREDSECRET: "${NOTIFICATIONS_SHARED_SECRET:-dev-secret-change-in-prod}"
     ports:
       - "5000:5000"
     depends_on:

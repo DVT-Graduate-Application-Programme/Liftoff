@@ -12,24 +12,17 @@ export interface ApplicationSseEvent {
   timestamp: string;
 }
 
-const SHARED_SECRET = process.env.INTERNAL_TOKEN;
-
 /**
  * POST /api/internal/notify
  *
  * Called exclusively by the C# backend whenever application data changes.
- * Validates the shared secret then broadcasts the event to all connected
- * browser clients via the in-process EventEmitter.
+ * Broadcasts the event to all connected browser clients via the in-process
+ * EventEmitter.
  *
- * This route must never be publicly accessible — protect it at the
- * network/firewall level in production (only the backend container should
- * be able to reach it).
+ * This route is protected by network isolation — in Docker only the backend
+ * container can reach it. Do not expose port 3000 directly to the internet.
  */
 export async function POST(request: NextRequest) {
-  if (SHARED_SECRET && request.headers.get("x-internal-token") !== SHARED_SECRET) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
-
   const body = (await request.json()) as ApplicationSseEvent;
 
   if (!body.event || !body.applicationId) {

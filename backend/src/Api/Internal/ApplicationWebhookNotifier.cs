@@ -8,11 +8,10 @@ namespace Api.Internal;
 /// <summary>
 /// Fires a fire-and-forget HTTP POST to the Next.js internal webhook endpoint
 /// whenever application data changes. The Next.js server is then responsible for
-/// pushing the event to all connected browser clients via its own SSE/pub-sub layer.
+/// pushing the event to all connected browser clients via its own SSE layer.
 ///
 /// Configuration (environment variables or appsettings):
 ///   NOTIFICATIONS__NEXTJS__WEBHOOKURL  — full URL, e.g. http://frontend:3000/api/internal/notify
-///   NOTIFICATIONS__NEXTJS__SHAREDSECRET — arbitrary shared secret echoed in X-Internal-Token header
 ///
 /// If WebhookUrl is not configured the notifier silently no-ops, so the backend
 /// works normally without a frontend connected (useful in isolated testing).
@@ -21,7 +20,6 @@ public sealed class ApplicationWebhookNotifier : IApplicationEventService
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly string? _webhookUrl;
-    private readonly string? _sharedSecret;
     private readonly ILogger<ApplicationWebhookNotifier> _logger;
 
     public ApplicationWebhookNotifier(
@@ -31,7 +29,6 @@ public sealed class ApplicationWebhookNotifier : IApplicationEventService
     {
         _httpClientFactory = httpClientFactory;
         _webhookUrl = configuration["Notifications:NextJs:WebhookUrl"];
-        _sharedSecret = configuration["Notifications:NextJs:SharedSecret"];
         _logger = logger;
     }
 
@@ -80,12 +77,6 @@ public sealed class ApplicationWebhookNotifier : IApplicationEventService
                 {
                     Content = JsonContent.Create(payload)
                 };
-
-                // Shared secret so Next.js can reject requests not coming from us.
-                if (!string.IsNullOrEmpty(_sharedSecret))
-                {
-                    request.Headers.Add("X-Internal-Token", _sharedSecret);
-                }
 
                 var response = await client.SendAsync(request);
 
