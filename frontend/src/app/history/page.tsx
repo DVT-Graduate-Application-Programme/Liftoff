@@ -152,7 +152,7 @@ function CandidateHistoryCard({
 }) {
   const router = useRouter();
   const { selectApplication } = useApplicantSelection();
-  const { setOpen } = useSidebar();
+  const { setOpen, setOpenMobile } = useSidebar();
   const evaluationQuery = useEvaluation(candidate.applicationId);
 
   const handleCardClick = () => {
@@ -206,6 +206,7 @@ function CandidateHistoryCard({
       onActionClick={() => {
         selectApplication(candidate.applicationId, "history");
         setOpen(true);
+        setOpenMobile(true);
       }}
       secondaryActionLabel="View Applicant"
       onSecondaryActionClick={() => {
@@ -369,7 +370,7 @@ export default function HistoryPage() {
                       <p className="text-sm text-muted-foreground">No candidate history matches your filters.</p>
                     </div>
                   ) : (
-                    <div className="flex flex-col gap-8">
+                    <div className="@container flex flex-col gap-8">
                       {groups.map(({ label, candidates }) => (
                         <DateGroup
                           key={label}

@@ -156,12 +156,12 @@ export default function ApplicantCard({
       }}
       className={cn(
         "group relative flex cursor-pointer rounded-xl border bg-card p-4 transition-all hover:-translate-y-px",
-        "flex-col gap-4 sm:flex-row sm:items-center sm:gap-3",
+        "flex-col gap-4 @2xl:flex-row @2xl:items-center @2xl:gap-3",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
         statusStyle.border,
       )}
     >
-      <div className="flex w-full min-w-0 flex-1 items-center gap-3 sm:w-auto">
+      <div className="flex w-full min-w-0 flex-1 items-center gap-3 @2xl:w-auto">
         <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
           {initials}
         </div>
@@ -197,8 +197,8 @@ export default function ApplicantCard({
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-1 sm:flex-row sm:items-center sm:justify-center sm:gap-4">
-        <div className="hidden w-[12rem] shrink-0 items-center justify-center gap-3 sm:flex">
+      <div className="flex flex-col gap-3 @2xl:flex-1 @2xl:flex-row @2xl:items-center @2xl:justify-center @2xl:gap-4">
+        <div className="hidden w-[12rem] shrink-0 items-center justify-center gap-3 @2xl:flex">
           <div className="flex w-24 flex-col items-center gap-0.5">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
               {scoreLabel}
@@ -219,7 +219,7 @@ export default function ApplicantCard({
         </div>
 
         {showStatus && (
-          <div className="flex shrink-0 flex-col items-start gap-0.5 sm:ml-0 sm:w-16 sm:items-center sm:justify-center md:ml-1">
+          <div className="flex shrink-0 flex-col items-start gap-0.5 @2xl:ml-0 @2xl:w-16 @2xl:items-center @2xl:justify-center @4xl:ml-1">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
               Status
             </span>
@@ -236,7 +236,7 @@ export default function ApplicantCard({
         )}
 
         {showReviewedAt && reviewedAt && (
-          <div className="hidden w-28 shrink-0 flex-col items-end gap-0.5 pl-2 md:flex">
+          <div className="hidden w-28 shrink-0 flex-col items-end gap-0.5 pl-2 @4xl:flex">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
               Reviewed
             </span>
@@ -251,7 +251,7 @@ export default function ApplicantCard({
           </div>
         )}
         {daysAgo !== null && daysAgo >= 0 && (
-          <div className="hidden w-32 shrink-0 flex-col items-center gap-0.5 pl-2 md:flex">
+          <div className="hidden w-32 shrink-0 flex-col items-center gap-0.5 pl-2 @4xl:flex">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
               Applied
             </span>
@@ -270,7 +270,7 @@ export default function ApplicantCard({
           </div>
         )}
         {daysAgo === null && (
-          <div className="hidden w-32 shrink-0 flex-col items-center gap-0.5 pl-2 md:flex">
+          <div className="hidden w-32 shrink-0 flex-col items-center gap-0.5 pl-2 @4xl:flex">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
               Applied
             </span>
@@ -283,8 +283,8 @@ export default function ApplicantCard({
 
       <div
         className={cn(
-          "flex w-full shrink-0 gap-2 sm:w-auto sm:pl-2",
-          stackActions ? "flex-col" : "flex-col sm:flex-row sm:items-center",
+          "flex w-full shrink-0 gap-2 @2xl:w-auto @2xl:pl-2",
+          stackActions ? "flex-col" : "flex-col @2xl:flex-row @2xl:items-center",
         )}
       >
         {secondaryActionLabel ? (
@@ -294,7 +294,7 @@ export default function ApplicantCard({
             size="sm"
             className={cn(
               "justify-center gap-1.5 text-xs",
-              stackActions ? "w-full" : "w-full sm:w-32",
+              stackActions ? "w-full" : "w-full @2xl:w-32",
             )}
             disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
             onClick={(event) => {
@@ -312,9 +312,9 @@ export default function ApplicantCard({
           variant={actionVariant}
           size="sm"
           className={cn(
-            "gap-1.5 text-xs w-full sm:w-auto",
+            "gap-1.5 text-xs w-full @2xl:w-auto",
             actionVariant === "default" ? "text-white hover:bg-primary/80" : undefined,
-            secondaryActionLabel ? (stackActions ? "justify-center" : "sm:w-32 justify-center") : undefined,
+            secondaryActionLabel ? (stackActions ? "justify-center" : "@2xl:w-32 justify-center") : undefined,
           )}
           onClick={(event) => {
             event.stopPropagation();

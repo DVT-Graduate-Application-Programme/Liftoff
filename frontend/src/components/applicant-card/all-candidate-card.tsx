@@ -122,6 +122,8 @@ export default function AllCandidateCard({
   statusTone,
   layout = "default",
   showInstitute = true,
+  reviewedAt,
+  showReviewedAt = true,
   createdAt,
   recruiterLabel,
   recruiterName,
@@ -152,10 +154,10 @@ export default function AllCandidateCard({
         }
       }}
       className={cn(
-        "group relative flex cursor-pointer items-center gap-0 rounded-xl border bg-card p-4 w-full",
+        "group relative flex cursor-pointer flex-col gap-3 rounded-xl border bg-card p-4 w-full @2xl:flex-row @2xl:items-center @2xl:gap-0",
       )}
     >
-      <div className="flex w-20 shrink-0 flex-col items-center justify-center gap-0.5">
+      <div className="flex shrink-0 flex-col items-start gap-0.5 @2xl:w-20 @2xl:items-center @2xl:justify-center">
         <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
           Status
         </span>
@@ -173,7 +175,7 @@ export default function AllCandidateCard({
 
       {layout === "history" ? (
         <>
-          <div className="min-w-0 flex-1 flex flex-col pl-4">
+          <div className="min-w-0 flex-1 flex flex-col @2xl:pl-4">
             <h4 className="break-words font-semibold leading-tight text-foreground">
               {name}
             </h4>
@@ -221,15 +223,15 @@ export default function AllCandidateCard({
         </div>
       )}
 
-      <div className="flex flex-1 items-center justify-center gap-6 px-2">
-        <div className="hidden w-20 shrink-0 flex-col items-center gap-0.5 sm:flex">
+      <div className="flex flex-1 items-center justify-start gap-6 @2xl:justify-center @2xl:px-2">
+        <div className="flex w-20 shrink-0 flex-col items-center gap-0.5">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
             {scoreLabel}
           </span>
           <ScoreTag score={systemScore} className={scoreClassName} />
         </div>
 
-        <div className="hidden w-20 shrink-0 flex-col items-center gap-0.5 sm:flex">
+        <div className="flex w-20 shrink-0 flex-col items-center gap-0.5">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
             Acad. Avg
           </span>
@@ -242,7 +244,7 @@ export default function AllCandidateCard({
           )}
         </div>
 
-        <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 md:flex">
+        <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 @4xl:flex">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
             Applied
           </span>
@@ -260,15 +262,32 @@ export default function AllCandidateCard({
             </span>
           )}
         </div>
+
+        {layout === "history" && (
+          <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 @4xl:flex">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+              Reviewed
+            </span>
+            {showReviewedAt && reviewedAt ? (
+              <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
+                {reviewedAt}
+              </span>
+            ) : (
+              <span className="text-sm font-semibold text-muted-foreground">
+                –
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
-      <div className="flex shrink-0 flex-col justify-end items-end gap-2">
+      <div className="flex w-full shrink-0 flex-col gap-2 @2xl:w-auto @2xl:justify-end @2xl:items-end">
         {secondaryActionLabel ? (
           <Button
             type="button"
             variant="secondary"
             size="sm"
-            className="w-30 justify-center gap-1 text-xs"
+            className="w-full justify-center gap-1 text-xs @2xl:w-30"
             disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
             onClick={(event) => {
               event.stopPropagation();
@@ -284,7 +303,7 @@ export default function AllCandidateCard({
           type="button"
           variant="outline"
           size="sm"
-          className="w-30 justify-center gap-1 text-xs bg-primary text-white"
+          className="w-full justify-center gap-1 text-xs bg-primary text-white @2xl:w-30"
           onClick={(event) => {
             event.stopPropagation();
             if (onActionClick) {
