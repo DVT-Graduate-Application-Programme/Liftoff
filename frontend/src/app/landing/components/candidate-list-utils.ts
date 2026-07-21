@@ -23,7 +23,7 @@ export const getStatusTone = (status: CandidateApplication["currentStatus"]) =>
   statusTones[status.toLowerCase()];
 
 export const getDisplayStatus = (application: CandidateApplication) =>
-  application.claimedByRecruiterId ? "PENDING" : application.currentStatus;
+  application.currentStatus;
 
 export const formatDate = (isoDate: string) =>
   new Date(isoDate).toLocaleDateString("en-ZA", {
