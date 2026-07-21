@@ -17,6 +17,7 @@ WORKDIR /app
 RUN useradd --no-create-home --shell /bin/false appuser
 COPY --from=build /app/publish .
 RUN chown -R appuser:appuser /app && chmod -R 755 /app
+RUN mkdir -p /logs && chown appuser:appuser /logs
 USER appuser
 EXPOSE 5000
 ENV ASPNETCORE_URLS=http://+:5000 ASPNETCORE_ENVIRONMENT=Development
