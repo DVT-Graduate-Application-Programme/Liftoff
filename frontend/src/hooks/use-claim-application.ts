@@ -8,7 +8,7 @@ interface ClaimResponse {
   claimedAt: string | null;
 }
 
-export function useClaimApplication() {
+export function useClaimApplication(recruiterIdentity = ACTIVE_RECRUITER_ID) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -18,7 +18,7 @@ export function useClaimApplication() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ recruiterIdentity: ACTIVE_RECRUITER_ID }),
+          body: JSON.stringify({ recruiterIdentity }),
         },
       ),
     onSuccess: () => {

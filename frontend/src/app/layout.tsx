@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import QueryProvider from "@/components/providers/query-provider";
+import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { ApplicantSearchProvider } from "@/components/providers/applicant-search-provider";
 import AppShell from "@/components/app-shell";
 import "./globals.css";
@@ -38,11 +39,13 @@ export default function RootLayout({
           defaultTheme="light"
           enableSystem={false}
         >
-          <QueryProvider>
-            <ApplicantSearchProvider>
-              <AppShell>{children}</AppShell>
-            </ApplicantSearchProvider>
-          </QueryProvider>
+          <AuthSessionProvider>
+            <QueryProvider>
+              <ApplicantSearchProvider>
+                <AppShell>{children}</AppShell>
+              </ApplicantSearchProvider>
+            </QueryProvider>
+          </AuthSessionProvider>
         </ThemeProvider>
       </body>
     </html>

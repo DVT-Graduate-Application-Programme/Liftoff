@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSession } from "next-auth/react";
 import type { ApplicationFilters } from "@/types/api";
 import { ApplicantList } from "./applicant-list";
 import {
@@ -15,6 +16,7 @@ import {
   ACTIVE_RECRUITER_ID,
   useClaimApplication,
 } from "@/hooks/use-claim-application";
+import { useRecruiters } from "@/hooks/use-recruiters";
 import { CandidateApplication } from "@/types/candidate";
 import AllCandidateCard from "@/components/applicant-card/all-candidate-card";
 import { useEvaluation } from "@/hooks/use-evaluation";
@@ -25,6 +27,7 @@ import {
   formatDate,
   getRecruiterLabel,
   parseEducationEvidence,
+  getDisplayStatus,
 } from "./candidate-list-utils";
 
 type Filters = Omit<ApplicationFilters, "search" | "limit" | "cursor">;
@@ -59,6 +62,8 @@ function AllCandidateListCard({
   const academicAverage =
     evaluationQuery.data?.institutionJson?.academic_average ??
     evaluationQuery.data?.categoryScoresJson.education.score;
+  const displayStatus = getDisplayStatus(application);
+  const isClaimed = Boolean(application.claimedByRecruiterId);
 
   if (application.currentStatus !== "shortlisted") {
     return (
@@ -69,16 +74,16 @@ function AllCandidateListCard({
         subtitle={education.institution || undefined}
         systemScore={toScorePercent(application.hiringAgentTotalScore)}
         academicAverage={academicAverage}
-        statusLabel={getStatusLabel(application.currentStatus)}
-        statusTone={getStatusTone(application.currentStatus)}
+        statusLabel={getStatusLabel(displayStatus)}
+        statusTone={getStatusTone(displayStatus)}
         reviewedAt={formatDate(application.createdAt)}
         showReviewedAt={false}
         createdAt={application.createdAt}
         recruiterName={getRecruiterLabel(application)}
         secondaryActionLabel={
-          isClaimedByActiveRecruiter ? "Claimed" : "Claim for review"
+          isClaimed ? "Claimed" : "Claim for review"
         }
-        isSecondaryActionDisabled={isClaimedByActiveRecruiter || isClaiming}
+        isSecondaryActionDisabled={isClaimed || isClaiming}
         isSecondaryActionLoading={isClaiming}
         onSecondaryActionClick={
           isClaimedByActiveRecruiter ? undefined : onClaim
@@ -90,33 +95,38 @@ function AllCandidateListCard({
 }
 
 function AllCandidates() {
+  const { data: session } = useSession();
+  const recruiterIdentity = session?.user?.email ?? ACTIVE_RECRUITER_ID;
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [status, setStatus] = useState("");
   const [minScore, setMinScore] = useState("");
   const [hardGate, setHardGate] = useState("all");
-  const [claimed, setClaimed] = useState("all");
+  const [ownership, setOwnership] = useState("all");
   const [dateRange, setDateRange] = useState("all");
   const [sort, setSort] = useState<SortOption>("date_desc");
+
+  const recruitersQuery = useRecruiters();
 
   const filters = useMemo(() => {
     const next: Filters = { sort };
     if (status) next.status = status;
     if (minScore) next.minScore = Number(minScore);
     if (hardGate !== "all") next.hardGatePassed = hardGate === "passed";
-    if (claimed !== "all") next.claimed = claimed === "claimed";
+    if (ownership === "unclaimed") next.claimed = false;
+    else if (ownership !== "all") next.recruiterIdentity = ownership;
     if (dateRange !== "all") {
       const from = new Date();
       from.setDate(from.getDate() - Number(dateRange));
       next.dateFrom = from.toISOString();
     }
     return next;
-  }, [claimed, dateRange, hardGate, minScore, sort, status]);
+  }, [dateRange, hardGate, minScore, ownership, sort, status]);
 
   const clearFilters = () => {
     setStatus("");
     setMinScore("");
     setHardGate("all");
-    setClaimed("all");
+    setOwnership("all");
     setDateRange("all");
   };
 
@@ -149,15 +159,16 @@ function AllCandidates() {
       ],
     },
     {
-      key: "claimed",
+      key: "ownership",
       label: "Ownership",
-      value: claimed,
-      onChange: setClaimed,
+      value: ownership,
+      onChange: setOwnership,
       options: [
         ["all", "All candidates"],
-        ["rose@dvtsoftware.com", "Rose"],
-        ["phindi@dvtsoftware.com", "Phindi"],
-        ["recruiter-123", "Recruiter 123"],
+        ["unclaimed", "Unclaimed"],
+        ...(recruitersQuery.data ?? [])
+          .filter((recruiter) => recruiter.isActive)
+          .map((recruiter): [string, string] => [recruiter.email, recruiter.fullName]),
       ],
     },
     {
@@ -192,10 +203,13 @@ function AllCandidates() {
         setHardGate("all");
       },
     },
-    claimed !== "all" && {
-      label: claimed === "claimed" ? "Claimed" : "Unclaimed",
+    ownership !== "all" && {
+      label:
+        ownership === "unclaimed"
+          ? "Unclaimed"
+          : `Owner: ${recruitersQuery.data?.find((recruiter) => recruiter.email === ownership)?.fullName ?? ownership}`,
       onClear: () => {
-        setClaimed("all");
+        setOwnership("all");
       },
     },
     dateRange !== "all" && {
@@ -208,7 +222,7 @@ function AllCandidates() {
 
   const { selectApplication } = useApplicantSelection();
   const { setOpen, setOpenMobile } = useSidebar();
-  const claimMutation = useClaimApplication();
+  const claimMutation = useClaimApplication(recruiterIdentity);
 
   return (
     <>
@@ -234,7 +248,7 @@ function AllCandidates() {
         enableClaim
         renderCard={(application: CandidateApplication) => {
           const isClaimedByActiveRecruiter =
-            application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
+            application.claimedByRecruiterId === recruiterIdentity;
           const isClaiming =
             claimMutation.isPending &&
             claimMutation.variables === application.applicationId;

@@ -17,10 +17,12 @@ const TAB_LABELS: Record<string, string> = {
   all: "All Candidates",
   accepted: "Accepted Candidates",
   history: "History",
+  logs: "Recruiter Logs",
 }
 
 const TAB_HREFS: Record<string, string> = {
   history: "/history",
+  logs: "/logs",
 }
 
 function tabHref(from: string) {
@@ -43,6 +45,8 @@ export function Breadcrumbs() {
   let tabCrumb: React.ReactNode = null
   if (pathname === "/history") {
     trailing = <BreadcrumbPage>History</BreadcrumbPage>
+  } else if (pathname === "/logs") {
+    trailing = <BreadcrumbPage>Recruiter Logs</BreadcrumbPage>
   } else if (pathname.startsWith("/applicants/")) {
     trailing = <ApplicantCrumb />
     const from = searchParams.get("from")

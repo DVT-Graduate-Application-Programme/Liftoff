@@ -5,6 +5,8 @@ type PendingCandidateCardProps = {
   name: string;
   institute: string;
   secondaryInstitute?: string;
+  recruiterLabel?: string;
+  recruiterName?: string;
   academicAverage?: number;
   systemScore: number;
   scoreLabel?: string;
@@ -19,13 +21,22 @@ type PendingCandidateCardProps = {
   isSecondaryActionLoading?: boolean;
 };
 
-function getScoreColor(score: number) {
+function getScoreColor(score?: number | null) {
+  if (score == null || Number.isNaN(score)) return "text-muted-foreground";
   if (score >= 80) return "text-primary";
   if (score >= 65) return "text-chart-4";
   return "text-destructive";
 }
 
-function ScoreTag({ score }: { score: number }) {
+function ScoreTag({ score }: { score?: number | null }) {
+  if (score == null || Number.isNaN(score)) {
+    return (
+      <div className="flex min-w-12 justify-center">
+        <span className="text-sm font-semibold text-muted-foreground">–</span>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-w-12 justify-center">
       <span
@@ -53,6 +64,8 @@ export default function PendingCandidateCard({
   name,
   institute,
   secondaryInstitute,
+  recruiterLabel,
+  recruiterName,
   academicAverage,
   systemScore,
   scoreLabel = "System Score",
@@ -89,7 +102,6 @@ export default function PendingCandidateCard({
       className={cn(
         "group relative flex cursor-pointer items-center gap-0 rounded-xl bg-card p-4 w-full transition-all hover:-translate-y-px",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-
       )}
     >
       <div className="flex w-[25rem] shrink-0 min-w-0 items-center gap-3">
@@ -98,15 +110,31 @@ export default function PendingCandidateCard({
         </div>
 
         <div className="min-w-0 flex-1">
-          <h4 className="font-semibold leading-tight text-foreground">{name}</h4>
+          <h4 className="font-semibold leading-tight text-foreground">
+            {name}
+          </h4>
           {showInstitute && (
             <div className="mt-0.5 flex flex-col gap-0.5 text-xs text-muted-foreground">
               <p className="whitespace-normal break-words">{institute}</p>
               {secondaryInstitute ? (
-                <p className="whitespace-normal break-words">{secondaryInstitute}</p>
+                <p className="whitespace-normal break-words">
+                  {secondaryInstitute}
+                </p>
               ) : null}
             </div>
           )}
+          {recruiterName ? (
+            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span className="font-medium tracking-widest">
+                  {recruiterLabel ?? "Recruiter"}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-foreground">
+                  {recruiterName}
+                </span>
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -128,7 +156,9 @@ export default function PendingCandidateCard({
             {academicAverage !== undefined ? (
               <ScoreTag score={academicAverage} />
             ) : (
-              <span className="text-sm font-semibold text-muted-foreground">–</span>
+              <span className="text-sm font-semibold text-muted-foreground">
+                –
+              </span>
             )}
           </div>
 
@@ -147,7 +177,9 @@ export default function PendingCandidateCard({
                     : String(daysAgo) + " day(s) ago"}
               </span>
             ) : (
-              <span className="text-sm font-semibold text-muted-foreground">–</span>
+              <span className="text-sm font-semibold text-muted-foreground">
+                –
+              </span>
             )}
           </div>
         </div>
@@ -159,7 +191,11 @@ export default function PendingCandidateCard({
             type="button"
             variant="secondary"
             size="sm"
-            className="w-30 justify-center gap-1 text-xs"
+            className={cn(
+              "w-30 justify-center gap-1 text-xs",
+              isSecondaryActionDisabled &&
+                "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
+            )}
             disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
             onClick={(event) => {
               event.stopPropagation();

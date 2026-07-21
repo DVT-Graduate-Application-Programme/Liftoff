@@ -399,6 +399,14 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
                 : records.Where(a => a.ShortlistedByRecruiterId == null);
         }
 
+        if (query.RecruiterIdentity is not null)
+        {
+            records = records.Where(a =>
+                a.ClaimedByRecruiterId == query.RecruiterIdentity ||
+                a.ShortlistedByRecruiterId == query.RecruiterIdentity ||
+                a.RatedByRecruiterId == query.RecruiterIdentity);
+        }
+
         if (query.FromDate is not null)
         {
             var fromDate = new DateTimeOffset(DateTime.SpecifyKind(query.FromDate.Value, DateTimeKind.Utc));

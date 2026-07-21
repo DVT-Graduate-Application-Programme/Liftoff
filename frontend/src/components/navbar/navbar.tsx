@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, Menu, Search, Settings, X } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
@@ -37,12 +37,6 @@ function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
           }}
         >
           {mobileSearchOpen ? <X /> : <Search />}
-        </Button>
-        <Button variant="ghost" size="icon" aria-label="Notifications">
-          <Bell />
-        </Button>
-        <Button variant="ghost" size="icon" aria-label="Settings">
-          <Settings />
         </Button>
         <ModeToggle />
       </div>
