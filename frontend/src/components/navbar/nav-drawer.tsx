@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
