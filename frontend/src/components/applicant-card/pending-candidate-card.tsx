@@ -5,6 +5,8 @@ type PendingCandidateCardProps = {
   name: string;
   institute: string;
   secondaryInstitute?: string;
+  recruiterLabel?: string;
+  recruiterName?: string;
   academicAverage?: number;
   systemScore: number;
   scoreLabel?: string;
@@ -62,6 +64,8 @@ export default function PendingCandidateCard({
   name,
   institute,
   secondaryInstitute,
+  recruiterLabel,
+  recruiterName,
   academicAverage,
   systemScore,
   scoreLabel = "System Score",
@@ -119,6 +123,18 @@ export default function PendingCandidateCard({
               ) : null}
             </div>
           )}
+          {recruiterName ? (
+            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span className="font-medium tracking-widest">
+                  {recruiterLabel ?? "Recruiter"}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-foreground">
+                  {recruiterName}
+                </span>
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -175,7 +191,11 @@ export default function PendingCandidateCard({
             type="button"
             variant="secondary"
             size="sm"
-            className="w-30 justify-center gap-1 text-xs"
+            className={cn(
+              "w-30 justify-center gap-1 text-xs",
+              isSecondaryActionDisabled &&
+                "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
+            )}
             disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
             onClick={(event) => {
               event.stopPropagation();

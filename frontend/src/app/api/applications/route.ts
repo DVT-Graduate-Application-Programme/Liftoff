@@ -58,6 +58,13 @@ export async function GET(req: NextRequest) {
     const needle = search.toLowerCase();
     results = results.filter((a) => a.candidateName.toLowerCase().includes(needle));
   }
+  if (recruiterIdentity) {
+    results = results.filter((a) =>
+      a.claimedByRecruiterId === recruiterIdentity ||
+      a.shortlistedByRecruiterId === recruiterIdentity ||
+      a.ratedByRecruiterId === recruiterIdentity,
+    );
+  }
   if (minScore !== null) {
     results = results.filter((a) => a.hiringAgentTotalScore >= minScore);
   }
