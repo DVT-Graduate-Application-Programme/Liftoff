@@ -27,13 +27,20 @@ import {
   formatDate,
   getRecruiterLabel,
   groupApplicationsByDate,
-  getDisplayStatus,
   getStatusLabel,
   getStatusTone,
   parseEducationEvidence,
   toScorePercent,
 } from "./candidate-list-utils";
 import type { Evaluation } from "@/types/api";
+
+type SessionValue = {
+  user?: {
+    email?: string | null;
+  } | null;
+} | null;
+
+const useTypedSession = useSession as unknown as () => { data: SessionValue };
 
 interface ApplicantListProps {
   status?: string;
@@ -154,7 +161,7 @@ export function ApplicantList({
   renderCard,
 }: ApplicantListProps) {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session } = useTypedSession();
   const recruiterIdentity = session?.user?.email ?? ACTIVE_RECRUITER_ID;
   const { search } = useApplicantSearch();
   const { selectApplication } = useApplicantSelection();
@@ -181,7 +188,7 @@ export function ApplicantList({
     status: status ?? filters?.status,
     search: search || undefined,
   });
-  const claimMutation = useClaimApplication(recruiterIdentity);
+  const claimMutation = useClaimApplication();
   const applications = useMemo(
     () =>
       (data?.pages ?? []).flatMap(
@@ -255,7 +262,7 @@ export function ApplicantList({
     }
 
     const { isClaiming } = claimableApplication(application);
-    const displayStatus = getDisplayStatus(application);
+    const displayStatus: CandidateApplication["currentStatus"] = application.currentStatus;
     const commonProps = {
       name: application.candidateName,
       institute: application.cvSummary,

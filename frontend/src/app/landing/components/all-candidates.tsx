@@ -222,7 +222,7 @@ function AllCandidates() {
 
   const { selectApplication } = useApplicantSelection();
   const { setOpen, setOpenMobile } = useSidebar();
-  const claimMutation = useClaimApplication(recruiterIdentity);
+  const claimMutation = useClaimApplication();
 
   return (
     <>

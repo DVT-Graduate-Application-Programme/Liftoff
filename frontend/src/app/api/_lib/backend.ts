@@ -41,3 +41,11 @@ export async function proxyPost(path: string, req: NextRequest): Promise<NextRes
     body: await req.text(),
   });
 }
+// Proxies a server-constructed JSON POST body to backend
+export async function proxyPostJson(path: string, body: unknown): Promise<NextResponse> {
+  return proxyJson(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
