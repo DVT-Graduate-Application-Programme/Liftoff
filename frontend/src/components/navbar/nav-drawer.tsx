@@ -23,6 +23,16 @@ export function NavDrawer({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { data: session } = useSession();
+  const recruitersQuery = useRecruiters();
+  const sessionEmail = session?.user?.email?.toLowerCase() ?? null;
+  const sessionName = session?.user?.name ?? "Recruiter";
+  const recruiter = recruitersQuery.data?.find(
+    (candidate) => candidate.email.toLowerCase() === sessionEmail,
+  );
+  const displayName = recruiter?.fullName ?? sessionName;
+  const displayEmail = recruiter?.email ?? session?.user?.email ?? "";
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange} direction="left">
       <DrawerContent>
