@@ -141,6 +141,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         applicationRecord.ClaimedAt = now;
         applicationRecord.UpdatedAt = now;
 
+        _dbContext.ApplicationRecords.Update(applicationRecord);
+
         await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
         {
             ApplicationRecordId = id,
@@ -180,6 +182,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         applicationRecord.ShortlistedAt = now;
         applicationRecord.Status = shortlistedStatus;
         applicationRecord.UpdatedAt = now;
+
+        _dbContext.ApplicationRecords.Update(applicationRecord);
 
         await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
         {
@@ -223,6 +227,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         applicationRecord.Status = newStatus;
         applicationRecord.UpdatedAt = now;
 
+        _dbContext.ApplicationRecords.Update(applicationRecord);
+
         await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
         {
             ApplicationRecordId = id,
@@ -261,6 +267,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         applicationRecord.RatedAt = now;
         applicationRecord.UpdatedAt = now;
 
+        _dbContext.ApplicationRecords.Update(applicationRecord);
+
         await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
         {
             ApplicationRecordId = id,
@@ -291,6 +299,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
 
         applicationRecord.RecruiterRatingNote = notes;
         applicationRecord.UpdatedAt = now;
+
+        _dbContext.ApplicationRecords.Update(applicationRecord);
 
         await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
         {
