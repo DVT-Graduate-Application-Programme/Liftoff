@@ -57,8 +57,8 @@ public static class DbSeeder
         await db.Database.ExecuteSqlRawAsync("""
             INSERT INTO public."Recruiters" ("Id", "IdentityId", "FirstName", "LastName", "Email", "IsActive", "CreatedAt", "UpdatedAt")
             VALUES
-                ('c1000000-0000-0000-0000-000000000001', 'naledi.dlamini@dvt.co.za', 'Naledi',  'Dlamini', 'naledi.dlamini@dvt.co.za',  TRUE, NOW(), NOW()),
-                ('c2000000-0000-0000-0000-000000000002', 'sipho.ndlovu@dvt.co.za',     'Sipho',   'Ndlovu',  'sipho.ndlovu@dvt.co.za',    TRUE, NOW(), NOW())
+               ('c1000000-0000-0000-0000-000000000001', 'phindi@dvtsoftware.com', 'Phindile',  'Gamede', 'phindi@dvtsoftware.com',  TRUE, NOW(), NOW()),
+                ('c2000000-0000-0000-0000-000000000002', 'rose@dvtsoftware.com',     'Rose',   'Allen-Richards',  'rose@dvtsoftware.com',    TRUE, NOW(), NOW())
             ON CONFLICT ("IdentityId") DO NOTHING;
             """);
 
