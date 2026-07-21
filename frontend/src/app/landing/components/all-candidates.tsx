@@ -35,8 +35,7 @@ type Filters = Omit<ApplicationFilters, "search" | "limit" | "cursor">;
 const STATUS_OPTIONS: [string, string][] = [
   ["", "All statuses"],
   ["PENDING", "Pending"],
-  ["evaluated", "Evaluated"],
-  ["forwarded", "Forwarded"],
+  ["shortlisted", "Shortlisted"],
   ["rejected", "Rejected"],
 ];
 
