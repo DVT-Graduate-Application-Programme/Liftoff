@@ -2,16 +2,29 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRecruiterLogs } from "@/hooks/use-recruiter-logs";
+import { useInfiniteLogs, type RecruiterActionLog } from "@/hooks/use-recruiter-logs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ScrollText, ArrowRight, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { LoadMoreButton } from "@/components/load-more-button";
 
 export default function LogsPage() {
-  const { data: logs, isLoading, error, refetch } = useRecruiterLogs();
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteLogs();
+  const logs = React.useMemo(
+    () => (data?.pages ?? []).flatMap((page: { logs: RecruiterActionLog[] }) => page.logs),
+    [data?.pages],
+  );
 
   return (
     <main className="w-full px-4 py-8 sm:px-6 lg:px-8">
@@ -36,7 +49,7 @@ export default function LogsPage() {
             message={error instanceof Error ? error.message : "An unknown error occurred"}
             onRetry={() => { void refetch(); }}
           />
-        ) : !logs || logs.length === 0 ? (
+        ) : logs.length === 0 ? (
           <EmptyState
             icon={<ScrollText className="size-5" />}
             title="No logs found"
@@ -98,7 +111,7 @@ export default function LogsPage() {
                     </td>
                     <td className="w-px px-3 py-3 whitespace-nowrap text-right sm:px-6 sm:py-4">
                       <Button asChild variant="ghost" size="sm" className="gap-1">
-                        <Link href={`/applicants/${log.applicationRecordId}`}>
+                        <Link href={`/applicants/${log.applicationRecordId}?from=logs`}>
                           View
                           <ExternalLink className="h-3 w-3" />
                         </Link>
@@ -109,6 +122,17 @@ export default function LogsPage() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+        {hasNextPage && (
+          <div className="flex justify-center">
+            <LoadMoreButton
+              hasNextPage={hasNextPage}
+              isFetchingNextPage={isFetchingNextPage}
+              onClick={() => {
+                void fetchNextPage();
+              }}
+            />
           </div>
         )}
         </div>
