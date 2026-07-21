@@ -2,6 +2,7 @@
 
 import { useMemo, type ReactElement, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
 import {
   useApplicantSelection,
@@ -91,8 +92,7 @@ function PendingApplicationCard({
 }) {
   const router = useRouter();
   const evaluationQuery = useEvaluation(application.applicationId);
-  const isClaimedByActiveRecruiter =
-    application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
+  const isClaimed = Boolean(application.claimedByRecruiterId);
   const isClaiming =
     enableClaim &&
     claimMutation.isPending &&
@@ -113,18 +113,18 @@ function PendingApplicationCard({
       name={application.candidateName}
       institute={education.degree || application.cvSummary}
       secondaryInstitute={education.institution || undefined}
+      recruiterLabel="Recruiter"
+      recruiterName={getRecruiterLabel(application)}
       systemScore={toScorePercent(application.hiringAgentTotalScore)}
       academicAverage={academicAverage}
       createdAt={application.createdAt}
       showInstitute
       {...(enableClaim
         ? {
-            secondaryActionLabel: isClaimedByActiveRecruiter
-              ? "Claimed"
-              : "Claim for review",
-            isSecondaryActionDisabled: isClaimedByActiveRecruiter || isClaiming,
+            secondaryActionLabel: isClaimed ? "Claimed" : "Claim for review",
+            isSecondaryActionDisabled: isClaimed || isClaiming,
             isSecondaryActionLoading: isClaiming,
-            onSecondaryActionClick: isClaimedByActiveRecruiter
+            onSecondaryActionClick: isClaimed
               ? undefined
               : () => {
                   claimMutation.mutate(application.applicationId);
@@ -154,6 +154,8 @@ export function ApplicantList({
   renderCard,
 }: ApplicantListProps) {
   const router = useRouter();
+  const { data: session } = useSession();
+  const recruiterIdentity = session?.user?.email ?? ACTIVE_RECRUITER_ID;
   const { search } = useApplicantSearch();
   const { selectApplication } = useApplicantSelection();
   const { setOpen, setOpenMobile } = useSidebar();
@@ -179,7 +181,7 @@ export function ApplicantList({
     status: status ?? filters?.status,
     search: search || undefined,
   });
-  const claimMutation = useClaimApplication();
+  const claimMutation = useClaimApplication(recruiterIdentity);
   const applications = useMemo(
     () =>
       (data?.pages ?? []).flatMap(
@@ -189,7 +191,7 @@ export function ApplicantList({
   );
   const claimableApplication = (application: CandidateApplication) => {
     const isClaimedByActiveRecruiter =
-      application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
+      application.claimedByRecruiterId === recruiterIdentity;
     const isClaiming =
       enableClaim &&
       claimMutation.isPending &&
@@ -252,8 +254,7 @@ export function ApplicantList({
       );
     }
 
-    const { isClaimedByActiveRecruiter, isClaiming } =
-      claimableApplication(application);
+    const { isClaiming } = claimableApplication(application);
     const displayStatus = getDisplayStatus(application);
     const commonProps = {
       name: application.candidateName,
@@ -266,13 +267,13 @@ export function ApplicantList({
       statusLabel: getStatusLabel(displayStatus),
       ...(enableClaim
         ? {
-            secondaryActionLabel: isClaimedByActiveRecruiter
+            secondaryActionLabel: application.claimedByRecruiterId
               ? "Claimed"
               : "Claim for review",
             isSecondaryActionDisabled:
-              isClaimedByActiveRecruiter || isClaiming,
+              Boolean(application.claimedByRecruiterId) || isClaiming,
             isSecondaryActionLoading: isClaiming,
-            onSecondaryActionClick: isClaimedByActiveRecruiter
+            onSecondaryActionClick: application.claimedByRecruiterId
               ? undefined
               : () => {
                   claimMutation.mutate(application.applicationId);
