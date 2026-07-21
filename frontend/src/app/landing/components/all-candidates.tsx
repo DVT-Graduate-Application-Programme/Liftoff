@@ -80,9 +80,7 @@ function AllCandidateListCard({
         showReviewedAt={false}
         createdAt={application.createdAt}
         recruiterName={getRecruiterLabel(application)}
-        secondaryActionLabel={
-          isClaimed ? "Claimed" : "Claim for review"
-        }
+        secondaryActionLabel={isClaimed ? "Claimed" : "Claim for review"}
         isSecondaryActionDisabled={isClaimed || isClaiming}
         isSecondaryActionLoading={isClaiming}
         onSecondaryActionClick={
@@ -168,7 +166,10 @@ function AllCandidates() {
         ["unclaimed", "Unclaimed"],
         ...(recruitersQuery.data ?? [])
           .filter((recruiter) => recruiter.isActive)
-          .map((recruiter): [string, string] => [recruiter.email, recruiter.fullName]),
+          .map((recruiter): [string, string] => [
+            recruiter.email,
+            recruiter.fullName,
+          ]),
       ],
     },
     {
@@ -227,7 +228,12 @@ function AllCandidates() {
   return (
     <>
       <section className="mb-8 flex flex-col gap-6">
-        <h2 className="text-2xl font-bold text-foreground">All Applicants</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">All Applicants</h2>
+          <p className="text-muted-foreground">
+            Review and manage all applicants
+          </p>
+        </div>
         <FilterBar
           id="all-candidate-filters"
           filtersOpen={filtersOpen}
