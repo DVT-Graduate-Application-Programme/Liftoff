@@ -3,11 +3,13 @@
 import * as React from "react";
 import AllCandidateCard from "@/components/applicant-card/all-candidate-card";
 import { useRouter } from "next/navigation";
-import { useApplications } from "@/hooks/use-applications";
+import { useInfiniteApplications } from "@/hooks/use-infinite-applications";
 import type { CandidateApplication } from "@/types/candidate";
+import type { PaginatedApplications } from "@/types/api";
 import { ListFilter, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { LoadMoreButton } from "@/components/load-more-button";
 import { Separator } from "@/components/ui/separator";
 import {
   FilterField,
@@ -273,34 +275,24 @@ export default function HistoryPage() {
     },
   ].filter(Boolean) as ActiveFilter[];
 
-  const { data, isLoading, error } = useApplications();
-  const applications = data?.applications || [];
-
-  let filteredCandidates = applications;
-
-  if (filterDecision !== "All") {
-    filteredCandidates = filteredCandidates.filter(
-      (c: CandidateApplication) =>
-        c.currentStatus.toLowerCase() === filterDecision.toLowerCase(),
-    );
-  }
-  if (filterScore !== "All") {
-    filteredCandidates = filteredCandidates.filter(
-      (c: CandidateApplication) =>
-        c.tier.toLowerCase() === filterScore.toLowerCase(),
-    );
-  }
-
-  if (filterDateRange.start) {
-    const [year, month, day] = filterDateRange.start.split("-").map(Number);
-    const startObj = new Date(year, month - 1, day, 0, 0, 0, 0);
-    filteredCandidates = filteredCandidates.filter((c: CandidateApplication) => new Date(c.createdAt) >= startObj);
-  }
-  if (filterDateRange.end) {
-    const [year, month, day] = filterDateRange.end.split("-").map(Number);
-    const endObj = new Date(year, month - 1, day, 23, 59, 59, 999);
-    filteredCandidates = filteredCandidates.filter((c: CandidateApplication) => new Date(c.createdAt) <= endObj);
-  }
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteApplications({
+    status: filterDecision !== "All" ? filterDecision : undefined,
+    tier: filterScore !== "All" ? filterScore : undefined,
+    dateFrom: filterDateRange.start || undefined,
+    dateTo: filterDateRange.end || undefined,
+    limit: 12,
+  });
+  const filteredCandidates = React.useMemo(
+    () => (data?.pages ?? []).flatMap((page: PaginatedApplications) => page.applications),
+    [data?.pages],
+  );
 
   let groups: { label: string; candidates: CandidateApplication[] }[] = [];
 
@@ -378,6 +370,17 @@ export default function HistoryPage() {
                           candidates={candidates}
                         />
                       ))}
+                      {hasNextPage && (
+                        <div className="flex justify-center">
+                          <LoadMoreButton
+                            hasNextPage={hasNextPage}
+                            isFetchingNextPage={isFetchingNextPage}
+                            onClick={() => {
+                              void fetchNextPage();
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

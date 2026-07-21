@@ -16,6 +16,7 @@ const fixtures: CandidateApplication[] = [
     candidateGitHubUrl: null,
     claimedByRecruiterId: null,
     shortlistedByRecruiterId: null,
+    ratedByRecruiterId: null,
     createdAt: "2024-01-01T00:00:00.000Z",
   },
   {
@@ -30,6 +31,7 @@ const fixtures: CandidateApplication[] = [
     candidateGitHubUrl: null,
     claimedByRecruiterId: null,
     shortlistedByRecruiterId: null,
+    ratedByRecruiterId: null,
     createdAt: "2024-01-02T00:00:00.000Z",
   },
   {
@@ -44,6 +46,7 @@ const fixtures: CandidateApplication[] = [
     candidateGitHubUrl: null,
     claimedByRecruiterId: "rose@dvtsoftware.com",
     shortlistedByRecruiterId: "rose@dvtsoftware.com",
+    ratedByRecruiterId: null,
     createdAt: "2024-01-03T00:00:00.000Z",
   },
   {
@@ -58,6 +61,7 @@ const fixtures: CandidateApplication[] = [
     candidateGitHubUrl: null,
     claimedByRecruiterId: null,
     shortlistedByRecruiterId: null,
+    ratedByRecruiterId: null,
     createdAt: "2024-01-04T00:00:00.000Z",
   },
 ];

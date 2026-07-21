@@ -25,7 +25,8 @@ type ApplicantCardProps = {
   recruiterName?: string;
   actionLabel?: string;
   onActionClick?: () => void;
-  actionVariant?: "default" | "outline" | "secondary" | "ghost" | "destructive" | "link";
+  actionVariant?:
+    "default" | "outline" | "secondary" | "ghost" | "destructive" | "link";
   onClick?: () => void;
   secondaryActionLabel?: string;
   onSecondaryActionClick?: () => void;
@@ -34,7 +35,8 @@ type ApplicantCardProps = {
   stackActions?: boolean;
 };
 
-function getScoreColor(score: number) {
+function getScoreColor(score?: number | null) {
+  if (score == null || Number.isNaN(score)) return "text-muted-foreground";
   if (score >= 80) return "text-primary";
   if (score >= 65) return "text-chart-4";
   return "text-destructive";
@@ -66,7 +68,15 @@ const statusStyles = {
   { border: string; text: string; background: string }
 >;
 
-function ScoreTag({ score }: { score: number }) {
+function ScoreTag({ score }: { score?: number | null }) {
+  if (score == null || Number.isNaN(score)) {
+    return (
+      <div className="flex min-w-12 justify-center">
+        <span className="text-sm font-semibold text-muted-foreground">–</span>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-w-12 justify-center">
       <span
@@ -172,14 +182,20 @@ export default function ApplicantCard({
           </h4>
           {showInstitute && (
             <div className="mt-1 flex flex-col gap-0.5 text-xs text-muted-foreground">
-              <p className={cn(wrapInstitute ? "whitespace-normal break-words" : "truncate")}>
+              <p
+                className={cn(
+                  wrapInstitute ? "whitespace-normal break-words" : "truncate",
+                )}
+              >
                 {institute}
               </p>
               {secondaryInstitute && (
                 <p
                   className={cn(
                     "text-muted-foreground/80",
-                    wrapInstitute ? "whitespace-normal break-words" : "truncate",
+                    wrapInstitute
+                      ? "whitespace-normal break-words"
+                      : "truncate",
                   )}
                 >
                   {secondaryInstitute}
@@ -243,7 +259,9 @@ export default function ApplicantCard({
             <span
               className={cn(
                 "max-w-full text-right text-xs font-medium tabular-nums text-foreground",
-                wrapReviewedAt ? "whitespace-normal break-words" : "truncate whitespace-nowrap",
+                wrapReviewedAt
+                  ? "whitespace-normal break-words"
+                  : "truncate whitespace-nowrap",
               )}
             >
               {reviewedAt}
@@ -258,7 +276,9 @@ export default function ApplicantCard({
             <span
               className={cn(
                 "max-w-full text-right text-xs font-medium tabular-nums text-foreground",
-                wrapReviewedAt ? "whitespace-normal break-words" : "truncate whitespace-nowrap",
+                wrapReviewedAt
+                  ? "whitespace-normal break-words"
+                  : "truncate whitespace-nowrap",
               )}
             >
               {daysAgo === 0
@@ -284,7 +304,9 @@ export default function ApplicantCard({
       <div
         className={cn(
           "flex w-full shrink-0 gap-2 @2xl:w-auto @2xl:pl-2",
-          stackActions ? "flex-col" : "flex-col @2xl:flex-row @2xl:items-center",
+          stackActions
+            ? "flex-col"
+            : "flex-col @2xl:flex-row @2xl:items-center",
         )}
       >
         {secondaryActionLabel ? (
@@ -313,8 +335,14 @@ export default function ApplicantCard({
           size="sm"
           className={cn(
             "gap-1.5 text-xs w-full @2xl:w-auto",
-            actionVariant === "default" ? "text-white hover:bg-primary/80" : undefined,
-            secondaryActionLabel ? (stackActions ? "justify-center" : "@2xl:w-32 justify-center") : undefined,
+            actionVariant === "default"
+              ? "text-white hover:bg-primary/80"
+              : undefined,
+            secondaryActionLabel
+              ? stackActions
+                ? "justify-center"
+                : "@2xl:w-32 justify-center"
+              : undefined,
           )}
           onClick={(event) => {
             event.stopPropagation();
