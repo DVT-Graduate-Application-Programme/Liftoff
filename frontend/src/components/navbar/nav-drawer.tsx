@@ -13,6 +13,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { useRecruiters } from "@/hooks/use-recruiters";
 import { NavMenu } from "./nav-menu";
 import { LogoutButton } from "./logout-button";
 
@@ -66,8 +67,10 @@ export function NavDrawer({
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-medium leading-none">Phindile</span>
-                <span className="text-xs text-muted-foreground mt-1.5">Phindi@DVTsoftware.com</span>
+                <span className="text-sm font-medium leading-none">{displayName}</span>
+                <span className="mt-1.5 text-xs text-muted-foreground">
+                  {displayEmail || "Signed in recruiter"}
+                </span>
               </div>
             </div>
             <LogoutButton />
