@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 
@@ -14,10 +14,18 @@ export interface RecruiterActionLog {
   actionedAt: string;
 }
 
-export function useRecruiterLogs() {
-  return useQuery({
-    queryKey: queryKeys.logs(),
-    queryFn: () => apiFetch<RecruiterActionLog[]>("/api/applications/logs"),
+export interface PaginatedLogs {
+  logs: RecruiterActionLog[];
+  nextCursor: number | null;
+}
+
+export function useInfiniteLogs() {
+  return useInfiniteQuery({
+    queryKey: queryKeys.infiniteLogs(),
+    queryFn: ({ pageParam }: { pageParam: number }) =>
+      apiFetch<PaginatedLogs>(`/api/applications/logs?limit=10&cursor=${String(pageParam)}`),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
   });
 }
 

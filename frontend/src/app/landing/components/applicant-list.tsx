@@ -15,7 +15,7 @@ import {
   useClaimApplication,
 } from "@/hooks/use-claim-application";
 import { useSidebar } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
+import { LoadMoreButton } from "@/components/load-more-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -297,17 +297,14 @@ export function ApplicantList({
     );
   };
 
-  const loadMoreButton = hasNextPage && (
-      <Button
-        variant="outline"
-        className="self-center"
-        disabled={isFetchingNextPage}
-        onClick={() => {
-          void fetchNextPage();
-        }}
-      >
-      {isFetchingNextPage ? "Loading..." : "Load more"}
-    </Button>
+  const loadMoreButton = (
+    <LoadMoreButton
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      onClick={() => {
+        void fetchNextPage();
+      }}
+    />
   );
 
   if (groupByDate) {
@@ -342,7 +339,7 @@ export function ApplicantList({
             </section>
           );
         })}
-        {loadMoreButton && (
+        {hasNextPage && (
           <div className="flex justify-center">{loadMoreButton}</div>
         )}
       </div>

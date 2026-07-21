@@ -6,6 +6,7 @@ import type { ApplicationFilters } from "@/types/api";
 import { useApplicationDetail } from "@/hooks/use-application-detail";
 import { useEvaluation } from "@/hooks/use-evaluation";
 import { useOwnership } from "@/hooks/use-ownership";
+import { useRecruiters } from "@/hooks/use-recruiters";
 import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
 import { useSidebar } from "@/components/ui/sidebar";
 import ApplicantCard from "@/components/applicant-card/applicant-card";
@@ -86,29 +87,50 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
 function AcceptedCandidates() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [minScore, setMinScore] = useState("");
-  const [claimed, setClaimed] = useState("all");
+  const [ownership, setOwnership] = useState("all");
   const [sort, setSort] = useState<SortOption>("score_desc");
+
+  const recruitersQuery = useRecruiters();
 
   const filters = useMemo(() => {
     const next: Filters = { sort, shortlisted: true };
     if (minScore) next.minScore = Number(minScore);
-    if (claimed !== "all") next.claimed = claimed === "claimed";
+    if (ownership === "unclaimed") next.claimed = false;
+    else if (ownership !== "all") next.recruiterIdentity = ownership;
     return next;
-  }, [claimed, minScore, sort]);
+  }, [minScore, ownership, sort]);
 
   const clearFilters = () => {
     setMinScore("");
-    setClaimed("all");
+    setOwnership("all");
   };
 
   const fields: FilterFieldConfig[] = [
     { key: "minScore", label: "Minimum score", type: "number", value: minScore, onChange: setMinScore, options: [], placeholder: "Any score" },
-    { key: "claimed", label: "Ownership", value: claimed, onChange: setClaimed, options: [["all", "All candidates"], ["unclaimed", "Unclaimed"], ["claimed", "Claimed"]] },
+    {
+      key: "ownership",
+      label: "Ownership",
+      value: ownership,
+      onChange: setOwnership,
+      options: [
+        ["all", "All candidates"],
+        ["unclaimed", "Unclaimed"],
+        ...(recruitersQuery.data ?? [])
+          .filter((recruiter) => recruiter.isActive)
+          .map((recruiter): [string, string] => [recruiter.email, recruiter.fullName]),
+      ],
+    },
   ];
 
   const activeFilters: ActiveFilter[] = [
     minScore && { label: `Score: ${minScore}+`, onClear: () => { setMinScore(""); } },
-    claimed !== "all" && { label: claimed === "claimed" ? "Claimed" : "Unclaimed", onClear: () => { setClaimed("all"); } },
+    ownership !== "all" && {
+      label:
+        ownership === "unclaimed"
+          ? "Unclaimed"
+          : `Owner: ${recruitersQuery.data?.find((recruiter) => recruiter.email === ownership)?.fullName ?? ownership}`,
+      onClear: () => { setOwnership("all"); },
+    },
   ].filter(Boolean) as ActiveFilter[];
 
   return (
