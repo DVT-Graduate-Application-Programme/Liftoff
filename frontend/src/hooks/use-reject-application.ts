@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
-import { ACTIVE_RECRUITER_ID } from "@/hooks/use-claim-application";
 
 interface StatusResponse {
   actionedByRecruiterId: string;
@@ -17,7 +16,7 @@ export function useRejectApplication(applicationId: string) {
       apiFetch<StatusResponse>(`/api/applications/${applicationId}/ownership/reject`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recruiterIdentity: ACTIVE_RECRUITER_ID, reason }),
+        body: JSON.stringify({ reason }),
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.ownership(applicationId) });

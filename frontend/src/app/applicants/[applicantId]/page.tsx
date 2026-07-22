@@ -50,7 +50,6 @@ import { useReevaluateApplication } from "@/hooks/use-reevaluate-application";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { useApplicationLogs } from "@/hooks/use-recruiter-logs";
-import { ACTIVE_RECRUITER_ID } from "@/hooks/use-claim-application";
 import type { Evaluation, EvaluationCategoryScores, EvaluationScore, Ownership } from "@/types/api";
 import { SCORE_CATEGORIES } from "@/app/landing/components/applicant-details/constants";
 import { DocumentViewer } from "./components/document-viewer/document-viewer";
@@ -276,7 +275,7 @@ function CandidateReview({ applicationId, currentStatus }: { applicationId: stri
       apiFetch<RateResponse>(`/api/applications/${applicationId}/ownership/notes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recruiterIdentity: ACTIVE_RECRUITER_ID, notes: notesText }),
+        body: JSON.stringify({ notes: notesText }),
       }),
     onSuccess: (data) => {
       queryClient.setQueryData<Ownership | undefined>(queryKeys.ownership(applicationId), (prev) =>

@@ -8,19 +8,14 @@ interface ClaimResponse {
   claimedAt: string | null;
 }
 
-export function useClaimApplication(recruiterIdentity = ACTIVE_RECRUITER_ID) {
+export function useClaimApplication() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (applicationId: string) =>
-      apiFetch<ClaimResponse>(
-        `/api/applications/${applicationId}/ownership/claim`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ recruiterIdentity }),
-        },
-      ),
+      apiFetch<ClaimResponse>(`/api/applications/${applicationId}/ownership/claim`, {
+        method: "POST",
+      }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["applications"] });
     },
