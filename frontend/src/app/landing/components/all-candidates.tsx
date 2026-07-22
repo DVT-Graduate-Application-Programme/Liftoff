@@ -41,12 +41,14 @@ const STATUS_OPTIONS: [string, string][] = [
 
 function AllCandidateListCard({
   application,
+  recruiterIdentity,
   isClaimedByActiveRecruiter,
   isClaiming,
   onClaim,
   onOpen,
 }: {
   application: CandidateApplication;
+  recruiterIdentity: string;
   isClaimedByActiveRecruiter: boolean;
   isClaiming: boolean;
   onClaim: () => void;
@@ -62,7 +64,7 @@ function AllCandidateListCard({
     evaluationQuery.data?.institutionJson?.academic_average ??
     evaluationQuery.data?.categoryScoresJson.education.score;
   const displayStatus = getDisplayStatus(application);
-  const isClaimed = Boolean(application.claimedByRecruiterId);
+  const isClaimed = isClaimedByActiveRecruiter;
 
   if (application.currentStatus !== "shortlisted") {
     return (
@@ -79,14 +81,10 @@ function AllCandidateListCard({
         showReviewedAt={false}
         createdAt={application.createdAt}
         recruiterName={getRecruiterLabel(application)}
-        secondaryActionLabel={
-          isClaimed ? "Claimed" : "Claim for review"
-        }
+        secondaryActionLabel={isClaimed ? "Claimed" : "Claim for review"}
         isSecondaryActionDisabled={isClaimed || isClaiming}
         isSecondaryActionLoading={isClaiming}
-        onSecondaryActionClick={
-          isClaimedByActiveRecruiter ? undefined : onClaim
-        }
+        onSecondaryActionClick={isClaimed ? undefined : onClaim}
         onActionClick={onOpen}
       />
     );
@@ -236,6 +234,7 @@ function AllCandidates() {
             <AllCandidateListCard
               key={application.applicationId}
               application={application}
+              recruiterIdentity={recruiterIdentity}
               isClaimedByActiveRecruiter={isClaimedByActiveRecruiter}
               isClaiming={isClaiming}
               onClaim={() => {
