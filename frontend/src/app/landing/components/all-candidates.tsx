@@ -104,18 +104,17 @@ function AllCandidates() {
   const recruitersQuery = useRecruiters();
 
   const filters = useMemo(() => {
-    const next: Filters = { sort };
+    const next: Filters = { sort, excludeRecruiterIdentity: recruiterIdentity };
     if (status) next.status = status;
     if (minScore) next.minScore = Number(minScore);
-    if (ownership === "unclaimed") next.claimed = false;
-    else if (ownership !== "all") next.recruiterIdentity = ownership;
+    if (ownership !== "all") next.recruiterIdentity = ownership;
     if (dateRange !== "all") {
       const from = new Date();
       from.setDate(from.getDate() - Number(dateRange));
       next.dateFrom = from.toISOString();
     }
     return next;
-  }, [dateRange, minScore, ownership, sort, status]);
+  }, [dateRange, minScore, ownership, recruiterIdentity, sort, status]);
 
   const clearFilters = () => {
     setStatus("");
@@ -148,9 +147,11 @@ function AllCandidates() {
       onChange: setOwnership,
       options: [
         ["all", "All candidates"],
-        ["unclaimed", "Unclaimed"],
         ...(recruitersQuery.data ?? [])
-          .filter((recruiter) => recruiter.isActive)
+          .filter(
+            (recruiter) =>
+              recruiter.isActive && recruiter.email !== recruiterIdentity,
+          )
           .map((recruiter): [string, string] => [
             recruiter.email,
             recruiter.fullName,
@@ -184,10 +185,7 @@ function AllCandidates() {
       },
     },
     ownership !== "all" && {
-      label:
-        ownership === "unclaimed"
-          ? "Unclaimed"
-          : `Owner: ${recruitersQuery.data?.find((recruiter) => recruiter.email === ownership)?.fullName ?? ownership}`,
+      label: `Owner: ${recruitersQuery.data?.find((recruiter) => recruiter.email === ownership)?.fullName ?? ownership}`,
       onClear: () => {
         setOwnership("all");
       },
