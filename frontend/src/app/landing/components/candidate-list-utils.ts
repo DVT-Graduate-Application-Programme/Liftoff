@@ -40,6 +40,11 @@ export const getRecruiterLabel = (application: CandidateApplication) =>
   application.ratedByRecruiterId ??
   "phindi@dvtsoftware.com";
 
+export const isClaimedByActiveRecruiter = (
+  application: CandidateApplication,
+  recruiterIdentity: string,
+) => application.claimedByRecruiterId === recruiterIdentity;
+
 export function parseEducationEvidence(educationEvidence?: string | null) {
   const parts = (educationEvidence ?? "")
     .split(",")
