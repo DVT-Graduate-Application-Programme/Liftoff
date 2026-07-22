@@ -1,6 +1,8 @@
 using System;
 using System.Text.Json;
+
 using Domain.Entities;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,7 +20,7 @@ public static class DbSeeder
     private static readonly Guid App6Id = new("a6000000-0000-0000-0000-000000000006");
     private static readonly Guid App7Id = new("a7000000-0000-0000-0000-000000000007");
     private static readonly Guid App8Id = new("a8000000-0000-0000-0000-000000000008");
-    private static readonly Guid App9Id  = new("a9000000-0000-0000-0000-000000000009");
+    private static readonly Guid App9Id = new("a9000000-0000-0000-0000-000000000009");
     private static readonly Guid App10Id = new("b0000000-0000-0000-0000-000000000010");
     private static readonly Guid App11Id = new("b0000000-0000-0000-0000-000000000011");
     private static readonly Guid App12Id = new("b0000000-0000-0000-0000-000000000012");
@@ -27,15 +29,15 @@ public static class DbSeeder
     private static readonly Guid Recruiter1Id = new("c1000000-0000-0000-0000-000000000001");
     private static readonly Guid Recruiter2Id = new("c2000000-0000-0000-0000-000000000002");
 
-    private static readonly Guid Eval1Id  = new("e1000000-0000-0000-0000-000000000001");
-    private static readonly Guid Eval2Id  = new("e2000000-0000-0000-0000-000000000002");
-    private static readonly Guid Eval3Id  = new("e3000000-0000-0000-0000-000000000003");
-    private static readonly Guid Eval4Id  = new("e4000000-0000-0000-0000-000000000004");
-    private static readonly Guid Eval5Id  = new("e5000000-0000-0000-0000-000000000005");
-    private static readonly Guid Eval6Id  = new("e6000000-0000-0000-0000-000000000006");
-    private static readonly Guid Eval7Id  = new("e7000000-0000-0000-0000-000000000007");
-    private static readonly Guid Eval8Id  = new("e8000000-0000-0000-0000-000000000008");
-    private static readonly Guid Eval9Id  = new("e9000000-0000-0000-0000-000000000009");
+    private static readonly Guid Eval1Id = new("e1000000-0000-0000-0000-000000000001");
+    private static readonly Guid Eval2Id = new("e2000000-0000-0000-0000-000000000002");
+    private static readonly Guid Eval3Id = new("e3000000-0000-0000-0000-000000000003");
+    private static readonly Guid Eval4Id = new("e4000000-0000-0000-0000-000000000004");
+    private static readonly Guid Eval5Id = new("e5000000-0000-0000-0000-000000000005");
+    private static readonly Guid Eval6Id = new("e6000000-0000-0000-0000-000000000006");
+    private static readonly Guid Eval7Id = new("e7000000-0000-0000-0000-000000000007");
+    private static readonly Guid Eval8Id = new("e8000000-0000-0000-0000-000000000008");
+    private static readonly Guid Eval9Id = new("e9000000-0000-0000-0000-000000000009");
     private static readonly Guid Eval10Id = new("f0000000-0000-0000-0000-000000000010");
     private static readonly Guid Eval11Id = new("f0000000-0000-0000-0000-000000000011");
     private static readonly Guid Eval12Id = new("f0000000-0000-0000-0000-000000000012");
@@ -58,7 +60,8 @@ public static class DbSeeder
             INSERT INTO public."Recruiters" ("Id", "IdentityId", "FirstName", "LastName", "Email", "IsActive", "CreatedAt", "UpdatedAt")
             VALUES
                ('c1000000-0000-0000-0000-000000000001', 'phindi@dvtsoftware.com', 'Phindile',  'Gamede', 'phindi@dvtsoftware.com',  TRUE, NOW(), NOW()),
-                ('c2000000-0000-0000-0000-000000000002', 'rose@dvtsoftware.com',     'Rose',   'Allen-Richards',  'rose@dvtsoftware.com',    TRUE, NOW(), NOW())
+                ('c2000000-0000-0000-0000-000000000002', 'rose@dvtsoftware.com',     'Rose',   'Allen-Richards',  'rose@dvtsoftware.com',    TRUE, NOW(), NOW()),
+                ('c3000000-0000-0000-0000-000000000003', 'siegfriedmini@gmail.com',    'Sashen',  'Govindasamy',       'siegfriedmini@gmail.com',   TRUE, NOW(), NOW())
             ON CONFLICT ("IdentityId") DO NOTHING;
             """);
 
