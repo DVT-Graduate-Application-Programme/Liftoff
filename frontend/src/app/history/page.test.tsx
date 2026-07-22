@@ -44,6 +44,17 @@ describe("History page", () => {
     expect(document.querySelector(".animate-spin")).toBeInTheDocument();
   });
 
+  it("only exposes pending, shortlisted, and rejected in the status filter", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse({ applications: [], nextCursor: null }));
+
+    renderWithQueryClient(<HistoryPage />);
+
+    const { default: userEvent } = await import("@testing-library/user-event");
+    await userEvent.click(screen.getByRole("button", { name: "Advanced Filters" }));
+    const options = Array.from(screen.getAllByRole("option")).map((option) => option.textContent);
+    expect(options).toEqual(["All statuses", "Pending", "Shortlisted", "Rejected"]);
+  });
+
   it("renders applications grouped by recency on success", async () => {
     vi.spyOn(global, "fetch").mockImplementation((input) => {
       const url = requestUrl(input);

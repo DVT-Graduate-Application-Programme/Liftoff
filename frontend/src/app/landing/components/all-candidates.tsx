@@ -35,8 +35,7 @@ type Filters = Omit<ApplicationFilters, "search" | "limit" | "cursor">;
 const STATUS_OPTIONS: [string, string][] = [
   ["", "All statuses"],
   ["PENDING", "Pending"],
-  ["evaluated", "Evaluated"],
-  ["forwarded", "Forwarded"],
+  ["shortlisted", "Shortlisted"],
   ["rejected", "Rejected"],
 ];
 
@@ -100,7 +99,6 @@ function AllCandidates() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [status, setStatus] = useState("");
   const [minScore, setMinScore] = useState("");
-  const [hardGate, setHardGate] = useState("all");
   const [ownership, setOwnership] = useState("all");
   const [dateRange, setDateRange] = useState("all");
   const [sort, setSort] = useState<SortOption>("date_desc");
@@ -111,7 +109,6 @@ function AllCandidates() {
     const next: Filters = { sort };
     if (status) next.status = status;
     if (minScore) next.minScore = Number(minScore);
-    if (hardGate !== "all") next.hardGatePassed = hardGate === "passed";
     if (ownership === "unclaimed") next.claimed = false;
     else if (ownership !== "all") next.recruiterIdentity = ownership;
     if (dateRange !== "all") {
@@ -120,12 +117,11 @@ function AllCandidates() {
       next.dateFrom = from.toISOString();
     }
     return next;
-  }, [dateRange, hardGate, minScore, ownership, sort, status]);
+  }, [dateRange, minScore, ownership, sort, status]);
 
   const clearFilters = () => {
     setStatus("");
     setMinScore("");
-    setHardGate("all");
     setOwnership("all");
     setDateRange("all");
   };
@@ -146,17 +142,6 @@ function AllCandidates() {
       onChange: setMinScore,
       options: [],
       placeholder: "Any score",
-    },
-    {
-      key: "hardGate",
-      label: "Screening",
-      value: hardGate,
-      onChange: setHardGate,
-      options: [
-        ["all", "All results"],
-        ["passed", "Passed"],
-        ["failed", "Failed"],
-      ],
     },
     {
       key: "ownership",
@@ -197,12 +182,6 @@ function AllCandidates() {
         setMinScore("");
       },
     },
-    hardGate !== "all" && {
-      label: hardGate === "passed" ? "Screening: passed" : "Screening: failed",
-      onClear: () => {
-        setHardGate("all");
-      },
-    },
     ownership !== "all" && {
       label:
         ownership === "unclaimed"
@@ -222,7 +201,7 @@ function AllCandidates() {
 
   const { selectApplication } = useApplicantSelection();
   const { setOpen, setOpenMobile } = useSidebar();
-  const claimMutation = useClaimApplication(recruiterIdentity);
+  const claimMutation = useClaimApplication();
 
   return (
     <>

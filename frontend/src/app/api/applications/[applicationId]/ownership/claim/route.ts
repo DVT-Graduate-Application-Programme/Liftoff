@@ -1,7 +1,16 @@
-import { NextRequest } from "next/server";
-import { proxyPost } from "../../../../_lib/backend";
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { proxyPostJson } from "../../../../_lib/backend";
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ applicationId: string }> }) {
+export async function POST(_req: NextRequest, { params }: { params: Promise<{ applicationId: string }> }) {
   const { applicationId } = await params;
-  return proxyPost(`/api/applications/${applicationId}/ownership/claim`, req);
+  const session = await auth();
+  const recruiterIdentity = session?.user?.email;
+  if (!recruiterIdentity) {
+    return NextResponse.json(
+      { error: "UNAUTHORIZED", message: "Authentication required." },
+      { status: 401 },
+    );
+  }
+  return proxyPostJson(`/api/applications/${applicationId}/ownership/claim`, { recruiterIdentity });
 }

@@ -8,6 +8,9 @@ import { ApplicantList } from "./applicant-list";
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
+vi.mock("next-auth/react", () => ({
+  useSession: () => ({ data: { user: { email: "phindi@dvtsoftware.com" } } }),
+}));
 
 vi.mock("@/components/ui/sidebar", () => ({
   useSidebar: () => ({ setOpen: vi.fn() }),
