@@ -195,6 +195,7 @@ public static class DbSeeder
             CandidateGitHubUrl = "https://github.com/josephexample-dev",
             Status = "Shortlisted",
             Tier = "Borderline",
+            ClaimedByRecruiterId = "siegfriedmini@gmail.com",
             HardGatePassed = true,
             HardGateReason = null,
             HiringAgentTotalScore = 75.0m,
@@ -315,6 +316,7 @@ public static class DbSeeder
             CandidateEmail = "amara.diallo@leeds.ac.uk",
             CandidateGitHubUrl = "https://github.com/amara-fullstack",
             Status = "Pending",
+            ClaimedByRecruiterId = "siegfriedmini@gmail.com",
             Tier = "Borderline",
             HardGatePassed = true,
             HiringAgentTotalScore = 69.0m,
@@ -493,6 +495,7 @@ public static class DbSeeder
             CandidateGitHubUrl = "https://github.com/sophiewalsh-dev",
             Status = "Pending",
             Tier = "Weak",
+            ClaimedByRecruiterId = "siegfriedmini@gmail.com",
             HardGatePassed = true,
             HiringAgentTotalScore = 54.0m,
             HiringAgentExplanation = "Some interest in full-stack development but projects are predominantly static front-end. The only backend work is a tutorial-level Express server with no database. No production software experience.",
@@ -780,11 +783,11 @@ public static class DbSeeder
         var actions = new List<RecruiterAction>
         {
             // App1: Rating and Notes
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "RATING", RatingValue = 5, Reason = "Exceptional profile, great potential.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "siegfriedmini@gmail.com", ActionType = "RATING", RatingValue = 5, Reason = "Exceptional profile, great potential.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "NOTES", Reason = "Left a voicemail to schedule technical round.", ActionedAt = DateTimeOffset.UtcNow.AddHours(-5) },
             
             // App3: Shortlisted
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "SHORTLIST", PreviousStatus = "Pending", NewStatus = "Shortlisted", Reason = "Strong candidate, advancing to interview.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, RecruiterIdentity = "siegfriedmini@gmail.com", ActionType = "SHORTLIST", PreviousStatus = "Pending", NewStatus = "Shortlisted", Reason = "Strong candidate, advancing to interview.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
 
             // App4: Shortlisted (was "forwarded" — mapped to Shortlisted)
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "SHORTLIST", PreviousStatus = "Pending", NewStatus = "Shortlisted", Reason = "Forwarding to engineering lead for review.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-3) },
