@@ -780,6 +780,21 @@ public static class DbSeeder
         db.ApplicationRecords.AddRange(app1, app2, app3, app4, app5, app6, app7, app8, app9, app10, app11, app12);
         db.HiringAgentEvaluations.AddRange(eval1, eval2, eval3, eval4, eval5, eval6, eval7, eval8, eval9, eval10, eval11, eval12);
 
+        var auditLogs = new List<AuditLog>
+        {
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, SourceService = "IngestionService", LogLevel = "Information", Message = "Transcript ingested and parsed for candidate review.", Timestamp = DateTimeOffset.UtcNow.AddDays(-10) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, SourceService = "RecruiterPortal", LogLevel = "Information", Message = "Recruiter added a rating and notes for the application.", Timestamp = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, SourceService = "RecruiterPortal", LogLevel = "Information", Message = "Application shortlisted for the next interview stage.", Timestamp = DateTimeOffset.UtcNow.AddDays(-5) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, SourceService = "RecruiterPortal", LogLevel = "Information", Message = "Recruiter forwarded the candidate to the engineering lead.", Timestamp = DateTimeOffset.UtcNow.AddDays(-4) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, SourceService = "RecruiterPortal", LogLevel = "Information", Message = "Follow-up note left for the hiring team.", Timestamp = DateTimeOffset.UtcNow.AddDays(-3) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, SourceService = "RecruiterPortal", LogLevel = "Information", Message = "Recruiter submitted a rating for the shortlisted candidate.", Timestamp = DateTimeOffset.UtcNow.AddDays(-4) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, SourceService = "RecruiterPortal", LogLevel = "Information", Message = "Application moved to shortlisted status after the initial screen.", Timestamp = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App10Id, SourceService = "HiringAgent", LogLevel = "Warning", Message = "Application rejected after hard-gate screening failed.", Timestamp = DateTimeOffset.UtcNow.AddDays(-14) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App12Id, SourceService = "HiringAgent", LogLevel = "Warning", Message = "Application rejected due to prompt injection detection and low technical fit.", Timestamp = DateTimeOffset.UtcNow.AddDays(-11) },
+        };
+
+        db.AuditLogs.AddRange(auditLogs);
+
         var actions = new List<RecruiterAction>
         {
             // App1: Rating and Notes
@@ -812,6 +827,6 @@ public static class DbSeeder
         db.RecruiterActions.AddRange(actions);
 
         await db.SaveChangesAsync();
-        logger.LogInformation("[DbSeeder] Seeded 12 application records, 12 evaluations, and mock logs successfully.");
+        logger.LogInformation("[DbSeeder] Seeded 12 application records, 12 evaluations, 9 audit logs, and mock actions successfully.");
     }
 }
