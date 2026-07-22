@@ -1,6 +1,8 @@
 using System;
 using System.Text.Json;
+
 using Domain.Entities;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,7 +20,7 @@ public static class DbSeeder
     private static readonly Guid App6Id = new("a6000000-0000-0000-0000-000000000006");
     private static readonly Guid App7Id = new("a7000000-0000-0000-0000-000000000007");
     private static readonly Guid App8Id = new("a8000000-0000-0000-0000-000000000008");
-    private static readonly Guid App9Id  = new("a9000000-0000-0000-0000-000000000009");
+    private static readonly Guid App9Id = new("a9000000-0000-0000-0000-000000000009");
     private static readonly Guid App10Id = new("b0000000-0000-0000-0000-000000000010");
     private static readonly Guid App11Id = new("b0000000-0000-0000-0000-000000000011");
     private static readonly Guid App12Id = new("b0000000-0000-0000-0000-000000000012");
@@ -27,15 +29,15 @@ public static class DbSeeder
     private static readonly Guid Recruiter1Id = new("c1000000-0000-0000-0000-000000000001");
     private static readonly Guid Recruiter2Id = new("c2000000-0000-0000-0000-000000000002");
 
-    private static readonly Guid Eval1Id  = new("e1000000-0000-0000-0000-000000000001");
-    private static readonly Guid Eval2Id  = new("e2000000-0000-0000-0000-000000000002");
-    private static readonly Guid Eval3Id  = new("e3000000-0000-0000-0000-000000000003");
-    private static readonly Guid Eval4Id  = new("e4000000-0000-0000-0000-000000000004");
-    private static readonly Guid Eval5Id  = new("e5000000-0000-0000-0000-000000000005");
-    private static readonly Guid Eval6Id  = new("e6000000-0000-0000-0000-000000000006");
-    private static readonly Guid Eval7Id  = new("e7000000-0000-0000-0000-000000000007");
-    private static readonly Guid Eval8Id  = new("e8000000-0000-0000-0000-000000000008");
-    private static readonly Guid Eval9Id  = new("e9000000-0000-0000-0000-000000000009");
+    private static readonly Guid Eval1Id = new("e1000000-0000-0000-0000-000000000001");
+    private static readonly Guid Eval2Id = new("e2000000-0000-0000-0000-000000000002");
+    private static readonly Guid Eval3Id = new("e3000000-0000-0000-0000-000000000003");
+    private static readonly Guid Eval4Id = new("e4000000-0000-0000-0000-000000000004");
+    private static readonly Guid Eval5Id = new("e5000000-0000-0000-0000-000000000005");
+    private static readonly Guid Eval6Id = new("e6000000-0000-0000-0000-000000000006");
+    private static readonly Guid Eval7Id = new("e7000000-0000-0000-0000-000000000007");
+    private static readonly Guid Eval8Id = new("e8000000-0000-0000-0000-000000000008");
+    private static readonly Guid Eval9Id = new("e9000000-0000-0000-0000-000000000009");
     private static readonly Guid Eval10Id = new("f0000000-0000-0000-0000-000000000010");
     private static readonly Guid Eval11Id = new("f0000000-0000-0000-0000-000000000011");
     private static readonly Guid Eval12Id = new("f0000000-0000-0000-0000-000000000012");
@@ -57,8 +59,9 @@ public static class DbSeeder
         await db.Database.ExecuteSqlRawAsync("""
             INSERT INTO public."Recruiters" ("Id", "IdentityId", "FirstName", "LastName", "Email", "IsActive", "CreatedAt", "UpdatedAt")
             VALUES
-                ('c1000000-0000-0000-0000-000000000001', 'Phindi.Gamede@dvt.co.za', 'Phindile',  'Gamede', 'Phindi.Gamede@dvt.co.za',  TRUE, NOW(), NOW()),
-                ('c2000000-0000-0000-0000-000000000002', 'Rose.Allen-Richards@dvt.co.za',     'Rose',   'Allen-Richards',  'Rose.Allen-Richards@dvt.co.za',    TRUE, NOW(), NOW())
+               ('c1000000-0000-0000-0000-000000000001', 'phindi@dvtsoftware.com', 'Phindile',  'Gamede', 'phindi@dvtsoftware.com',  TRUE, NOW(), NOW()),
+                ('c2000000-0000-0000-0000-000000000002', 'rose@dvtsoftware.com',     'Rose',   'Allen-Richards',  'rose@dvtsoftware.com',    TRUE, NOW(), NOW()),
+                ('c3000000-0000-0000-0000-000000000003', 'siegfriedmini@gmail.com',    'Sashen',  'Govindasamy',       'siegfriedmini@gmail.com',   TRUE, NOW(), NOW())
             ON CONFLICT ("IdentityId") DO NOTHING;
             """);
 
@@ -192,6 +195,7 @@ public static class DbSeeder
             CandidateGitHubUrl = "https://github.com/josephexample-dev",
             Status = "Shortlisted",
             Tier = "Borderline",
+            ClaimedByRecruiterId = "siegfriedmini@gmail.com",
             HardGatePassed = true,
             HardGateReason = null,
             HiringAgentTotalScore = 75.0m,
@@ -312,6 +316,7 @@ public static class DbSeeder
             CandidateEmail = "amara.diallo@leeds.ac.uk",
             CandidateGitHubUrl = "https://github.com/amara-fullstack",
             Status = "Pending",
+            ClaimedByRecruiterId = "siegfriedmini@gmail.com",
             Tier = "Borderline",
             HardGatePassed = true,
             HiringAgentTotalScore = 69.0m,
@@ -490,6 +495,7 @@ public static class DbSeeder
             CandidateGitHubUrl = "https://github.com/sophiewalsh-dev",
             Status = "Pending",
             Tier = "Weak",
+            ClaimedByRecruiterId = "siegfriedmini@gmail.com",
             HardGatePassed = true,
             HiringAgentTotalScore = 54.0m,
             HiringAgentExplanation = "Some interest in full-stack development but projects are predominantly static front-end. The only backend work is a tutorial-level Express server with no database. No production software experience.",
@@ -774,14 +780,29 @@ public static class DbSeeder
         db.ApplicationRecords.AddRange(app1, app2, app3, app4, app5, app6, app7, app8, app9, app10, app11, app12);
         db.HiringAgentEvaluations.AddRange(eval1, eval2, eval3, eval4, eval5, eval6, eval7, eval8, eval9, eval10, eval11, eval12);
 
+        var auditLogs = new List<AuditLog>
+        {
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, SourceService = "IngestionService", LogLevel = "Information", Message = "Transcript ingested and parsed for candidate review.", Timestamp = DateTimeOffset.UtcNow.AddDays(-10) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, SourceService = "RecruiterPortal", LogLevel = "Information", Message = "Recruiter added a rating and notes for the application.", Timestamp = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, SourceService = "RecruiterPortal", LogLevel = "Information", Message = "Application shortlisted for the next interview stage.", Timestamp = DateTimeOffset.UtcNow.AddDays(-5) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, SourceService = "RecruiterPortal", LogLevel = "Information", Message = "Recruiter forwarded the candidate to the engineering lead.", Timestamp = DateTimeOffset.UtcNow.AddDays(-4) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, SourceService = "RecruiterPortal", LogLevel = "Information", Message = "Follow-up note left for the hiring team.", Timestamp = DateTimeOffset.UtcNow.AddDays(-3) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, SourceService = "RecruiterPortal", LogLevel = "Information", Message = "Recruiter submitted a rating for the shortlisted candidate.", Timestamp = DateTimeOffset.UtcNow.AddDays(-4) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, SourceService = "RecruiterPortal", LogLevel = "Information", Message = "Application moved to shortlisted status after the initial screen.", Timestamp = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App10Id, SourceService = "HiringAgent", LogLevel = "Warning", Message = "Application rejected after hard-gate screening failed.", Timestamp = DateTimeOffset.UtcNow.AddDays(-14) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App12Id, SourceService = "HiringAgent", LogLevel = "Warning", Message = "Application rejected due to prompt injection detection and low technical fit.", Timestamp = DateTimeOffset.UtcNow.AddDays(-11) },
+        };
+
+        db.AuditLogs.AddRange(auditLogs);
+
         var actions = new List<RecruiterAction>
         {
             // App1: Rating and Notes
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "RATING", RatingValue = 5, Reason = "Exceptional profile, great potential.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "siegfriedmini@gmail.com", ActionType = "RATING", RatingValue = 5, Reason = "Exceptional profile, great potential.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "NOTES", Reason = "Left a voicemail to schedule technical round.", ActionedAt = DateTimeOffset.UtcNow.AddHours(-5) },
             
             // App3: Shortlisted
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "SHORTLIST", PreviousStatus = "Pending", NewStatus = "Shortlisted", Reason = "Strong candidate, advancing to interview.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, RecruiterIdentity = "siegfriedmini@gmail.com", ActionType = "SHORTLIST", PreviousStatus = "Pending", NewStatus = "Shortlisted", Reason = "Strong candidate, advancing to interview.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
 
             // App4: Shortlisted (was "forwarded" — mapped to Shortlisted)
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "SHORTLIST", PreviousStatus = "Pending", NewStatus = "Shortlisted", Reason = "Forwarding to engineering lead for review.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-3) },
@@ -806,6 +827,6 @@ public static class DbSeeder
         db.RecruiterActions.AddRange(actions);
 
         await db.SaveChangesAsync();
-        logger.LogInformation("[DbSeeder] Seeded 12 application records, 12 evaluations, and mock logs successfully.");
+        logger.LogInformation("[DbSeeder] Seeded 12 application records, 12 evaluations, 9 audit logs, and mock actions successfully.");
     }
 }
