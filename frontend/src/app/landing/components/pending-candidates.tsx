@@ -81,7 +81,7 @@ const PendingCandidates = () => {
       </section>
 
       <ApplicantList
-        status="PENDING"
+        status="PENDING,PROCESSING"
         tabKey="pending"
         filters={filters}
         emptyTitle="No pending applicants"
