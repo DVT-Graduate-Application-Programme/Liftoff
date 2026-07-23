@@ -2,10 +2,10 @@ name: Backend
 
 on:
   push:
-    branches: [main, development]
+    branches: [main, development, feature/backend/stable]
     paths: ['backend/**', '.github/workflows/backend.yml']
   pull_request:
-    branches: [main, development]
+    branches: [main, development, feature/backend/stable]
     paths: ['backend/**', '.github/workflows/backend.yml']
 
 jobs:
