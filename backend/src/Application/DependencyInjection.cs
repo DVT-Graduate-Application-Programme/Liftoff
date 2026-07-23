@@ -11,7 +11,7 @@ public static class DependencyInjection
     {
         services.AddHttpClient<IAttachmentClassificationService, OllamaAttachmentClassificationService>(client =>
         {
-            var ollamaBaseUrl = configuration["Ollama__BaseUrl"] ?? "http://localhost:11434";
+            var ollamaBaseUrl = configuration["Ollama:BaseUrl"] ?? "http://localhost:11434";
             client.BaseAddress = new Uri(ollamaBaseUrl);
         });
 
