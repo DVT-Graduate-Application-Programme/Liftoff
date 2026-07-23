@@ -226,7 +226,12 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
 
         applicationRecord.Status = newStatus;
         applicationRecord.UpdatedAt = now;
-
+        if (newStatus == "REJECTED")
+        {
+            applicationRecord.ShortlistedByRecruiterId = null;
+            applicationRecord.ShortlistedAt = null;
+            
+        }
         _dbContext.ApplicationRecords.Update(applicationRecord);
 
         await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
