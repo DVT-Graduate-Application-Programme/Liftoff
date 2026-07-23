@@ -76,7 +76,7 @@ public class IngestEvaluationHandler
             ? new[] { "Prompt injection detected" }
             : [];
 
-        var status = request.PromptInjectionDetected ? "MANUAL_REVIEW" : "VALID";
+        var status = request.PromptInjectionDetected ? "MANUAL_REVIEW" : "PENDING";
         var tier = DeriveTier(totalScore.Score, totalScore.Max);
         var hardGate = DeriveHardGate(request.Scores.Education);
         var summary = BuildSummary(request, totalScore);
