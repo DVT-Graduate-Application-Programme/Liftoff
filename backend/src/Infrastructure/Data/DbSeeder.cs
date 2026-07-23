@@ -67,6 +67,10 @@ public static class DbSeeder
 
         logger.LogInformation("[DbSeeder] Seeding POC data…");
 
+        string recruiterId1 = "siegfriedmini@gmail.com";
+        string recruiterId2 = "rose@dvtsoftware.com";
+        string recruiterId3 = "phindi@dvtsoftware.com";
+
 
         var app1 = new ApplicationRecord
         {
@@ -79,6 +83,7 @@ public static class DbSeeder
             Tier = "Strong",
             HardGatePassed = true,
             HardGateReason = null,
+            ClaimedByRecruiterId = recruiterId1,
             HiringAgentTotalScore = 77.0m,
             HiringAgentExplanation = "Strong full-stack and cloud profile with elite internship experience at AWS.",
             CvSummary = "BSc Computer Science (First Class, Imperial College London). SWE Intern at AWS Serverless Team. Built scalable chat architecture using Redis Pub/Sub.",
@@ -138,6 +143,7 @@ public static class DbSeeder
             Tier = "Weak",
             HardGatePassed = true,
             HardGateReason = null,
+            ClaimedByRecruiterId = recruiterId2,
             HiringAgentTotalScore = 56.0m,
             HiringAgentExplanation = "Solid backend and frontend skills with direct agency placement experience.",
             CvSummary = "BSc Software Engineering (2:1, University of Manchester). Placement as Junior Web Developer at PixelCraft Digital Agency. Built Agile Kanban board and University Student Portal.",
@@ -195,7 +201,7 @@ public static class DbSeeder
             CandidateGitHubUrl = "https://github.com/josephexample-dev",
             Status = "Shortlisted",
             Tier = "Borderline",
-            ClaimedByRecruiterId = "siegfriedmini@gmail.com",
+            ClaimedByRecruiterId = recruiterId1,
             HardGatePassed = true,
             HardGateReason = null,
             HiringAgentTotalScore = 75.0m,
@@ -255,6 +261,7 @@ public static class DbSeeder
             CandidateName = "Liam O'Brien",
             CandidateEmail = "liam.obrien@ed.ac.uk",
             CandidateGitHubUrl = "https://github.com/liam-obrien-dev",
+            ClaimedByRecruiterId = recruiterId3,
             Status = "Shortlisted",
             Tier = "Strong",
             HardGatePassed = true,
@@ -316,7 +323,7 @@ public static class DbSeeder
             CandidateEmail = "amara.diallo@leeds.ac.uk",
             CandidateGitHubUrl = "https://github.com/amara-fullstack",
             Status = "Pending",
-            ClaimedByRecruiterId = "siegfriedmini@gmail.com",
+            ClaimedByRecruiterId = recruiterId1,
             Tier = "Borderline",
             HardGatePassed = true,
             HiringAgentTotalScore = 69.0m,
@@ -375,6 +382,7 @@ public static class DbSeeder
             CandidateEmail = "chloe.b@live.co.uk",
             CandidateGitHubUrl = null,
             Status = "Rejected",
+            ClaimedByRecruiterId = recruiterId3,
             Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "Degree not in a qualifying IT or STEM discipline. Bootcamp HTML/CSS training is insufficient to compensate for the missing academic requirement.",
@@ -434,6 +442,7 @@ public static class DbSeeder
             CandidateEmail = "ravi.nair@warwick.ac.uk",
             CandidateGitHubUrl = "https://github.com/ravi-builds",
             Status = "Shortlisted",
+            ClaimedByRecruiterId = recruiterId2,
             Tier = "Strong",
             HardGatePassed = true,
             HiringAgentTotalScore = 80.0m,
@@ -495,7 +504,7 @@ public static class DbSeeder
             CandidateGitHubUrl = "https://github.com/sophiewalsh-dev",
             Status = "Pending",
             Tier = "Weak",
-            ClaimedByRecruiterId = "siegfriedmini@gmail.com",
+            ClaimedByRecruiterId = recruiterId1,
             HardGatePassed = true,
             HiringAgentTotalScore = 54.0m,
             HiringAgentExplanation = "Some interest in full-stack development but projects are predominantly static front-end. The only backend work is a tutorial-level Express server with no database. No production software experience.",
@@ -553,6 +562,7 @@ public static class DbSeeder
             CandidateEmail = "marcus.o@northampton.ac.uk",
             CandidateGitHubUrl = null,
             Status = "Pending",
+            ClaimedByRecruiterId = recruiterId2,
             Tier = "Weak",
             HardGatePassed = true,
             HiringAgentTotalScore = 44.0m,
@@ -610,6 +620,7 @@ public static class DbSeeder
             CandidateName = "Tomás Reyes",
             CandidateEmail = "tomas.reyes@culinary.co.uk",
             CandidateGitHubUrl = null,
+            ClaimedByRecruiterId = recruiterId3,
             Status = "Rejected",
             Tier = "Weak",
             HardGatePassed = false,
@@ -672,6 +683,7 @@ public static class DbSeeder
             Status = "Rejected",
             Tier = "Weak",
             HardGatePassed = false,
+            ClaimedByRecruiterId = recruiterId2,
             HardGateReason = "MBA is a postgraduate business qualification, not an IT or STEM degree. Undergraduate degree is in History. No compensating technical background identified.",
             HiringAgentTotalScore = 8.0m,
             HiringAgentExplanation = "Candidate holds a BA in History and an MBA with a Digital Business elective. Neither qualification meets the academic requirement for this full-stack graduate programme. The 'Digital Business' module does not confer programming skills. No GitHub, no code, no software projects are present on the CV or online. This is a clear hard gate failure with no compensating evidence.",
@@ -728,6 +740,7 @@ public static class DbSeeder
             CandidateName = "Derek Hobson",
             CandidateEmail = "derek.hobson@plymouth.ac.uk",
             CandidateGitHubUrl = null,
+            ClaimedByRecruiterId = recruiterId3,
             Status = "Rejected",
             Tier = "Weak",
             HardGatePassed = false,
