@@ -55,10 +55,8 @@ function SelectedApplicantDetailsSidebar() {
 const HISTORY_STATUS_OPTIONS: [string, string][] = [
   ["All", "All statuses"],
   ["PENDING", "Pending"],
-  ["VALID", "Valid"],
-  ["INVALID", "Invalid"],
   ["SHORTLISTED", "Shortlisted"],
-  ["MANUAL_REVIEW", "Manual review"],
+  ["REJECTED", "Rejected"],
 ];
 
 function HistoryFilterBar({

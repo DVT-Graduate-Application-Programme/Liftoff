@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -12,6 +13,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { useRecruiters } from "@/hooks/use-recruiters";
 import { NavMenu } from "./nav-menu";
 import { LogoutButton } from "./logout-button";
 
@@ -22,6 +24,16 @@ export function NavDrawer({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { data: session } = useSession();
+  const recruitersQuery = useRecruiters();
+  const sessionEmail = session?.user?.email?.toLowerCase() ?? null;
+  const sessionName = session?.user?.name ?? "Recruiter";
+  const recruiter = recruitersQuery.data?.find(
+    (candidate) => candidate.email.toLowerCase() === sessionEmail,
+  );
+  const displayName = recruiter?.fullName ?? sessionName;
+  const displayEmail = recruiter?.email ?? session?.user?.email ?? "";
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange} direction="left">
       <DrawerContent>
@@ -55,8 +67,10 @@ export function NavDrawer({
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-medium leading-none">Phindile</span>
-                <span className="text-xs text-muted-foreground mt-1.5">Phindi@DVTsoftware.com</span>
+                <span className="text-sm font-medium leading-none">{displayName}</span>
+                <span className="mt-1.5 text-xs text-muted-foreground">
+                  {displayEmail || "Signed in recruiter"}
+                </span>
               </div>
             </div>
             <LogoutButton />

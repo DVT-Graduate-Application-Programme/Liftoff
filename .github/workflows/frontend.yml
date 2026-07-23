@@ -2,10 +2,10 @@
 name: Frontend
 on:
   push:
-    branches: [main, development]
+    branches: [main, development, feature/frontend/stable-v2]
     paths: ['frontend/**', '.github/workflows/frontend.yml']
   pull_request:
-    branches: [main, development]
+    branches: [main, development, feature/frontend/stable-v2]
     paths: ['frontend/**', '.github/workflows/frontend.yml']
 
 jobs:
