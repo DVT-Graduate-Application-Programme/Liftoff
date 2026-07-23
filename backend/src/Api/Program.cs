@@ -1,5 +1,6 @@
 using Api.EndPoints.Applications;
 using Api.Internal;
+using Application.Handler;
 using Backend.Application.Interfaces;
 using Backend.Application.Queries.GetResumes;
 using Backend.Infrastructure.Storage;
