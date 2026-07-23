@@ -266,8 +266,8 @@ function CandidateReview({ applicationId, currentStatus }: { applicationId: stri
   const rating = ratingOverride ?? ownershipQuery.data?.recruiterRating ?? 0;
   const notes = notesOverride ?? ownershipQuery.data?.recruiterRatingNote ?? "";
   const statusUpper = currentStatus?.toUpperCase() ?? "";
-  const isShortlisted = Boolean(ownershipQuery.data?.shortlistedAt) || /SHORTLIST|ACCEPT|HIRE/.test(statusUpper);
-  const isRejected = /REJECT/.test(statusUpper);
+  const isShortlisted = statusUpper === "SHORTLISTED";
+  const isRejected = statusUpper === "REJECTED";
 
   // Mutation to save notes only
   const notesMutation = useMutation({
