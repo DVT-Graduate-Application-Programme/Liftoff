@@ -26,8 +26,6 @@ public class RecruiterRepository : IRecruiterRepository
         var activeRecruiters = await _dbContext.Recruiters
             .AsNoTracking()
             .Where(r => r.IsActive)
-            .OrderBy(r => r.CreatedAt)
-            .ThenBy(r => r.IdentityId)
             .ToListAsync(cancellationToken);
 
         if (activeRecruiters.Count == 0)
