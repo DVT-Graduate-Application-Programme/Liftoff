@@ -41,12 +41,14 @@ const STATUS_OPTIONS: [string, string][] = [
 
 function AllCandidateListCard({
   application,
+  recruiterIdentity,
   isClaimedByActiveRecruiter,
   isClaiming,
   onClaim,
   onOpen,
 }: {
   application: CandidateApplication;
+  recruiterIdentity: string;
   isClaimedByActiveRecruiter: boolean;
   isClaiming: boolean;
   onClaim: () => void;
