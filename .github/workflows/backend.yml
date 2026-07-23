@@ -3,14 +3,14 @@ name: Backend
 on:
   push:
     branches: [main, development, feature/backend/stable]
-    paths: ['backend/**', '.github/workflows/backend.yml']
+    paths: ['backend/**', 'worker/**', '.github/workflows/backend.yml']
   pull_request:
     branches: [main, development, feature/backend/stable]
-    paths: ['backend/**', '.github/workflows/backend.yml']
+    paths: ['backend/**', 'worker/**', '.github/workflows/backend.yml']
 
 jobs:
   build:
-    name: Restore · Build · Test (C#)
+    name: Restore · Build · Test (C# .NET)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -22,9 +22,17 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - run: dotnet restore
-      - run: dotnet build --no-restore -c Release
-      - run: dotnet test --no-build -c Release
+      - run: dotnet restore LiftOff.slnx
+      - run: dotnet build LiftOff.slnx --no-restore -c Release
+      - run: dotnet test LiftOff.slnx --no-build -c Release
+
+  worker-docker:
+    name: Verify Worker Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Worker Docker Image
+        run: docker build -f worker/Dockerfile .
 
   python-tests:
     name: Run Python hiring-agent Tests
