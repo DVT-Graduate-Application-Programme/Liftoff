@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Api.BackgroundServices;
+namespace Worker.BackgroundServices;
 
 public class ApplicationQueueWorker : BackgroundService
 {
@@ -29,7 +29,7 @@ public class ApplicationQueueWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Application Queue Background Worker started.");
+        _logger.LogInformation("Application Queue Background Worker Service started.");
 
         while (!stoppingToken.IsCancellationRequested)
         {
