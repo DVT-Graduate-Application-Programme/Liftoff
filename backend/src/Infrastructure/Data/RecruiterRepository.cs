@@ -1,6 +1,7 @@
 using Application.Interfaces;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -16,29 +17,53 @@ public class RecruiterRepository : IRecruiterRepository
     {
         _dbContext = dbContext;
     }
+
     public async Task<Recruiter?> GetRecruiters(CancellationToken cancellationToken = default)
     {
-        // Fetch ALL recruiters regardless of IsActive status
-        var allRecruiters = await _dbContext.Recruiters
+        var activeRecruiters = await _dbContext.Recruiters
             .AsNoTracking()
+            .Where(r => r.IsActive)
             .OrderBy(r => r.CreatedAt)
+            .ThenBy(r => r.IdentityId)
             .ToListAsync(cancellationToken);
 
-        if (allRecruiters.Count == 0)
+        if (activeRecruiters.Count == 0)
             return null;
 
-        // Count how many applications each recruiter has already been assigned
-        var assignmentCounts = await _dbContext.ApplicationRecords
+        var lastAssignedRecruiterIdentity = await _dbContext.ApplicationRecords
             .AsNoTracking()
             .Where(a => a.ClaimedByRecruiterId != null)
-            .GroupBy(a => a.ClaimedByRecruiterId!)
-            .Select(g => new { RecruiterId = g.Key, Count = g.Count() })
-            .ToDictionaryAsync(x => x.RecruiterId, x => x.Count, cancellationToken);
+            .OrderByDescending(a => a.ClaimedAt ?? a.UpdatedAt)
+            .Select(a => a.ClaimedByRecruiterId!)
+            .FirstOrDefaultAsync(cancellationToken);
 
-        // Select the recruiter with the fewest assignments; break ties by earliest CreatedAt
-        return allRecruiters
-            .OrderBy(r => assignmentCounts.GetValueOrDefault(r.IdentityId, 0))
-            .ThenBy(r => r.CreatedAt)
-            .First();
+        return SelectNextRecruiterForRoundRobin(activeRecruiters, lastAssignedRecruiterIdentity);
+    }
+
+    public static Recruiter? SelectNextRecruiterForRoundRobin(IReadOnlyList<Recruiter> recruiters, string? lastAssignedRecruiterIdentity)
+    {
+        if (recruiters.Count == 0)
+            return null;
+
+        var orderedRecruiters = recruiters
+            .Where(r => r.IsActive)
+            .OrderBy(r => r.CreatedAt)
+            .ThenBy(r => r.IdentityId)
+            .ToList();
+
+        if (orderedRecruiters.Count == 0)
+            return null;
+
+        if (string.IsNullOrWhiteSpace(lastAssignedRecruiterIdentity))
+            return orderedRecruiters[0];
+
+        var currentIndex = orderedRecruiters.FindIndex(r =>
+            string.Equals(r.IdentityId, lastAssignedRecruiterIdentity, StringComparison.OrdinalIgnoreCase));
+
+        if (currentIndex < 0)
+            return orderedRecruiters[0];
+
+        var nextIndex = (currentIndex + 1) % orderedRecruiters.Count;
+        return orderedRecruiters[nextIndex];
     }
 }

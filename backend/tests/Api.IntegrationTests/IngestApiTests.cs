@@ -306,4 +306,19 @@ internal sealed class TestApplicationRecordRepository : IApplicationRecordReposi
     {
         throw new NotImplementedException();
     }
+
+    public Task<List<Recruiter>> GetRecruitersAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(new List<Recruiter>());
+    }
+
+    public Task AddRecruiterAsync(RecruiterPostDto recruiter, CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task<bool> ResetEvaluationAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(true);
+    }
 }
