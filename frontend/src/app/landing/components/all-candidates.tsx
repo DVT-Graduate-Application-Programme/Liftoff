@@ -79,9 +79,7 @@ function AllCandidateListCard({
         showReviewedAt={false}
         createdAt={application.createdAt}
         recruiterName={getRecruiterLabel(application)}
-        secondaryActionLabel={
-          isClaimed ? "Claimed" : "Claim for review"
-        }
+        secondaryActionLabel={isClaimed ? "Claimed" : "Claim for review"}
         isSecondaryActionDisabled={isClaimed || isClaiming}
         isSecondaryActionLoading={isClaiming}
         onSecondaryActionClick={
@@ -106,18 +104,17 @@ function AllCandidates() {
   const recruitersQuery = useRecruiters();
 
   const filters = useMemo(() => {
-    const next: Filters = { sort };
+    const next: Filters = { sort, excludeRecruiterIdentity: recruiterIdentity };
     if (status) next.status = status;
     if (minScore) next.minScore = Number(minScore);
-    if (ownership === "unclaimed") next.claimed = false;
-    else if (ownership !== "all") next.recruiterIdentity = ownership;
+    if (ownership !== "all") next.recruiterIdentity = ownership;
     if (dateRange !== "all") {
       const from = new Date();
       from.setDate(from.getDate() - Number(dateRange));
       next.dateFrom = from.toISOString();
     }
     return next;
-  }, [dateRange, minScore, ownership, sort, status]);
+  }, [dateRange, minScore, ownership, recruiterIdentity, sort, status]);
 
   const clearFilters = () => {
     setStatus("");
@@ -150,10 +147,15 @@ function AllCandidates() {
       onChange: setOwnership,
       options: [
         ["all", "All candidates"],
-        ["unclaimed", "Unclaimed"],
         ...(recruitersQuery.data ?? [])
-          .filter((recruiter) => recruiter.isActive)
-          .map((recruiter): [string, string] => [recruiter.email, recruiter.fullName]),
+          .filter(
+            (recruiter) =>
+              recruiter.isActive && recruiter.email !== recruiterIdentity,
+          )
+          .map((recruiter): [string, string] => [
+            recruiter.email,
+            recruiter.fullName,
+          ]),
       ],
     },
     {
@@ -183,10 +185,7 @@ function AllCandidates() {
       },
     },
     ownership !== "all" && {
-      label:
-        ownership === "unclaimed"
-          ? "Unclaimed"
-          : `Owner: ${recruitersQuery.data?.find((recruiter) => recruiter.email === ownership)?.fullName ?? ownership}`,
+      label: `Owner: ${recruitersQuery.data?.find((recruiter) => recruiter.email === ownership)?.fullName ?? ownership}`,
       onClear: () => {
         setOwnership("all");
       },
@@ -206,7 +205,12 @@ function AllCandidates() {
   return (
     <>
       <section className="mb-8 flex flex-col gap-6">
-        <h2 className="text-2xl font-bold text-foreground">All Applicants</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">All Applicants</h2>
+          <p className="text-muted-foreground">
+            Review and manage all applicants
+          </p>
+        </div>
         <FilterBar
           id="all-candidate-filters"
           filtersOpen={filtersOpen}

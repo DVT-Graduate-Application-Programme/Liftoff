@@ -55,6 +55,7 @@ export interface ApplicationFilters {
   claimed?: boolean;
   shortlisted?: boolean;
   recruiterIdentity?: string;
+  excludeRecruiterIdentity?: string;
   dateFrom?: string;
   dateTo?: string;
   search?: string;
