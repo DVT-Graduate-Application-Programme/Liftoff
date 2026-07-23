@@ -29,6 +29,7 @@ import {
   groupApplicationsByDate,
   getStatusLabel,
   getStatusTone,
+  isClaimedByActiveRecruiter,
   parseEducationEvidence,
   toScorePercent,
 } from "./candidate-list-utils";
@@ -89,17 +90,19 @@ function getEducationSubtitle(evaluation: Evaluation | null | undefined, fallbac
 function PendingApplicationCard({
   application,
   enableClaim,
+  recruiterIdentity,
   openDetails,
   claimMutation,
 }: {
   application: CandidateApplication;
   enableClaim: boolean;
+  recruiterIdentity: string;
   openDetails: (applicationId: string) => void;
   claimMutation: ReturnType<typeof useClaimApplication>;
 }) {
   const router = useRouter();
   const evaluationQuery = useEvaluation(application.applicationId);
-  const isClaimed = Boolean(application.claimedByRecruiterId);
+  const isClaimed = isClaimedByActiveRecruiter(application, recruiterIdentity);
   const isClaiming =
     enableClaim &&
     claimMutation.isPending &&
@@ -255,6 +258,7 @@ export function ApplicantList({
           key={application.applicationId}
           application={application}
           enableClaim={enableClaim}
+          recruiterIdentity={recruiterIdentity}
           openDetails={openDetails}
           claimMutation={claimMutation}
         />
