@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Http;
 
+namespace Application.Requests;
+
 public class IngestApplicationRequest
 {
     public string CandidateName { get; set; } = string.Empty;
