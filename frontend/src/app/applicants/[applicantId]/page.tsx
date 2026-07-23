@@ -44,10 +44,12 @@ import { useApplicant } from "@/hooks/use-applicant";
 import { useEvaluation } from "@/hooks/use-evaluation";
 import { useOwnership } from "@/hooks/use-ownership";
 import { useRateApplication } from "@/hooks/use-rate-application";
+import { ACTIVE_RECRUITER_ID, useClaimApplication } from "@/hooks/use-claim-application";
 import { useShortlistApplication } from "@/hooks/use-shortlist-application";
 import { useRejectApplication } from "@/hooks/use-reject-application";
 import { useReevaluateApplication } from "@/hooks/use-reevaluate-application";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
 import { queryKeys } from "@/lib/query-keys";
 import { useApplicationLogs } from "@/hooks/use-recruiter-logs";
 import type { Evaluation, EvaluationCategoryScores, EvaluationScore, Ownership } from "@/types/api";
@@ -255,6 +257,7 @@ interface RateResponse {
 
 function CandidateReview({ applicationId, currentStatus }: { applicationId: string; currentStatus?: string }) {
   const queryClient = useQueryClient();
+  const { data: session } = useSession();
   const ownershipQuery = useOwnership(applicationId);
   const rateMutation = useRateApplication(applicationId);
   const shortlistMutation = useShortlistApplication(applicationId);
@@ -268,6 +271,11 @@ function CandidateReview({ applicationId, currentStatus }: { applicationId: stri
   const statusUpper = currentStatus?.toUpperCase() ?? "";
   const isShortlisted = Boolean(ownershipQuery.data?.shortlistedAt) || /SHORTLIST|ACCEPT|HIRE/.test(statusUpper);
   const isRejected = /REJECT/.test(statusUpper);
+  const recruiterIdentity = session?.user?.email ?? ACTIVE_RECRUITER_ID;
+  const isAssignedToCurrentRecruiter =
+    ownershipQuery.data?.claimedByRecruiterId === recruiterIdentity ||
+    ownershipQuery.data?.shortlistedByRecruiterId === recruiterIdentity ||
+    ownershipQuery.data?.ratedByRecruiterId === recruiterIdentity;
 
   // Mutation to save notes only
   const notesMutation = useMutation({
