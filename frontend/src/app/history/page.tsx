@@ -3,11 +3,13 @@
 import * as React from "react";
 import AllCandidateCard from "@/components/applicant-card/all-candidate-card";
 import { useRouter } from "next/navigation";
-import { useApplications } from "@/hooks/use-applications";
+import { useInfiniteApplications } from "@/hooks/use-infinite-applications";
 import type { CandidateApplication } from "@/types/candidate";
+import type { PaginatedApplications } from "@/types/api";
 import { ListFilter, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { LoadMoreButton } from "@/components/load-more-button";
 import { Separator } from "@/components/ui/separator";
 import {
   FilterField,
@@ -59,20 +61,11 @@ const HISTORY_STATUS_OPTIONS: [string, string][] = [
   ["MANUAL_REVIEW", "Manual review"],
 ];
 
-const HISTORY_SCORE_OPTIONS: [string, string][] = [
-  ["All", "All tiers"],
-  ["STRONG", "Strong"],
-  ["BORDERLINE", "Borderline"],
-  ["WEAK", "Weak"],
-];
-
 function HistoryFilterBar({
   filtersOpen,
   onToggleFilters,
   status,
   onStatusChange,
-  score,
-  onScoreChange,
   dateRange,
   onDateRangeChange,
   activeFilters,
@@ -106,13 +99,10 @@ function HistoryFilterBar({
       {filtersOpen && (
         <div
           id="history-filters"
-          className="grid gap-4 rounded-xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-4"
+          className="grid gap-4 rounded-xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3"
         >
           <FilterField label="Status">
             <FilterSelect value={status} onChange={onStatusChange} options={HISTORY_STATUS_OPTIONS} />
-          </FilterField>
-          <FilterField label="System Score">
-            <FilterSelect value={score} onChange={onScoreChange} options={HISTORY_SCORE_OPTIONS} />
           </FilterField>
           <FilterField label="Received from">
             <input
@@ -164,7 +154,7 @@ function CandidateHistoryCard({
 }) {
   const router = useRouter();
   const { selectApplication } = useApplicantSelection();
-  const { setOpen } = useSidebar();
+  const { setOpen, setOpenMobile } = useSidebar();
   const evaluationQuery = useEvaluation(candidate.applicationId);
 
   const handleCardClick = () => {
@@ -191,20 +181,17 @@ function CandidateHistoryCard({
   );
   const institutionName = evaluationQuery.data?.institutionJson?.name ?? education.institution;
   const degreeName = evaluationQuery.data?.institutionJson?.degreeName ?? education.degree;
-  const subtitle =
-    degreeName && institutionName
-      ? `${degreeName} · ${institutionName}`
-      : degreeName || institutionName || "Applicant";
 
   const academicAverage =
     evaluationQuery.data?.institutionJson?.academic_average ??
     evaluationQuery.data?.categoryScoresJson.education.score;
 
   return (
-      <AllCandidateCard
+    <AllCandidateCard
       key={candidate.applicationId}
       name={candidate.candidateName}
-      subtitle={subtitle}
+      institute={institutionName}
+      subtitle={degreeName}
       academicAverage={academicAverage}
       systemScore={candidate.hiringAgentTotalScore}
       scoreLabel="Sys Score"
@@ -221,6 +208,7 @@ function CandidateHistoryCard({
       onActionClick={() => {
         selectApplication(candidate.applicationId, "history");
         setOpen(true);
+        setOpenMobile(true);
       }}
       secondaryActionLabel="View Applicant"
       onSecondaryActionClick={() => {
@@ -287,37 +275,27 @@ export default function HistoryPage() {
     },
   ].filter(Boolean) as ActiveFilter[];
 
-  const { data, isLoading, error } = useApplications();
-  const applications = data?.applications || [];
-
-  let filteredCandidates = applications;
-  
-  if (filterDecision !== "All") {
-    filteredCandidates = filteredCandidates.filter(
-      (c: CandidateApplication) =>
-        c.currentStatus.toLowerCase() === filterDecision.toLowerCase(),
-    );
-  }
-  if (filterScore !== "All") {
-    filteredCandidates = filteredCandidates.filter(
-      (c: CandidateApplication) =>
-        c.tier.toLowerCase() === filterScore.toLowerCase(),
-    );
-  }
-
-  if (filterDateRange.start) {
-    const [year, month, day] = filterDateRange.start.split("-").map(Number);
-    const startObj = new Date(year, month - 1, day, 0, 0, 0, 0);
-    filteredCandidates = filteredCandidates.filter((c: CandidateApplication) => new Date(c.createdAt) >= startObj);
-  }
-  if (filterDateRange.end) {
-    const [year, month, day] = filterDateRange.end.split("-").map(Number);
-    const endObj = new Date(year, month - 1, day, 23, 59, 59, 999);
-    filteredCandidates = filteredCandidates.filter((c: CandidateApplication) => new Date(c.createdAt) <= endObj);
-  }
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteApplications({
+    status: filterDecision !== "All" ? filterDecision : undefined,
+    tier: filterScore !== "All" ? filterScore : undefined,
+    dateFrom: filterDateRange.start || undefined,
+    dateTo: filterDateRange.end || undefined,
+    limit: 12,
+  });
+  const filteredCandidates = React.useMemo(
+    () => (data?.pages ?? []).flatMap((page: PaginatedApplications) => page.applications),
+    [data?.pages],
+  );
 
   let groups: { label: string; candidates: CandidateApplication[] }[] = [];
-  
+
   if (filteredCandidates.length > 0) {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -384,7 +362,7 @@ export default function HistoryPage() {
                       <p className="text-sm text-muted-foreground">No candidate history matches your filters.</p>
                     </div>
                   ) : (
-                    <div className="flex flex-col gap-8">
+                    <div className="@container flex flex-col gap-8">
                       {groups.map(({ label, candidates }) => (
                         <DateGroup
                           key={label}
@@ -392,6 +370,17 @@ export default function HistoryPage() {
                           candidates={candidates}
                         />
                       ))}
+                      {hasNextPage && (
+                        <div className="flex justify-center">
+                          <LoadMoreButton
+                            hasNextPage={hasNextPage}
+                            isFetchingNextPage={isFetchingNextPage}
+                            onClick={() => {
+                              void fetchNextPage();
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

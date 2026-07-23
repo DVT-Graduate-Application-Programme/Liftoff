@@ -1,6 +1,8 @@
 using System;
 using System.Text.Json;
+
 using Domain.Entities;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,20 +20,24 @@ public static class DbSeeder
     private static readonly Guid App6Id = new("a6000000-0000-0000-0000-000000000006");
     private static readonly Guid App7Id = new("a7000000-0000-0000-0000-000000000007");
     private static readonly Guid App8Id = new("a8000000-0000-0000-0000-000000000008");
-    private static readonly Guid App9Id  = new("a9000000-0000-0000-0000-000000000009");
+    private static readonly Guid App9Id = new("a9000000-0000-0000-0000-000000000009");
     private static readonly Guid App10Id = new("b0000000-0000-0000-0000-000000000010");
     private static readonly Guid App11Id = new("b0000000-0000-0000-0000-000000000011");
     private static readonly Guid App12Id = new("b0000000-0000-0000-0000-000000000012");
 
-    private static readonly Guid Eval1Id  = new("e1000000-0000-0000-0000-000000000001");
-    private static readonly Guid Eval2Id  = new("e2000000-0000-0000-0000-000000000002");
-    private static readonly Guid Eval3Id  = new("e3000000-0000-0000-0000-000000000003");
-    private static readonly Guid Eval4Id  = new("e4000000-0000-0000-0000-000000000004");
-    private static readonly Guid Eval5Id  = new("e5000000-0000-0000-0000-000000000005");
-    private static readonly Guid Eval6Id  = new("e6000000-0000-0000-0000-000000000006");
-    private static readonly Guid Eval7Id  = new("e7000000-0000-0000-0000-000000000007");
-    private static readonly Guid Eval8Id  = new("e8000000-0000-0000-0000-000000000008");
-    private static readonly Guid Eval9Id  = new("e9000000-0000-0000-0000-000000000009");
+    // Fixed Recruiter GUIDs — stable across re-seeds
+    private static readonly Guid Recruiter1Id = new("c1000000-0000-0000-0000-000000000001");
+    private static readonly Guid Recruiter2Id = new("c2000000-0000-0000-0000-000000000002");
+
+    private static readonly Guid Eval1Id = new("e1000000-0000-0000-0000-000000000001");
+    private static readonly Guid Eval2Id = new("e2000000-0000-0000-0000-000000000002");
+    private static readonly Guid Eval3Id = new("e3000000-0000-0000-0000-000000000003");
+    private static readonly Guid Eval4Id = new("e4000000-0000-0000-0000-000000000004");
+    private static readonly Guid Eval5Id = new("e5000000-0000-0000-0000-000000000005");
+    private static readonly Guid Eval6Id = new("e6000000-0000-0000-0000-000000000006");
+    private static readonly Guid Eval7Id = new("e7000000-0000-0000-0000-000000000007");
+    private static readonly Guid Eval8Id = new("e8000000-0000-0000-0000-000000000008");
+    private static readonly Guid Eval9Id = new("e9000000-0000-0000-0000-000000000009");
     private static readonly Guid Eval10Id = new("f0000000-0000-0000-0000-000000000010");
     private static readonly Guid Eval11Id = new("f0000000-0000-0000-0000-000000000011");
     private static readonly Guid Eval12Id = new("f0000000-0000-0000-0000-000000000012");
@@ -48,6 +54,17 @@ public static class DbSeeder
         logger.LogInformation("[DbSeeder] Truncating existing data to re-seed POC data…");
         await db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"ApplicationRecords\" CASCADE;");
 
+        // Seed recruiters (idempotent — skip if already present)
+        logger.LogInformation("[DbSeeder] Seeding recruiters…");
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO public."Recruiters" ("Id", "IdentityId", "FirstName", "LastName", "Email", "IsActive", "CreatedAt", "UpdatedAt")
+            VALUES
+                ('c1000000-0000-0000-0000-000000000001', 'siegfriedmini@gmail.com', 'Sashen',  'Govindasamy', 'siegfriedmini@gmail.com',  TRUE, NOW(), NOW()),
+                ('c2000000-0000-0000-0000-000000000002', 'rose@dvtsoftware.com',     'Rose',   'Allen-Richards',  'rose@dvtsoftware.com',    TRUE, NOW(), NOW()),
+                ('c3000000-0000-0000-0000-000000000003', 'phindi@dvtsoftware.com',    'Phindile',  'Gamede',       'phindi@dvtsoftware.com',   TRUE, NOW(), NOW())
+            ON CONFLICT ("IdentityId") DO NOTHING;
+            """);
+
         logger.LogInformation("[DbSeeder] Seeding POC data…");
 
 
@@ -55,16 +72,16 @@ public static class DbSeeder
         {
             Id = App1Id,
             EmailMessageId = "seed-msg-001",
-            CandidateName = "Joseph",
-            CandidateEmail = "joseph@example.com",
+            CandidateName = "Sarah Chen",
+            CandidateEmail = "sarah.chen@gmail.com",
             CandidateGitHubUrl = "https://github.com/joseph-dev-grad",
-            Status = "evaluated",
+            Status = "Pending",
             Tier = "Strong",
             HardGatePassed = true,
             HardGateReason = null,
             HiringAgentTotalScore = 77.0m,
-            HiringAgentExplanation = "Strong full-stack profile with solid internship experience and a broad technical skill set.",
-            CvSummary = "BSc Computer Science (First Class, University of London). Intern at Nexus Tech Solutions. Full-stack projects including e-commerce and algo-trading engine.",
+            HiringAgentExplanation = "Strong full-stack and cloud profile with elite internship experience at AWS.",
+            CvSummary = "BSc Computer Science (First Class, Imperial College London). SWE Intern at AWS Serverless Team. Built scalable chat architecture using Redis Pub/Sub.",
             CreatedAt = DateTimeOffset.UtcNow.AddDays(-10),
             UpdatedAt = DateTimeOffset.UtcNow.AddDays(-9),
         };
@@ -86,15 +103,15 @@ public static class DbSeeder
                 """),
             EvidenceJson = JsonDocument.Parse("""
                 {
-                  "education":        "BSc (Hons) Computer Science, University of London, First Class Honors; average 62.00%",
-                  "open_source":      "GitHub: joseph-dev-grad – full-stack e-commerce, task management app, algo-trading engine",
-                  "self_projects":    "Full-Stack E-Commerce Ecosystem, Task Management Mobile App, Algo-Trading Backtesting Engine",
-                  "production":       "Software Engineering Intern at Nexus Tech Solutions – legacy dashboard refactor, perf bottlenecks, Agile team",
-                  "technical_skills": "Java, Python, JS, TS, C++, SQL, React, Node, Express, Spring Boot, Django, Docker, PostgreSQL, MongoDB, AWS, Firebase, JWT"
+                  "education":        "BSc Computer Science, Imperial College London, First Class Honours",
+                  "open_source":      "GitHub listed on CV but specific contributions not detailed; interests include open-source contribution",
+                  "self_projects":    "Real-Time Collaborative Chat Architecture (React, Redis, PostgreSQL), Machine Learning Stock Predictor (LSTM, Pandas)",
+                  "production":       "Software Engineering Intern at AWS (Serverless Team) – designed API Gateway microservices, optimized latency",
+                  "technical_skills": "Python, JavaScript, TypeScript, Java, C++, React, Node.js, Next.js, AWS, Docker, Git, CI/CD"
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of London", "degreeName": "BSc (Hons) Computer Science", "academic_average": 78.3 }
+                { "name": "Imperial College London", "degreeName": "BSc Computer Science", "academic_average": 78.3 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -114,16 +131,16 @@ public static class DbSeeder
         {
             Id = App2Id,
             EmailMessageId = "seed-msg-002",
-            CandidateName = "Alex Turner",
-            CandidateEmail = "alex.turner@example.com",
+            CandidateName = "James Wilson",
+            CandidateEmail = "james.wilson@outlook.com",
             CandidateGitHubUrl = null,
-            Status = "evaluated",
+            Status = "Pending",
             Tier = "Weak",
             HardGatePassed = true,
             HardGateReason = null,
             HiringAgentTotalScore = 56.0m,
-            HiringAgentExplanation = "Decent academic background but no work experience and no open-source contributions.",
-            CvSummary = "BSc Computer Science (2:2, University of Salford). Built a Tkinter calculator and MySQL school-enrolment DB. No internship or work experience.",
+            HiringAgentExplanation = "Solid backend and frontend skills with direct agency placement experience.",
+            CvSummary = "BSc Software Engineering (2:1, University of Manchester). Placement as Junior Web Developer at PixelCraft Digital Agency. Built Agile Kanban board and University Student Portal.",
             CreatedAt = DateTimeOffset.UtcNow.AddDays(-8),
             UpdatedAt = DateTimeOffset.UtcNow.AddDays(-7),
         };
@@ -145,15 +162,15 @@ public static class DbSeeder
                 """),
             EvidenceJson = JsonDocument.Parse("""
                 {
-                  "education":        "BSc Computer Science, University of Salford, 2:2 (averages 60.40%, 63.00%, 62.00%); modules in Java, MySQL, Python",
-                  "open_source":      "No open-source contributions. Self-projects lack verifiable community involvement or external links.",
-                  "self_projects":    "Graphical calculator (Python/Tkinter) and school enrolment database (MySQL)",
-                  "production":       "No work or internship experience disclosed.",
-                  "technical_skills": "Python, Java, MySQL, Windows, Linux, HTML, CSS, Microsoft Office Suite"
+                  "education":        "BSc Software Engineering, University of Manchester, Upper Second Class Honours (2:1)",
+                  "open_source":      "No significant open-source contributions listed.",
+                  "self_projects":    "Agile Task Manager Application (Vue.js, Django REST), University Student Portal (PHP, MySQL)",
+                  "production":       "Junior Web Developer Placement at PixelCraft Digital Agency – maintained legacy PHP platforms, refactored frontend layouts",
+                  "technical_skills": "JavaScript, Python, PHP, Java, HTML5, CSS3, Vue.js, Django, Flask, Bootstrap, MySQL, SQLite"
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Salford", "degreeName": "BSc Computer Science", "academic_average": 66.7 }
+                { "name": "University of Manchester", "degreeName": "BSc Software Engineering", "academic_average": 66.7 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -174,16 +191,17 @@ public static class DbSeeder
             Id = App3Id,
             EmailMessageId = "seed-msg-003",
             CandidateName = "Elena Rodriguez",
-            CandidateEmail = "Elena.Rodriguez@example.com",
+            CandidateEmail = "elena.rodriguez@ucl.ac.uk",
             CandidateGitHubUrl = "https://github.com/josephexample-dev",
-            Status = "shortlisted",
+            Status = "Shortlisted",
             Tier = "Borderline",
+            ClaimedByRecruiterId = "siegfriedmini@gmail.com",
             HardGatePassed = true,
             HardGateReason = null,
             HiringAgentTotalScore = 75.0m,
-            HiringAgentExplanation = "Well-rounded candidate with solid GitHub presence, diverse projects, and relevant work history.",
-            CvSummary = "BSc (Hons) Computer Science (2:1, University of Manchester). Weather-tracking app, library management system. Customer Assistant at Tesco (2 yrs). Personal portfolio website.",
-            ShortlistedByRecruiterId = "recruiter-seed-001",
+            HiringAgentExplanation = "Extremely strong AI/ML profile with elite internship at Google DeepMind and specialized NLP experience.",
+            CvSummary = "MSc Artificial Intelligence (Distinction, UCL). Data Scientist Intern at Google DeepMind. Built Biomedical NER model (PyTorch, Hugging Face).",
+            ShortlistedByRecruiterId = "Rose@dvtsoftware.com",
             ShortlistedAt = DateTimeOffset.UtcNow.AddDays(-5),
             CreatedAt = DateTimeOffset.UtcNow.AddDays(-6),
             UpdatedAt = DateTimeOffset.UtcNow.AddDays(-5),
@@ -206,15 +224,15 @@ public static class DbSeeder
                 """),
             EvidenceJson = JsonDocument.Parse("""
                 {
-                  "education":        "BSc (Hons) Computer Science, University of Manchester, 2:1; averages 60.40%, 63.00%, 62.00%",
-                  "open_source":      "GitHub: josephexample-dev – weather tracking web app, library management system; consistent commits over time",
-                  "self_projects":    "Local weather tracking app (Java/Express.js), library management system (Python, group project), personal portfolio (Bootstrap/JS)",
-                  "production":       "Customer Assistant at Tesco Superstore for 2 years – time management, teamwork, customer service",
-                  "technical_skills": "Java, Python, JS, HTML, CSS, SQL, Express.js, Bootstrap, React, Git, MySQL, Agile basics, OOP"
+                  "education":        "MSc Artificial Intelligence, University College London (UCL), Distinction",
+                  "open_source":      "No specific GitHub PRs listed but uses open source heavily (Hugging Face, YOLOv8)",
+                  "self_projects":    "Biomedical Named Entity Recognition (PyTorch, Hugging Face), Autonomous Object Tracking & Segmentation",
+                  "production":       "Data Scientist Intern at Google DeepMind – evaluated transformer architectures, optimized tokenization pipelines",
+                  "technical_skills": "Python, C++, R, PyTorch, TensorFlow, Hugging Face, OpenCV, NumPy, Scikit-Learn, AWS, Docker"
                 }
                 """),
             InstitutionJson = JsonDocument.Parse("""
-                { "name": "University of Manchester", "degreeName": "BSc (Hons) Computer Science", "academic_average": 85.0 }
+                { "name": "University College London (UCL)", "degreeName": "MSc Artificial Intelligence", "academic_average": 85.0 }
                 """),
             BonusPointsJson = JsonDocument.Parse("""{ "total": 2.0, "breakdown": "Personal Portfolio Website URL: +2" }"""),
             DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
@@ -235,15 +253,15 @@ public static class DbSeeder
             Id = App4Id,
             EmailMessageId = "seed-msg-004",
             CandidateName = "Liam O'Brien",
-            CandidateEmail = "liam.obrien@example.com",
+            CandidateEmail = "liam.obrien@ed.ac.uk",
             CandidateGitHubUrl = "https://github.com/liam-obrien-dev",
-            Status = "forwarded",
+            Status = "Shortlisted",
             Tier = "Strong",
             HardGatePassed = true,
             HiringAgentTotalScore = 91.0m,
             HiringAgentExplanation = "Exceptional full-stack candidate. Ships production-grade React + Node.js apps, has two SWE internships, and maintains an open-source React form library with thousands of weekly downloads.",
             CvSummary = "BSc (Hons) Computer Science, University of Edinburgh, First Class. Full-stack intern at Monzo and Sky. Maintains 'react-snap-forms' npm package (8k weekly downloads). Final year project: real-time collaborative whiteboard.",
-            ShortlistedByRecruiterId = "recruiter-seed-001",
+            ShortlistedByRecruiterId = "Rose@dvtsoftware.com",
             ShortlistedAt = DateTimeOffset.UtcNow.AddDays(-4),
             CreatedAt = DateTimeOffset.UtcNow.AddDays(-12),
             UpdatedAt = DateTimeOffset.UtcNow.AddDays(-4),
@@ -295,9 +313,10 @@ public static class DbSeeder
             Id = App5Id,
             EmailMessageId = "seed-msg-005",
             CandidateName = "Amara Diallo",
-            CandidateEmail = "amara.diallo@example.com",
+            CandidateEmail = "amara.diallo@leeds.ac.uk",
             CandidateGitHubUrl = "https://github.com/amara-fullstack",
-            Status = "evaluated",
+            Status = "Pending",
+            ClaimedByRecruiterId = "siegfriedmini@gmail.com",
             Tier = "Borderline",
             HardGatePassed = true,
             HiringAgentTotalScore = 69.0m,
@@ -353,9 +372,9 @@ public static class DbSeeder
             Id = App6Id,
             EmailMessageId = "seed-msg-006",
             CandidateName = "Chloe Bennett",
-            CandidateEmail = "chloe.bennett@example.com",
+            CandidateEmail = "chloe.b@live.co.uk",
             CandidateGitHubUrl = null,
-            Status = "rejected",
+            Status = "Rejected",
             Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "Degree not in a qualifying IT or STEM discipline. Bootcamp HTML/CSS training is insufficient to compensate for the missing academic requirement.",
@@ -412,15 +431,15 @@ public static class DbSeeder
             Id = App7Id,
             EmailMessageId = "seed-msg-007",
             CandidateName = "Ravi Nair",
-            CandidateEmail = "ravi.nair@example.com",
+            CandidateEmail = "ravi.nair@warwick.ac.uk",
             CandidateGitHubUrl = "https://github.com/ravi-builds",
-            Status = "shortlisted",
+            Status = "Shortlisted",
             Tier = "Strong",
             HardGatePassed = true,
             HiringAgentTotalScore = 80.0m,
             HiringAgentExplanation = "Strong full-stack profile with React/Spring Boot experience, a 6-month ThoughtWorks internship, and well-tested deployed projects. Comfortable across the entire stack.",
             CvSummary = "BSc (Hons) Software Engineering, University of Warwick, First Class. Full-stack intern at ThoughtWorks. Built a job board platform (React + Spring Boot + PostgreSQL, deployed on Heroku). Active OSS contributor.",
-            ShortlistedByRecruiterId = "recruiter-seed-002",
+            ShortlistedByRecruiterId = "Rose@dvtsoftware.com",
             ShortlistedAt = DateTimeOffset.UtcNow.AddDays(-3),
             CreatedAt = DateTimeOffset.UtcNow.AddDays(-11),
             UpdatedAt = DateTimeOffset.UtcNow.AddDays(-3),
@@ -472,10 +491,11 @@ public static class DbSeeder
             Id = App8Id,
             EmailMessageId = "seed-msg-008",
             CandidateName = "Sophie Walsh",
-            CandidateEmail = "sophie.walsh@example.com",
+            CandidateEmail = "sophie.w@herts.ac.uk",
             CandidateGitHubUrl = "https://github.com/sophiewalsh-dev",
-            Status = "evaluated",
+            Status = "Pending",
             Tier = "Weak",
+            ClaimedByRecruiterId = "siegfriedmini@gmail.com",
             HardGatePassed = true,
             HiringAgentTotalScore = 54.0m,
             HiringAgentExplanation = "Some interest in full-stack development but projects are predominantly static front-end. The only backend work is a tutorial-level Express server with no database. No production software experience.",
@@ -530,9 +550,9 @@ public static class DbSeeder
             Id = App9Id,
             EmailMessageId = "seed-msg-009",
             CandidateName = "Marcus Okafor",
-            CandidateEmail = "marcus.okafor@example.com",
+            CandidateEmail = "marcus.o@northampton.ac.uk",
             CandidateGitHubUrl = null,
-            Status = "evaluated",
+            Status = "Pending",
             Tier = "Weak",
             HardGatePassed = true,
             HiringAgentTotalScore = 44.0m,
@@ -588,9 +608,9 @@ public static class DbSeeder
             Id = App10Id,
             EmailMessageId = "seed-msg-010",
             CandidateName = "Tomás Reyes",
-            CandidateEmail = "tomas.reyes@example.com",
+            CandidateEmail = "tomas.reyes@culinary.co.uk",
             CandidateGitHubUrl = null,
-            Status = "pending",
+            Status = "Rejected",
             Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "Degree is in Culinary Arts – not an IT, Computer Science, or STEM discipline. No evidence of self-taught programming or compensating technical experience.",
@@ -647,9 +667,9 @@ public static class DbSeeder
             Id = App11Id,
             EmailMessageId = "seed-msg-011",
             CandidateName = "Harriet Langley",
-            CandidateEmail = "harriet.langley@example.com",
+            CandidateEmail = "harriet.langley@lbs.edu",
             CandidateGitHubUrl = null,
-            Status = "pending",
+            Status = "Rejected",
             Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "MBA is a postgraduate business qualification, not an IT or STEM degree. Undergraduate degree is in History. No compensating technical background identified.",
@@ -706,9 +726,9 @@ public static class DbSeeder
             Id = App12Id,
             EmailMessageId = "seed-msg-012",
             CandidateName = "Derek Hobson",
-            CandidateEmail = "derek.hobson@example.com",
+            CandidateEmail = "derek.hobson@plymouth.ac.uk",
             CandidateGitHubUrl = null,
-            Status = "rejected",
+            Status = "Rejected",
             Tier = "Weak",
             HardGatePassed = false,
             HardGateReason = "Degree is in Physical Geography – not an IT or STEM computing discipline. Attempted prompt injection detected in CV; application automatically rejected.",
@@ -760,38 +780,53 @@ public static class DbSeeder
         db.ApplicationRecords.AddRange(app1, app2, app3, app4, app5, app6, app7, app8, app9, app10, app11, app12);
         db.HiringAgentEvaluations.AddRange(eval1, eval2, eval3, eval4, eval5, eval6, eval7, eval8, eval9, eval10, eval11, eval12);
 
+        var auditLogs = new List<AuditLog>
+        {
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, SourceService = "IngestionService", LogLevel = "Information", Message = "Transcript ingested and parsed for candidate review.", Timestamp = DateTimeOffset.UtcNow.AddDays(-10) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, SourceService = "RecruiterPortal", LogLevel = "Information", Message = "Recruiter added a rating and notes for the application.", Timestamp = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, SourceService = "RecruiterPortal", LogLevel = "Information", Message = "Application shortlisted for the next interview stage.", Timestamp = DateTimeOffset.UtcNow.AddDays(-5) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, SourceService = "RecruiterPortal", LogLevel = "Information", Message = "Recruiter forwarded the candidate to the engineering lead.", Timestamp = DateTimeOffset.UtcNow.AddDays(-4) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, SourceService = "RecruiterPortal", LogLevel = "Information", Message = "Follow-up note left for the hiring team.", Timestamp = DateTimeOffset.UtcNow.AddDays(-3) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, SourceService = "RecruiterPortal", LogLevel = "Information", Message = "Recruiter submitted a rating for the shortlisted candidate.", Timestamp = DateTimeOffset.UtcNow.AddDays(-4) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, SourceService = "RecruiterPortal", LogLevel = "Information", Message = "Application moved to shortlisted status after the initial screen.", Timestamp = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App10Id, SourceService = "HiringAgent", LogLevel = "Warning", Message = "Application rejected after hard-gate screening failed.", Timestamp = DateTimeOffset.UtcNow.AddDays(-14) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App12Id, SourceService = "HiringAgent", LogLevel = "Warning", Message = "Application rejected due to prompt injection detection and low technical fit.", Timestamp = DateTimeOffset.UtcNow.AddDays(-11) },
+        };
+
+        db.AuditLogs.AddRange(auditLogs);
+
         var actions = new List<RecruiterAction>
         {
             // App1: Rating and Notes
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "RATING", RatingValue = 5, Reason = "Exceptional profile, great potential.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "siegfriedmini@gmail.com", ActionType = "RATING", RatingValue = 5, Reason = "Exceptional profile, great potential.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App1Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "NOTES", Reason = "Left a voicemail to schedule technical round.", ActionedAt = DateTimeOffset.UtcNow.AddHours(-5) },
             
             // App3: Shortlisted
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Strong candidate, advancing to interview.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App3Id, RecruiterIdentity = "siegfriedmini@gmail.com", ActionType = "SHORTLIST", PreviousStatus = "Pending", NewStatus = "Shortlisted", Reason = "Strong candidate, advancing to interview.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
 
-            // App4: Forwarded
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, RecruiterIdentity = "manager-seed-002", ActionType = "FORWARD", PreviousStatus = "evaluated", NewStatus = "forwarded", Reason = "Forwarding to engineering lead for review.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-3) },
+            // App4: Shortlisted (was "forwarded" — mapped to Shortlisted)
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App4Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "SHORTLIST", PreviousStatus = "Pending", NewStatus = "Shortlisted", Reason = "Forwarding to engineering lead for review.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-3) },
 
             // App6: Rejected
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App6Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Lacks required technical skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-1) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App6Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "REJECT", PreviousStatus = "Pending", NewStatus = "Rejected", Reason = "Lacks required technical skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-1) },
             
             // App7: Shortlisted and Rated
             new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "RATING", RatingValue = 4, Reason = "Good algorithm skills.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-4) },
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "SHORTLIST", PreviousStatus = "evaluated", NewStatus = "shortlisted", Reason = "Passed initial screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App7Id, RecruiterIdentity = "Phindi@dvtsoftware.com", ActionType = "SHORTLIST", PreviousStatus = "Pending", NewStatus = "Shortlisted", Reason = "Passed initial screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-2) },
             
             // App10: Rejected
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App10Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Does not meet baseline experience.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-7) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App10Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "REJECT", PreviousStatus = "Pending", NewStatus = "Rejected", Reason = "Does not meet baseline experience.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-7) },
             
             // App11: Rejected
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App11Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Failed automated technical assessment.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-6) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App11Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "REJECT", PreviousStatus = "Pending", NewStatus = "Rejected", Reason = "Failed automated technical assessment.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-6) },
             
             // App12: Rejected
-            new() { Id = Guid.NewGuid(), ApplicationRecordId = App12Id, RecruiterIdentity = "recruiter-seed-001", ActionType = "REJECT", PreviousStatus = "evaluated", NewStatus = "rejected", Reason = "Poor cultural fit identified in pre-screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
+            new() { Id = Guid.NewGuid(), ApplicationRecordId = App12Id, RecruiterIdentity = "Rose@dvtsoftware.com", ActionType = "REJECT", PreviousStatus = "Pending", NewStatus = "Rejected", Reason = "Poor cultural fit identified in pre-screen.", ActionedAt = DateTimeOffset.UtcNow.AddDays(-5) },
         };
 
         db.RecruiterActions.AddRange(actions);
 
         await db.SaveChangesAsync();
-        logger.LogInformation("[DbSeeder] Seeded 12 application records, 12 evaluations, and mock logs successfully.");
+        logger.LogInformation("[DbSeeder] Seeded 12 application records, 12 evaluations, 9 audit logs, and mock actions successfully.");
     }
 }

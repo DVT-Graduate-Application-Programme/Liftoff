@@ -14,6 +14,7 @@ public class GradRecruitmentDbContext : DbContext
     public DbSet<HiringAgentEvaluation> HiringAgentEvaluations { get; set; } = null!;
     public DbSet<RecruiterAction> RecruiterActions { get; set; } = null!;
     public DbSet<AuditLog> AuditLogs { get; set; } = null!;
+    public DbSet<Recruiter> Recruiters { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -108,6 +109,23 @@ public class GradRecruitmentDbContext : DbContext
                 .WithMany(p => p.AuditLogs)
                 .HasForeignKey(d => d.ApplicationRecordId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<Recruiter>(entity =>
+        {
+            entity.ToTable("Recruiters");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.IdentityId).IsRequired().HasMaxLength(255);
+            entity.HasIndex(e => e.IdentityId).IsUnique();
+            entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+            entity.HasIndex(e => e.Email).IsUnique();
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Ignore(e => e.FullName);
         });
     }
 }

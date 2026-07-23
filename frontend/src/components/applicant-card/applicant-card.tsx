@@ -25,14 +25,18 @@ type ApplicantCardProps = {
   recruiterName?: string;
   actionLabel?: string;
   onActionClick?: () => void;
+  actionVariant?:
+    "default" | "outline" | "secondary" | "ghost" | "destructive" | "link";
   onClick?: () => void;
   secondaryActionLabel?: string;
   onSecondaryActionClick?: () => void;
   isSecondaryActionDisabled?: boolean;
   isSecondaryActionLoading?: boolean;
+  stackActions?: boolean;
 };
 
-function getScoreColor(score: number) {
+function getScoreColor(score?: number | null) {
+  if (score == null || Number.isNaN(score)) return "text-muted-foreground";
   if (score >= 80) return "text-primary";
   if (score >= 65) return "text-chart-4";
   return "text-destructive";
@@ -64,7 +68,15 @@ const statusStyles = {
   { border: string; text: string; background: string }
 >;
 
-function ScoreTag({ score }: { score: number }) {
+function ScoreTag({ score }: { score?: number | null }) {
+  if (score == null || Number.isNaN(score)) {
+    return (
+      <div className="flex min-w-12 justify-center">
+        <span className="text-sm font-semibold text-muted-foreground">–</span>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-w-12 justify-center">
       <span
@@ -122,11 +134,13 @@ export default function ApplicantCard({
   recruiterName,
   actionLabel = "Show AI Summary",
   onActionClick,
+  actionVariant = "outline",
   onClick,
   secondaryActionLabel,
   onSecondaryActionClick,
   isSecondaryActionDisabled = false,
   isSecondaryActionLoading = false,
+  stackActions = false,
 }: ApplicantCardProps) {
   const initials = name
     .split(" ")
@@ -152,12 +166,12 @@ export default function ApplicantCard({
       }}
       className={cn(
         "group relative flex cursor-pointer rounded-xl border bg-card p-4 transition-all hover:-translate-y-px",
-        "flex-col gap-4 sm:flex-row sm:items-center sm:gap-3",
+        "flex-col gap-4 @2xl:flex-row @2xl:items-center @2xl:gap-3",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
         statusStyle.border,
       )}
     >
-      <div className="flex w-full min-w-0 flex-1 items-center gap-3 sm:w-auto">
+      <div className="flex w-full min-w-0 flex-1 items-center gap-3 @2xl:w-auto">
         <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
           {initials}
         </div>
@@ -168,14 +182,20 @@ export default function ApplicantCard({
           </h4>
           {showInstitute && (
             <div className="mt-1 flex flex-col gap-0.5 text-xs text-muted-foreground">
-              <p className={cn(wrapInstitute ? "whitespace-normal break-words" : "truncate")}>
+              <p
+                className={cn(
+                  wrapInstitute ? "whitespace-normal break-words" : "truncate",
+                )}
+              >
                 {institute}
               </p>
               {secondaryInstitute && (
                 <p
                   className={cn(
                     "text-muted-foreground/80",
-                    wrapInstitute ? "whitespace-normal break-words" : "truncate",
+                    wrapInstitute
+                      ? "whitespace-normal break-words"
+                      : "truncate",
                   )}
                 >
                   {secondaryInstitute}
@@ -193,8 +213,8 @@ export default function ApplicantCard({
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-1 sm:flex-row sm:items-center sm:justify-center sm:gap-4">
-        <div className="hidden w-[12rem] shrink-0 items-center justify-center gap-3 sm:flex">
+      <div className="flex flex-col gap-3 @2xl:flex-1 @2xl:flex-row @2xl:items-center @2xl:justify-center @2xl:gap-4">
+        <div className="hidden w-[12rem] shrink-0 items-center justify-center gap-3 @2xl:flex">
           <div className="flex w-24 flex-col items-center gap-0.5">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
               {scoreLabel}
@@ -215,7 +235,7 @@ export default function ApplicantCard({
         </div>
 
         {showStatus && (
-          <div className="flex shrink-0 flex-col items-start gap-0.5 sm:ml-0 sm:w-16 sm:items-center sm:justify-center md:ml-1">
+          <div className="flex shrink-0 flex-col items-start gap-0.5 @2xl:ml-0 @2xl:w-16 @2xl:items-center @2xl:justify-center @4xl:ml-1">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
               Status
             </span>
@@ -232,14 +252,16 @@ export default function ApplicantCard({
         )}
 
         {showReviewedAt && reviewedAt && (
-          <div className="hidden w-28 shrink-0 flex-col items-end gap-0.5 pl-2 md:flex">
+          <div className="hidden w-28 shrink-0 flex-col items-end gap-0.5 pl-2 @4xl:flex">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
               Reviewed
             </span>
             <span
               className={cn(
                 "max-w-full text-right text-xs font-medium tabular-nums text-foreground",
-                wrapReviewedAt ? "whitespace-normal break-words" : "truncate whitespace-nowrap",
+                wrapReviewedAt
+                  ? "whitespace-normal break-words"
+                  : "truncate whitespace-nowrap",
               )}
             >
               {reviewedAt}
@@ -247,14 +269,16 @@ export default function ApplicantCard({
           </div>
         )}
         {daysAgo !== null && daysAgo >= 0 && (
-          <div className="hidden w-32 shrink-0 flex-col items-center gap-0.5 pl-2 md:flex">
+          <div className="hidden w-32 shrink-0 flex-col items-center gap-0.5 pl-2 @4xl:flex">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
               Applied
             </span>
             <span
               className={cn(
                 "max-w-full text-right text-xs font-medium tabular-nums text-foreground",
-                wrapReviewedAt ? "whitespace-normal break-words" : "truncate whitespace-nowrap",
+                wrapReviewedAt
+                  ? "whitespace-normal break-words"
+                  : "truncate whitespace-nowrap",
               )}
             >
               {daysAgo === 0
@@ -266,7 +290,7 @@ export default function ApplicantCard({
           </div>
         )}
         {daysAgo === null && (
-          <div className="hidden w-32 shrink-0 flex-col items-center gap-0.5 pl-2 md:flex">
+          <div className="hidden w-32 shrink-0 flex-col items-center gap-0.5 pl-2 @4xl:flex">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
               Applied
             </span>
@@ -277,13 +301,23 @@ export default function ApplicantCard({
         )}
       </div>
 
-      <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:pl-2">
+      <div
+        className={cn(
+          "flex w-full shrink-0 gap-2 @2xl:w-auto @2xl:pl-2",
+          stackActions
+            ? "flex-col"
+            : "flex-col @2xl:flex-row @2xl:items-center",
+        )}
+      >
         {secondaryActionLabel ? (
           <Button
             type="button"
             variant="secondary"
             size="sm"
-            className="w-full justify-center gap-1.5 text-xs sm:w-32"
+            className={cn(
+              "justify-center gap-1.5 text-xs",
+              stackActions ? "w-full" : "w-full @2xl:w-32",
+            )}
             disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
             onClick={(event) => {
               event.stopPropagation();
@@ -297,11 +331,18 @@ export default function ApplicantCard({
         ) : null}
         <Button
           type="button"
-          variant="outline"
+          variant={actionVariant}
           size="sm"
           className={cn(
-            "gap-1.5 text-xs w-full sm:w-auto",
-            secondaryActionLabel ? "sm:w-32 justify-center" : undefined,
+            "gap-1.5 text-xs w-full @2xl:w-auto",
+            actionVariant === "default"
+              ? "text-white hover:bg-primary/80"
+              : undefined,
+            secondaryActionLabel
+              ? stackActions
+                ? "justify-center"
+                : "@2xl:w-32 justify-center"
+              : undefined,
           )}
           onClick={(event) => {
             event.stopPropagation();

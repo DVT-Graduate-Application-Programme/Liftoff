@@ -12,10 +12,14 @@ namespace Infrastructure.Data;
 public class ApplicationRecordRepository : IApplicationRecordRepository
 {
     private readonly GradRecruitmentDbContext _dbContext;
+    private readonly IApplicationEventService _events;
 
-    public ApplicationRecordRepository(GradRecruitmentDbContext dbContext)
+    public ApplicationRecordRepository(
+        GradRecruitmentDbContext dbContext,
+        IApplicationEventService events)
     {
         _dbContext = dbContext;
+        _events = events;
     }
 
     public async Task<List<ApplicationRecord>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -137,6 +141,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         applicationRecord.ClaimedAt = now;
         applicationRecord.UpdatedAt = now;
 
+        _dbContext.ApplicationRecords.Update(applicationRecord);
+
         await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
         {
             ApplicationRecordId = id,
@@ -144,6 +150,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             ActionType = "CLAIM",
             ActionedAt = now
         }, cancellationToken);
+
+        _events.PublishOwnershipChanged(id, "CLAIM");
 
         return new ApplicationOwnershipClaim
         {
@@ -175,6 +183,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         applicationRecord.Status = shortlistedStatus;
         applicationRecord.UpdatedAt = now;
 
+        _dbContext.ApplicationRecords.Update(applicationRecord);
+
         await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
         {
             ApplicationRecordId = id,
@@ -185,6 +195,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             Reason = reason,
             ActionedAt = now
         }, cancellationToken);
+
+        _events.PublishOwnershipChanged(id, "SHORTLIST");
 
         return new ApplicationOwnershipShortlist
         {
@@ -215,6 +227,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         applicationRecord.Status = newStatus;
         applicationRecord.UpdatedAt = now;
 
+        _dbContext.ApplicationRecords.Update(applicationRecord);
+
         await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
         {
             ApplicationRecordId = id,
@@ -225,6 +239,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             Reason = reason,
             ActionedAt = now
         }, cancellationToken);
+
+        _events.PublishOwnershipChanged(id, newStatus);
 
         return new ApplicationStatusUpdate
         {
@@ -251,6 +267,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         applicationRecord.RatedAt = now;
         applicationRecord.UpdatedAt = now;
 
+        _dbContext.ApplicationRecords.Update(applicationRecord);
+
         await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
         {
             ApplicationRecordId = id,
@@ -260,6 +278,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             Reason = notes,
             ActionedAt = now
         }, cancellationToken);
+
+        _events.PublishOwnershipChanged(id, "RATING");
 
         return new ApplicationRatingUpdate
         {
@@ -280,6 +300,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         applicationRecord.RecruiterRatingNote = notes;
         applicationRecord.UpdatedAt = now;
 
+        _dbContext.ApplicationRecords.Update(applicationRecord);
+
         await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
         {
             ApplicationRecordId = id,
@@ -289,6 +311,8 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             Reason = notes,
             ActionedAt = now
         }, cancellationToken);
+
+        _events.PublishOwnershipChanged(id, "NOTES");
 
         return new ApplicationRatingUpdate
         {
@@ -373,6 +397,14 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             records = query.IsShortlisted.Value
                 ? records.Where(a => a.ShortlistedByRecruiterId != null)
                 : records.Where(a => a.ShortlistedByRecruiterId == null);
+        }
+
+        if (query.RecruiterIdentity is not null)
+        {
+            records = records.Where(a =>
+                a.ClaimedByRecruiterId == query.RecruiterIdentity ||
+                a.ShortlistedByRecruiterId == query.RecruiterIdentity ||
+                a.RatedByRecruiterId == query.RecruiterIdentity);
         }
 
         if (query.FromDate is not null)
@@ -502,6 +534,7 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
     public async Task AddAsync(ApplicationRecord record, CancellationToken cancellationToken = default)
     {
         await _dbContext.ApplicationRecords.AddAsync(record, cancellationToken);
+        _events.PublishApplicationIngested(record.Id);
     }
 
     public async Task<bool> AddEvaluationAsync(
@@ -537,6 +570,7 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         applicationRecord.UpdatedAt = DateTimeOffset.UtcNow;
 
         await _dbContext.HiringAgentEvaluations.AddAsync(evaluation, cancellationToken);
+        _events.PublishEvaluationSaved(applicationId);
         return true;
     }
 
@@ -568,6 +602,7 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         applicationRecord.Status = "PENDING";
         applicationRecord.UpdatedAt = DateTimeOffset.UtcNow;
 
+        _events.PublishEvaluationReset(id);
         return true;
     }
 
@@ -593,5 +628,25 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             .Where(flag => flag.ValueKind == JsonValueKind.String)
             .Select(flag => flag.GetString()!)
             .ToList();
+    }
+
+    public Task<List<Recruiter>> GetRecruitersAsync(CancellationToken cancellationToken = default)
+    {
+        return _dbContext.Recruiters
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task AddRecruiterAsync(RecruiterPostDto recruiter, CancellationToken cancellationToken = default)
+    {
+        var recruiterEntity = new Recruiter
+        {
+            FirstName = recruiter.FirstName,
+            LastName = recruiter.LastName,
+            Email = recruiter.Email,
+            IdentityId = recruiter.Email
+        };
+
+        return _dbContext.Recruiters.AddAsync(recruiterEntity, cancellationToken).AsTask();
     }
 }

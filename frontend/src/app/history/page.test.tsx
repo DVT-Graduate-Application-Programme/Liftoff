@@ -7,8 +7,14 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
-const applications = [
-  {
+function requestUrl(input: RequestInfo | URL): string {
+  if (typeof input === "string") return input;
+  if (input instanceof URL) return input.href;
+  return input.url;
+}
+
+function makeApplication(overrides: Partial<Record<string, unknown>> = {}) {
+  return {
     applicationId: "app-1",
     candidateName: "Ada Lovelace",
     currentStatus: "SHORTLISTED",
@@ -21,29 +27,37 @@ const applications = [
     claimedByRecruiterId: null,
     shortlistedByRecruiterId: null,
     createdAt: new Date().toISOString(),
-  },
-];
+    ...overrides,
+  };
+}
 
 describe("History page", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
 
-  it("shows loading skeletons before data resolves", () => {
+  it("shows a loading spinner before data resolves", () => {
     vi.spyOn(global, "fetch").mockReturnValue(new Promise(() => {}));
 
     renderWithQueryClient(<HistoryPage />);
 
-    expect(document.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
+    expect(document.querySelector(".animate-spin")).toBeInTheDocument();
   });
 
   it("renders applications grouped by recency on success", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse({ applications }));
+    vi.spyOn(global, "fetch").mockImplementation((input) => {
+      const url = requestUrl(input);
+      if (url.includes("/api/applications?")) {
+        return Promise.resolve(jsonResponse({ applications: [makeApplication()], nextCursor: null }));
+      }
+      return Promise.resolve(new Response(null, { status: 404 }));
+    });
 
     renderWithQueryClient(<HistoryPage />);
 
     expect(await screen.findByText("Ada Lovelace")).toBeInTheDocument();
     expect(screen.getByText("Processed Today")).toBeInTheDocument();
+    expect(screen.queryByText("Load more")).not.toBeInTheDocument();
   });
 
   it("shows an error state when the request fails", async () => {
@@ -52,15 +66,47 @@ describe("History page", () => {
     renderWithQueryClient(<HistoryPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(/couldn't load review history/i)).toBeInTheDocument();
+      expect(screen.getByText("Error loading history.")).toBeInTheDocument();
     });
   });
 
   it("shows an empty state when there are no applications", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse({ applications: [] }));
+    vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse({ applications: [], nextCursor: null }));
 
     renderWithQueryClient(<HistoryPage />);
 
-    expect(await screen.findByText("No applications found")).toBeInTheDocument();
+    expect(await screen.findByText("No candidate history matches your filters.")).toBeInTheDocument();
+  });
+
+  it("appends a second page when 'Load more' is clicked", async () => {
+    let listCall = 0;
+    vi.spyOn(global, "fetch").mockImplementation((input) => {
+      const url = requestUrl(input);
+      if (url.includes("/api/applications?")) {
+        listCall += 1;
+        if (listCall === 1) {
+          return Promise.resolve(
+            jsonResponse({ applications: [makeApplication({ applicationId: "app-1", candidateName: "Ada Lovelace" })], nextCursor: 12 }),
+          );
+        }
+        return Promise.resolve(
+          jsonResponse({ applications: [makeApplication({ applicationId: "app-2", candidateName: "Grace Hopper" })], nextCursor: null }),
+        );
+      }
+      // Per-card evaluation lookups: treat every candidate as "not yet evaluated".
+      return Promise.resolve(new Response(null, { status: 404 }));
+    });
+
+    const { default: userEvent } = await import("@testing-library/user-event");
+    renderWithQueryClient(<HistoryPage />);
+
+    expect(await screen.findByText("Ada Lovelace")).toBeInTheDocument();
+    const loadMore = screen.getByText("Load more");
+
+    await userEvent.click(loadMore);
+
+    expect(await screen.findByText("Grace Hopper")).toBeInTheDocument();
+    expect(screen.getByText("Ada Lovelace")).toBeInTheDocument();
+    expect(screen.queryByText("Load more")).not.toBeInTheDocument();
   });
 });

@@ -2,8 +2,12 @@
 
 import { useMemo, type ReactElement, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
-import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
+import {
+  useApplicantSelection,
+  type SelectionTabKey,
+} from "@/components/providers/applicant-selection-provider";
 import { useInfiniteApplications } from "@/hooks/use-infinite-applications";
 import { useEvaluation } from "@/hooks/use-evaluation";
 import {
@@ -11,7 +15,7 @@ import {
   useClaimApplication,
 } from "@/hooks/use-claim-application";
 import { useSidebar } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
+import { LoadMoreButton } from "@/components/load-more-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -23,6 +27,7 @@ import {
   formatDate,
   getRecruiterLabel,
   groupApplicationsByDate,
+  getDisplayStatus,
   getStatusLabel,
   getStatusTone,
   parseEducationEvidence,
@@ -77,20 +82,17 @@ function getEducationSubtitle(evaluation: Evaluation | null | undefined, fallbac
 function PendingApplicationCard({
   application,
   enableClaim,
-  selectApplication,
-  setOpen,
+  openDetails,
   claimMutation,
 }: {
   application: CandidateApplication;
   enableClaim: boolean;
-  selectApplication: (applicationId: string) => void;
-  setOpen: (open: boolean) => void;
+  openDetails: (applicationId: string) => void;
   claimMutation: ReturnType<typeof useClaimApplication>;
 }) {
   const router = useRouter();
   const evaluationQuery = useEvaluation(application.applicationId);
-  const isClaimedByActiveRecruiter =
-    application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
+  const isClaimed = Boolean(application.claimedByRecruiterId);
   const isClaiming =
     enableClaim &&
     claimMutation.isPending &&
@@ -111,18 +113,18 @@ function PendingApplicationCard({
       name={application.candidateName}
       institute={education.degree || application.cvSummary}
       secondaryInstitute={education.institution || undefined}
+      recruiterLabel="Recruiter"
+      recruiterName={getRecruiterLabel(application)}
       systemScore={toScorePercent(application.hiringAgentTotalScore)}
       academicAverage={academicAverage}
       createdAt={application.createdAt}
       showInstitute
       {...(enableClaim
         ? {
-            secondaryActionLabel: isClaimedByActiveRecruiter
-              ? "Claimed"
-              : "Claim for review",
-            isSecondaryActionDisabled: isClaimedByActiveRecruiter || isClaiming,
+            secondaryActionLabel: isClaimed ? "Claimed" : "Claim for review",
+            isSecondaryActionDisabled: isClaimed || isClaiming,
             isSecondaryActionLoading: isClaiming,
-            onSecondaryActionClick: isClaimedByActiveRecruiter
+            onSecondaryActionClick: isClaimed
               ? undefined
               : () => {
                   claimMutation.mutate(application.applicationId);
@@ -134,8 +136,7 @@ function PendingApplicationCard({
       }}
 
       onActionClick={() => {
-        selectApplication(application.applicationId);
-        setOpen(true);
+        openDetails(application.applicationId);
       }}
     />
   );
@@ -153,9 +154,20 @@ export function ApplicantList({
   renderCard,
 }: ApplicantListProps) {
   const router = useRouter();
+  const { data: session } = useSession();
+  const recruiterIdentity = session?.user?.email ?? ACTIVE_RECRUITER_ID;
   const { search } = useApplicantSearch();
   const { selectApplication } = useApplicantSelection();
-  const { setOpen } = useSidebar();
+  const { setOpen, setOpenMobile } = useSidebar();
+
+  // Opens the details panel. The Sidebar mounts one branch at a time — a mobile
+  // Sheet (openMobile) or a desktop offcanvas (open) — so set both to reliably
+  // open whichever is live.
+  const openDetails = (applicationId: string, tab?: SelectionTabKey) => {
+    selectApplication(applicationId, tab);
+    setOpen(true);
+    setOpenMobile(true);
+  };
   const {
     data,
     isLoading,
@@ -169,7 +181,7 @@ export function ApplicantList({
     status: status ?? filters?.status,
     search: search || undefined,
   });
-  const claimMutation = useClaimApplication();
+  const claimMutation = useClaimApplication(recruiterIdentity);
   const applications = useMemo(
     () =>
       (data?.pages ?? []).flatMap(
@@ -179,7 +191,7 @@ export function ApplicantList({
   );
   const claimableApplication = (application: CandidateApplication) => {
     const isClaimedByActiveRecruiter =
-      application.claimedByRecruiterId === ACTIVE_RECRUITER_ID;
+      application.claimedByRecruiterId === recruiterIdentity;
     const isClaiming =
       enableClaim &&
       claimMutation.isPending &&
@@ -236,15 +248,14 @@ export function ApplicantList({
           key={application.applicationId}
           application={application}
           enableClaim={enableClaim}
-          selectApplication={selectApplication}
-          setOpen={setOpen}
+          openDetails={openDetails}
           claimMutation={claimMutation}
         />
       );
     }
 
-    const { isClaimedByActiveRecruiter, isClaiming } =
-      claimableApplication(application);
+    const { isClaiming } = claimableApplication(application);
+    const displayStatus = getDisplayStatus(application);
     const commonProps = {
       name: application.candidateName,
       institute: application.cvSummary,
@@ -253,15 +264,16 @@ export function ApplicantList({
       showReviewedAt,
       createdAt: application.createdAt,
       recruiterName: getRecruiterLabel(application),
+      statusLabel: getStatusLabel(displayStatus),
       ...(enableClaim
         ? {
-            secondaryActionLabel: isClaimedByActiveRecruiter
+            secondaryActionLabel: application.claimedByRecruiterId
               ? "Claimed"
               : "Claim for review",
             isSecondaryActionDisabled:
-              isClaimedByActiveRecruiter || isClaiming,
+              Boolean(application.claimedByRecruiterId) || isClaiming,
             isSecondaryActionLoading: isClaiming,
-            onSecondaryActionClick: isClaimedByActiveRecruiter
+            onSecondaryActionClick: application.claimedByRecruiterId
               ? undefined
               : () => {
                   claimMutation.mutate(application.applicationId);
@@ -272,32 +284,27 @@ export function ApplicantList({
         router.push(`/applicants/${application.applicationId}`);
       },
       onActionClick: () => {
-        selectApplication(application.applicationId, tabKey);
-        setOpen(true);
+        openDetails(application.applicationId, tabKey);
       },
     };
 
     return (
       <ApplicantCard
         key={application.applicationId}
-        statusLabel={getStatusLabel(application.currentStatus)}
-        statusTone={getStatusTone(application.currentStatus)}
+        statusTone={getStatusTone(displayStatus)}
         {...commonProps}
       />
     );
   };
 
-  const loadMoreButton = hasNextPage && (
-      <Button
-        variant="outline"
-        className="self-center"
-        disabled={isFetchingNextPage}
-        onClick={() => {
-          void fetchNextPage();
-        }}
-      >
-      {isFetchingNextPage ? "Loading..." : "Load more"}
-    </Button>
+  const loadMoreButton = (
+    <LoadMoreButton
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      onClick={() => {
+        void fetchNextPage();
+      }}
+    />
   );
 
   if (groupByDate) {
@@ -320,7 +327,7 @@ export function ApplicantList({
                   {countLabel(bucketApplications.length)}
                 </span>
               </div>
-              <div className="grid grid-cols-1 gap-4">
+              <div className="@container grid grid-cols-1 gap-4">
                 {bucketApplications.length > 0 ? (
                   bucketApplications.map(renderCardItem)
                 ) : (
@@ -332,7 +339,7 @@ export function ApplicantList({
             </section>
           );
         })}
-        {loadMoreButton && (
+        {hasNextPage && (
           <div className="flex justify-center">{loadMoreButton}</div>
         )}
       </div>
@@ -340,7 +347,7 @@ export function ApplicantList({
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="@container flex flex-col gap-3">
       {applications.map(renderCardItem)}
       {loadMoreButton}
     </div>

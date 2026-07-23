@@ -1,12 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSession } from "next-auth/react";
 import type { ApplicationFilters } from "@/types/api";
 import { ApplicantList } from "./applicant-list";
 import { FilterBar, type ActiveFilter, type FilterFieldConfig, type SortOption } from "./filter-bar";
 import { ACTIVE_RECRUITER_ID } from "@/hooks/use-claim-application";
 
 const PendingCandidates = () => {
+  const { data: session } = useSession();
+  const recruiterIdentity = session?.user?.email ?? ACTIVE_RECRUITER_ID;
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [tier, setTier] = useState("");
   const [minScore, setMinScore] = useState("");
@@ -17,7 +20,7 @@ const PendingCandidates = () => {
 
   const filters = useMemo(() => {
     const next: Omit<ApplicationFilters, "status" | "search" | "limit" | "cursor"> = { sort };
-    next.recruiterIdentity = ACTIVE_RECRUITER_ID;
+    next.recruiterIdentity = recruiterIdentity;
     if (tier) next.tier = tier;
     if (minScore) next.minScore = Number(minScore);
     if (hardGate !== "all") next.hardGatePassed = hardGate === "passed";
@@ -28,7 +31,7 @@ const PendingCandidates = () => {
       next.dateFrom = from.toISOString();
     }
     return next;
-  }, [claimed, dateRange, hardGate, minScore, sort, tier]);
+  }, [claimed, dateRange, hardGate, minScore, recruiterIdentity, sort, tier]);
 
   const clearFilters = () => {
     setTier("");

@@ -47,6 +47,11 @@ services:
       Ollama__BaseUrl: "http://host.docker.internal:11434"
       POSTGRES_HOST: db
       POSTGRES_PORT: "5432"
+      # SSE: URL where the backend POSTs data-change notifications.
+      # Default assumes the frontend runs locally with npm run dev.
+      # If running the frontend in Docker too (docker compose up --profile full), override:
+      #   export NEXTJS_WEBHOOK_URL=http://frontend:3000/api/internal/notify
+      NOTIFICATIONS__NEXTJS__WEBHOOKURL: "${NEXTJS_WEBHOOK_URL:-http://host.docker.internal:3000/api/internal/notify}"
     ports:
       - "5000:5000"
     depends_on:

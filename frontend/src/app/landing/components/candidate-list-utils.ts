@@ -22,6 +22,9 @@ export const getStatusLabel = (status: CandidateApplication["currentStatus"]) =>
 export const getStatusTone = (status: CandidateApplication["currentStatus"]) =>
   statusTones[status.toLowerCase()];
 
+export const getDisplayStatus = (application: CandidateApplication) =>
+  application.currentStatus;
+
 export const formatDate = (isoDate: string) =>
   new Date(isoDate).toLocaleDateString("en-ZA", {
     day: "numeric",
@@ -32,8 +35,8 @@ export const formatDate = (isoDate: string) =>
 export const toScorePercent = (score: number) => Math.round(score * 10) / 10;
 
 export const getRecruiterLabel = (application: CandidateApplication) =>
-  application.shortlistedByRecruiterId ??
   application.claimedByRecruiterId ??
+  application.shortlistedByRecruiterId ??
   application.ratedByRecruiterId ??
   "phindi@dvtsoftware.com";
 
