@@ -29,9 +29,9 @@ public static class ApplicationEndpoints
 
         // GET /api/applications/{id}
         // Returns the full application details for a given application ID
-        group.MapGet("/{id:guid}", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapGet("/{id:guid}", async (Guid id, IApplicationQueryService queryService, CancellationToken ct) =>
         {
-            var application = await repo.GetApplicationDetailsAsync(id, ct);
+            var application = await queryService.GetApplicationDetailsAsync(id, ct);
             return application is not null ? Results.Ok(application) : Results.NotFound();
         })
         .WithName("GetApplicationDetails");
@@ -59,54 +59,54 @@ public static class ApplicationEndpoints
 
         // GET /api/applications/{id}/applicant
         // Returns the applicant's personal information for a given application ID
-        group.MapGet("/{id:guid}/applicant", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapGet("/{id:guid}/applicant", async (Guid id, IApplicationQueryService queryService, CancellationToken ct) =>
         {
-            var applicant = await repo.GetApplicantByApplicationIdAsync(id, ct);
+            var applicant = await queryService.GetApplicantByApplicationIdAsync(id, ct);
             return applicant is not null ? Results.Ok(applicant) : Results.NotFound();
         })
         .WithName("GetApplicantInformation");
 
         // GET /api/applications/{id}/screening
         // Returns the hard gate screening result for a given application ID
-        group.MapGet("/{id:guid}/screening", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapGet("/{id:guid}/screening", async (Guid id, IApplicationQueryService queryService, CancellationToken ct) =>
         {
-            var screening = await repo.GetHardGateScreeningByApplicationIdAsync(id, ct);
+            var screening = await queryService.GetHardGateScreeningByApplicationIdAsync(id, ct);
             return screening is not null ? Results.Ok(screening) : Results.NotFound();
         })
         .WithName("GetHardGateScreening");
 
         // GET /api/applications/{id}/evaluation
         // Returns the hiring agent evaluation for a given application ID
-        group.MapGet("/{id:guid}/evaluation", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapGet("/{id:guid}/evaluation", async (Guid id, IApplicationQueryService queryService, CancellationToken ct) =>
         {
-            var evaluation = await repo.GetHardGateEvaluationByApplicationIdAsync(id, ct);
+            var evaluation = await queryService.GetHardGateEvaluationByApplicationIdAsync(id, ct);
             return evaluation is not null ? Results.Ok(evaluation) : Results.NotFound();
         })
         .WithName("GetHiringAgentEvaluation");
 
         // GET /api/applications/{id}/ownership
         // Returns recruiter ownership, shortlist, and rating details for a given application
-        group.MapGet("/{id:guid}/ownership", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapGet("/{id:guid}/ownership", async (Guid id, IApplicationQueryService queryService, CancellationToken ct) =>
         {
-            var ownership = await repo.GetOwnershipAsync(id, ct);
+            var ownership = await queryService.GetOwnershipAsync(id, ct);
             return ownership is not null ? Results.Ok(ownership) : Results.NotFound();
         })
         .WithName("GetApplicationOwnership");
 
         // GET /api/applications/{id}/logs
         // Returns the recruiter action logs for a given application
-        group.MapGet("/{id:guid}/logs", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapGet("/{id:guid}/logs", async (Guid id, IApplicationQueryService queryService, CancellationToken ct) =>
         {
-            var logs = await repo.GetRecruiterLogsAsync(id, ct);
+            var logs = await queryService.GetRecruiterLogsAsync(id, ct);
             return Results.Ok(logs);
         })
         .WithName("GetApplicationLogs");
 
         // GET /api/applications/logs
         // Returns all recruiter action logs across all applications
-        group.MapGet("/logs", async (IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapGet("/logs", async (IApplicationQueryService queryService, CancellationToken ct) =>
         {
-            var logs = await repo.GetAllRecruiterLogsAsync(ct);
+            var logs = await queryService.GetAllRecruiterLogsAsync(ct);
             return Results.Ok(logs);
         })
         .WithName("GetAllApplicationLogs");

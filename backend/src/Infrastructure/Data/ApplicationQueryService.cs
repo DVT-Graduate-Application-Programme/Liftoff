@@ -1,11 +1,23 @@
-using Application.Queries.GetDashboardApplications;
+using Application.Interfaces;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Infrastructure.Data;
 
-public partial class ApplicationRecordRepository
+public class ApplicationQueryService : IApplicationQueryService
 {
+    private readonly GradRecruitmentDbContext _dbContext;
+
+    public ApplicationQueryService(GradRecruitmentDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
     public Task<ApplicationDetails?> GetApplicationDetailsAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return _dbContext.ApplicationRecords
@@ -118,25 +130,5 @@ public partial class ApplicationRecordRepository
                 ActionedAt = a.ActionedAt
             })
             .ToListAsync(cancellationToken);
-    }
-
-    public Task<List<Recruiter>> GetRecruitersAsync(CancellationToken cancellationToken = default)
-    {
-        return _dbContext.Recruiters
-            .AsNoTracking()
-            .ToListAsync(cancellationToken);
-    }
-
-    public Task AddRecruiterAsync(RecruiterPostDto recruiter, CancellationToken cancellationToken = default)
-    {
-        var recruiterEntity = new Recruiter
-        {
-            FirstName = recruiter.FirstName,
-            LastName = recruiter.LastName,
-            Email = recruiter.Email,
-            IdentityId = recruiter.Email
-        };
-
-        return _dbContext.Recruiters.AddAsync(recruiterEntity, cancellationToken).AsTask();
     }
 }

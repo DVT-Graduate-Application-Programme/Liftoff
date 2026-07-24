@@ -32,6 +32,7 @@ public static class DependencyInjection
 
         services.AddScoped<IApplicationRecordRepository, ApplicationRecordRepository>();
         services.AddScoped<IDashboardQueryService, DashboardQueryService>();
+        services.AddScoped<IApplicationQueryService, ApplicationQueryService>();
         services.AddScoped<IRecruiterRepository, RecruiterRepository>();
         services.AddScoped<IRecruiterAssignmentService, RecruiterAssignmentService>();
         services.AddScoped<IGraphEmailService, GraphEmailService>();
