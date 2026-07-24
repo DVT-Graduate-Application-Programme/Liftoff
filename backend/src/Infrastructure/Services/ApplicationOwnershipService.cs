@@ -1,10 +1,26 @@
+using Application.Interfaces;
 using Domain.Entities;
+using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace Infrastructure.Data;
+namespace Infrastructure.Services;
 
-public partial class ApplicationRecordRepository
+public class ApplicationOwnershipService : IApplicationOwnershipService
 {
+    private readonly GradRecruitmentDbContext _dbContext;
+    private readonly IApplicationEventService _events;
+
+    public ApplicationOwnershipService(
+        GradRecruitmentDbContext dbContext,
+        IApplicationEventService events)
+    {
+        _dbContext = dbContext;
+        _events = events;
+    }
+
     public async Task<ApplicationOwnershipClaim?> ClaimOwnershipAsync(
         Guid id,
         string recruiterIdentity,

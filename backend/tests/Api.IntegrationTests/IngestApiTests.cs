@@ -209,15 +209,7 @@ internal sealed class TestApplicationRecordRepository : IApplicationRecordReposi
 
 
 
-    public Task<ApplicationOwnershipClaim?> ClaimOwnershipAsync(Guid id, string recruiterIdentity, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
 
-    public Task<ApplicationOwnershipShortlist?> ShortlistAsync(Guid id, string recruiterIdentity, string? reason, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
 
 
 
