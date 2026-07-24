@@ -1,7 +1,11 @@
 using Application.Ai;
+using Application.Common.Behaviors;
+using FluentValidation;
+using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Reflection;
 
 namespace Application;
 
@@ -15,8 +19,10 @@ public static class DependencyInjection
             client.BaseAddress = new Uri(ollamaBaseUrl);
         });
 
-        // Other MediatR or Application registrations here
-        
+        var assembly = Assembly.GetExecutingAssembly();
+        services.AddValidatorsFromAssembly(assembly);
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
         return services;
     }
 }
