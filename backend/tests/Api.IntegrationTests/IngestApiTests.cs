@@ -114,6 +114,17 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
         Assert.Null(record.TranscriptAttachmentId);
     }
 
+    [Fact]
+    public async Task Ingest_WithInvalidCandidateEmail_ReturnsBadRequest()
+    {
+        var client = _factory.CreateClient();
+        using var request = CreateIngestRequest("Invalid Candidate", "not-an-email", includeTranscript: false);
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     private static HttpRequestMessage CreateIngestRequest(
         string candidateName,
         string candidateEmail,
@@ -153,6 +164,12 @@ public sealed class IngestApiFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        Environment.SetEnvironmentVariable("POSTGRES_HOST", "localhost");
+        Environment.SetEnvironmentVariable("POSTGRES_PORT", "5432");
+        Environment.SetEnvironmentVariable("POSTGRES_DB", "test");
+        Environment.SetEnvironmentVariable("POSTGRES_USER", "test");
+        Environment.SetEnvironmentVariable("POSTGRES_PASSWORD", "test");
+
         builder.UseEnvironment("Testing");
         builder.ConfigureServices(services =>
         {
