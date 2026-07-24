@@ -1,11 +1,28 @@
+using Application.Interfaces;
 using Domain.Entities;
+using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace Infrastructure.Data;
+namespace Infrastructure.Services;
 
-public partial class ApplicationRecordRepository
+public class ApplicationEvaluationService : IApplicationEvaluationService
 {
+    private readonly GradRecruitmentDbContext _dbContext;
+    private readonly IApplicationEventService _events;
+
+    public ApplicationEvaluationService(
+        GradRecruitmentDbContext dbContext,
+        IApplicationEventService events)
+    {
+        _dbContext = dbContext;
+        _events = events;
+    }
+
     public async Task<bool> AddEvaluationAsync(
         Guid applicationId,
         HiringAgentEvaluation evaluation,

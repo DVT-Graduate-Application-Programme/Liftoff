@@ -222,9 +222,9 @@ public static class ApplicationEndpoints
 
         // POST /api/applications/{id}/re-evaluate
         // Resets the hiring agent evaluation and triggers a new evaluation
-        group.MapPost("/{id:guid}/re-evaluate", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/re-evaluate", async (Guid id, IApplicationEvaluationService evaluationService, IApplicationRecordRepository repo, CancellationToken ct) =>
         {
-            var result = await repo.ResetEvaluationAsync(id, ct);
+            var result = await evaluationService.ResetEvaluationAsync(id, ct);
             if (!result)
             {
                 return Results.NotFound();

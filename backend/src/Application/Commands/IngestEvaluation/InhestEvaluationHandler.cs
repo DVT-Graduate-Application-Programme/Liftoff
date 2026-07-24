@@ -14,10 +14,14 @@ public class IngestEvaluationResult
 public class IngestEvaluationHandler
     : IRequestHandler<IngestEvaluationCommand, IngestEvaluationResult>
 {
+    private readonly IApplicationEvaluationService _evaluationService;
     private readonly IApplicationRecordRepository _repository;
 
-    public IngestEvaluationHandler(IApplicationRecordRepository repository)
+    public IngestEvaluationHandler(
+        IApplicationEvaluationService evaluationService,
+        IApplicationRecordRepository repository)
     {
+        _evaluationService = evaluationService;
         _repository = repository;
     }
 
@@ -80,7 +84,7 @@ public class IngestEvaluationHandler
         var tier = DeriveTier(totalScore.Score, totalScore.Max);
         var hardGate = DeriveHardGate(request.Scores.Education);
         var summary = BuildSummary(request, totalScore);
-        var saved = await _repository.AddEvaluationAsync(
+        var saved = await _evaluationService.AddEvaluationAsync(
             applicationId,
             evaluation,
             status,

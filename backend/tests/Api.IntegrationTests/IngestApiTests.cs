@@ -218,20 +218,7 @@ internal sealed class TestApplicationRecordRepository : IApplicationRecordReposi
         return Task.FromResult(_records.Any(record => record.EmailMessageId == emailMessageId));
     }
 
-    public Task<bool> AddEvaluationAsync(
-        Guid applicationId,
-        HiringAgentEvaluation evaluation,
-        string status,
-        decimal totalScore,
-        string tier,
-        bool hardGatePassed,
-        string hardGateReason,
-        string? cvSummary,
-        JsonDocument? flagsJson,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
+
 
     public Task AddAuditLogAsync(AuditLog auditLog, CancellationToken cancellationToken = default)
     {
