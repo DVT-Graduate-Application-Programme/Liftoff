@@ -27,8 +27,7 @@ public interface IApplicationRecordRepository
     Task<ApplicationRatingUpdate?> AddNotesAsync(Guid id, string recruiterIdentity, string notes, CancellationToken cancellationToken = default);
     Task<List<RecruiterActionLogDto>> GetRecruiterLogsAsync(Guid id, CancellationToken cancellationToken = default);
     Task<List<RecruiterActionLogDto>> GetAllRecruiterLogsAsync(CancellationToken cancellationToken = default);
-    Task<List<DashboardApplicationDto>> GetDashboardApplicationsAsync(GetDashboardApplicationsQuery query, CancellationToken cancellationToken = default);
-    Task<DashboardMetricsDto> GetDashboardMetricsAsync(CancellationToken cancellationToken = default);
+
     Task<bool> ExistsAsync(string emailMessageId, CancellationToken cancellationToken = default);
     Task AddAsync(ApplicationRecord record, CancellationToken cancellationToken = default);
     Task<List<Recruiter>> GetRecruitersAsync(CancellationToken cancellationToken = default);

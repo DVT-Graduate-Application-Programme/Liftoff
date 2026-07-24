@@ -1,10 +1,25 @@
+using Application.Interfaces;
 using Application.Queries.GetDashboardApplications;
+using Application.Queries.GetDashboardMetrics;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Infrastructure.Data;
 
-public partial class ApplicationRecordRepository
+public class DashboardQueryService : IDashboardQueryService
 {
+    private readonly GradRecruitmentDbContext _dbContext;
+
+    public DashboardQueryService(GradRecruitmentDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
     public async Task<List<DashboardApplicationDto>> GetDashboardApplicationsAsync(
         GetDashboardApplicationsQuery query,
         CancellationToken cancellationToken = default)
@@ -102,6 +117,80 @@ public partial class ApplicationRecordRepository
                 AcademicAverage = GetAcademicAverage(a.LatestEvaluation?.InstitutionJson, a.LatestEvaluation?.CategoryScoresJson),
                 CreatedAt = a.CreatedAt.UtcDateTime
             })
+            .ToList();
+    }
+
+    public async Task<DashboardMetricsDto> GetDashboardMetricsAsync(CancellationToken cancellationToken = default)
+    {
+        var statusCounts = await _dbContext.ApplicationRecords
+            .AsNoTracking()
+            .GroupBy(a => a.Status)
+            .Select(group => new { Status = group.Key, Count = group.Count() })
+            .ToListAsync(cancellationToken);
+
+        var counts = statusCounts.ToDictionary(a => a.Status, a => a.Count);
+
+        return new DashboardMetricsDto
+        {
+            TotalApplications = statusCounts.Sum(a => a.Count),
+            PendingApplications = counts.GetValueOrDefault("PENDING"),
+            ProcessingApplications = counts.GetValueOrDefault("PROCESSING"),
+            ValidApplications = counts.GetValueOrDefault("VALID"),
+            InvalidApplications = counts.GetValueOrDefault("INVALID"),
+            ManualReviewApplications = counts.GetValueOrDefault("MANUAL_REVIEW"),
+            ShortlistedApplications = counts.GetValueOrDefault("SHORTLISTED"),
+            ErrorApplications = counts.GetValueOrDefault("ERROR")
+        };
+    }
+
+    private static double? GetAcademicAverage(JsonDocument? instJson, JsonDocument? scoreJson)
+    {
+        if (instJson != null)
+        {
+            try
+            {
+                var root = instJson.RootElement;
+                if (root.TryGetProperty("academic_average", out var avgProp) && avgProp.TryGetDouble(out var val))
+                {
+                    return val;
+                }
+                if (root.TryGetProperty("academicAverage", out var avgPropCamel) && avgPropCamel.TryGetDouble(out var valCamel))
+                {
+                    return valCamel;
+                }
+            }
+            catch { }
+        }
+
+        if (scoreJson != null)
+        {
+            try
+            {
+                var root = scoreJson.RootElement;
+                if (root.TryGetProperty("education", out var eduProp) && 
+                    eduProp.TryGetProperty("score", out var scoreProp) && 
+                    scoreProp.TryGetDouble(out var val))
+                {
+                    return val;
+                }
+            }
+            catch { }
+        }
+
+        return null;
+    }
+
+    private static List<string> ReadFlags(JsonDocument? flagsJson)
+    {
+        if (flagsJson is null || flagsJson.RootElement.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        return flagsJson.RootElement
+            .EnumerateArray()
+            .Where(flag => flag.ValueKind == JsonValueKind.String)
+            .Select(flag => flag.GetString()!)
             .ToList();
     }
 }

@@ -242,15 +242,7 @@ internal sealed class TestApplicationRecordRepository : IApplicationRecordReposi
         throw new NotSupportedException();
     }
 
-    public Task<List<DashboardApplicationDto>> GetDashboardApplicationsAsync(GetDashboardApplicationsQuery query, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
 
-    public Task<DashboardMetricsDto> GetDashboardMetricsAsync(CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
 
     public Task<bool> ExistsAsync(string emailMessageId, CancellationToken cancellationToken = default)
     {

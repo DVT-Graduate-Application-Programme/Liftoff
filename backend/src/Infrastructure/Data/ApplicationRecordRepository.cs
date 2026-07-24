@@ -45,16 +45,6 @@ public partial class ApplicationRecordRepository : IApplicationRecordRepository
             .FirstOrDefaultAsync(r => r.EmailMessageId == emailMessageId, cancellationToken);
     }
 
-
-
-
-
-
-
-
-
-
-
     public async Task<bool> ExistsAsync(string emailMessageId, CancellationToken cancellationToken = default)
     {
         return await _dbContext.ApplicationRecords
