@@ -1,13 +1,13 @@
+using Application.DTOs;
 using Application.Interfaces;
-
 using Domain.Entities;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 
 namespace Api.EndPoints.Applications;
@@ -19,11 +19,12 @@ public static class ApplicationEndpoints
         var group = app.MapGroup("/api/applications").WithTags("Applications");
 
         // GET /api/applications
-        // Returns a list of all application records
+        // Returns a list of all application records mapped to DTOs
         group.MapGet("/", async (IApplicationRecordRepository repo, CancellationToken ct) =>
         {
             var applications = await repo.GetAllAsync(ct);
-            return Results.Ok(applications);
+            var dtos = applications.Select(a => a.ToDto()).ToList();
+            return Results.Ok(dtos);
         })
         .WithName("GetApplications");
 
@@ -39,7 +40,7 @@ public static class ApplicationEndpoints
         group.MapGet("/recruiter", async (IRecruiterRepository recruiterRepo, CancellationToken ct) =>
         {
             var recruiters = await recruiterRepo.GetRecruitersAsync(ct);
-            return recruiters is not null ? Results.Ok(recruiters) : Results.NotFound();
+            return recruiters is not null ? Results.Ok(recruiters.Select(r => r.ToDto()).ToList()) : Results.NotFound();
         })
         .WithName("GetRecruiters");
 
