@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data;
 
-public partial class ApplicationRecordRepository : IApplicationRecordRepository
+public class ApplicationRecordRepository : IApplicationRecordRepository
 {
     private readonly GradRecruitmentDbContext _dbContext;
     private readonly IApplicationEventService _events;
