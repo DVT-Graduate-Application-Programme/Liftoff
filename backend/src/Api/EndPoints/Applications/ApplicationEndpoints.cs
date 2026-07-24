@@ -29,91 +29,91 @@ public static class ApplicationEndpoints
 
         // GET /api/applications/{id}
         // Returns the full application details for a given application ID
-        group.MapGet("/{id:guid}", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapGet("/{id:guid}", async (Guid id, IApplicationQueryService queryService, CancellationToken ct) =>
         {
-            var application = await repo.GetApplicationDetailsAsync(id, ct);
+            var application = await queryService.GetApplicationDetailsAsync(id, ct);
             return application is not null ? Results.Ok(application) : Results.NotFound();
         })
         .WithName("GetApplicationDetails");
 
-        group.MapGet("/recruiter", async (IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapGet("/recruiter", async (IRecruiterRepository recruiterRepo, CancellationToken ct) =>
         {
-            var recruiters = await repo.GetRecruitersAsync(ct);
+            var recruiters = await recruiterRepo.GetRecruitersAsync(ct);
             return recruiters is not null ? Results.Ok(recruiters) : Results.NotFound();
         })
         .WithName("GetRecruiters");
 
-        group.MapPost("/recruiter", async (RecruiterPostDto recruiter, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapPost("/recruiter", async (RecruiterPostDto recruiter, IRecruiterRepository recruiterRepo, CancellationToken ct) =>
         {
             if (string.IsNullOrWhiteSpace(recruiter.FirstName) || string.IsNullOrWhiteSpace(recruiter.LastName) || string.IsNullOrWhiteSpace(recruiter.Email))
             {
                 return Results.BadRequest("Recruiter First Name, Last Name, and Email are required.");
             }
 
-            await repo.AddRecruiterAsync(recruiter, ct);
+            await recruiterRepo.AddRecruiterAsync(recruiter, ct);
 
-            await repo.SaveChangesAsync(ct);
+            await recruiterRepo.SaveChangesAsync(ct);
             return Results.Created($"/api/applications/recruiter/{recruiter.Email}", recruiter);
         })
         .WithName("AddRecruiter");
 
         // GET /api/applications/{id}/applicant
         // Returns the applicant's personal information for a given application ID
-        group.MapGet("/{id:guid}/applicant", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapGet("/{id:guid}/applicant", async (Guid id, IApplicationQueryService queryService, CancellationToken ct) =>
         {
-            var applicant = await repo.GetApplicantByApplicationIdAsync(id, ct);
+            var applicant = await queryService.GetApplicantByApplicationIdAsync(id, ct);
             return applicant is not null ? Results.Ok(applicant) : Results.NotFound();
         })
         .WithName("GetApplicantInformation");
 
         // GET /api/applications/{id}/screening
         // Returns the hard gate screening result for a given application ID
-        group.MapGet("/{id:guid}/screening", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapGet("/{id:guid}/screening", async (Guid id, IApplicationQueryService queryService, CancellationToken ct) =>
         {
-            var screening = await repo.GetHardGateScreeningByApplicationIdAsync(id, ct);
+            var screening = await queryService.GetHardGateScreeningByApplicationIdAsync(id, ct);
             return screening is not null ? Results.Ok(screening) : Results.NotFound();
         })
         .WithName("GetHardGateScreening");
 
         // GET /api/applications/{id}/evaluation
         // Returns the hiring agent evaluation for a given application ID
-        group.MapGet("/{id:guid}/evaluation", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapGet("/{id:guid}/evaluation", async (Guid id, IApplicationQueryService queryService, CancellationToken ct) =>
         {
-            var evaluation = await repo.GetHardGateEvaluationByApplicationIdAsync(id, ct);
+            var evaluation = await queryService.GetHardGateEvaluationByApplicationIdAsync(id, ct);
             return evaluation is not null ? Results.Ok(evaluation) : Results.NotFound();
         })
         .WithName("GetHiringAgentEvaluation");
 
         // GET /api/applications/{id}/ownership
         // Returns recruiter ownership, shortlist, and rating details for a given application
-        group.MapGet("/{id:guid}/ownership", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapGet("/{id:guid}/ownership", async (Guid id, IApplicationQueryService queryService, CancellationToken ct) =>
         {
-            var ownership = await repo.GetOwnershipAsync(id, ct);
+            var ownership = await queryService.GetOwnershipAsync(id, ct);
             return ownership is not null ? Results.Ok(ownership) : Results.NotFound();
         })
         .WithName("GetApplicationOwnership");
 
         // GET /api/applications/{id}/logs
         // Returns the recruiter action logs for a given application
-        group.MapGet("/{id:guid}/logs", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapGet("/{id:guid}/logs", async (Guid id, IApplicationQueryService queryService, CancellationToken ct) =>
         {
-            var logs = await repo.GetRecruiterLogsAsync(id, ct);
+            var logs = await queryService.GetRecruiterLogsAsync(id, ct);
             return Results.Ok(logs);
         })
         .WithName("GetApplicationLogs");
 
         // GET /api/applications/logs
         // Returns all recruiter action logs across all applications
-        group.MapGet("/logs", async (IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapGet("/logs", async (IApplicationQueryService queryService, CancellationToken ct) =>
         {
-            var logs = await repo.GetAllRecruiterLogsAsync(ct);
+            var logs = await queryService.GetAllRecruiterLogsAsync(ct);
             return Results.Ok(logs);
         })
         .WithName("GetAllApplicationLogs");
 
         // POST /api/applications/{id}/ownership/claim
         // Allows a recruiter to claim ownership of an application
-        group.MapPost("/{id:guid}/ownership/claim", async (Guid id, ClaimOwnershipRequest request, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/ownership/claim", async (Guid id, ClaimOwnershipRequest request, IApplicationOwnershipService ownershipService, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
             logger.LogInformation("Recruiter {RecruiterIdentity} is claiming application {ApplicationId}", request.RecruiterIdentity, id);
             
@@ -123,7 +123,7 @@ public static class ApplicationEndpoints
                 return Results.BadRequest("RecruiterIdentity is required.");
             }
 
-            var claim = await repo.ClaimOwnershipAsync(id, request.RecruiterIdentity, ct);
+            var claim = await ownershipService.ClaimOwnershipAsync(id, request.RecruiterIdentity, ct);
             if (claim is null)
             {
                 logger.LogWarning("Claim ownership failed: Application {ApplicationId} not found", id);
@@ -138,7 +138,7 @@ public static class ApplicationEndpoints
 
         // POST /api/applications/{id}/ownership/shortlist
         // Allows a recruiter to shortlist an application and progress its status
-        group.MapPost("/{id:guid}/ownership/shortlist", async (Guid id, ShortlistOwnershipRequest request, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/ownership/shortlist", async (Guid id, ShortlistOwnershipRequest request, IApplicationOwnershipService ownershipService, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
             logger.LogInformation("Recruiter {RecruiterIdentity} is shortlisting application {ApplicationId}", request.RecruiterIdentity, id);
 
@@ -148,7 +148,7 @@ public static class ApplicationEndpoints
                 return Results.BadRequest("RecruiterIdentity is required.");
             }
 
-            var shortlist = await repo.ShortlistAsync(id, request.RecruiterIdentity, request.Reason, ct);
+            var shortlist = await ownershipService.ShortlistAsync(id, request.RecruiterIdentity, request.Reason, ct);
             if (shortlist is null)
             {
                 logger.LogWarning("Shortlist failed: Application {ApplicationId} not found", id);
@@ -161,13 +161,13 @@ public static class ApplicationEndpoints
         })
         .WithName("ShortlistApplicationOwnership");
 
-        group.MapPost("/{id:guid}/ownership/accept", async (Guid id, AcceptApplicationRequest request, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/ownership/accept", async (Guid id, AcceptApplicationRequest request, IApplicationOwnershipService ownershipService, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
 
         {
             logger.LogInformation("Recruiter {RecruiterIdentity} is accepting application {ApplicationId}", request.RecruiterIdentity, id);
             if (string.IsNullOrWhiteSpace(request.RecruiterIdentity)) return Results.BadRequest("RecruiterIdentity is required.");
             
-            var result = await repo.AcceptAsync(id, request.RecruiterIdentity, request.Reason, ct);
+            var result = await ownershipService.AcceptAsync(id, request.RecruiterIdentity, request.Reason, ct);
             if (result is null) return Results.NotFound();
             
             await repo.SaveChangesAsync(ct);
@@ -176,12 +176,12 @@ public static class ApplicationEndpoints
         })
         .WithName("AcceptApplication");
 
-        group.MapPost("/{id:guid}/ownership/reject", async (Guid id, RejectApplicationRequest request, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/ownership/reject", async (Guid id, RejectApplicationRequest request, IApplicationOwnershipService ownershipService, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
             logger.LogInformation("Recruiter {RecruiterIdentity} is rejecting application {ApplicationId}", request.RecruiterIdentity, id);
             if (string.IsNullOrWhiteSpace(request.RecruiterIdentity)) return Results.BadRequest("RecruiterIdentity is required.");
             
-            var result = await repo.RejectAsync(id, request.RecruiterIdentity, request.Reason, ct);
+            var result = await ownershipService.RejectAsync(id, request.RecruiterIdentity, request.Reason, ct);
             if (result is null) return Results.NotFound();
             
             await repo.SaveChangesAsync(ct);
@@ -190,13 +190,13 @@ public static class ApplicationEndpoints
         })
         .WithName("RejectApplication");
 
-        group.MapPost("/{id:guid}/ownership/rate", async (Guid id, RateApplicationRequest request, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/ownership/rate", async (Guid id, RateApplicationRequest request, IApplicationOwnershipService ownershipService, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
             logger.LogInformation("Recruiter {RecruiterIdentity} is rating application {ApplicationId} with {Rating} stars", request.RecruiterIdentity, id, request.Rating);
             if (string.IsNullOrWhiteSpace(request.RecruiterIdentity)) return Results.BadRequest("RecruiterIdentity is required.");
             if (request.Rating < 1 || request.Rating > 5) return Results.BadRequest("Rating must be between 1 and 5.");
             
-            var result = await repo.RateAsync(id, request.RecruiterIdentity, request.Rating, request.Notes, ct);
+            var result = await ownershipService.RateAsync(id, request.RecruiterIdentity, request.Rating, request.Notes, ct);
             if (result is null) return Results.NotFound();
             
             await repo.SaveChangesAsync(ct);
@@ -205,13 +205,13 @@ public static class ApplicationEndpoints
         })
         .WithName("RateApplication");
 
-        group.MapPost("/{id:guid}/ownership/notes", async (Guid id, AddNotesRequest request, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/ownership/notes", async (Guid id, AddNotesRequest request, IApplicationOwnershipService ownershipService, IApplicationRecordRepository repo, Microsoft.Extensions.Logging.ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
             logger.LogInformation("Recruiter {RecruiterIdentity} is adding notes to application {ApplicationId}", request.RecruiterIdentity, id);
             if (string.IsNullOrWhiteSpace(request.RecruiterIdentity)) return Results.BadRequest("RecruiterIdentity is required.");
             if (string.IsNullOrWhiteSpace(request.Notes)) return Results.BadRequest("Notes are required.");
             
-            var result = await repo.AddNotesAsync(id, request.RecruiterIdentity, request.Notes, ct);
+            var result = await ownershipService.AddNotesAsync(id, request.RecruiterIdentity, request.Notes, ct);
             if (result is null) return Results.NotFound();
             
             await repo.SaveChangesAsync(ct);
@@ -222,9 +222,9 @@ public static class ApplicationEndpoints
 
         // POST /api/applications/{id}/re-evaluate
         // Resets the hiring agent evaluation and triggers a new evaluation
-        group.MapPost("/{id:guid}/re-evaluate", async (Guid id, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/re-evaluate", async (Guid id, IApplicationEvaluationService evaluationService, IApplicationRecordRepository repo, CancellationToken ct) =>
         {
-            var result = await repo.ResetEvaluationAsync(id, ct);
+            var result = await evaluationService.ResetEvaluationAsync(id, ct);
             if (!result)
             {
                 return Results.NotFound();

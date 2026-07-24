@@ -6,17 +6,17 @@ namespace Application.Queries.GetDashboardMetrics;
 public class GetDashboardMetricsHandler
     : IRequestHandler<GetDashboardMetricsQuery, DashboardMetricsDto>
 {
-    private readonly IApplicationRecordRepository _repository;
+    private readonly IDashboardQueryService _dashboardQueryService;
 
-    public GetDashboardMetricsHandler(IApplicationRecordRepository repository)
+    public GetDashboardMetricsHandler(IDashboardQueryService dashboardQueryService)
     {
-        _repository = repository;
+        _dashboardQueryService = dashboardQueryService;
     }
 
     public Task<DashboardMetricsDto> Handle(
         GetDashboardMetricsQuery request,
         CancellationToken cancellationToken)
     {
-        return _repository.GetDashboardMetricsAsync(cancellationToken);
+        return _dashboardQueryService.GetDashboardMetricsAsync(cancellationToken);
     }
 }
