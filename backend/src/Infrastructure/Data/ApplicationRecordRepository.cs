@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Data;
 
-public class ApplicationRecordRepository : IApplicationRecordRepository
+public partial class ApplicationRecordRepository : IApplicationRecordRepository
 {
     private readonly GradRecruitmentDbContext _dbContext;
     private readonly IApplicationEventService _events;
@@ -469,43 +469,6 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             .ToList();
     }
 
-    private static double? GetAcademicAverage(JsonDocument? instJson, JsonDocument? scoreJson)
-    {
-        if (instJson != null)
-        {
-            try
-            {
-                var root = instJson.RootElement;
-                if (root.TryGetProperty("academic_average", out var avgProp) && avgProp.TryGetDouble(out var val))
-                {
-                    return val;
-                }
-                if (root.TryGetProperty("academicAverage", out var avgPropCamel) && avgPropCamel.TryGetDouble(out var valCamel))
-                {
-                    return valCamel;
-                }
-            }
-            catch { }
-        }
-
-        if (scoreJson != null)
-        {
-            try
-            {
-                var root = scoreJson.RootElement;
-                if (root.TryGetProperty("education", out var eduProp) && 
-                    eduProp.TryGetProperty("score", out var scoreProp) && 
-                    scoreProp.TryGetDouble(out var val))
-                {
-                    return val;
-                }
-            }
-            catch { }
-        }
-
-        return null;
-    }
-
 
     public async Task<DashboardMetricsDto> GetDashboardMetricsAsync(CancellationToken cancellationToken = default)
     {
@@ -621,19 +584,6 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    private static List<string> ReadFlags(JsonDocument? flagsJson)
-    {
-        if (flagsJson is null || flagsJson.RootElement.ValueKind != JsonValueKind.Array)
-        {
-            return [];
-        }
-
-        return flagsJson.RootElement
-            .EnumerateArray()
-            .Where(flag => flag.ValueKind == JsonValueKind.String)
-            .Select(flag => flag.GetString()!)
-            .ToList();
-    }
 
     public Task<List<Recruiter>> GetRecruitersAsync(CancellationToken cancellationToken = default)
     {
