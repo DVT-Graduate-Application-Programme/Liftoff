@@ -218,55 +218,8 @@ internal sealed class TestApplicationRecordRepository : IApplicationRecordReposi
         return Task.FromResult(_records.Any(record => record.EmailMessageId == emailMessageId));
     }
 
-
-
     public Task AddAuditLogAsync(AuditLog auditLog, CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();
-    }
-
-    public Task<ApplicationStatusUpdate?> AcceptAsync(Guid id, string recruiterIdentity, string? reason, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<ApplicationStatusUpdate?> RejectAsync(Guid id, string recruiterIdentity, string? reason, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<ApplicationRatingUpdate?> RateAsync(Guid id, string recruiterIdentity, short rating, string? notes, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<ApplicationRatingUpdate?> AddNotesAsync(Guid id, string recruiterIdentity, string notes, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<List<RecruiterActionLogDto>> GetRecruiterLogsAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<List<RecruiterActionLogDto>> GetAllRecruiterLogsAsync(CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<List<Recruiter>> GetRecruitersAsync(CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult(new List<Recruiter>());
-    }
-
-    public Task AddRecruiterAsync(RecruiterPostDto recruiter, CancellationToken cancellationToken = default)
-    {
-        return Task.CompletedTask;
-    }
-
-    public Task<bool> ResetEvaluationAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult(true);
     }
 }

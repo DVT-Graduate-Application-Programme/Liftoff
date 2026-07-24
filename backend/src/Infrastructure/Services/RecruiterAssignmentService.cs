@@ -15,15 +15,18 @@ public class RecruiterAssignmentService : IRecruiterAssignmentService
 {
     private readonly IRecruiterRepository _recruiterRepository;
     private readonly IApplicationRecordRepository _applicationRepository;
+    private readonly IApplicationOwnershipService _ownershipService;
     private readonly ILogger<RecruiterAssignmentService> _logger;
 
     public RecruiterAssignmentService(
         IRecruiterRepository recruiterRepository,
         IApplicationRecordRepository applicationRepository,
+        IApplicationOwnershipService ownershipService,
         ILogger<RecruiterAssignmentService> logger)
     {
         _recruiterRepository = recruiterRepository;
         _applicationRepository = applicationRepository;
+        _ownershipService = ownershipService;
         _logger = logger;
     }
 
@@ -61,7 +64,7 @@ public class RecruiterAssignmentService : IRecruiterAssignmentService
         }
 
         // Perform the claim through the existing repository method
-        var claim = await _applicationRepository.ClaimOwnershipAsync(
+        var claim = await _ownershipService.ClaimOwnershipAsync(
             applicationId,
             recruiter.IdentityId,
             cancellationToken);
