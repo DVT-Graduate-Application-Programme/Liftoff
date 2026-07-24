@@ -36,23 +36,23 @@ public static class ApplicationEndpoints
         })
         .WithName("GetApplicationDetails");
 
-        group.MapGet("/recruiter", async (IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapGet("/recruiter", async (IRecruiterRepository recruiterRepo, CancellationToken ct) =>
         {
-            var recruiters = await repo.GetRecruitersAsync(ct);
+            var recruiters = await recruiterRepo.GetRecruitersAsync(ct);
             return recruiters is not null ? Results.Ok(recruiters) : Results.NotFound();
         })
         .WithName("GetRecruiters");
 
-        group.MapPost("/recruiter", async (RecruiterPostDto recruiter, IApplicationRecordRepository repo, CancellationToken ct) =>
+        group.MapPost("/recruiter", async (RecruiterPostDto recruiter, IRecruiterRepository recruiterRepo, CancellationToken ct) =>
         {
             if (string.IsNullOrWhiteSpace(recruiter.FirstName) || string.IsNullOrWhiteSpace(recruiter.LastName) || string.IsNullOrWhiteSpace(recruiter.Email))
             {
                 return Results.BadRequest("Recruiter First Name, Last Name, and Email are required.");
             }
 
-            await repo.AddRecruiterAsync(recruiter, ct);
+            await recruiterRepo.AddRecruiterAsync(recruiter, ct);
 
-            await repo.SaveChangesAsync(ct);
+            await recruiterRepo.SaveChangesAsync(ct);
             return Results.Created($"/api/applications/recruiter/{recruiter.Email}", recruiter);
         })
         .WithName("AddRecruiter");
