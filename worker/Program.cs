@@ -1,3 +1,7 @@
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
@@ -5,8 +9,9 @@ using Polly;
 using Serilog;
 using Worker.BackgroundServices;
 using Worker.Configuration;
+using Worker.Operations;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 // Logging configuration
 var logDirectory = Environment.GetEnvironmentVariable("LOG_DIRECTORY")
@@ -64,8 +69,62 @@ builder.Services.AddHttpClient(WorkerOptions.HiringAgentClientName, (sp, client)
     });
 });
 
+builder.Services.AddSingleton<DeadLetterReplayer>();
 builder.Services.AddHostedService<ApplicationQueueWorker>();
 builder.Services.AddHostedService<DeadLetterMonitor>();
 
-var host = builder.Build();
-host.Run();
+var app = builder.Build();
+
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
+
+// Admin: move dead-lettered messages back onto the active queue for reprocessing.
+// Guarded by an API key; disabled entirely unless Worker:AdminApiKey is configured.
+// A single-slot gate prevents overlapping replays from running concurrently.
+var replayGate = new SemaphoreSlim(1, 1);
+
+app.MapPost("/admin/dead-letters/replay", async (
+    HttpContext http,
+    DeadLetterReplayer replayer,
+    IOptions<WorkerOptions> options,
+    CancellationToken cancellationToken) =>
+{
+    var configuredKey = options.Value.AdminApiKey;
+    if (string.IsNullOrWhiteSpace(configuredKey))
+    {
+        return Results.Problem(
+            "Admin API is disabled: no Worker:AdminApiKey is configured.",
+            statusCode: StatusCodes.Status503ServiceUnavailable);
+    }
+
+    var providedKey = http.Request.Headers["X-Admin-Api-Key"].ToString();
+    if (!IsAuthorized(providedKey, configuredKey))
+    {
+        return Results.Unauthorized();
+    }
+
+    // Reject an overlapping replay rather than queueing behind the one in flight.
+    if (!await replayGate.WaitAsync(0, cancellationToken))
+    {
+        return Results.Conflict(new { message = "A dead-letter replay is already in progress." });
+    }
+
+    try
+    {
+        var replayed = await replayer.ReplayAsync(cancellationToken);
+        return Results.Ok(new { replayed });
+    }
+    finally
+    {
+        replayGate.Release();
+    }
+});
+
+app.Run();
+
+// Constant-time comparison so the endpoint doesn't leak the key length/prefix via timing.
+static bool IsAuthorized(string provided, string expected)
+{
+    var providedBytes = Encoding.UTF8.GetBytes(provided);
+    var expectedBytes = Encoding.UTF8.GetBytes(expected);
+    return CryptographicOperations.FixedTimeEquals(providedBytes, expectedBytes);
+}
