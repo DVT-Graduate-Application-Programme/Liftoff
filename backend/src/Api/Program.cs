@@ -71,8 +71,6 @@ builder.Services.AddMediatR(cfg =>
 Application.DependencyInjection.AddApplication(builder.Services, builder.Configuration);
 Infrastructure.DependencyInjection.AddInfrastructure(builder.Services, builder.Configuration);
 
-// Register the Email Polling Background Worker
-//builder.Services.AddHostedService<Api.BackgroundServices.EmailPollingWorker>();
 
 var app = builder.Build();
 

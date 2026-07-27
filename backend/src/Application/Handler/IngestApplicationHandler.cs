@@ -22,6 +22,12 @@ public class IngestApplicationHandler
         if (string.IsNullOrWhiteSpace(request.CandidateName))
             return false;
 
+        if (request.CvFile == null || request.CvFile.Length == 0 ||
+            request.TranscriptFile == null || request.TranscriptFile.Length == 0)
+        {
+            return false;
+        }
+
         var folder = Path.Combine(
             _environment.ContentRootPath,
             "Internal",
