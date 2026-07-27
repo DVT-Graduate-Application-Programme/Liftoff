@@ -11,6 +11,7 @@ function toQueryString(filters: ApplicationFilters, cursor: number) {
   if (filters.claimed !== undefined) params.set("claimed", String(filters.claimed));
   if (filters.shortlisted !== undefined) params.set("shortlisted", String(filters.shortlisted));
   if (filters.recruiterIdentity) params.set("recruiterIdentity", filters.recruiterIdentity);
+  if (filters.excludeRecruiterIdentity) params.set("excludeRecruiterIdentity", filters.excludeRecruiterIdentity);
   if (filters.dateFrom) params.set("dateFrom", filters.dateFrom);
   if (filters.dateTo) params.set("dateTo", filters.dateTo);
   if (filters.search) params.set("search", filters.search);

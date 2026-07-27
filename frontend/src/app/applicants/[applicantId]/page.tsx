@@ -44,10 +44,12 @@ import { useApplicant } from "@/hooks/use-applicant";
 import { useEvaluation } from "@/hooks/use-evaluation";
 import { useOwnership } from "@/hooks/use-ownership";
 import { useRateApplication } from "@/hooks/use-rate-application";
+import { ACTIVE_RECRUITER_ID } from "@/hooks/use-claim-application";
 import { useShortlistApplication } from "@/hooks/use-shortlist-application";
 import { useRejectApplication } from "@/hooks/use-reject-application";
 import { useReevaluateApplication } from "@/hooks/use-reevaluate-application";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
 import { queryKeys } from "@/lib/query-keys";
 import { useApplicationLogs } from "@/hooks/use-recruiter-logs";
 import type { Evaluation, EvaluationCategoryScores, EvaluationScore, Ownership } from "@/types/api";
@@ -255,6 +257,7 @@ interface RateResponse {
 
 function CandidateReview({ applicationId, currentStatus }: { applicationId: string; currentStatus?: string }) {
   const queryClient = useQueryClient();
+  const { data: session } = useSession();
   const ownershipQuery = useOwnership(applicationId);
   const rateMutation = useRateApplication(applicationId);
   const shortlistMutation = useShortlistApplication(applicationId);
@@ -266,8 +269,13 @@ function CandidateReview({ applicationId, currentStatus }: { applicationId: stri
   const rating = ratingOverride ?? ownershipQuery.data?.recruiterRating ?? 0;
   const notes = notesOverride ?? ownershipQuery.data?.recruiterRatingNote ?? "";
   const statusUpper = currentStatus?.toUpperCase() ?? "";
-  const isShortlisted = Boolean(ownershipQuery.data?.shortlistedAt) || /SHORTLIST|ACCEPT|HIRE/.test(statusUpper);
-  const isRejected = /REJECT/.test(statusUpper);
+  const recruiterIdentity = session?.user?.email ?? ACTIVE_RECRUITER_ID;
+  const isAssignedToCurrentRecruiter =
+    ownershipQuery.data?.claimedByRecruiterId === recruiterIdentity ||
+    ownershipQuery.data?.shortlistedByRecruiterId === recruiterIdentity ||
+    ownershipQuery.data?.ratedByRecruiterId === recruiterIdentity;
+  const isShortlisted = statusUpper === "SHORTLISTED";
+  const isRejected = statusUpper === "REJECTED";
 
   // Mutation to save notes only
   const notesMutation = useMutation({
@@ -298,12 +306,18 @@ function CandidateReview({ applicationId, currentStatus }: { applicationId: stri
       </CardHeader>
 
       <CardContent className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2">
-          <Label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-            Rating
-          </Label>
-          <StarRatingInput value={rating} onChange={setRatingOverride} disabled={ownershipQuery.isLoading} />
-        </div>
+        {!isAssignedToCurrentRecruiter ? (
+          <div className="rounded-md border border-dashed border-muted-foreground/30 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+            You can view this applicant and add notes, but shortlist, reject, and rating actions are available only after you claim or are assigned to this applicant.
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <Label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+              Rating
+            </Label>
+            <StarRatingInput value={rating} onChange={setRatingOverride} disabled={ownershipQuery.isLoading} />
+          </div>
+        )}
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
@@ -333,57 +347,59 @@ function CandidateReview({ applicationId, currentStatus }: { applicationId: stri
           />
         </div>
 
-        <div className="flex flex-col gap-2 pt-2">
-          <Label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-            Decision
-          </Label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              disabled={shortlistMutation.isPending}
-              onClick={() => {
-                shortlistMutation.mutate(undefined, {
-                  onSuccess: () => {
-                    void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
-                  }
-                });
-              }}
-              className={cn(
-                "flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
-                isShortlisted
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-input hover:bg-accent hover:text-white",
-              )}
-            >
-              <Star className={cn("size-4", isShortlisted && "fill-primary")} />
-              {shortlistMutation.isPending ? "Shortlisting..." : "Shortlist"}
-            </button>
-            <button
-              type="button"
-              disabled={rejectMutation.isPending}
-              onClick={() => {
-                rejectMutation.mutate(undefined, {
-                  onSuccess: () => {
-                    void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
-                  }
-                });
-              }}
-              className={cn(
-                "flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
-                isRejected
-                  ? "border-destructive bg-destructive/10 text-destructive"
-                  : "border-input hover:bg-destructive hover:text-white",
-              )}
-            >
-              <X className="size-4" />
-              {rejectMutation.isPending ? "Rejecting..." : "Reject"}
-            </button>
+        {isAssignedToCurrentRecruiter ? (
+          <div className="flex flex-col gap-2 pt-2">
+            <Label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+              Decision
+            </Label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                disabled={shortlistMutation.isPending}
+                onClick={() => {
+                  shortlistMutation.mutate(undefined, {
+                    onSuccess: () => {
+                      void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
+                    }
+                  });
+                }}
+                className={cn(
+                  "flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
+                  isShortlisted
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-input hover:bg-accent hover:text-white",
+                )}
+              >
+                <Star className={cn("size-4", isShortlisted && "fill-primary")} />
+                {shortlistMutation.isPending ? "Shortlisting..." : "Shortlist"}
+              </button>
+              <button
+                type="button"
+                disabled={rejectMutation.isPending}
+                onClick={() => {
+                  rejectMutation.mutate(undefined, {
+                    onSuccess: () => {
+                      void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
+                    }
+                  });
+                }}
+                className={cn(
+                  "flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
+                  isRejected
+                    ? "border-destructive bg-destructive/10 text-destructive"
+                    : "border-input hover:bg-destructive hover:text-white",
+                )}
+              >
+                <X className="size-4" />
+                {rejectMutation.isPending ? "Rejecting..." : "Reject"}
+              </button>
+            </div>
           </div>
-        </div>
+        ) : null}
 
         <Button
           className="h-11 w-full text-base font-medium"
-          disabled={rating === 0 || rateMutation.isPending}
+          disabled={!isAssignedToCurrentRecruiter || rating === 0 || rateMutation.isPending}
           onClick={() => {
             rateMutation.mutate(
               { rating, notes: notes.length > 0 ? notes : undefined },

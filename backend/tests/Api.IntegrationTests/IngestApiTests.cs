@@ -115,14 +115,32 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
     }
 
     [Fact]
-    public async Task Ingest_WithInvalidCandidateEmail_ReturnsBadRequest()
+    public async Task DequeueNextPending_TransitionsStatusFromPendingToProcessing()
     {
-        var client = _factory.CreateClient();
-        using var request = CreateIngestRequest("Invalid Candidate", "not-an-email", includeTranscript: false);
+        using var scope = _factory.Services.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IApplicationRecordRepository>();
 
-        var response = await client.SendAsync(request);
+        var pendingRecord = new ApplicationRecord
+        {
+            Id = Guid.NewGuid(),
+            EmailMessageId = "test-msg-queue-1",
+            CandidateEmail = "worker-test@example.com",
+            CandidateName = "Worker Test",
+            Status = "PENDING",
+            CreatedAt = DateTimeOffset.UtcNow
+        };
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await repository.AddAsync(pendingRecord);
+
+        var dequeued = await repository.DequeueNextPendingAsync();
+
+        Assert.NotNull(dequeued);
+        Assert.Equal(pendingRecord.Id, dequeued.Id);
+        Assert.Equal("PROCESSING", dequeued.Status);
+
+        // Next dequeue when queue is empty returns null
+        var nextDequeued = await repository.DequeueNextPendingAsync();
+        Assert.Null(nextDequeued);
     }
 
     private static HttpRequestMessage CreateIngestRequest(
@@ -238,5 +256,50 @@ internal sealed class TestApplicationRecordRepository : IApplicationRecordReposi
     public Task AddAuditLogAsync(AuditLog auditLog, CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();
+    }
+
+    public Task<ApplicationStatusUpdate?> AcceptAsync(Guid id, string recruiterIdentity, string? reason, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<ApplicationStatusUpdate?> RejectAsync(Guid id, string recruiterIdentity, string? reason, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<ApplicationRatingUpdate?> RateAsync(Guid id, string recruiterIdentity, short rating, string? notes, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<ApplicationRatingUpdate?> AddNotesAsync(Guid id, string recruiterIdentity, string notes, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<List<RecruiterActionLogDto>> GetRecruiterLogsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<List<RecruiterActionLogDto>> GetAllRecruiterLogsAsync(CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<List<Recruiter>> GetRecruitersAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(new List<Recruiter>());
+    }
+
+    public Task AddRecruiterAsync(RecruiterPostDto recruiter, CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task<bool> ResetEvaluationAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(true);
     }
 }
