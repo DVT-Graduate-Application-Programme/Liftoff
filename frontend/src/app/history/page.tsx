@@ -74,8 +74,6 @@ function HistoryFilterBar({
   onToggleFilters: () => void;
   status: string;
   onStatusChange: (value: string) => void;
-  score: string;
-  onScoreChange: (value: string) => void;
   dateRange: { start: string; end: string };
   onDateRangeChange: (value: { start: string; end: string }) => void;
   activeFilters: ActiveFilter[];
@@ -167,13 +165,6 @@ function CandidateHistoryCard({
     return "warning";
   };
 
-  const getTierTone = (tier: string) => {
-    const t = tier.toUpperCase();
-    if (t === "STRONG") return "positive";
-    if (t === "BORDERLINE") return "warning";
-    if (t === "WEAK") return "negative";
-    return "neutral";
-  };
 
   const education = parseEducationEvidence(
     evaluationQuery.data?.evidenceJson?.education.trim() || candidate.cvSummary,
@@ -198,8 +189,6 @@ function CandidateHistoryCard({
       layout="history"
       statusLabel={getStatusLabel(candidate.currentStatus)}
       statusTone={getStatusTone(candidate.currentStatus)}
-      tierLabel={candidate.tier}
-      tierTone={getTierTone(candidate.tier)}
       reviewedAt={new Date(candidate.createdAt).toLocaleDateString()}
       showReviewedAt={true}
       createdAt={candidate.createdAt}
@@ -252,22 +241,16 @@ export default function HistoryPage() {
   const [filtersOpen, setFiltersOpen] = React.useState(false);
   const [filterDecision, setFilterDecision] = React.useState("All");
   const [filterDateRange, setFilterDateRange] = React.useState({ start: "", end: "" });
-  const [filterScore, setFilterScore] = React.useState("All");
 
   const clearFilters = () => {
     setFilterDecision("All");
     setFilterDateRange({ start: "", end: "" });
-    setFilterScore("All");
   };
 
   const activeFilters: ActiveFilter[] = [
     filterDecision !== "All" && {
       label: `Status: ${filterDecision}`,
       onClear: () => { setFilterDecision("All"); },
-    },
-    filterScore !== "All" && {
-      label: `Tier: ${filterScore}`,
-      onClear: () => { setFilterScore("All"); },
     },
     (filterDateRange.start || filterDateRange.end) && {
       label: `Received: ${filterDateRange.start || "Any"} to ${filterDateRange.end || "Any"}`,
@@ -284,7 +267,6 @@ export default function HistoryPage() {
     isFetchingNextPage,
   } = useInfiniteApplications({
     status: filterDecision !== "All" ? filterDecision : undefined,
-    tier: filterScore !== "All" ? filterScore : undefined,
     dateFrom: filterDateRange.start || undefined,
     dateTo: filterDateRange.end || undefined,
     search: search || undefined,
@@ -342,8 +324,6 @@ export default function HistoryPage() {
                     onToggleFilters={() => { setFiltersOpen((open) => !open); }}
                     status={filterDecision}
                     onStatusChange={setFilterDecision}
-                    score={filterScore}
-                    onScoreChange={setFilterScore}
                     dateRange={filterDateRange}
                     onDateRangeChange={setFilterDateRange}
                     activeFilters={activeFilters}
