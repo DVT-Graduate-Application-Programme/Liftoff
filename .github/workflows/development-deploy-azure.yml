@@ -35,7 +35,6 @@ jobs:
           docker push $REPOSITORY:latest
 
       - name: Build and push worker image
-        if: "${{ secrets.ACR_WORKER_REPOSITORY != '' }}"
         env:
           REPOSITORY: ${{ secrets.ACR_WORKER_REPOSITORY }}
           IMAGE_TAG: dev-${{ github.sha }}
@@ -64,7 +63,6 @@ jobs:
             --image ${{ secrets.ACR_BACKEND_REPOSITORY }}:dev-${{ github.sha }}
 
       - name: Update worker Container App
-        if: "${{ secrets.WORKER_CONTAINER_APP != '' }}"
         run: |
           az containerapp update \
             --name ${{ secrets.WORKER_CONTAINER_APP }} \
