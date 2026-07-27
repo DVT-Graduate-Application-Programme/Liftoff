@@ -41,7 +41,7 @@ function ScoreTag({ score }: { score?: number | null }) {
     <div className="flex min-w-12 justify-center">
       <span
         className={cn(
-          "text-xl font-black leading-none tabular-nums",
+          "text-xl font-semibold leading-none tabular-nums",
           getScoreColor(score),
         )}
       >
@@ -100,11 +100,11 @@ export default function PendingCandidateCard({
         }
       }}
       className={cn(
-        "group relative flex cursor-pointer items-center gap-0 rounded-xl bg-card p-4 w-full transition-all hover:-translate-y-px",
+        "group relative flex w-full cursor-pointer flex-col gap-3 rounded-xl bg-card p-4 transition-all hover:-translate-y-px @2xl:flex-row @2xl:items-center @2xl:gap-0",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
       )}
     >
-      <div className="flex w-[25rem] shrink-0 min-w-0 items-center gap-3">
+      <div className="flex w-full min-w-0 flex-1 items-center gap-3 @2xl:w-auto">
         <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
           {initials}
         </div>
@@ -138,61 +138,49 @@ export default function PendingCandidateCard({
         </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-center px-2">
-        <div className="flex items-center gap-5">
-          <div className="flex flex-col items-center gap-0.5">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-              {scoreLabel}
+      <div className="flex flex-1 items-center justify-start gap-6 @2xl:justify-center @2xl:px-2">
+        <div className="flex w-20 shrink-0 flex-col items-center gap-0.5">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+            {scoreLabel}
+          </span>
+          <ScoreTag score={systemScore} />
+        </div>
+        <div className="flex w-20 shrink-0 flex-col items-center gap-0.5">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+            Acad. Avg
+          </span>
+          {academicAverage !== undefined ? (
+            <ScoreTag score={academicAverage} />
+          ) : (
+            <span className="text-sm font-semibold text-muted-foreground">–</span>
+          )}
+        </div>
+        <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 @4xl:flex">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+            Applied
+          </span>
+          {daysAgo !== null && daysAgo >= 0 ? (
+            <span className="max-w-full whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
+              {daysAgo === 0
+                ? "Today"
+                : daysAgo === 1
+                  ? "1 day ago"
+                  : String(daysAgo) + " day(s) ago"}
             </span>
-            <ScoreTag score={systemScore} />
-          </div>
-
-          <div className="h-8 w-px bg-border" />
-
-          <div className="flex flex-col items-center gap-0.5">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-              Acad. Avg
-            </span>
-            {academicAverage !== undefined ? (
-              <ScoreTag score={academicAverage} />
-            ) : (
-              <span className="text-sm font-semibold text-muted-foreground">
-                –
-              </span>
-            )}
-          </div>
-
-          <div className="h-8 w-px bg-border" />
-
-          <div className="flex flex-col items-center gap-0.5">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-              Applied
-            </span>
-            {daysAgo !== null && daysAgo >= 0 ? (
-              <span className="whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
-                {daysAgo === 0
-                  ? "Today"
-                  : daysAgo === 1
-                    ? "1 day ago"
-                    : String(daysAgo) + " day(s) ago"}
-              </span>
-            ) : (
-              <span className="text-sm font-semibold text-muted-foreground">
-                –
-              </span>
-            )}
-          </div>
+          ) : (
+            <span className="text-sm font-semibold text-muted-foreground">–</span>
+          )}
         </div>
       </div>
 
-      <div className="flex shrink-0 flex-col justify-end items-end gap-2">
+      <div className="flex w-full shrink-0 flex-col gap-2 @2xl:w-auto @2xl:items-end @2xl:justify-end">
         {secondaryActionLabel ? (
           <Button
             type="button"
             variant="secondary"
             size="sm"
             className={cn(
-              "w-30 justify-center gap-1 text-xs",
+              "w-full justify-center gap-1 text-xs @2xl:w-30",
               isSecondaryActionDisabled &&
                 "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
             )}
@@ -211,7 +199,7 @@ export default function PendingCandidateCard({
           type="button"
           variant="outline"
           size="sm"
-          className="w-30 justify-center gap-1 text-xs bg-primary text-white"
+          className="w-full justify-center gap-1 text-xs bg-primary text-white @2xl:w-30"
           onClick={(event) => {
             event.stopPropagation();
             if (onActionClick) {
