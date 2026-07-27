@@ -4,7 +4,12 @@ import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import type { ApplicationFilters } from "@/types/api";
 import { ApplicantList } from "./applicant-list";
-import { FilterBar, type ActiveFilter, type FilterFieldConfig, type SortOption } from "./filter-bar";
+import {
+  FilterBar,
+  type ActiveFilter,
+  type FilterFieldConfig,
+  type SortOption,
+} from "./filter-bar";
 import { ACTIVE_RECRUITER_ID } from "@/hooks/use-claim-application";
 
 const PendingCandidates = () => {
@@ -12,39 +17,65 @@ const PendingCandidates = () => {
   const recruiterIdentity = session?.user?.email ?? ACTIVE_RECRUITER_ID;
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [minScore, setMinScore] = useState("");
-  const [hardGate, setHardGate] = useState("all");
   const [dateRange, setDateRange] = useState("all");
   const [sort, setSort] = useState<SortOption>("score_desc");
 
   const filters = useMemo(() => {
-    const next: Omit<ApplicationFilters, "status" | "search" | "limit" | "cursor"> = { sort };
+    const next: Omit<
+      ApplicationFilters,
+      "status" | "search" | "limit" | "cursor"
+    > = { sort };
     next.recruiterIdentity = recruiterIdentity;
     if (minScore) next.minScore = Number(minScore);
-    if (hardGate !== "all") next.hardGatePassed = hardGate === "passed";
     if (dateRange !== "all") {
       const from = new Date();
       from.setDate(from.getDate() - Number(dateRange));
       next.dateFrom = from.toISOString();
     }
     return next;
-  }, [dateRange, hardGate, minScore, recruiterIdentity, sort]);
+  }, [dateRange, minScore, recruiterIdentity, sort]);
 
   const clearFilters = () => {
     setMinScore("");
-    setHardGate("all");
     setDateRange("all");
   };
 
   const fields: FilterFieldConfig[] = [
-    { key: "minScore", label: "Minimum score", type: "number", value: minScore, onChange: setMinScore, options: [], placeholder: "Any score" },
-    { key: "hardGate", label: "Screening", value: hardGate, onChange: setHardGate, options: [["all", "All results"], ["passed", "Passed"], ["failed", "Failed"]] },
-    { key: "dateRange", label: "Received", value: dateRange, onChange: setDateRange, options: [["all", "Any time"], ["7", "Last 7 days"], ["30", "Last 30 days"]] },
+    {
+      key: "minScore",
+      label: "Minimum score",
+      type: "number",
+      value: minScore,
+      onChange: setMinScore,
+      options: [],
+      placeholder: "Any score",
+    },
+    {
+      key: "dateRange",
+      label: "Received",
+      value: dateRange,
+      onChange: setDateRange,
+      options: [
+        ["all", "Any time"],
+        ["7", "Last 7 days"],
+        ["30", "Last 30 days"],
+      ],
+    },
   ];
 
   const activeFilters: ActiveFilter[] = [
-    minScore && { label: `Score: ${minScore}+`, onClear: () => { setMinScore(""); } },
-    hardGate !== "all" && { label: hardGate === "passed" ? "Screening: passed" : "Screening: failed", onClear: () => { setHardGate("all"); } },
-    dateRange !== "all" && { label: `Last ${dateRange} days`, onClear: () => { setDateRange("all"); } },
+    minScore && {
+      label: `Score: ${minScore}+`,
+      onClear: () => {
+        setMinScore("");
+      },
+    },
+    dateRange !== "all" && {
+      label: `Last ${dateRange} days`,
+      onClear: () => {
+        setDateRange("all");
+      },
+    },
   ].filter(Boolean) as ActiveFilter[];
 
   return (
@@ -61,7 +92,9 @@ const PendingCandidates = () => {
         <FilterBar
           id="pending-candidate-filters"
           filtersOpen={filtersOpen}
-          onToggleFilters={() => { setFiltersOpen((open) => !open); }}
+          onToggleFilters={() => {
+            setFiltersOpen((open) => !open);
+          }}
           fields={fields}
           sort={sort}
           onSortChange={setSort}
