@@ -25,7 +25,7 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
   const detailQuery = useApplicationDetail(application.applicationId);
   const evaluationQuery = useEvaluation(application.applicationId);
   const ownershipQuery = useOwnership(application.applicationId);
-  const recruitersQuery = useRecruiters();
+
 
   const applicationDetail = detailQuery.data;
   const evaluation = evaluationQuery.data;
@@ -53,7 +53,7 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
     application.shortlistedByRecruiterId ??
     application.claimedByRecruiterId ??
     application.ratedByRecruiterId;
-  const recruiterName = recruitersQuery.data?.find((r) => r.email === recruiterId)?.fullName ?? recruiterId;
+  const recruiterName = recruiterId;
 
   return (
     <ApplicantCard
