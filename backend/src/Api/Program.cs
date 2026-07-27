@@ -71,9 +71,6 @@ builder.Services.AddMediatR(cfg =>
 Application.DependencyInjection.AddApplication(builder.Services, builder.Configuration);
 Infrastructure.DependencyInjection.AddInfrastructure(builder.Services, builder.Configuration);
 
-// Register Database Queue Background Worker
-builder.Services.AddHttpClient();
-builder.Services.AddHostedService<Api.BackgroundServices.ApplicationQueueWorker>();
 
 var app = builder.Build();
 

@@ -611,25 +611,6 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
         return true;
     }
 
-    public async Task<ApplicationRecord?> DequeueNextPendingAsync(CancellationToken cancellationToken = default)
-    {
-        var record = await _dbContext.ApplicationRecords
-            .Where(a => a.Status == "PENDING")
-            .OrderBy(a => a.CreatedAt)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (record is null)
-        {
-            return null;
-        }
-
-        record.Status = "PROCESSING";
-        record.UpdatedAt = DateTimeOffset.UtcNow;
-        await _dbContext.SaveChangesAsync(cancellationToken);
-
-        return record;
-    }
-
     public async Task AddAuditLogAsync(AuditLog auditLog, CancellationToken cancellationToken = default)
     {
         await _dbContext.AuditLogs.AddAsync(auditLog, cancellationToken);
