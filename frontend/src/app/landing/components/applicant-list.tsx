@@ -252,7 +252,11 @@ export function ApplicantList({
       return <div key={application.applicationId}>{renderItem(application)}</div>;
     }
 
-    if (application.currentStatus === "PENDING") {
+    const shouldUsePendingCard =
+      tabKey === "pending" &&
+      ["PENDING", "PROCESSING"].includes(application.currentStatus.toUpperCase());
+
+    if (shouldUsePendingCard) {
       return (
         <PendingApplicationCard
           key={application.applicationId}
@@ -273,6 +277,7 @@ export function ApplicantList({
       systemScore: toScorePercent(application.hiringAgentTotalScore),
       reviewedAt: formatDate(application.createdAt),
       showReviewedAt,
+      showStatus: tabKey !== "pending",
       createdAt: application.createdAt,
       recruiterName: getRecruiterLabel(application),
       statusLabel: getStatusLabel(displayStatus),
