@@ -154,20 +154,9 @@ export default function ApplicantCard({
 
   return (
     <div
-      role="button"
-      tabIndex={0}
-      aria-label={`View details for ${name}`}
-      onClick={onClick}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onClick?.();
-        }
-      }}
       className={cn(
-        "group relative flex cursor-pointer rounded-xl border bg-card p-4 transition-all hover:-translate-y-px",
+        "group relative flex rounded-xl border bg-card p-4 transition-all",
         "flex-col gap-4 @2xl:flex-row @2xl:items-center @2xl:gap-3",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
         statusStyle.border,
       )}
     >
