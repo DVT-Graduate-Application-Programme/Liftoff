@@ -58,7 +58,7 @@ builder.Services.AddHttpClient("NextJsWebhook", client =>
 builder.Services.AddScoped<IApplicationEventService, ApplicationWebhookNotifier>();
 
 // ── Graph / AI ingestion pipeline – not needed for POC ──
-builder.Services.AddScoped<IResumeStorage, LocalResumeStorage>();
+builder.Services.AddSingleton<IResumeStorage, LocalResumeStorage>();
 builder.Services.AddScoped<IngestApplicationHandler>();
 
 builder.Services.AddMediatR(cfg =>
