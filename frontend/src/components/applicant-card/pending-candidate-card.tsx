@@ -89,19 +89,8 @@ export default function PendingCandidateCard({
 
   return (
     <div
-      role="button"
-      tabIndex={0}
-      aria-label={`View details for ${name}`}
-      onClick={onClick}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onClick?.();
-        }
-      }}
       className={cn(
-        "group relative flex w-full cursor-pointer flex-col gap-3 rounded-xl bg-card p-4 transition-all hover:-translate-y-px @2xl:flex-row @2xl:items-center @2xl:gap-0",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+        "group relative flex w-full flex-col gap-3 rounded-xl bg-card p-4 transition-all @2xl:flex-row @2xl:items-center @2xl:gap-0",
       )}
     >
       <div className="flex w-full min-w-0 flex-1 items-center gap-3 @2xl:w-auto">
