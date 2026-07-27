@@ -1,5 +1,7 @@
 using Application.Interfaces;
+using Azure.Messaging.ServiceBus;
 using Infrastructure.Data;
+using Infrastructure.Messaging;
 using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -35,6 +37,30 @@ public static class DependencyInjection
         services.AddScoped<IRecruiterAssignmentService, RecruiterAssignmentService>();
         services.AddScoped<IGraphEmailService, GraphEmailService>();
         services.AddScoped<IAttachmentRetriever, UrlAttachmentRetriever>();
+
+        AddServiceBusPublisher(services, configuration);
+
         return services;
+    }
+
+    private static void AddServiceBusPublisher(IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = Environment.GetEnvironmentVariable("SERVICEBUS_CONNECTION_STRING")
+            ?? configuration["ServiceBus:ConnectionString"];
+        var queueName = Environment.GetEnvironmentVariable("SERVICEBUS_QUEUE_NAME")
+            ?? configuration["ServiceBus:QueueName"]
+            ?? "application-ingest";
+
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new InvalidOperationException(
+                "Service Bus connection string is not set. Provide SERVICEBUS_CONNECTION_STRING or ServiceBus:ConnectionString.");
+        }
+
+        // ServiceBusClient and ServiceBusSender are thread-safe and intended to be
+        // long-lived, so both are registered as singletons.
+        services.AddSingleton(_ => new ServiceBusClient(connectionString));
+        services.AddSingleton(sp => sp.GetRequiredService<ServiceBusClient>().CreateSender(queueName));
+        services.AddSingleton<IApplicationQueuePublisher, ServiceBusApplicationQueuePublisher>();
     }
 }

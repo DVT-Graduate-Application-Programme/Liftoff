@@ -1,15 +1,13 @@
 # worker/Dockerfile
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-WORKDIR /src
+WORKDIR /app
 
-COPY backend/*.slnx ./backend/
+# The worker only depends on the Domain project (shared message contracts).
 COPY backend/src/Domain/*.csproj ./backend/src/Domain/
-COPY backend/src/Application/*.csproj ./backend/src/Application/
-COPY backend/src/Infrastructure/*.csproj ./backend/src/Infrastructure/
 COPY worker/*.csproj ./worker/
 RUN dotnet restore worker/Worker.csproj
 
-COPY backend ./backend
+COPY backend/src/Domain ./backend/src/Domain
 COPY worker ./worker
 RUN dotnet publish worker/Worker.csproj -c Release -o /app/publish /p:UseAppHost=false
 
