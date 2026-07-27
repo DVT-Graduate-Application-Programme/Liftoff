@@ -45,7 +45,6 @@ public interface IApplicationRecordRepository
         JsonDocument? flagsJson,
         CancellationToken cancellationToken = default);
     Task<bool> ResetEvaluationAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<ApplicationRecord?> DequeueNextPendingAsync(CancellationToken cancellationToken = default);
     Task AddAuditLogAsync(AuditLog auditLog, CancellationToken cancellationToken = default);
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }
