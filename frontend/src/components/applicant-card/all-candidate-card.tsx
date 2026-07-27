@@ -14,8 +14,6 @@ type AllCandidateCardProps = {
   scoreClassName?: string;
   statusLabel?: string;
   statusTone?: StatusTone;
-  tierLabel?: string;
-  tierTone?: StatusTone;
   layout?: "default" | "history";
   showInstitute?: boolean;
   reviewedAt?: string;
