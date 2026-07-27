@@ -11,13 +11,15 @@ namespace Worker.BackgroundServices;
 /// <summary>
 /// Consumes <see cref="CvProcessingMessage"/> messages from the Azure Service Bus
 /// ingest queue and hands each application off to the hiring agent for evaluation.
-/// A failed hand-off abandons the message so Service Bus retries it, and the queue's
-/// max-delivery-count moves poison messages to the dead-letter sub-queue.
+/// A transient hand-off failure re-enqueues the message on a delayed (exponential
+/// backoff) schedule so it survives an extended hiring-agent outage; once the retry
+/// limit is reached, or on a permanent (4xx) rejection, the message is dead-lettered.
 /// </summary>
 public sealed class ApplicationQueueWorker : BackgroundService
 {
     private readonly ServiceBusClient _serviceBusClient;
     private readonly ServiceBusProcessor _processor;
+    private readonly ServiceBusSender _sender;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly WorkerOptions _options;
     private readonly ILogger<ApplicationQueueWorker> _logger;
@@ -39,6 +41,8 @@ public sealed class ApplicationQueueWorker : BackgroundService
             AutoCompleteMessages = false,
             MaxConcurrentCalls = _options.MaxConcurrentCalls
         });
+        // Used to re-enqueue delayed retries onto the same queue.
+        _sender = serviceBusClient.CreateSender(_options.QueueName);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -131,13 +135,63 @@ public sealed class ApplicationQueueWorker : BackgroundService
         catch (Exception ex)
         {
             // Transient failure (5xx / timeout / connection) — the HTTP client already
-            // retried with backoff. Abandon so Service Bus redelivers; the queue's
-            // MaxDeliveryCount dead-letters it once redeliveries are exhausted.
-            _logger.LogWarning(ex,
-                "Transient hand-off failure for application {ApplicationId}; abandoning for retry.",
-                message.ApplicationId);
-            await args.AbandonMessageAsync(args.Message, cancellationToken: args.CancellationToken);
+            // retried with backoff. Re-enqueue the message on a delayed schedule so it
+            // survives an extended outage, and dead-letter once the retry limit is hit.
+            await ScheduleRetryOrDeadLetterAsync(args, message.ApplicationId, ex);
         }
+    }
+
+    /// <summary>
+    /// Handles a transient hand-off failure by re-enqueuing the message with an
+    /// exponentially-increasing <see cref="ServiceBusMessage.ScheduledEnqueueTime"/>,
+    /// or dead-lettering it once <see cref="WorkerOptions.MaxTransientRetries"/> is reached.
+    /// </summary>
+    private async Task ScheduleRetryOrDeadLetterAsync(
+        ProcessMessageEventArgs args, Guid applicationId, Exception failure)
+    {
+        var retryCount = GetRetryCount(args.Message);
+
+        if (retryCount >= _options.MaxTransientRetries)
+        {
+            _logger.LogError(failure,
+                "Transient hand-off for application {ApplicationId} still failing after {RetryCount} retries; dead-lettering.",
+                applicationId, retryCount);
+            await args.DeadLetterMessageAsync(
+                args.Message, "RetryLimitExceeded", failure.Message, args.CancellationToken);
+            return;
+        }
+
+        var delay = GetRetryDelay(retryCount);
+        var retryMessage = new ServiceBusMessage(args.Message.Body)
+        {
+            ContentType = args.Message.ContentType,
+            Subject = args.Message.Subject,
+            CorrelationId = args.Message.MessageId,
+            ScheduledEnqueueTime = DateTimeOffset.UtcNow + delay
+        };
+        retryMessage.ApplicationProperties[WorkerOptions.RetryCountProperty] = retryCount + 1;
+
+        // Send the delayed copy first, then complete the current message. If we crash
+        // in between, the original lock expires and the message is redelivered
+        // (at-least-once) rather than lost — the hiring-agent hand-off is keyed by
+        // ApplicationId, so a duplicate notify is harmless.
+        await _sender.SendMessageAsync(retryMessage, args.CancellationToken);
+        await args.CompleteMessageAsync(args.Message, args.CancellationToken);
+
+        _logger.LogWarning(failure,
+            "Transient hand-off failure for application {ApplicationId}; retry {NextRetry}/{MaxRetries} scheduled in {Delay}.",
+            applicationId, retryCount + 1, _options.MaxTransientRetries, delay);
+    }
+
+    private static int GetRetryCount(ServiceBusReceivedMessage message) =>
+        message.ApplicationProperties.TryGetValue(WorkerOptions.RetryCountProperty, out var raw)
+            ? Convert.ToInt32(raw)
+            : 0;
+
+    private TimeSpan GetRetryDelay(int retryCount)
+    {
+        var seconds = _options.RetryBaseDelaySeconds * Math.Pow(2, retryCount);
+        return TimeSpan.FromSeconds(Math.Min(seconds, _options.RetryMaxDelaySeconds));
     }
 
     private async Task NotifyHiringAgentAsync(Guid applicationId, CancellationToken cancellationToken)
@@ -203,6 +257,7 @@ public sealed class ApplicationQueueWorker : BackgroundService
     public override void Dispose()
     {
         _processor.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        _sender.DisposeAsync().AsTask().GetAwaiter().GetResult();
         base.Dispose();
     }
 }
