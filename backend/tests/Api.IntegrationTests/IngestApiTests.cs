@@ -114,6 +114,35 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
         Assert.Null(record.TranscriptAttachmentId);
     }
 
+    [Fact]
+    public async Task DequeueNextPending_TransitionsStatusFromPendingToProcessing()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IApplicationRecordRepository>();
+
+        var pendingRecord = new ApplicationRecord
+        {
+            Id = Guid.NewGuid(),
+            EmailMessageId = "test-msg-queue-1",
+            CandidateEmail = "worker-test@example.com",
+            CandidateName = "Worker Test",
+            Status = "PENDING",
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+
+        await repository.AddAsync(pendingRecord);
+
+        var dequeued = await repository.DequeueNextPendingAsync();
+
+        Assert.NotNull(dequeued);
+        Assert.Equal(pendingRecord.Id, dequeued.Id);
+        Assert.Equal("PROCESSING", dequeued.Status);
+
+        // Next dequeue when queue is empty returns null
+        var nextDequeued = await repository.DequeueNextPendingAsync();
+        Assert.Null(nextDequeued);
+    }
+
     private static HttpRequestMessage CreateIngestRequest(
         string candidateName,
         string candidateEmail,
@@ -320,5 +349,16 @@ internal sealed class TestApplicationRecordRepository : IApplicationRecordReposi
     public Task<bool> ResetEvaluationAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(true);
+    }
+
+    public Task<ApplicationRecord?> DequeueNextPendingAsync(CancellationToken cancellationToken = default)
+    {
+        var record = _records.Where(r => r.Status == "PENDING").OrderBy(r => r.CreatedAt).FirstOrDefault();
+        if (record is not null)
+        {
+            record.Status = "PROCESSING";
+            record.UpdatedAt = DateTimeOffset.UtcNow;
+        }
+        return Task.FromResult(record);
     }
 }
