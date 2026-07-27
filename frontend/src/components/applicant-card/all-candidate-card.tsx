@@ -151,18 +151,8 @@ export default function AllCandidateCard({
 
   return (
     <div
-      role="button"
-      tabIndex={0}
-      aria-label={`View details for ${name}`}
-      onClick={onClick}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onClick?.();
-        }
-      }}
       className={cn(
-        "group relative flex cursor-pointer flex-col gap-3 rounded-xl border bg-card p-4 w-full @2xl:flex-row @2xl:items-center @2xl:gap-0",
+        "group relative flex flex-col gap-3 rounded-xl border bg-card p-4 w-full @2xl:flex-row @2xl:items-center @2xl:gap-0",
       )}
     >
       <div className="flex shrink-0 flex-col items-start gap-0.5 @2xl:w-20 @2xl:items-center @2xl:justify-center">
