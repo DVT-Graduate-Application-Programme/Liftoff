@@ -96,7 +96,13 @@ services:
       DOTNET_ENVIRONMENT: Development
       # Defaults to the local emulator; override with a real Azure connection string.
       SERVICEBUS_CONNECTION_STRING: "${SERVICEBUS_CONNECTION_STRING:-Endpoint=sb://servicebus-emulator;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;}"
+      # Bind the admin/health endpoints on all interfaces so they're reachable from the host.
+      ASPNETCORE_URLS: "http://+:8080"
+      # API key for the admin endpoints (X-Admin-Api-Key header). Set a real secret outside dev.
+      Worker__AdminApiKey: "${WORKER_ADMIN_API_KEY:-local-dev-admin-key}"
       # Worker__QueueName / Worker__HiringAgentBaseUrl override appsettings.json if needed.
+    ports:
+      - "8080:8080"
     depends_on:
       servicebus-emulator:
         condition: service_started
