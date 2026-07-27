@@ -104,7 +104,7 @@ export default function PendingCandidateCard({
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
       )}
     >
-      <div className="flex w-full shrink-0 min-w-0 items-center gap-3 @2xl:w-[25rem]">
+      <div className="flex w-full min-w-0 flex-1 items-center gap-3 @2xl:w-auto">
         <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
           {initials}
         </div>
@@ -138,47 +138,38 @@ export default function PendingCandidateCard({
         </div>
       </div>
 
-      <div className="flex w-full items-center justify-start @2xl:w-auto @2xl:flex-1 @2xl:justify-center @2xl:px-2">
-        <div className="flex w-full flex-wrap items-center justify-between gap-4 @sm:justify-start @sm:gap-5">
-          <div className="flex w-20 shrink-0 flex-col items-center gap-0.5">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-              {scoreLabel}
+      <div className="flex flex-1 items-center justify-start gap-6 @2xl:justify-center @2xl:px-2">
+        <div className="flex w-20 shrink-0 flex-col items-center gap-0.5">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+            {scoreLabel}
+          </span>
+          <ScoreTag score={systemScore} />
+        </div>
+        <div className="flex w-20 shrink-0 flex-col items-center gap-0.5">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+            Acad. Avg
+          </span>
+          {academicAverage !== undefined ? (
+            <ScoreTag score={academicAverage} />
+          ) : (
+            <span className="text-sm font-semibold text-muted-foreground">–</span>
+          )}
+        </div>
+        <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 @4xl:flex">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+            Applied
+          </span>
+          {daysAgo !== null && daysAgo >= 0 ? (
+            <span className="max-w-full whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
+              {daysAgo === 0
+                ? "Today"
+                : daysAgo === 1
+                  ? "1 day ago"
+                  : String(daysAgo) + " day(s) ago"}
             </span>
-            <ScoreTag score={systemScore} />
-          </div>
-          <div className="hidden h-8 w-px bg-border @sm:block" />
-          <div className="flex w-20 shrink-0 flex-col items-center gap-0.5">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-              Acad. Avg
-            </span>
-            {academicAverage !== undefined ? (
-              <ScoreTag score={academicAverage} />
-            ) : (
-              <span className="text-sm font-semibold text-muted-foreground">
-                –
-              </span>
-            )}
-          </div>
-          <div className="hidden h-8 w-px bg-border @sm:block" />
-
-          <div className="flex w-20 shrink-0 flex-col items-center gap-0.5">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-              Applied
-            </span>
-            {daysAgo !== null && daysAgo >= 0 ? (
-              <span className="whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
-                {daysAgo === 0
-                  ? "Today"
-                  : daysAgo === 1
-                    ? "1 day ago"
-                    : String(daysAgo) + " day(s) ago"}
-              </span>
-            ) : (
-              <span className="text-sm font-semibold text-muted-foreground">
-                –
-              </span>
-            )}
-          </div>
+          ) : (
+            <span className="text-sm font-semibold text-muted-foreground">–</span>
+          )}
         </div>
       </div>
 
