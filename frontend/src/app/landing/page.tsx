@@ -79,21 +79,21 @@ function DashboardTabs() {
             className="min-w-0 flex-1 rounded-t-md px-2 py-2 text-sm font-semibold text-muted-foreground data-active:border-b-2 data-active:border-primary data-active:text-foreground sm:px-4"
           >
             <span className="sm:hidden">Pending</span>
-            <span className="hidden sm:inline">Pending Candidates</span>
+            <span className="hidden sm:inline">My Candidates</span>
           </TabsTrigger>
           <TabsTrigger
             value="all"
             className="min-w-0 flex-1 rounded-t-md px-2 py-2 text-sm font-semibold text-muted-foreground data-active:border-b-2 data-active:border-primary data-active:text-foreground sm:px-4"
           >
             <span className="sm:hidden">All</span>
-            <span className="hidden sm:inline">All Candidates</span>
+            <span className="hidden sm:inline">Team Candidates</span>
           </TabsTrigger>
           <TabsTrigger
             value="accepted"
             className="min-w-0 flex-1 rounded-t-md px-2 py-2 text-sm font-semibold text-muted-foreground data-active:border-b-2 data-active:border-primary data-active:text-foreground sm:px-4"
           >
-            <span className="sm:hidden">Accepted</span>
-            <span className="hidden sm:inline">Accepted Candidates</span>
+            <span className="sm:hidden">Shortlisted</span>
+            <span className="hidden sm:inline">Shortlisted Candidates</span>
           </TabsTrigger>
         </TabsList>
       </div>
