@@ -41,7 +41,7 @@ function ScoreTag({ score }: { score?: number | null }) {
     <div className="flex min-w-12 justify-center">
       <span
         className={cn(
-          "text-xl font-black leading-none tabular-nums",
+          "text-xl font-semibold leading-none tabular-nums",
           getScoreColor(score),
         )}
       >
