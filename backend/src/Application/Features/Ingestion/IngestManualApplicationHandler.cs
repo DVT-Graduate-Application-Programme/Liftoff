@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Domain.Entities;
+using Domain.Messaging;
 using MediatR;
 
 namespace Application.Features.Ingestion;
@@ -9,13 +10,16 @@ public class IngestManualApplicationHandler
 {
     private readonly IApplicationRecordRepository _repository;
     private readonly IRecruiterAssignmentService _recruiterAssignmentService;
+    private readonly IApplicationQueuePublisher _queuePublisher;
 
     public IngestManualApplicationHandler(
         IApplicationRecordRepository repository,
-        IRecruiterAssignmentService recruiterAssignmentService)
+        IRecruiterAssignmentService recruiterAssignmentService,
+        IApplicationQueuePublisher queuePublisher)
     {
         _repository = repository;
         _recruiterAssignmentService = recruiterAssignmentService;
+        _queuePublisher = queuePublisher;
     }
 
     public async Task<IngestManualApplicationResult> Handle(
@@ -64,6 +68,9 @@ public class IngestManualApplicationHandler
 
         // Auto-assign a recruiter via round-robin
         await _recruiterAssignmentService.AssignRecruiterAsync(applicationRecord.Id, cancellationToken);
+
+        // Enqueue for asynchronous CV processing by the background worker
+        await _queuePublisher.PublishAsync(new CvProcessingMessage(applicationRecord.Id), cancellationToken);
 
         return new IngestManualApplicationResult
         {

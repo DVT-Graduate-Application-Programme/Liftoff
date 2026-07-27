@@ -1,6 +1,7 @@
 using System.IO;
 using Application.Interfaces;
 using Domain.Entities;
+using Domain.Messaging;
 using MediatR;
 
 namespace Application.Features.SendApplicaton;
@@ -9,10 +10,14 @@ public class SendApplicationHandler
     : IRequestHandler<SendApplicationCommand, SendApplicationResult>
 {
     private readonly IApplicationRecordRepository _repository;
+    private readonly IApplicationQueuePublisher _queuePublisher;
 
-    public SendApplicationHandler(IApplicationRecordRepository repository)
+    public SendApplicationHandler(
+        IApplicationRecordRepository repository,
+        IApplicationQueuePublisher queuePublisher)
     {
         _repository = repository;
+        _queuePublisher = queuePublisher;
     }
 
     public async Task<SendApplicationResult> Handle(
@@ -79,6 +84,9 @@ public class SendApplicationHandler
 
         await _repository.AddAsync(applicationRecord, cancellationToken);
         await _repository.SaveChangesAsync(cancellationToken);
+
+        // Enqueue for asynchronous CV processing by the background worker
+        await _queuePublisher.PublishAsync(new CvProcessingMessage(applicationRecord.Id), cancellationToken);
 
         return new SendApplicationResult
         {
