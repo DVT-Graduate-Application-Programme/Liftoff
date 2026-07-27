@@ -4,6 +4,8 @@ import { renderWithQueryClient, jsonResponse } from "@/test-utils";
 import { ApplicantSearchProvider } from "@/components/providers/applicant-search-provider";
 import { ApplicantSelectionProvider } from "@/components/providers/applicant-selection-provider";
 import { ApplicantList } from "./applicant-list";
+import { isClaimedByActiveRecruiter } from "./candidate-list-utils";
+import type { CandidateApplication } from "@/types/candidate";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -16,11 +18,13 @@ vi.mock("@/components/ui/sidebar", () => ({
   useSidebar: () => ({ setOpen: vi.fn() }),
 }));
 
-function makeApplication(overrides: Partial<Record<string, unknown>> = {}) {
+function makeApplication(
+  overrides: Partial<CandidateApplication> = {},
+): CandidateApplication {
   return {
     applicationId: "app-1",
     candidateName: "Ada Lovelace",
-    currentStatus: "VALID",
+    currentStatus: "PENDING",
     tier: "STRONG",
     hardGatePassed: true,
     hiringAgentTotalScore: 4.5,
@@ -29,6 +33,7 @@ function makeApplication(overrides: Partial<Record<string, unknown>> = {}) {
     candidateGitHubUrl: null,
     claimedByRecruiterId: null,
     shortlistedByRecruiterId: null,
+    ratedByRecruiterId: null,
     createdAt: "2025-01-01T00:00:00Z",
     ...overrides,
   };
@@ -111,5 +116,21 @@ describe("ApplicantList", () => {
     renderList({ emptyTitle: "No pending applicants" });
 
     expect(await screen.findByText("No pending applicants")).toBeInTheDocument();
+  });
+
+  it("only marks a claim as owned when the recruiter ids match", () => {
+    const application = makeApplication({
+      claimedByRecruiterId: "someone-else@dvtsoftware.com",
+    });
+
+    expect(
+      isClaimedByActiveRecruiter(application, "phindi@dvtsoftware.com"),
+    ).toBe(false);
+    expect(
+      isClaimedByActiveRecruiter(
+        application,
+        "someone-else@dvtsoftware.com",
+      ),
+    ).toBe(true);
   });
 });
