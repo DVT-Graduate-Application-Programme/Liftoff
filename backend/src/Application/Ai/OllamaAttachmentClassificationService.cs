@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using UglyToad.PdfPig;
 
 namespace Application.Ai;
@@ -12,10 +13,12 @@ namespace Application.Ai;
 public class OllamaAttachmentClassificationService : IAttachmentClassificationService
 {
     private readonly HttpClient _httpClient;
+    private readonly string _model;
 
-    public OllamaAttachmentClassificationService(HttpClient httpClient)
+    public OllamaAttachmentClassificationService(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
+        _model = configuration["Ollama:Model"] ?? "gemma3:4b";
     }
 
     public async Task<string> ClassifyAttachmentAsync(byte[] fileBytes, string fileName, string mimeType, CancellationToken token = default)
@@ -53,7 +56,7 @@ Text:
 
         var requestBody = new
         {
-            model = "gemma3:4b", 
+            model = _model, 
             stream = false
         };
 

@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
   const claimed = toBool(searchParams.get("claimed"));
   const shortlisted = toBool(searchParams.get("shortlisted"));
   const recruiterIdentity = searchParams.get("recruiterIdentity");
+  const excludeRecruiterIdentity = searchParams.get("excludeRecruiterIdentity");
   const dateFrom = searchParams.get("dateFrom");
   const dateTo = searchParams.get("dateTo");
   const search = searchParams.get("search");
@@ -64,6 +65,9 @@ export async function GET(req: NextRequest) {
       a.shortlistedByRecruiterId === recruiterIdentity ||
       a.ratedByRecruiterId === recruiterIdentity,
     );
+  }
+  if (excludeRecruiterIdentity) {
+    results = results.filter((a) => a.claimedByRecruiterId !== excludeRecruiterIdentity);
   }
   if (minScore !== null) {
     results = results.filter((a) => a.hiringAgentTotalScore >= minScore);

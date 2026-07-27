@@ -96,8 +96,18 @@ public static class IngestEndpoints
 
             if (result is not null && !string.IsNullOrWhiteSpace(result.ApplicationId.ToString()))
             {
-                // Assign recruiter upon ingestion
-                await recruiterAssignmentService.AssignRecruiterAsync(result.ApplicationId, ct);
+                  // applciation created successfully
+                try
+                {
+                    await NotifyHiringAgent(result.ApplicationId);
+                    // assign recruiter
+                    await recruiterAssignmentService.AssignRecruiterAsync(result.ApplicationId, ct);
+                }
+                catch (System.Exception)
+                {
+
+                    throw;
+                }
             }
 
             return Results.Accepted(value: result);

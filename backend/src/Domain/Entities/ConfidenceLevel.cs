@@ -1,4 +1,4 @@
 public enum ConfidenceLevel
 {
-    Low, Mediam, High
+    Low, Medium, High
 }

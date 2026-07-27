@@ -65,17 +65,24 @@ builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(GetResumesQuery).Assembly);
     cfg.RegisterServicesFromAssembly(typeof(Application.Features.Ingestion.IngestApplicationRequest).Assembly);
+    cfg.AddOpenBehavior(typeof(Application.Common.Behaviors.ValidationBehavior<,>));
 });
 
 // Register Application and Infrastructure DI extensions
 Application.DependencyInjection.AddApplication(builder.Services, builder.Configuration);
 Infrastructure.DependencyInjection.AddInfrastructure(builder.Services, builder.Configuration);
 
+
 var app = builder.Build();
 
+app.UseMiddleware<ValidationExceptionMiddleware>();
 app.UseSerilogRequestLogging();
 
-await GradRecruitmentSchemaInitializer.EnsureSchemaAsync(app.Services);
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    await GradRecruitmentSchemaInitializer.EnsureSchemaAsync(app.Services);
+    await DbSeeder.SeedAsync(app.Services);
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -94,11 +101,6 @@ app.MapEvaluationEndpoints();  // POST /internal/evaluation      (AI agent webho
 app.MapDashboardEndpoints();
 app.MapApplicationEndpoints();
 
-// Seed POC data on startup (idempotent – skips if rows already exist)
-if (!app.Environment.IsEnvironment("Testing"))
-{
-    await DbSeeder.SeedAsync(app.Services);
-}
 
 app.Run();
 
