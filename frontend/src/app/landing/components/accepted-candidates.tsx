@@ -137,9 +137,9 @@ function AcceptedCandidates() {
     <>
       <section className="mb-8 flex flex-col gap-6">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Accepted Applicants</h2>
+          <h2 className="text-2xl font-bold text-foreground">Team Shortlist</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Narrow the shortlist and reorder it by the signal that matters most.
+            Every shortlisted candidate, across the team — narrow it down and reorder by what matters most
           </p>
         </div>
         <FilterBar

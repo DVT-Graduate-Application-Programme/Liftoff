@@ -83,10 +83,10 @@ const PendingCandidates = () => {
       <section className="flex flex-col gap-6 mb-8">
         <div>
           <h2 className="text-2xl font-bold text-foreground">
-            Applicant Pipeline
+            Your Pipeline
           </h2>
           <p className="text-muted-foreground">
-            Manage and screen incoming talent for the Engineering Team
+            Applicants assigned to you, awaiting review
           </p>
         </div>
         <FilterBar

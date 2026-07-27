@@ -204,9 +204,9 @@ function AllCandidates() {
     <>
       <section className="mb-8 flex flex-col gap-6">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">All Applicants</h2>
+          <h2 className="text-2xl font-bold text-foreground">Team Pipeline</h2>
           <p className="text-muted-foreground">
-            Review and manage all applicants
+            Applicants assigned to other recruiters — claim one to add it to your queue
           </p>
         </div>
         <FilterBar
