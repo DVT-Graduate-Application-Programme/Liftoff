@@ -25,6 +25,7 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
   const detailQuery = useApplicationDetail(application.applicationId);
   const evaluationQuery = useEvaluation(application.applicationId);
   const ownershipQuery = useOwnership(application.applicationId);
+  const recruitersQuery = useRecruiters();
 
   const applicationDetail = detailQuery.data;
   const evaluation = evaluationQuery.data;
@@ -48,6 +49,12 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
     institution?.academic_average ?? evaluation?.categoryScoresJson.education.score;
   const reviewedAt = ownership?.shortlistedAt ?? applicationDetail.updatedAt;
 
+  const recruiterId =
+    application.shortlistedByRecruiterId ??
+    application.claimedByRecruiterId ??
+    application.ratedByRecruiterId;
+  const recruiterName = recruitersQuery.data?.find((r) => r.email === recruiterId)?.fullName ?? recruiterId;
+
   return (
     <ApplicantCard
       name={application.candidateName}
@@ -64,6 +71,8 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
       createdAt={application.createdAt}
       wrapInstitute
       wrapReviewedAt
+      recruiterLabel="Recruiter"
+      recruiterName={recruiterName ?? undefined}
       actionLabel="View AI Summary"
       actionVariant="default"
       onActionClick={() => {
