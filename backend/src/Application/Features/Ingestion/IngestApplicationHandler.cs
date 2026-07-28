@@ -1,4 +1,3 @@
-using Application.Ai;
 using Application.Interfaces;
 using Domain.Entities;
 using Domain.Messaging;
@@ -13,7 +12,6 @@ namespace Application.Features.Ingestion;
 public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest, bool>
 {
     private readonly IGraphEmailService _graphEmailService;
-    private readonly IAttachmentClassificationService _classificationService;
     private readonly IApplicationRecordRepository _repository;
     private readonly IRecruiterAssignmentService _recruiterAssignmentService;
     private readonly IApplicationQueuePublisher _queuePublisher;
@@ -21,14 +19,12 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
 
     public IngestApplicationHandler(
         IGraphEmailService graphEmailService,
-        IAttachmentClassificationService classificationService,
         IApplicationRecordRepository repository,
         IRecruiterAssignmentService recruiterAssignmentService,
         IApplicationQueuePublisher queuePublisher,
         ILogger<IngestApplicationHandler> logger)
     {
         _graphEmailService = graphEmailService;
-        _classificationService = classificationService;
         _repository = repository;
         _recruiterAssignmentService = recruiterAssignmentService;
         _queuePublisher = queuePublisher;
@@ -67,22 +63,15 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
         // 1. Fetch attachments from Microsoft Graph
         var attachments = await _graphEmailService.GetAttachmentsAsync(request.UserId, request.MessageId, cancellationToken);
 
-        // 2. Classify each attachment and assign IDs
+        // 2. Classify each attachment and assign IDs by file name rules
         foreach (var attachment in attachments)
         {
-            var classification = await _classificationService.ClassifyAttachmentAsync(
-                attachment.ContentBytes,
-                attachment.Name,
-                attachment.ContentType,
-                cancellationToken);
-
-            _logger.LogInformation("Attachment '{Name}' classified as: {Classification}", attachment.Name, classification);
-
-            if (classification == "CV")
+            var nameLower = attachment.Name.ToLowerInvariant();
+            if (nameLower.Contains("cv") || nameLower.Contains("resume"))
             {
                 applicationRecord.CvAttachmentId = attachment.Id;
             }
-            else if (classification == "Transcript")
+            else if (nameLower.Contains("transcript") || nameLower.Contains("results") || nameLower.Contains("academic"))
             {
                 applicationRecord.TranscriptAttachmentId = attachment.Id;
             }
