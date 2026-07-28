@@ -12,7 +12,7 @@ public class FormalEducationHardGateStrategy : IHardGateEvaluationStrategy
 
     public HardGateResult Evaluate(EducationScoreDto education)
     {
-        var academicRequirement = education.AcademicRequirementMet.Trim().ToLowerInvariant();
+        var academicRequirement = education.AcademicRequirementMet.Trim().ToLowerInvariant() ?? string.Empty;
 
         return academicRequirement switch
         {
