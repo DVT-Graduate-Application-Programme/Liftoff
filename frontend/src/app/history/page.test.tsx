@@ -1,11 +1,20 @@
 import { screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { renderWithQueryClient, jsonResponse } from "@/test-utils";
+import { ApplicantSearchProvider } from "@/components/providers/applicant-search-provider";
 import HistoryPage from "./page";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
+
+function renderHistoryPage() {
+  return renderWithQueryClient(
+    <ApplicantSearchProvider>
+      <HistoryPage />
+    </ApplicantSearchProvider>
+  );
+}
 
 function requestUrl(input: RequestInfo | URL): string {
   if (typeof input === "string") return input;
@@ -39,7 +48,7 @@ describe("History page", () => {
   it("shows a loading spinner before data resolves", () => {
     vi.spyOn(global, "fetch").mockReturnValue(new Promise(() => {}));
 
-    renderWithQueryClient(<HistoryPage />);
+    renderHistoryPage();
 
     expect(document.querySelector(".animate-spin")).toBeInTheDocument();
   });
@@ -47,7 +56,7 @@ describe("History page", () => {
   it("only exposes pending, shortlisted, and rejected in the status filter", async () => {
     vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse({ applications: [], nextCursor: null }));
 
-    renderWithQueryClient(<HistoryPage />);
+    renderHistoryPage();
 
     const { default: userEvent } = await import("@testing-library/user-event");
     await userEvent.click(screen.getByRole("button", { name: "Advanced Filters" }));
@@ -64,7 +73,7 @@ describe("History page", () => {
       return Promise.resolve(new Response(null, { status: 404 }));
     });
 
-    renderWithQueryClient(<HistoryPage />);
+    renderHistoryPage();
 
     expect(await screen.findByText("Ada Lovelace")).toBeInTheDocument();
     expect(screen.getByText("Processed Today")).toBeInTheDocument();
@@ -74,7 +83,7 @@ describe("History page", () => {
   it("shows an error state when the request fails", async () => {
     vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse({ error: "INTERNAL_SERVER_ERROR", message: "boom" }, 500));
 
-    renderWithQueryClient(<HistoryPage />);
+    renderHistoryPage();
 
     await waitFor(() => {
       expect(screen.getByText("Error loading history.")).toBeInTheDocument();
@@ -84,7 +93,7 @@ describe("History page", () => {
   it("shows an empty state when there are no applications", async () => {
     vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse({ applications: [], nextCursor: null }));
 
-    renderWithQueryClient(<HistoryPage />);
+    renderHistoryPage();
 
     expect(await screen.findByText("No candidate history matches your filters.")).toBeInTheDocument();
   });
@@ -109,7 +118,7 @@ describe("History page", () => {
     });
 
     const { default: userEvent } = await import("@testing-library/user-event");
-    renderWithQueryClient(<HistoryPage />);
+    renderHistoryPage();
 
     expect(await screen.findByText("Ada Lovelace")).toBeInTheDocument();
     const loadMore = screen.getByText("Load more");
