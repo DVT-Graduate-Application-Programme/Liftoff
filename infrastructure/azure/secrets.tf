@@ -36,7 +36,7 @@ resource "azurerm_key_vault_access_policy" "container_apps" {
 # ── DB credentials (equivalent to AWS Secrets Manager liftoff/db-credentials) ──
 
 resource "azurerm_key_vault_secret" "db_credentials" {
-  name  = "db-credentials"
+  name = "db-credentials"
   value = jsonencode({
     username = var.db_username
     password = var.db_password
@@ -51,7 +51,7 @@ resource "azurerm_key_vault_secret" "db_credentials" {
 # ── App secrets (equivalent to AWS Secrets Manager liftoff/app-secrets) ────────
 
 resource "azurerm_key_vault_secret" "app_secrets" {
-  name  = "app-secrets"
+  name = "app-secrets"
   # Placeholder — populate with real keys before deploying
   value = jsonencode({
     GEMINI_API_KEY  = "replace-me"
@@ -80,6 +80,16 @@ resource "azurerm_key_vault_secret" "servicebus_connection_string" {
 resource "azurerm_key_vault_secret" "appinsights_connection_string" {
   name         = "AppInsightsConnectionString"
   value        = azurerm_application_insights.main.connection_string
+  key_vault_id = azurerm_key_vault.main.id
+  depends_on   = [azurerm_key_vault_access_policy.deployer]
+}
+
+# Worker admin API key — stored for reference; the worker Container App consumes it
+# via its own inline secret. Only created when a key is actually configured.
+resource "azurerm_key_vault_secret" "worker_admin_api_key" {
+  count        = var.worker_admin_api_key != "" ? 1 : 0
+  name         = "WorkerAdminApiKey"
+  value        = var.worker_admin_api_key
   key_vault_id = azurerm_key_vault.main.id
   depends_on   = [azurerm_key_vault_access_policy.deployer]
 }

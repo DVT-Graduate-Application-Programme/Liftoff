@@ -4,5 +4,6 @@
     <Project Path="src/Application/Application.csproj" />
     <Project Path="src/Domain/Domain.csproj" />
     <Project Path="src/Infrastructure/Infrastructure.csproj" />
+    <Project Path="../worker/Worker.csproj" />
   </Folder>
 </Solution>

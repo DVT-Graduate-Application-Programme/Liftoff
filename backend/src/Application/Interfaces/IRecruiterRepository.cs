@@ -9,4 +9,7 @@ namespace Application.Interfaces;
 public interface IRecruiterRepository
 {
     Task<Recruiter?> GetRecruiters(CancellationToken cancellationToken = default);
+    Task<List<Recruiter>> GetRecruitersAsync(CancellationToken cancellationToken = default);
+    Task AddRecruiterAsync(RecruiterPostDto recruiter, CancellationToken cancellationToken = default);
+    Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }

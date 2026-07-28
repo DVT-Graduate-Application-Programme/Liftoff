@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS public."AuditLogs" CASCADE;
 DROP TABLE IF EXISTS public."RecruiterActions" CASCADE;
 DROP TABLE IF EXISTS public."HiringAgentEvaluations" CASCADE;
 DROP TABLE IF EXISTS public."ApplicationRecords" CASCADE;
+DROP TABLE IF EXISTS public."Recruiters" CASCADE;
 
 -- ==========================================
 -- 1. APPLICATION RECORDS TABLE
@@ -20,8 +21,8 @@ CREATE TABLE public."ApplicationRecords" (
     "CandidateName"             VARCHAR(255)    NULL,
     "CandidateEmail"            VARCHAR(255)    NULL,
     "CandidateGitHubUrl"        VARCHAR(2048)   NULL,
-    "CvAttachmentId"                  VARCHAR(2048)   NULL,
-    "TranscriptAttachmentId"         VARCHAR(2048)   NULL,
+    "CvAttachmentId"            VARCHAR(2048)   NULL,
+    "TranscriptAttachmentId"    VARCHAR(2048)   NULL,
     -- Status and tier
     -- Status values: PENDING | PROCESSING | VALID | INVALID | MANUAL_REVIEW | SHORTLISTED | ERROR
     "Status"                    VARCHAR(50)     NOT NULL,

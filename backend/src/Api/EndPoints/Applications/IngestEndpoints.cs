@@ -96,7 +96,7 @@ public static class IngestEndpoints
 
             if (result is not null && !string.IsNullOrWhiteSpace(result.ApplicationId.ToString()))
             {
-                // applciation created successfully
+                  // applciation created successfully
                 try
                 {
                     await NotifyHiringAgent(result.ApplicationId);
@@ -108,7 +108,6 @@ public static class IngestEndpoints
 
                     throw;
                 }
-
             }
 
             return Results.Accepted(value: result);

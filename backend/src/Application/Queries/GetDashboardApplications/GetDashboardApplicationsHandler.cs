@@ -6,17 +6,17 @@ namespace Application.Queries.GetDashboardApplications;
 public class GetDashboardApplicationsHandler
     : IRequestHandler<GetDashboardApplicationsQuery, List<DashboardApplicationDto>>
 {
-    private readonly IApplicationRecordRepository _repository;
+    private readonly IDashboardQueryService _dashboardQueryService;
 
-    public GetDashboardApplicationsHandler(IApplicationRecordRepository repository)
+    public GetDashboardApplicationsHandler(IDashboardQueryService dashboardQueryService)
     {
-        _repository = repository;
+        _dashboardQueryService = dashboardQueryService;
     }
 
     public Task<List<DashboardApplicationDto>> Handle(
         GetDashboardApplicationsQuery request,
         CancellationToken cancellationToken)
     {
-        return _repository.GetDashboardApplicationsAsync(request, cancellationToken);
+        return _dashboardQueryService.GetDashboardApplicationsAsync(request, cancellationToken);
     }
 }
