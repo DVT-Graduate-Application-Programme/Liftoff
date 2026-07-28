@@ -97,7 +97,9 @@ app.MapEvaluationEndpoints();  // POST /internal/evaluation      (AI agent webho
 
 // ── POC endpoints ── active ──
 app.MapDashboardEndpoints();
-app.MapApplicationEndpoints();
+app.MapApplicationQueryEndpoints();
+app.MapApplicationOwnershipEndpoints();
+app.MapRecruiterEndpoints();
 
 
 app.Run();
