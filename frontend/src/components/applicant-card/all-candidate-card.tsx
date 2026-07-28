@@ -125,7 +125,7 @@ export default function AllCandidateCard({
   systemScore,
   scoreLabel = "System Score",
   scoreClassName,
-  statusLabel = "Pending",
+  statusLabel = "Processing",
   statusTone,
   layout = "default",
   showInstitute = true,
