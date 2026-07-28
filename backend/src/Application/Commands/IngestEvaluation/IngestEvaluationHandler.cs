@@ -1,3 +1,4 @@
+using Application.Evaluation;
 using Application.Interfaces;
 using Domain.Entities;
 using MediatR;
@@ -16,13 +17,16 @@ public class IngestEvaluationHandler
 {
     private readonly IApplicationEvaluationService _evaluationService;
     private readonly IApplicationRecordRepository _repository;
+    private readonly IHardGateEvaluator _hardGateEvaluator;
 
     public IngestEvaluationHandler(
         IApplicationEvaluationService evaluationService,
-        IApplicationRecordRepository repository)
+        IApplicationRecordRepository repository,
+        IHardGateEvaluator hardGateEvaluator)
     {
         _evaluationService = evaluationService;
         _repository = repository;
+        _hardGateEvaluator = hardGateEvaluator;
     }
 
     public async Task<IngestEvaluationResult> Handle(
@@ -82,7 +86,7 @@ public class IngestEvaluationHandler
 
         var status = request.PromptInjectionDetected ? "MANUAL_REVIEW" : "PENDING";
         var tier = DeriveTier(totalScore.Score, totalScore.Max);
-        var hardGate = DeriveHardGate(request.Scores.Education);
+        var hardGate = _hardGateEvaluator.Evaluate(request.Scores.Education);
         var summary = BuildSummary(request, totalScore);
         var saved = await _evaluationService.AddEvaluationAsync(
             applicationId,
@@ -182,39 +186,5 @@ public class IngestEvaluationHandler
         };
     }
 
-    private static HardGateResult DeriveHardGate(EducationScoreDto education)
-    {
-        var track = Normalize(education.Track);
-        var academicRequirement = Normalize(education.AcademicRequirementMet);
-        var experienceRequirement = Normalize(education.ExperienceRequirementMet);
-
-        return track switch
-        {
-            "formal_it" or "related_field" when academicRequirement == "met" =>
-                new HardGateResult(true, "Academic requirement met."),
-            "formal_it" or "related_field" when academicRequirement == "unclear_needs_review" =>
-                new HardGateResult(false, "Academic requirement unclear; needs review."),
-            "formal_it" or "related_field" =>
-                new HardGateResult(false, "Academic requirement not met."),
-            "self_taught" when experienceRequirement == "met" =>
-                new HardGateResult(true, "Experience requirement met."),
-            "self_taught" when experienceRequirement == "unclear_needs_review" =>
-                new HardGateResult(false, "Experience requirement unclear; needs review."),
-            "self_taught" =>
-                new HardGateResult(false, "Experience requirement not met."),
-            "unrelated" =>
-                new HardGateResult(false, "Education track is unrelated."),
-            _ =>
-                new HardGateResult(false, "Education track unclear; needs review.")
-        };
-    }
-
-    private static string Normalize(string value)
-    {
-        return value.Trim().ToLowerInvariant();
-    }
-
     private sealed record DerivedTotalScore(float Score, float Max);
-
-    private sealed record HardGateResult(bool Passed, string Reason);
 }
