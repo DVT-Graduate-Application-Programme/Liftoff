@@ -1,6 +1,7 @@
 using Application.Ai;
 using Application.Interfaces;
 using Domain.Entities;
+using Domain.Messaging;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -15,6 +16,7 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
     private readonly IAttachmentClassificationService _classificationService;
     private readonly IApplicationRecordRepository _repository;
     private readonly IRecruiterAssignmentService _recruiterAssignmentService;
+    private readonly IApplicationQueuePublisher _queuePublisher;
     private readonly ILogger<IngestApplicationHandler> _logger;
 
     public IngestApplicationHandler(
@@ -22,12 +24,14 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
         IAttachmentClassificationService classificationService,
         IApplicationRecordRepository repository,
         IRecruiterAssignmentService recruiterAssignmentService,
+        IApplicationQueuePublisher queuePublisher,
         ILogger<IngestApplicationHandler> logger)
     {
         _graphEmailService = graphEmailService;
         _classificationService = classificationService;
         _repository = repository;
         _recruiterAssignmentService = recruiterAssignmentService;
+        _queuePublisher = queuePublisher;
         _logger = logger;
     }
 
@@ -95,6 +99,9 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
 
         // 4. Auto-assign a recruiter via round-robin
         await _recruiterAssignmentService.AssignRecruiterAsync(applicationRecord.Id, cancellationToken);
+
+        // 5. Enqueue for asynchronous CV processing by the background worker
+        await _queuePublisher.PublishAsync(new CvProcessingMessage(applicationRecord.Id), cancellationToken);
 
         return true;
     }

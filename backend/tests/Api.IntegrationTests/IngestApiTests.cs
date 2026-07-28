@@ -182,6 +182,12 @@ public sealed class IngestApiFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        Environment.SetEnvironmentVariable("POSTGRES_HOST", "localhost");
+        Environment.SetEnvironmentVariable("POSTGRES_PORT", "5432");
+        Environment.SetEnvironmentVariable("POSTGRES_DB", "test");
+        Environment.SetEnvironmentVariable("POSTGRES_USER", "test");
+        Environment.SetEnvironmentVariable("POSTGRES_PASSWORD", "test");
+
         builder.UseEnvironment("Testing");
         builder.ConfigureServices(services =>
         {
@@ -236,69 +242,15 @@ internal sealed class TestApplicationRecordRepository : IApplicationRecordReposi
         _records.Clear();
     }
 
-    public Task<Applicant?> GetApplicantByApplicationIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
 
-    public Task<ApplicationDetails?> GetApplicationDetailsAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
 
-    public Task<ApplicationHardGateScreening?> GetHardGateScreeningByApplicationIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
 
-    public Task<HiringAgentEvaluation?> GetHardGateEvaluationByApplicationIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
 
-    public Task<ApplicationOwnership?> GetOwnershipAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
 
-    public Task<ApplicationOwnershipClaim?> ClaimOwnershipAsync(Guid id, string recruiterIdentity, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<ApplicationOwnershipShortlist?> ShortlistAsync(Guid id, string recruiterIdentity, string? reason, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<List<DashboardApplicationDto>> GetDashboardApplicationsAsync(GetDashboardApplicationsQuery query, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<DashboardMetricsDto> GetDashboardMetricsAsync(CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
 
     public Task<bool> ExistsAsync(string emailMessageId, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_records.Any(record => record.EmailMessageId == emailMessageId));
-    }
-
-    public Task<bool> AddEvaluationAsync(
-        Guid applicationId,
-        HiringAgentEvaluation evaluation,
-        string status,
-        decimal totalScore,
-        string tier,
-        bool hardGatePassed,
-        string hardGateReason,
-        string? cvSummary,
-        JsonDocument? flagsJson,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
     }
 
     public Task AddAuditLogAsync(AuditLog auditLog, CancellationToken cancellationToken = default)
@@ -349,16 +301,5 @@ internal sealed class TestApplicationRecordRepository : IApplicationRecordReposi
     public Task<bool> ResetEvaluationAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(true);
-    }
-
-    public Task<ApplicationRecord?> DequeueNextPendingAsync(CancellationToken cancellationToken = default)
-    {
-        var record = _records.Where(r => r.Status == "PENDING").OrderBy(r => r.CreatedAt).FirstOrDefault();
-        if (record is not null)
-        {
-            record.Status = "PROCESSING";
-            record.UpdatedAt = DateTimeOffset.UtcNow;
-        }
-        return Task.FromResult(record);
     }
 }

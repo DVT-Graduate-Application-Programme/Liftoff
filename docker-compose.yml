@@ -15,6 +15,30 @@ services:
       retries: 10
       start_period: 10s
 
+  # ── Azure Service Bus emulator (local dev only) ──────────────────────────────
+  # Official emulator; needs a SQL Edge backing store. No Azure account required.
+  # Connection string uses UseDevelopmentEmulator=true (plaintext AMQP on 5672).
+  # On Apple Silicon, if the emulator fails to start, add: platform: linux/amd64
+  sqledge:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-Str0ng!Passw0rd}"
+
+  servicebus-emulator:
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+    volumes:
+      - ./servicebus-emulator/Config.json:/ServiceBus_Emulator/ConfigFiles/Config.json:ro
+    ports:
+      - "5672:5672"
+      - "5300:5300"
+    environment:
+      ACCEPT_EULA: "Y"
+      SQL_SERVER: sqledge
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-Str0ng!Passw0rd}"
+    depends_on:
+      - sqledge
+
 #  ollama:
 #    image: ollama/ollama:latest
 #    ports:
@@ -52,11 +76,38 @@ services:
       # If running the frontend in Docker too (docker compose up --profile full), override:
       #   export NEXTJS_WEBHOOK_URL=http://frontend:3000/api/internal/notify
       NOTIFICATIONS__NEXTJS__WEBHOOKURL: "${NEXTJS_WEBHOOK_URL:-http://host.docker.internal:3000/api/internal/notify}"
+      # Defaults to the local emulator; override with a real Azure connection string.
+      SERVICEBUS_CONNECTION_STRING: "${SERVICEBUS_CONNECTION_STRING:-Endpoint=sb://servicebus-emulator;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;}"
     ports:
       - "5000:5000"
     depends_on:
       db:
         condition: service_healthy
+      servicebus-emulator:
+        condition: service_started
+
+  worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    env_file:
+      - .env.development
+    environment:
+      DOTNET_ENVIRONMENT: Development
+      # Defaults to the local emulator; override with a real Azure connection string.
+      SERVICEBUS_CONNECTION_STRING: "${SERVICEBUS_CONNECTION_STRING:-Endpoint=sb://servicebus-emulator;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;}"
+      # Bind the admin/health endpoints on all interfaces so they're reachable from the host.
+      ASPNETCORE_URLS: "http://+:8080"
+      # API key for the admin endpoints (X-Admin-Api-Key header). Set a real secret outside dev.
+      Worker__AdminApiKey: "${WORKER_ADMIN_API_KEY:-local-dev-admin-key}"
+      # Worker__QueueName / Worker__HiringAgentBaseUrl override appsettings.json if needed.
+    ports:
+      - "8080:8080"
+    depends_on:
+      servicebus-emulator:
+        condition: service_started
+      hiring-agent:
+        condition: service_started
 
   hiring-agent:
       build: ./backend/src/AI/hiring-agent

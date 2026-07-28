@@ -1,6 +1,5 @@
 using Api.EndPoints.Applications;
 using Api.Internal;
-using Application.Handler;
 using Application.Interfaces;
 using Backend.Application.Interfaces;
 using Backend.Application.Queries.GetResumes;
@@ -58,13 +57,13 @@ builder.Services.AddHttpClient("NextJsWebhook", client =>
 builder.Services.AddScoped<IApplicationEventService, ApplicationWebhookNotifier>();
 
 // ── Graph / AI ingestion pipeline – not needed for POC ──
-builder.Services.AddScoped<IResumeStorage, LocalResumeStorage>();
-builder.Services.AddScoped<IngestApplicationHandler>();
+builder.Services.AddSingleton<IResumeStorage, LocalResumeStorage>();
 
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(GetResumesQuery).Assembly);
     cfg.RegisterServicesFromAssembly(typeof(Application.Features.Ingestion.IngestApplicationRequest).Assembly);
+    cfg.AddOpenBehavior(typeof(Application.Common.Behaviors.ValidationBehavior<,>));
 });
 
 // Register Application and Infrastructure DI extensions
@@ -74,9 +73,14 @@ Infrastructure.DependencyInjection.AddInfrastructure(builder.Services, builder.C
 
 var app = builder.Build();
 
+app.UseMiddleware<ValidationExceptionMiddleware>();
 app.UseSerilogRequestLogging();
 
-await GradRecruitmentSchemaInitializer.EnsureSchemaAsync(app.Services);
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    await GradRecruitmentSchemaInitializer.EnsureSchemaAsync(app.Services);
+    await DbSeeder.SeedAsync(app.Services);
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -95,11 +99,6 @@ app.MapEvaluationEndpoints();  // POST /internal/evaluation      (AI agent webho
 app.MapDashboardEndpoints();
 app.MapApplicationEndpoints();
 
-// Seed POC data on startup (idempotent – skips if rows already exist)
-if (!app.Environment.IsEnvironment("Testing"))
-{
-    await DbSeeder.SeedAsync(app.Services);
-}
 
 app.Run();
 
