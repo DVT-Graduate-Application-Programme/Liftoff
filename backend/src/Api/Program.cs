@@ -76,10 +76,19 @@ var app = builder.Build();
 app.UseMiddleware<ValidationExceptionMiddleware>();
 app.UseSerilogRequestLogging();
 
-if (!app.Environment.IsEnvironment("Testing"))
+var shouldSeedDb = args.Contains("--seed-db") ||
+                   args.Contains("--init-db") ||
+                   string.Equals(Environment.GetEnvironmentVariable("SEED_DATABASE"), "true", StringComparison.OrdinalIgnoreCase);
+
+if (shouldSeedDb)
 {
     await GradRecruitmentSchemaInitializer.EnsureSchemaAsync(app.Services);
     await DbSeeder.SeedAsync(app.Services);
+
+    if (args.Contains("--seed-db") || args.Contains("--init-db"))
+    {
+        return;
+    }
 }
 
 if (app.Environment.IsDevelopment())
