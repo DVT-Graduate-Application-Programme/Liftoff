@@ -1,6 +1,5 @@
 using Api.EndPoints.Applications;
 using Api.Internal;
-using Application.Handler;
 using Application.Interfaces;
 using Backend.Application.Interfaces;
 using Backend.Application.Queries.GetResumes;
@@ -59,7 +58,6 @@ builder.Services.AddScoped<IApplicationEventService, ApplicationWebhookNotifier>
 
 // ── Graph / AI ingestion pipeline – not needed for POC ──
 builder.Services.AddSingleton<IResumeStorage, LocalResumeStorage>();
-builder.Services.AddScoped<IngestApplicationHandler>();
 
 builder.Services.AddMediatR(cfg =>
 {
