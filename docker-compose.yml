@@ -68,6 +68,7 @@ services:
       - .env.development
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      SEED_DATABASE: "true"
       Ollama__BaseUrl: "http://host.docker.internal:11434"
       POSTGRES_HOST: db
       POSTGRES_PORT: "5432"
