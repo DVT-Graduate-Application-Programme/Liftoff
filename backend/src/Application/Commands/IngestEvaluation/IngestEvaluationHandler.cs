@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Domain.Entities;
+using Domain.Enums;
 using MediatR;
 using System.Text.Json;
 
@@ -80,7 +81,9 @@ public class IngestEvaluationHandler
             ? new[] { "Prompt injection detected" }
             : [];
 
-        var status = request.PromptInjectionDetected ? "MANUAL_REVIEW" : "PENDING";
+        var status = request.PromptInjectionDetected
+            ? ApplicationStatus.MANUAL_REVIEW.ToString()
+            : ApplicationStatus.PENDING.ToString();
         var tier = DeriveTier(totalScore.Score, totalScore.Max);
         var hardGate = DeriveHardGate(request.Scores.Education);
         var summary = BuildSummary(request, totalScore);
