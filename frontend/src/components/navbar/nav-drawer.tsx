@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
@@ -60,9 +61,11 @@ export function NavDrawer({
             <Separator />
             <div className="flex items-center gap-3 px-2">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted">
-                <img
+                <Image
                   src="https://github.com/shadcn.png"
                   alt="User Avatar"
+                  width={40}
+                  height={40}
                   className="aspect-square h-full w-full object-cover"
                 />
               </div>
