@@ -17,6 +17,11 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(assembly);
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
+        services.AddTransient<Application.Evaluation.IHardGateEvaluationStrategy, Application.Evaluation.Strategies.FormalEducationHardGateStrategy>();
+        services.AddTransient<Application.Evaluation.IHardGateEvaluationStrategy, Application.Evaluation.Strategies.SelfTaughtHardGateStrategy>();
+        services.AddTransient<Application.Evaluation.IHardGateEvaluationStrategy, Application.Evaluation.Strategies.UnrelatedEducationHardGateStrategy>();
+        services.AddTransient<Application.Evaluation.IHardGateEvaluator, Application.Evaluation.HardGateEvaluator>();
+
         return services;
     }
 }
