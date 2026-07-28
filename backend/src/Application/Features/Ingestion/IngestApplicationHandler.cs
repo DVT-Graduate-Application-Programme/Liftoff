@@ -1,6 +1,7 @@
 using Application.Ai;
 using Application.Interfaces;
 using Domain.Entities;
+using Domain.Enums;
 using Domain.Messaging;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -59,7 +60,7 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
         {
             EmailMessageId = request.MessageId,
             CandidateEmail = request.From,
-            Status = "PENDING",
+            Status = ApplicationStatus.PENDING.ToString(),
             CreatedAt = now,
             UpdatedAt = now
         };

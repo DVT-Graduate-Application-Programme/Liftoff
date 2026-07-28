@@ -1,6 +1,7 @@
 using System.IO;
 using Application.Interfaces;
 using Domain.Entities;
+using Domain.Enums;
 using Domain.Messaging;
 using MediatR;
 
@@ -53,7 +54,7 @@ public class SendApplicationHandler
             CandidateEmail = request.CandidateEmail,
             CvAttachmentId = null,
             TranscriptAttachmentId = null,
-            Status = "PROCESSING",
+            Status = ApplicationStatus.PROCESSING.ToString(),
             CreatedAt = now,
             UpdatedAt = now
         };

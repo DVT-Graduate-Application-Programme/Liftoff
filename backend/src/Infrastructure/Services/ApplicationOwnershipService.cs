@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Domain.Entities;
+using Domain.Enums;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -72,7 +73,7 @@ public class ApplicationOwnershipService : IApplicationOwnershipService
             return null;
         }
 
-        const string shortlistedStatus = "SHORTLISTED";
+        var shortlistedStatus = ApplicationStatus.SHORTLISTED.ToString();
         var now = DateTimeOffset.UtcNow;
         var previousStatus = applicationRecord.Status;
 
@@ -94,7 +95,7 @@ public class ApplicationOwnershipService : IApplicationOwnershipService
             ActionedAt = now
         }, cancellationToken);
 
-        _events.PublishOwnershipChanged(id, "SHORTLIST");
+        _events.PublishOwnershipChanged(id, ApplicationStatus.SHORTLISTED.ToString());
 
         return new ApplicationOwnershipShortlist
         {
@@ -106,12 +107,12 @@ public class ApplicationOwnershipService : IApplicationOwnershipService
 
     public async Task<ApplicationStatusUpdate?> AcceptAsync(Guid id, string recruiterIdentity, string? reason, CancellationToken cancellationToken = default)
     {
-        return await UpdateStatusAsync(id, recruiterIdentity, "ACCEPTED", reason, cancellationToken);
+        return await UpdateStatusAsync(id, recruiterIdentity, ApplicationStatus.ACCEPTED.ToString(), reason, cancellationToken);
     }
 
     public async Task<ApplicationStatusUpdate?> RejectAsync(Guid id, string recruiterIdentity, string? reason, CancellationToken cancellationToken = default)
     {
-        return await UpdateStatusAsync(id, recruiterIdentity, "REJECTED", reason, cancellationToken);
+        return await UpdateStatusAsync(id, recruiterIdentity, ApplicationStatus.REJECTED.ToString(), reason, cancellationToken);
     }
 
     private async Task<ApplicationStatusUpdate?> UpdateStatusAsync(Guid id, string recruiterIdentity, string newStatus, string? reason, CancellationToken cancellationToken)
@@ -124,7 +125,7 @@ public class ApplicationOwnershipService : IApplicationOwnershipService
 
         applicationRecord.Status = newStatus;
         applicationRecord.UpdatedAt = now;
-        if (newStatus == "REJECTED")
+        if (newStatus == ApplicationStatus.REJECTED.ToString())
         {
             applicationRecord.ShortlistedByRecruiterId = null;
             applicationRecord.ShortlistedAt = null;
