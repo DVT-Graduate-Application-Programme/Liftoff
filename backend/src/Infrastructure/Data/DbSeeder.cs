@@ -2,6 +2,7 @@ using System;
 using System.Text.Json;
 
 using Domain.Entities;
+using Domain.Enums;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -79,7 +80,7 @@ public static class DbSeeder
             CandidateName = "Sarah Chen",
             CandidateEmail = "sarah.chen@gmail.com",
             CandidateGitHubUrl = "https://github.com/joseph-dev-grad",
-            Status = "Pending",
+            Status = ApplicationStatus.PENDING.ToString(),
             Tier = "Strong",
             HardGatePassed = true,
             HardGateReason = null,
@@ -139,7 +140,7 @@ public static class DbSeeder
             CandidateName = "James Wilson",
             CandidateEmail = "james.wilson@outlook.com",
             CandidateGitHubUrl = null,
-            Status = "Pending",
+            Status = ApplicationStatus.PENDING.ToString(),
             Tier = "Weak",
             HardGatePassed = true,
             HardGateReason = null,
@@ -199,7 +200,7 @@ public static class DbSeeder
             CandidateName = "Elena Rodriguez",
             CandidateEmail = "elena.rodriguez@ucl.ac.uk",
             CandidateGitHubUrl = "https://github.com/josephexample-dev",
-            Status = "Shortlisted",
+            Status = ApplicationStatus.SHORTLISTED.ToString(),
             Tier = "Borderline",
             ClaimedByRecruiterId = recruiterId1,
             HardGatePassed = true,
@@ -262,7 +263,7 @@ public static class DbSeeder
             CandidateEmail = "liam.obrien@ed.ac.uk",
             CandidateGitHubUrl = "https://github.com/liam-obrien-dev",
             ClaimedByRecruiterId = recruiterId3,
-            Status = "Shortlisted",
+            Status = ApplicationStatus.SHORTLISTED.ToString(),
             Tier = "Strong",
             HardGatePassed = true,
             HiringAgentTotalScore = 91.0m,
@@ -322,7 +323,7 @@ public static class DbSeeder
             CandidateName = "Amara Diallo",
             CandidateEmail = "amara.diallo@leeds.ac.uk",
             CandidateGitHubUrl = "https://github.com/amara-fullstack",
-            Status = "Pending",
+            Status = ApplicationStatus.PENDING.ToString(),
             ClaimedByRecruiterId = recruiterId1,
             Tier = "Borderline",
             HardGatePassed = true,
