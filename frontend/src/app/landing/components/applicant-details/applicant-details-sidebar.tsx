@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sidebar, SidebarContent, SidebarGroup } from "@/components/ui/sidebar";
-import type { ApplicantDetailsEvaluation } from "./mock-applicant-details";
+import type { Evaluation, EvaluationScore } from "@/types/api";
 import { CloseApplicantDetailsSidebarButton } from "./applicant-details-sidebar-controls";
 import { SCORE_CATEGORIES } from "./constants";
 import type { SelectionTabKey } from "@/components/providers/applicant-selection-provider";
@@ -13,7 +13,7 @@ import { ScrollText } from "lucide-react";
 type ApplicantDetailsSidebarProps = {
   applicantId?: string | null;
   candidateName: string;
-  evaluation: ApplicantDetailsEvaluation | null;
+  evaluation: Evaluation | null;
   isLoadingEvaluation?: boolean;
   evaluationMessage?: string | null;
   tabKey?: SelectionTabKey | null;
@@ -32,7 +32,7 @@ export function ApplicantDetailsSidebar({
   tabKey = null,
 }: ApplicantDetailsSidebarProps) {
   const categoryScores: Partial<
-    ApplicantDetailsEvaluation["categoryScoresJson"]
+    Evaluation["categoryScoresJson"]
   > | null = evaluation?.categoryScoresJson ?? null;
   const hasEvaluation = Boolean(categoryScores);
   const bonusTotal = evaluation?.bonusPointsJson?.total ?? 0;
@@ -94,7 +94,7 @@ export function ApplicantDetailsSidebar({
                     </span>
                   </p>
                   {SCORE_CATEGORIES.map(({ key, label }) => {
-                    const category = categoryScores[key];
+                    const category: EvaluationScore | undefined = categoryScores[key];
                     if (!category) {
                       return null;
                     }
