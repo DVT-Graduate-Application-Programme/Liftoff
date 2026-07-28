@@ -114,6 +114,35 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
         Assert.Null(record.TranscriptAttachmentId);
     }
 
+    [Fact]
+    public async Task DequeueNextPending_TransitionsStatusFromPendingToProcessing()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IApplicationRecordRepository>();
+
+        var pendingRecord = new ApplicationRecord
+        {
+            Id = Guid.NewGuid(),
+            EmailMessageId = "test-msg-queue-1",
+            CandidateEmail = "worker-test@example.com",
+            CandidateName = "Worker Test",
+            Status = "PENDING",
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+
+        await repository.AddAsync(pendingRecord);
+
+        var dequeued = await repository.DequeueNextPendingAsync();
+
+        Assert.NotNull(dequeued);
+        Assert.Equal(pendingRecord.Id, dequeued.Id);
+        Assert.Equal("PROCESSING", dequeued.Status);
+
+        // Next dequeue when queue is empty returns null
+        var nextDequeued = await repository.DequeueNextPendingAsync();
+        Assert.Null(nextDequeued);
+    }
+
     private static HttpRequestMessage CreateIngestRequest(
         string candidateName,
         string candidateEmail,
@@ -153,6 +182,12 @@ public sealed class IngestApiFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        Environment.SetEnvironmentVariable("POSTGRES_HOST", "localhost");
+        Environment.SetEnvironmentVariable("POSTGRES_PORT", "5432");
+        Environment.SetEnvironmentVariable("POSTGRES_DB", "test");
+        Environment.SetEnvironmentVariable("POSTGRES_USER", "test");
+        Environment.SetEnvironmentVariable("POSTGRES_PASSWORD", "test");
+
         builder.UseEnvironment("Testing");
         builder.ConfigureServices(services =>
         {
@@ -207,69 +242,15 @@ internal sealed class TestApplicationRecordRepository : IApplicationRecordReposi
         _records.Clear();
     }
 
-    public Task<Applicant?> GetApplicantByApplicationIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
 
-    public Task<ApplicationDetails?> GetApplicationDetailsAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
 
-    public Task<ApplicationHardGateScreening?> GetHardGateScreeningByApplicationIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
 
-    public Task<HiringAgentEvaluation?> GetHardGateEvaluationByApplicationIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
 
-    public Task<ApplicationOwnership?> GetOwnershipAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
 
-    public Task<ApplicationOwnershipClaim?> ClaimOwnershipAsync(Guid id, string recruiterIdentity, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<ApplicationOwnershipShortlist?> ShortlistAsync(Guid id, string recruiterIdentity, string? reason, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<List<DashboardApplicationDto>> GetDashboardApplicationsAsync(GetDashboardApplicationsQuery query, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<DashboardMetricsDto> GetDashboardMetricsAsync(CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
 
     public Task<bool> ExistsAsync(string emailMessageId, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_records.Any(record => record.EmailMessageId == emailMessageId));
-    }
-
-    public Task<bool> AddEvaluationAsync(
-        Guid applicationId,
-        HiringAgentEvaluation evaluation,
-        string status,
-        decimal totalScore,
-        string tier,
-        bool hardGatePassed,
-        string hardGateReason,
-        string? cvSummary,
-        JsonDocument? flagsJson,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
     }
 
     public Task AddAuditLogAsync(AuditLog auditLog, CancellationToken cancellationToken = default)

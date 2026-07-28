@@ -50,6 +50,19 @@ variable "frontend_image" {
   default     = ""
 }
 
+variable "worker_image" {
+  description = "Fully-qualified ACR image URI for the background worker container."
+  type        = string
+  default     = ""
+}
+
+variable "worker_admin_api_key" {
+  description = "API key guarding the worker admin endpoints (X-Admin-Api-Key header). Set in terraform.tfvars. When empty, the worker disables its admin endpoints."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 # ── Monitoring ────────────────────────────────────────────────────────────────
 
 variable "alert_email" {
