@@ -1,5 +1,5 @@
-using Application.Commands.AddRecruiter;
-using Application.Queries.GetRecruiters;
+using Application.Features.AddRecruiter;
+using Application.Features.GetRecruiters;
 using Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Builder;

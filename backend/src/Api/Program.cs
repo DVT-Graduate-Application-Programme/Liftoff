@@ -4,6 +4,7 @@ using Application.Interfaces;
 using Backend.Application.Interfaces;
 using Backend.Application.Queries.GetResumes;
 using Backend.Infrastructure.Storage;
+using Application.Features.IngestApplication;
 
 using Infrastructure.Data;
 
@@ -62,7 +63,7 @@ builder.Services.AddSingleton<IResumeStorage, LocalResumeStorage>();
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(GetResumesQuery).Assembly);
-    cfg.RegisterServicesFromAssembly(typeof(Application.Features.Ingestion.IngestApplicationRequest).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(IngestApplicationRequest).Assembly);
     cfg.AddOpenBehavior(typeof(Application.Common.Behaviors.ValidationBehavior<,>));
 });
 
