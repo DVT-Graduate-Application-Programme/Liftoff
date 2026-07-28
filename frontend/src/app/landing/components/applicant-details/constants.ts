@@ -1,6 +1,6 @@
-import type { ApplicantDetailsEvaluation } from "./mock-applicant-details";
+import type { Evaluation } from "@/types/api";
 
-type ScoreCategoryKey = keyof ApplicantDetailsEvaluation["categoryScoresJson"];
+type ScoreCategoryKey = keyof Evaluation["categoryScoresJson"];
 
 export const SCORE_CATEGORIES: ReadonlyArray<{
   key: ScoreCategoryKey;
