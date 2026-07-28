@@ -85,7 +85,7 @@ public class ApplicationEvaluationService : IApplicationEvaluationService
         applicationRecord.HiringAgentExplanation = null;
         applicationRecord.CvSummary = null;
         applicationRecord.FlagsJson = null;
-        applicationRecord.Status = "PENDING";
+        applicationRecord.Status = "PROCESSING";
         applicationRecord.UpdatedAt = DateTimeOffset.UtcNow;
 
         _events.PublishEvaluationReset(id);
