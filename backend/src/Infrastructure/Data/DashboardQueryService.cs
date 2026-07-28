@@ -1,6 +1,7 @@
 using Application.Interfaces;
 using Application.Queries.GetDashboardApplications;
 using Application.Queries.GetDashboardMetrics;
+using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -133,13 +134,13 @@ public class DashboardQueryService : IDashboardQueryService
         return new DashboardMetricsDto
         {
             TotalApplications = statusCounts.Sum(a => a.Count),
-            PendingApplications = counts.GetValueOrDefault("PENDING"),
-            ProcessingApplications = counts.GetValueOrDefault("PROCESSING"),
-            ValidApplications = counts.GetValueOrDefault("VALID"),
-            InvalidApplications = counts.GetValueOrDefault("INVALID"),
-            ManualReviewApplications = counts.GetValueOrDefault("MANUAL_REVIEW"),
-            ShortlistedApplications = counts.GetValueOrDefault("SHORTLISTED"),
-            ErrorApplications = counts.GetValueOrDefault("ERROR")
+            PendingApplications = counts.GetValueOrDefault(ApplicationStatus.PENDING.ToString()),
+            ProcessingApplications = counts.GetValueOrDefault(ApplicationStatus.PROCESSING.ToString()),
+            ValidApplications = counts.GetValueOrDefault(ApplicationStatus.VALID.ToString()),
+            InvalidApplications = counts.GetValueOrDefault(ApplicationStatus.INVALID.ToString()),
+            ManualReviewApplications = counts.GetValueOrDefault(ApplicationStatus.MANUAL_REVIEW.ToString()),
+            ShortlistedApplications = counts.GetValueOrDefault(ApplicationStatus.SHORTLISTED.ToString()),
+            ErrorApplications = counts.GetValueOrDefault(ApplicationStatus.ERROR.ToString())
         };
     }
 

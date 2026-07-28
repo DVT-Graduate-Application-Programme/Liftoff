@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Domain.Entities;
+using Domain.Enums;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -85,7 +86,7 @@ public class ApplicationEvaluationService : IApplicationEvaluationService
         applicationRecord.HiringAgentExplanation = null;
         applicationRecord.CvSummary = null;
         applicationRecord.FlagsJson = null;
-        applicationRecord.Status = "PROCESSING";
+        applicationRecord.Status = ApplicationStatus.PROCESSING.ToString();
         applicationRecord.UpdatedAt = DateTimeOffset.UtcNow;
 
         _events.PublishEvaluationReset(id);
