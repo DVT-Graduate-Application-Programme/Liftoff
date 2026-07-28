@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using DotNetEnv;
+using Application.Ai;
 namespace Infrastructure;
 
 public static class DependencyInjection
@@ -41,6 +42,12 @@ public static class DependencyInjection
         services.AddScoped<IRecruiterAssignmentService, RecruiterAssignmentService>();
         services.AddScoped<IGraphEmailService, GraphEmailService>();
         services.AddScoped<IAttachmentRetriever, UrlAttachmentRetriever>();
+
+        services.AddHttpClient<IAttachmentClassificationService, OllamaAttachmentClassificationService>(client =>
+        {
+            var ollamaBaseUrl = configuration["Ollama:BaseUrl"] ?? "http://localhost:11434";
+            client.BaseAddress = new Uri(ollamaBaseUrl);
+        });
 
         AddServiceBusPublisher(services, configuration);
 
