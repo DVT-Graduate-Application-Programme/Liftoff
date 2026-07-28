@@ -1,3 +1,5 @@
+using Domain.Entities;
+
 public class ApplicationDetails
 {
     public Guid Id { get; set; }
