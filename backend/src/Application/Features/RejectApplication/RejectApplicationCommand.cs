@@ -6,7 +6,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Commands.RejectApplication;
+namespace Application.Features.RejectApplication;
 
 public record RejectApplicationCommand(Guid ApplicationId, string RecruiterIdentity, string? Reason) : IRequest<ApplicationStatusUpdate?>;
 

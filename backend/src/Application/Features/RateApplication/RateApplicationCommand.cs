@@ -6,7 +6,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Commands.RateApplication;
+namespace Application.Features.RateApplication;
 
 public record RateApplicationCommand(Guid ApplicationId, string RecruiterIdentity, short Rating, string? Notes) : IRequest<ApplicationRatingUpdate?>;
 

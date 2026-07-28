@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using MediatR;
 
-namespace Application.Commands.IngestEvaluation;
+namespace Application.Features.IngestEvaluation;
 
 public class IngestEvaluationCommand : IRequest<IngestEvaluationResult>
 {

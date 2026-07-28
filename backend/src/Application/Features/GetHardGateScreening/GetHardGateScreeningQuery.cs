@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Queries.GetHardGateScreening;
+namespace Application.Features.GetHardGateScreening;
 
 public record GetHardGateScreeningQuery(Guid ApplicationId) : IRequest<ApplicationHardGateScreening?>;
 

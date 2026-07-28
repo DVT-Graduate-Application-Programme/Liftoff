@@ -6,7 +6,7 @@ using MediatR;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Commands.AddRecruiter;
+namespace Application.Features.AddRecruiter;
 
 public record AddRecruiterCommand(RecruiterPostDto Recruiter) : IRequest<RecruiterPostDto>;
 

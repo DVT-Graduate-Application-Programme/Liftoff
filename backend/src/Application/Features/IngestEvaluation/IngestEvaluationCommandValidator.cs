@@ -1,7 +1,7 @@
 using System;
 using FluentValidation;
 
-namespace Application.Commands.IngestEvaluation;
+namespace Application.Features.IngestEvaluation;
 
 public class IngestEvaluationCommandValidator : AbstractValidator<IngestEvaluationCommand>
 {
