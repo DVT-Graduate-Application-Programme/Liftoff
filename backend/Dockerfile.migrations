@@ -67,6 +67,8 @@ RUN mkdir -p /tmp/efbundle && chown appuser:appuser /tmp/efbundle
 
 USER appuser
 
-# The job definition appends --connection "$CONNECTION_STRING". A failed migration exits
+# Run with no arguments: the job definitions pass the database as POSTGRES_* environment
+# variables, which GradRecruitmentDbContextFactory reads. Deliberately not --connection,
+# which would expose the password in the process command line. A failed migration exits
 # non-zero, which is what gates the image rollout in CI.
 ENTRYPOINT ["./efbundle"]
