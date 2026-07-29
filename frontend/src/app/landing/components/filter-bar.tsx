@@ -42,7 +42,13 @@ interface FilterBarProps {
   onClearAll: () => void;
 }
 
-export function FilterField({ label, children }: { label: string; children: ReactNode }) {
+export function FilterField({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
   return (
     <label className="grid gap-1.5 text-sm font-medium text-foreground">
       <span>{label}</span>
@@ -122,7 +128,10 @@ export function FilterBar({
               </option>
             ))}
           </select>
-          <ChevronDown className="size-4 text-muted-foreground" aria-hidden="true" />
+          <ChevronDown
+            className="size-4 text-muted-foreground"
+            aria-hidden="true"
+          />
         </label>
       </div>
       {filtersOpen && (
@@ -146,23 +155,44 @@ export function FilterBar({
                   placeholder={field.placeholder ?? "Any"}
                 />
               ) : (
-                <FilterSelect value={field.value} onChange={field.onChange} options={field.options} />
+                <FilterSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={field.options}
+                />
               )}
             </FilterField>
           ))}
         </div>
       )}
       {activeFilters.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2" aria-label="Active filters">
+        <div
+          className="flex flex-wrap items-center gap-2"
+          aria-label="Active filters"
+        >
           {activeFilters.map((filter) => (
-            <Badge key={filter.label} variant="outline" className="gap-1.5 px-3 py-1">
+            <Badge
+              key={filter.label}
+              variant="outline"
+              className="px-3 py-4 gap-1.5 md:py-1"
+            >
               {filter.label}
-              <button type="button" onClick={filter.onClear} aria-label={`Clear ${filter.label}`}>
-                <X size={12} />
+              <button
+                type="button"
+                onClick={filter.onClear}
+                aria-label={`Clear ${filter.label}`}
+              >
+                <X className="size-4 md:size-3" />
               </button>
             </Badge>
           ))}
-          <Button type="button" variant="ghost" size="sm" className="h-5 px-2 text-xs" onClick={onClearAll}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-5 px-2 text-xs"
+            onClick={onClearAll}
+          >
             Clear all
           </Button>
         </div>
