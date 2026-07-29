@@ -7,12 +7,13 @@ interface EmptyStateProps {
   description?: string;
   icon?: ReactNode;
   action?: ReactNode;
+  className?: string;
 }
 
-export function EmptyState({ title, description, icon, action }: EmptyStateProps) {
+export function EmptyState({ title, description, icon, action, className }: EmptyStateProps) {
   return (
-    <Card>
-      <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+    <Card className={className}>
+      <CardContent className="flex h-full flex-col items-center justify-center gap-3 py-10 text-center">
         <div className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
           {icon ?? <Inbox className="size-5" />}
         </div>

@@ -33,6 +33,16 @@ export default function DetailedApplicantInfo() {
   const applicantQuery = useApplicant(applicantId);
   const evaluationQuery = useEvaluation(applicantId);
 
+  // Record of whether the applicant has been evaluated before
+  const [lastEvaluationData, setLastEvaluationData] = useState(evaluationQuery.data);
+  const [hasHadEvaluation, setHasHadEvaluation] = useState(!!evaluationQuery.data);
+  if (evaluationQuery.data !== lastEvaluationData) {
+    setLastEvaluationData(evaluationQuery.data);
+    if (evaluationQuery.data) {
+      setHasHadEvaluation(true);
+    }
+  }
+
   const [leftWidth, setLeftWidth] = useState(50); // percentage
   const [isResizing, setIsResizing] = useState(false);
   const [isMobile, setIsMobile] = useState(true);
@@ -187,10 +197,19 @@ export default function DetailedApplicantInfo() {
             ) : evaluationQuery.isError ? (
               <ErrorState message="Couldn't load evaluation." onRetry={() => { void evaluationQuery.refetch(); }} />
             ) : !evaluationQuery.data ? (
-              <EmptyState
-                title="Not yet evaluated"
-                description="This candidate has not been evaluated by the Hiring Agent yet."
-              />
+              detailQuery.data?.currentStatus === "PROCESSING" && hasHadEvaluation ? (
+                <EmptyState
+                  className="flex-1"
+                  title="Re-evaluating applicant"
+                  description="The Hiring Agent is re-evaluating this candidate. This may take a moment."
+                />
+              ) : (
+                <EmptyState
+                  className="flex-1"
+                  title="Not yet evaluated"
+                  description="This candidate has not been evaluated by the Hiring Agent yet."
+                />
+              )
             ) : (
               <EvaluationSummary evaluation={evaluationQuery.data} applicationId={applicantId} />
             )}
