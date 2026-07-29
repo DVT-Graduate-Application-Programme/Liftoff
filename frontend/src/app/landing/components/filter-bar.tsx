@@ -1,11 +1,18 @@
 "use client";
 
-import { ChevronDown, ListFilter, ListOrdered, X } from "lucide-react";
+import { ListFilter, ListOrdered, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ApplicationFilters } from "@/types/api";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export type SortOption = NonNullable<ApplicationFilters["sort"]>;
 
@@ -66,25 +73,31 @@ export function FilterSelect({
   onChange: (value: string) => void;
   options: [string, string][];
 }) {
+  const selectedLabel =
+    options.find(([optionValue]) => optionValue === value)?.[1] ??
+    "Select option";
   return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(event) => {
-          onChange(event.target.value);
-        }}
+    <Select
+      value={value}
+      onValueChange={(selectedValue) => {
+        onChange(selectedValue);
+      }}
+    >
+      <SelectTrigger
         className={cn(
-          "h-9 w-full appearance-none rounded-md border border-input bg-background px-2 pr-8 text-sm text-foreground",
+          "h-9 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground",
         )}
       >
+        <SelectValue>{selectedLabel}</SelectValue>
+      </SelectTrigger>
+      <SelectContent>
         {options.map(([optionValue, label]) => (
-          <option key={optionValue} value={optionValue}>
+          <SelectItem key={optionValue} value={optionValue}>
             {label}
-          </option>
+          </SelectItem>
         ))}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-2 top-2.5 size-4 text-muted-foreground" />
-    </div>
+      </SelectContent>
+    </Select>
   );
 }
 
@@ -111,27 +124,27 @@ export function FilterBar({
           <ListFilter size={16} />
           Advanced Filters
         </button>
-        <label className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-foreground">
+        <label className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-foreground transition-colors hover:bg-muted">
           <ListOrdered size={16} aria-hidden="true" />
           <span className="sr-only">Sort applicants</span>
-          <select
+          <Select
             aria-label="Sort applicants"
             value={sort}
-            onChange={(event) => {
-              onSortChange(event.target.value as SortOption);
+            onValueChange={(selectedValue) => {
+              onSortChange(selectedValue as SortOption);
             }}
-            className="appearance-none bg-transparent pr-1 text-sm outline-none"
           >
-            {SORT_OPTIONS.map(([optionValue, label]) => (
-              <option key={optionValue} value={optionValue}>
-                {label}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            className="size-4 text-muted-foreground"
-            aria-hidden="true"
-          />
+            <SelectTrigger className="h-auto min-w-0 border-0 bg-transparent p-0 text-sm text-foreground shadow-none focus-visible:ring-0 hover:bg-transparent">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="w-[var(--radix-select-trigger-width)]">
+              {SORT_OPTIONS.map(([optionValue, label]) => (
+                <SelectItem key={optionValue} value={optionValue}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </label>
       </div>
       {filtersOpen && (
