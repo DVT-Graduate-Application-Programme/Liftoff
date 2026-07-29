@@ -40,9 +40,10 @@ CREATE INDEX IF NOT EXISTS "IX_HiringAgentEvaluations_ApplicationRecordId"
 CREATE INDEX IF NOT EXISTS "IX_RecruiterActions_ApplicationRecordId"
     ON public."RecruiterActions" ("ApplicationRecordId");
 
--- pgcrypto backs the gen_random_uuid() column defaults. Present already on any database
--- the old initializer touched, but harmless to assert.
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+-- Deliberately no CREATE EXTENSION pgcrypto here. gen_random_uuid() has been core
+-- PostgreSQL since 13, so the column defaults need no extension, and Azure Database for
+-- PostgreSQL rejects the statement outright unless an operator adds pgcrypto to the
+-- azure.extensions allow-list.
 
 -- 3. Record InitialCreate as already applied, so the migrations job skips it and starts
 --    from the next migration. ON CONFLICT makes re-running this file a no-op.

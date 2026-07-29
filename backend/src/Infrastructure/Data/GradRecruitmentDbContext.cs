@@ -20,11 +20,11 @@ public class GradRecruitmentDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // gen_random_uuid() is built into PostgreSQL 13+, but the extension was created
-        // explicitly by the old schema initializer — keep it so migrations reproduce the
-        // schema exactly and still work on a pre-13 server.
-        modelBuilder.HasPostgresExtension("pgcrypto");
-
+        // No pgcrypto extension: gen_random_uuid() has been core PostgreSQL since 13, and
+        // every server here runs 16. The old schema initializer created the extension
+        // explicitly, but Azure Database for PostgreSQL refuses it unless an operator adds
+        // it to the azure.extensions allow-list — requesting it would make the migration
+        // fail on Azure for a function the server already provides.
         modelBuilder.Entity<ApplicationRecord>(entity =>
         {
             // Constraint and index names below are pinned to the names the previously
