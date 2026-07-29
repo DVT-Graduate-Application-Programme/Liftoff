@@ -12,9 +12,6 @@ namespace Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterDatabase()
-                .Annotation("Npgsql:PostgresExtension:pgcrypto", ",,");
-
             migrationBuilder.CreateTable(
                 name: "ApplicationRecords",
                 columns: table => new
