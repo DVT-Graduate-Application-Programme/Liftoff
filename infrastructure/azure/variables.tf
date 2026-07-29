@@ -69,6 +69,36 @@ variable "worker_admin_api_key" {
   default     = ""
 }
 
+# ── Frontend authentication (Auth.js + Microsoft Entra ID) ────────────────────
+# These were already present in terraform.tfvars but had no variable blocks, so Terraform
+# ignored them and planned to strip the corresponding secrets from the live frontend.
+# All four are surfaced to the container as Container App secrets, matching the secret
+# names already on the deployed app so declaring them causes no churn.
+
+variable "auth_secret" {
+  description = "Auth.js secret used to encrypt session cookies (AUTH_SECRET) — set in terraform.tfvars, never hardcode here."
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_microsoft_entra_id_id" {
+  description = "Microsoft Entra ID application (client) ID used for recruiter sign-in — set in terraform.tfvars, never hardcode here."
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_microsoft_entra_id_secret" {
+  description = "Microsoft Entra ID client secret used for recruiter sign-in — set in terraform.tfvars, never hardcode here."
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_microsoft_entra_id_issuer" {
+  description = "Microsoft Entra ID issuer URL (tenant-scoped OIDC authority) — set in terraform.tfvars, never hardcode here."
+  type        = string
+  sensitive   = true
+}
+
 # ── Monitoring ────────────────────────────────────────────────────────────────
 
 variable "alert_email" {
