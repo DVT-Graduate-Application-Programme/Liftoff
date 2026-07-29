@@ -5,8 +5,6 @@ type PendingCandidateCardProps = {
   name: string;
   institute: string;
   secondaryInstitute?: string;
-  recruiterLabel?: string;
-  recruiterName?: string;
   academicAverage?: number;
   systemScore: number;
   scoreLabel?: string;
