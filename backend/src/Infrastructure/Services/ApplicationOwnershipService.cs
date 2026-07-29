@@ -36,26 +36,15 @@ public class ApplicationOwnershipService : IApplicationOwnershipService
         }
 
         var now = DateTimeOffset.UtcNow;
-        applicationRecord.ClaimedByRecruiterId = recruiterIdentity;
-        applicationRecord.ClaimedAt = now;
-        applicationRecord.UpdatedAt = now;
-
+        applicationRecord.ClaimOwnership(recruiterIdentity, now);
         _dbContext.ApplicationRecords.Update(applicationRecord);
-
-        await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
-        {
-            ApplicationRecordId = id,
-            RecruiterIdentity = recruiterIdentity,
-            ActionType = "CLAIM",
-            ActionedAt = now
-        }, cancellationToken);
 
         _events.PublishOwnershipChanged(id, "CLAIM");
 
         return new ApplicationOwnershipClaim
         {
             ClaimedByRecruiterId = recruiterIdentity,
-            ClaimedAt = now
+            ClaimedAt = applicationRecord.ClaimedAt ?? now
         };
     }
 
@@ -73,35 +62,17 @@ public class ApplicationOwnershipService : IApplicationOwnershipService
             return null;
         }
 
-        var shortlistedStatus = ApplicationStatus.SHORTLISTED.ToString();
         var now = DateTimeOffset.UtcNow;
-        var previousStatus = applicationRecord.Status;
-
-        applicationRecord.ShortlistedByRecruiterId = recruiterIdentity;
-        applicationRecord.ShortlistedAt = now;
-        applicationRecord.Status = shortlistedStatus;
-        applicationRecord.UpdatedAt = now;
-
+        applicationRecord.Shortlist(recruiterIdentity, reason, now);
         _dbContext.ApplicationRecords.Update(applicationRecord);
-
-        await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
-        {
-            ApplicationRecordId = id,
-            RecruiterIdentity = recruiterIdentity,
-            ActionType = "SHORTLIST",
-            PreviousStatus = previousStatus,
-            NewStatus = shortlistedStatus,
-            Reason = reason,
-            ActionedAt = now
-        }, cancellationToken);
 
         _events.PublishOwnershipChanged(id, ApplicationStatus.SHORTLISTED.ToString());
 
         return new ApplicationOwnershipShortlist
         {
             ShortlistedByRecruiterId = recruiterIdentity,
-            ShortlistedAt = now,
-            UpdatedStatus = shortlistedStatus
+            ShortlistedAt = applicationRecord.ShortlistedAt ?? now,
+            UpdatedStatus = applicationRecord.Status
         };
     }
 
@@ -121,27 +92,8 @@ public class ApplicationOwnershipService : IApplicationOwnershipService
         if (applicationRecord is null) return null;
 
         var now = DateTimeOffset.UtcNow;
-        var previousStatus = applicationRecord.Status;
-
-        applicationRecord.Status = newStatus;
-        applicationRecord.UpdatedAt = now;
-        if (newStatus == ApplicationStatus.REJECTED.ToString())
-        {
-            applicationRecord.ShortlistedByRecruiterId = null;
-            applicationRecord.ShortlistedAt = null;
-        }
+        applicationRecord.UpdateStatus(recruiterIdentity, newStatus, reason, now);
         _dbContext.ApplicationRecords.Update(applicationRecord);
-
-        await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
-        {
-            ApplicationRecordId = id,
-            RecruiterIdentity = recruiterIdentity,
-            ActionType = "STATUS_OVERRIDE",
-            PreviousStatus = previousStatus,
-            NewStatus = newStatus,
-            Reason = reason,
-            ActionedAt = now
-        }, cancellationToken);
 
         _events.PublishOwnershipChanged(id, newStatus);
 
@@ -159,35 +111,15 @@ public class ApplicationOwnershipService : IApplicationOwnershipService
         if (applicationRecord is null) return null;
 
         var now = DateTimeOffset.UtcNow;
-
-        applicationRecord.RecruiterRating = rating;
-        if (notes is null && applicationRecord.RecruiterRatingNote is not null) {
-            // keep old notes
-        } else {
-            applicationRecord.RecruiterRatingNote = notes;
-        }
-        applicationRecord.RatedByRecruiterId = recruiterIdentity;
-        applicationRecord.RatedAt = now;
-        applicationRecord.UpdatedAt = now;
-
+        applicationRecord.Rate(rating, notes, recruiterIdentity, now);
         _dbContext.ApplicationRecords.Update(applicationRecord);
-
-        await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
-        {
-            ApplicationRecordId = id,
-            RecruiterIdentity = recruiterIdentity,
-            ActionType = "RATING",
-            RatingValue = rating,
-            Reason = notes,
-            ActionedAt = now
-        }, cancellationToken);
 
         _events.PublishOwnershipChanged(id, "RATING");
 
         return new ApplicationRatingUpdate
         {
             RatedByRecruiterId = recruiterIdentity,
-            RatedAt = now,
+            RatedAt = applicationRecord.RatedAt ?? now,
             RecruiterRating = applicationRecord.RecruiterRating,
             RecruiterRatingNote = applicationRecord.RecruiterRatingNote
         };
@@ -199,21 +131,8 @@ public class ApplicationOwnershipService : IApplicationOwnershipService
         if (applicationRecord is null) return null;
 
         var now = DateTimeOffset.UtcNow;
-
-        applicationRecord.RecruiterRatingNote = notes;
-        applicationRecord.UpdatedAt = now;
-
+        applicationRecord.AddNote(notes, recruiterIdentity, now);
         _dbContext.ApplicationRecords.Update(applicationRecord);
-
-        await _dbContext.RecruiterActions.AddAsync(new RecruiterAction
-        {
-            ApplicationRecordId = id,
-            RecruiterIdentity = recruiterIdentity,
-            ActionType = "RATING",
-            RatingValue = applicationRecord.RecruiterRating,
-            Reason = notes,
-            ActionedAt = now
-        }, cancellationToken);
 
         _events.PublishOwnershipChanged(id, "NOTES");
 
@@ -222,7 +141,7 @@ public class ApplicationOwnershipService : IApplicationOwnershipService
             RatedByRecruiterId = applicationRecord.RatedByRecruiterId ?? string.Empty,
             RatedAt = applicationRecord.RatedAt ?? now,
             RecruiterRating = applicationRecord.RecruiterRating,
-            RecruiterRatingNote = notes
+            RecruiterRatingNote = applicationRecord.RecruiterRatingNote
         };
     }
 }

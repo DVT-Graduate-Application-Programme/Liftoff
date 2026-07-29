@@ -46,15 +46,14 @@ public class ApplicationEvaluationService : IApplicationEvaluationService
 
         evaluation.ApplicationRecordId = applicationId;
 
-        applicationRecord.Status = status;
-        applicationRecord.Tier = tier;
-        applicationRecord.HardGatePassed = hardGatePassed;
-        applicationRecord.HardGateReason = hardGateReason;
-        applicationRecord.HiringAgentTotalScore = totalScore;
-        applicationRecord.HiringAgentExplanation = cvSummary;
-        applicationRecord.CvSummary = cvSummary;
-        applicationRecord.FlagsJson = flagsJson;
-        applicationRecord.UpdatedAt = DateTimeOffset.UtcNow;
+        applicationRecord.ApplyEvaluation(
+            status: status,
+            tier: tier,
+            hardGatePassed: hardGatePassed,
+            hardGateReason: hardGateReason,
+            totalScore: totalScore,
+            cvSummary: cvSummary,
+            flagsJson: flagsJson);
 
         await _dbContext.HiringAgentEvaluations.AddAsync(evaluation, cancellationToken);
         _events.PublishEvaluationSaved(applicationId);
@@ -78,16 +77,8 @@ public class ApplicationEvaluationService : IApplicationEvaluationService
             _dbContext.HiringAgentEvaluations.RemoveRange(applicationRecord.HiringAgentEvaluations);
         }
 
-        // Reset fields
-        applicationRecord.Tier = null;
-        applicationRecord.HardGatePassed = null;
-        applicationRecord.HardGateReason = null;
-        applicationRecord.HiringAgentTotalScore = null;
-        applicationRecord.HiringAgentExplanation = null;
-        applicationRecord.CvSummary = null;
-        applicationRecord.FlagsJson = null;
-        applicationRecord.Status = ApplicationStatus.PROCESSING.ToString();
-        applicationRecord.UpdatedAt = DateTimeOffset.UtcNow;
+        // Reset fields via domain method
+        applicationRecord.ResetEvaluation();
 
         _events.PublishEvaluationReset(id);
         return true;
