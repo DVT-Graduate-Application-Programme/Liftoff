@@ -11,7 +11,7 @@ public class SelfTaughtHardGateStrategy : IHardGateEvaluationStrategy
 
     public HardGateResult Evaluate(EducationScoreDto education)
     {
-        var experienceRequirement = education.ExperienceRequirementMet.Trim().ToLowerInvariant() ?? string.Empty;
+        var experienceRequirement = education.ExperienceRequirementMet?.Trim().ToLowerInvariant() ?? string.Empty;
 
         return experienceRequirement switch
         {
