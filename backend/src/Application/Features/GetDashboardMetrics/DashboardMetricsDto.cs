@@ -1,4 +1,4 @@
-namespace Application.Queries.GetDashboardMetrics;
+namespace Application.Features.GetDashboardMetrics;
 
 public class DashboardMetricsDto
 {

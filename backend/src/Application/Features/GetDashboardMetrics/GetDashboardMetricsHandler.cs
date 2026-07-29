@@ -1,7 +1,7 @@
 using Application.Interfaces;
 using MediatR;
 
-namespace Application.Queries.GetDashboardMetrics;
+namespace Application.Features.GetDashboardMetrics;
 
 public class GetDashboardMetricsHandler
     : IRequestHandler<GetDashboardMetricsQuery, DashboardMetricsDto>

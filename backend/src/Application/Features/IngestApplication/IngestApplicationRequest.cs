@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace Application.Features.Ingestion;
+namespace Application.Features.IngestApplication;
 
 public class IngestApplicationRequest : IRequest<bool>
 {

@@ -4,7 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Commands.ReevaluateApplication;
+namespace Application.Features.ReevaluateApplication;
 
 public record ReevaluateApplicationCommand(Guid ApplicationId) : IRequest<bool>;
 

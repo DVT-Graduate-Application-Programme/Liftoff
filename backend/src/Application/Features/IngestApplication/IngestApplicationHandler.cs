@@ -9,7 +9,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Features.Ingestion;
+namespace Application.Features.IngestApplication;
 
 public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest, bool>
 {
@@ -56,14 +56,11 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
         }
 
         var now = DateTimeOffset.UtcNow;
-        var applicationRecord = new ApplicationRecord
-        {
-            EmailMessageId = request.MessageId,
-            CandidateEmail = request.From,
-            Status = ApplicationStatus.PENDING.ToString(),
-            CreatedAt = now,
-            UpdatedAt = now
-        };
+        var applicationRecord = ApplicationRecord.Create(
+            emailMessageId: request.MessageId,
+            candidateEmail: request.From,
+            status: ApplicationStatus.PENDING.ToString(),
+            timestamp: now);
 
         // 1. Fetch attachments from Microsoft Graph
         var attachments = await _graphEmailService.GetAttachmentsAsync(request.UserId, request.MessageId, cancellationToken);
@@ -81,11 +78,11 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
 
             if (classification == "CV")
             {
-                applicationRecord.CvAttachmentId = attachment.Id;
+                applicationRecord.SetCvAttachment(attachment.Id);
             }
             else if (classification == "Transcript")
             {
-                applicationRecord.TranscriptAttachmentId = attachment.Id;
+                applicationRecord.SetTranscriptAttachment(attachment.Id);
             }
         }
 

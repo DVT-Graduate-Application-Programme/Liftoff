@@ -47,17 +47,12 @@ public class SendApplicationHandler
         }
 
         var now = DateTimeOffset.UtcNow;
-        var applicationRecord = new ApplicationRecord
-        {
-            EmailMessageId = emailMessageId,
-            CandidateName = request.CandidateName,
-            CandidateEmail = request.CandidateEmail,
-            CvAttachmentId = null,
-            TranscriptAttachmentId = null,
-            Status = ApplicationStatus.PROCESSING.ToString(),
-            CreatedAt = now,
-            UpdatedAt = now
-        };
+        var applicationRecord = ApplicationRecord.Create(
+            emailMessageId: emailMessageId,
+            candidateName: request.CandidateName,
+            candidateEmail: request.CandidateEmail,
+            status: ApplicationStatus.PROCESSING.ToString(),
+            timestamp: now);
 
         var possiblePaths = new[]
         {
@@ -73,6 +68,7 @@ public class SendApplicationHandler
         {
             await request.CvStream.CopyToAsync(fileStream, cancellationToken);
         }
+        applicationRecord.SetCvAttachment(cvFilePath);
 
         if (request.TranscriptStream != null)
         {
@@ -81,6 +77,7 @@ public class SendApplicationHandler
             {
                 await request.TranscriptStream.CopyToAsync(fileStream, cancellationToken);
             }
+            applicationRecord.SetTranscriptAttachment(transcriptFilePath);
         }
 
         await _repository.AddAsync(applicationRecord, cancellationToken);

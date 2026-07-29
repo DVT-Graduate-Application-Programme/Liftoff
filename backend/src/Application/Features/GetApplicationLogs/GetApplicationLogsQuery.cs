@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Queries.GetApplicationLogs;
+namespace Application.Features.GetApplicationLogs;
 
 public record GetApplicationLogsQuery(Guid? ApplicationId = null) : IRequest<List<RecruiterActionLogDto>>;
 

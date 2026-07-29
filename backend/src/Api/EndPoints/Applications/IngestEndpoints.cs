@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Application.Features.Ingestion;
+using Application.Features.IngestApplication;
 using Application.Features.SendApplicaton;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

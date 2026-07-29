@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Queries.GetRecruiters;
+namespace Application.Features.GetRecruiters;
 
 public class GetRecruitersQuery : IRequest<List<RecruiterDto>?>;
 

@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace Application.Queries.GetDashboardMetrics;
+namespace Application.Features.GetDashboardMetrics;
 
 public class GetDashboardMetricsQuery : IRequest<DashboardMetricsDto>
 {

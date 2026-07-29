@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Queries.GetApplicationOwnership;
+namespace Application.Features.GetApplicationOwnership;
 
 public record GetApplicationOwnershipQuery(Guid ApplicationId) : IRequest<ApplicationOwnership?>;
 

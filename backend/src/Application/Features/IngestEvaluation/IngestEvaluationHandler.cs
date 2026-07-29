@@ -5,7 +5,7 @@ using Domain.Enums;
 using MediatR;
 using System.Text.Json;
 
-namespace Application.Commands.IngestEvaluation;
+namespace Application.Features.IngestEvaluation;
 
 public class IngestEvaluationResult
 {

@@ -1,4 +1,4 @@
-namespace Application.Queries.GetDashboardApplications;
+namespace Application.Features.GetDashboardApplications;
  
 public class DashboardApplicationDto
 {
