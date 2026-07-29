@@ -73,24 +73,22 @@ public static class DbSeeder
         string recruiterId3 = "phindi@dvtsoftware.com";
 
 
-        var app1 = new ApplicationRecord
-        {
-            Id = App1Id,
-            EmailMessageId = "seed-msg-001",
-            CandidateName = "Sarah Chen",
-            CandidateEmail = "sarah.chen@gmail.com",
-            CandidateGitHubUrl = "https://github.com/joseph-dev-grad",
-            Status = ApplicationStatus.PENDING.ToString(),
-            Tier = "Strong",
-            HardGatePassed = true,
-            HardGateReason = null,
-            ClaimedByRecruiterId = recruiterId1,
-            HiringAgentTotalScore = 77.0m,
-            HiringAgentExplanation = "Strong full-stack and cloud profile with elite internship experience at AWS.",
-            CvSummary = "BSc Computer Science (First Class, Imperial College London). SWE Intern at AWS Serverless Team. Built scalable chat architecture using Redis Pub/Sub.",
-            CreatedAt = DateTimeOffset.UtcNow.AddDays(-10),
-            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-9),
-        };
+        var app1 = new ApplicationRecord(
+            id: App1Id,
+            emailMessageId: "seed-msg-001",
+            candidateName: "Sarah Chen",
+            candidateEmail: "sarah.chen@gmail.com",
+            candidateGitHubUrl: "https://github.com/joseph-dev-grad",
+            status: ApplicationStatus.PENDING.ToString(),
+            tier: "Strong",
+            hardGatePassed: true,
+            hardGateReason: null,
+            claimedByRecruiterId: recruiterId1,
+            hiringAgentTotalScore: 77.0m,
+            hiringAgentExplanation: "Strong full-stack and cloud profile with elite internship experience at AWS.",
+            cvSummary: "BSc Computer Science (First Class, Imperial College London). SWE Intern at AWS Serverless Team. Built scalable chat architecture using Redis Pub/Sub.",
+            createdAt: DateTimeOffset.UtcNow.AddDays(-10),
+            updatedAt: DateTimeOffset.UtcNow.AddDays(-9));
 
         var eval1 = new HiringAgentEvaluation
         {
@@ -133,24 +131,22 @@ public static class DbSeeder
         // ──────────────────────────────────────────────
         // Candidate 2 – Alex Turner (Score 56)
         // ──────────────────────────────────────────────
-        var app2 = new ApplicationRecord
-        {
-            Id = App2Id,
-            EmailMessageId = "seed-msg-002",
-            CandidateName = "James Wilson",
-            CandidateEmail = "james.wilson@outlook.com",
-            CandidateGitHubUrl = null,
-            Status = ApplicationStatus.PENDING.ToString(),
-            Tier = "Weak",
-            HardGatePassed = true,
-            HardGateReason = null,
-            ClaimedByRecruiterId = recruiterId2,
-            HiringAgentTotalScore = 56.0m,
-            HiringAgentExplanation = "Solid backend and frontend skills with direct agency placement experience.",
-            CvSummary = "BSc Software Engineering (2:1, University of Manchester). Placement as Junior Web Developer at PixelCraft Digital Agency. Built Agile Kanban board and University Student Portal.",
-            CreatedAt = DateTimeOffset.UtcNow.AddDays(-8),
-            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-7),
-        };
+        var app2 = new ApplicationRecord(
+            id: App2Id,
+            emailMessageId: "seed-msg-002",
+            candidateName: "James Wilson",
+            candidateEmail: "james.wilson@outlook.com",
+            candidateGitHubUrl: null,
+            status: ApplicationStatus.PENDING.ToString(),
+            tier: "Weak",
+            hardGatePassed: true,
+            hardGateReason: null,
+            claimedByRecruiterId: recruiterId2,
+            hiringAgentTotalScore: 56.0m,
+            hiringAgentExplanation: "Solid backend and frontend skills with direct agency placement experience.",
+            cvSummary: "BSc Software Engineering (2:1, University of Manchester). Placement as Junior Web Developer at PixelCraft Digital Agency. Built Agile Kanban board and University Student Portal.",
+            createdAt: DateTimeOffset.UtcNow.AddDays(-8),
+            updatedAt: DateTimeOffset.UtcNow.AddDays(-7));
 
         var eval2 = new HiringAgentEvaluation
         {
@@ -193,26 +189,24 @@ public static class DbSeeder
         // ──────────────────────────────────────────────
         // Candidate 3 – Elena Rodriguez (Score 73 + 2 bonus = 75)
         // ──────────────────────────────────────────────
-        var app3 = new ApplicationRecord
-        {
-            Id = App3Id,
-            EmailMessageId = "seed-msg-003",
-            CandidateName = "Elena Rodriguez",
-            CandidateEmail = "elena.rodriguez@ucl.ac.uk",
-            CandidateGitHubUrl = "https://github.com/josephexample-dev",
-            Status = ApplicationStatus.SHORTLISTED.ToString(),
-            Tier = "Borderline",
-            ClaimedByRecruiterId = recruiterId1,
-            HardGatePassed = true,
-            HardGateReason = null,
-            HiringAgentTotalScore = 75.0m,
-            HiringAgentExplanation = "Extremely strong AI/ML profile with elite internship at Google DeepMind and specialized NLP experience.",
-            CvSummary = "MSc Artificial Intelligence (Distinction, UCL). Data Scientist Intern at Google DeepMind. Built Biomedical NER model (PyTorch, Hugging Face).",
-            ShortlistedByRecruiterId = "Rose@dvtsoftware.com",
-            ShortlistedAt = DateTimeOffset.UtcNow.AddDays(-5),
-            CreatedAt = DateTimeOffset.UtcNow.AddDays(-6),
-            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-5),
-        };
+        var app3 = new ApplicationRecord(
+            id: App3Id,
+            emailMessageId: "seed-msg-003",
+            candidateName: "Elena Rodriguez",
+            candidateEmail: "elena.rodriguez@ucl.ac.uk",
+            candidateGitHubUrl: "https://github.com/josephexample-dev",
+            status: ApplicationStatus.SHORTLISTED.ToString(),
+            tier: "Borderline",
+            claimedByRecruiterId: recruiterId1,
+            hardGatePassed: true,
+            hardGateReason: null,
+            hiringAgentTotalScore: 75.0m,
+            hiringAgentExplanation: "Extremely strong AI/ML profile with elite internship at Google DeepMind and specialized NLP experience.",
+            cvSummary: "MSc Artificial Intelligence (Distinction, UCL). Data Scientist Intern at Google DeepMind. Built Biomedical NER model (PyTorch, Hugging Face).",
+            shortlistedByRecruiterId: "Rose@dvtsoftware.com",
+            shortlistedAt: DateTimeOffset.UtcNow.AddDays(-5),
+            createdAt: DateTimeOffset.UtcNow.AddDays(-6),
+            updatedAt: DateTimeOffset.UtcNow.AddDays(-5));
 
         var eval3 = new HiringAgentEvaluation
         {
@@ -255,25 +249,23 @@ public static class DbSeeder
         // ──────────────────────────────────────────────
         // Candidate 4 – Liam O'Brien (Score 91) – top full-stack, forwarded to hiring manager
         // ──────────────────────────────────────────────
-        var app4 = new ApplicationRecord
-        {
-            Id = App4Id,
-            EmailMessageId = "seed-msg-004",
-            CandidateName = "Liam O'Brien",
-            CandidateEmail = "liam.obrien@ed.ac.uk",
-            CandidateGitHubUrl = "https://github.com/liam-obrien-dev",
-            ClaimedByRecruiterId = recruiterId3,
-            Status = ApplicationStatus.SHORTLISTED.ToString(),
-            Tier = "Strong",
-            HardGatePassed = true,
-            HiringAgentTotalScore = 91.0m,
-            HiringAgentExplanation = "Exceptional full-stack candidate. Ships production-grade React + Node.js apps, has two SWE internships, and maintains an open-source React form library with thousands of weekly downloads.",
-            CvSummary = "BSc (Hons) Computer Science, University of Edinburgh, First Class. Full-stack intern at Monzo and Sky. Maintains 'react-snap-forms' npm package (8k weekly downloads). Final year project: real-time collaborative whiteboard.",
-            ShortlistedByRecruiterId = "Rose@dvtsoftware.com",
-            ShortlistedAt = DateTimeOffset.UtcNow.AddDays(-4),
-            CreatedAt = DateTimeOffset.UtcNow.AddDays(-12),
-            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-4),
-        };
+        var app4 = new ApplicationRecord(
+            id: App4Id,
+            emailMessageId: "seed-msg-004",
+            candidateName: "Liam O'Brien",
+            candidateEmail: "liam.obrien@ed.ac.uk",
+            candidateGitHubUrl: "https://github.com/liam-obrien-dev",
+            claimedByRecruiterId: recruiterId3,
+            status: ApplicationStatus.SHORTLISTED.ToString(),
+            tier: "Strong",
+            hardGatePassed: true,
+            hiringAgentTotalScore: 91.0m,
+            hiringAgentExplanation: "Exceptional full-stack candidate. Ships production-grade React + Node.js apps, has two SWE internships, and maintains an open-source React form library with thousands of weekly downloads.",
+            cvSummary: "BSc (Hons) Computer Science, University of Edinburgh, First Class. Full-stack intern at Monzo and Sky. Maintains 'react-snap-forms' npm package (8k weekly downloads). Final year project: real-time collaborative whiteboard.",
+            shortlistedByRecruiterId: "Rose@dvtsoftware.com",
+            shortlistedAt: DateTimeOffset.UtcNow.AddDays(-4),
+            createdAt: DateTimeOffset.UtcNow.AddDays(-12),
+            updatedAt: DateTimeOffset.UtcNow.AddDays(-4));
 
         var eval4 = new HiringAgentEvaluation
         {
@@ -316,23 +308,21 @@ public static class DbSeeder
         // ──────────────────────────────────────────────
         // Candidate 5 – Amara Diallo (Score 69) – solid full-stack, evaluated Tier B
         // ──────────────────────────────────────────────
-        var app5 = new ApplicationRecord
-        {
-            Id = App5Id,
-            EmailMessageId = "seed-msg-005",
-            CandidateName = "Amara Diallo",
-            CandidateEmail = "amara.diallo@leeds.ac.uk",
-            CandidateGitHubUrl = "https://github.com/amara-fullstack",
-            Status = ApplicationStatus.PENDING.ToString(),
-            ClaimedByRecruiterId = recruiterId1,
-            Tier = "Borderline",
-            HardGatePassed = true,
-            HiringAgentTotalScore = 69.0m,
-            HiringAgentExplanation = "Solid full-stack candidate with a well-rounded Vue/Django skill set and a meaningful 12-month placement year. GitHub is consistent but no external OSS contributions.",
-            CvSummary = "BSc Computer Science, University of Leeds, 2:1. 12-month placement at PwC Digital (Vue.js + Django internal tools). Built a full-stack event management app as capstone. Deployed on Railway.",
-            CreatedAt = DateTimeOffset.UtcNow.AddDays(-9),
-            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-8),
-        };
+        var app5 = new ApplicationRecord(
+            id: App5Id,
+            emailMessageId: "seed-msg-005",
+            candidateName: "Amara Diallo",
+            candidateEmail: "amara.diallo@leeds.ac.uk",
+            candidateGitHubUrl: "https://github.com/amara-fullstack",
+            status: ApplicationStatus.PENDING.ToString(),
+            claimedByRecruiterId: recruiterId1,
+            tier: "Borderline",
+            hardGatePassed: true,
+            hiringAgentTotalScore: 69.0m,
+            hiringAgentExplanation: "Solid full-stack candidate with a well-rounded Vue/Django skill set and a meaningful 12-month placement year. GitHub is consistent but no external OSS contributions.",
+            cvSummary: "BSc Computer Science, University of Leeds, 2:1. 12-month placement at PwC Digital (Vue.js + Django internal tools). Built a full-stack event management app as capstone. Deployed on Railway.",
+            createdAt: DateTimeOffset.UtcNow.AddDays(-9),
+            updatedAt: DateTimeOffset.UtcNow.AddDays(-8));
 
         var eval5 = new HiringAgentEvaluation
         {
@@ -375,24 +365,22 @@ public static class DbSeeder
         // ──────────────────────────────────────────────
         // Candidate 6 – Chloe Bennett (Score 38) – failed hard gate, rejected
         // ──────────────────────────────────────────────
-        var app6 = new ApplicationRecord
-        {
-            Id = App6Id,
-            EmailMessageId = "seed-msg-006",
-            CandidateName = "Chloe Bennett",
-            CandidateEmail = "chloe.b@live.co.uk",
-            CandidateGitHubUrl = null,
-            Status = "Rejected",
-            ClaimedByRecruiterId = recruiterId3,
-            Tier = "Weak",
-            HardGatePassed = false,
-            HardGateReason = "Degree not in a qualifying IT or STEM discipline. Bootcamp HTML/CSS training is insufficient to compensate for the missing academic requirement.",
-            HiringAgentTotalScore = 38.0m,
-            HiringAgentExplanation = "Candidate applied via a bootcamp route with a non-STEM degree. Fails the academic hard gate and demonstrated skills are limited to static HTML/CSS — insufficient for a full-stack graduate programme.",
-            CvSummary = "BA Media Studies, University of Bedfordshire, 2:2. 3-month online bootcamp (HTML, CSS, basic JS). Part-time barista. No deployed full-stack projects.",
-            CreatedAt = DateTimeOffset.UtcNow.AddDays(-7),
-            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-6),
-        };
+        var app6 = new ApplicationRecord(
+            id: App6Id,
+            emailMessageId: "seed-msg-006",
+            candidateName: "Chloe Bennett",
+            candidateEmail: "chloe.b@live.co.uk",
+            candidateGitHubUrl: null,
+            status: "Rejected",
+            claimedByRecruiterId: recruiterId3,
+            tier: "Weak",
+            hardGatePassed: false,
+            hardGateReason: "Degree not in a qualifying IT or STEM discipline. Bootcamp HTML/CSS training is insufficient to compensate for the missing academic requirement.",
+            hiringAgentTotalScore: 38.0m,
+            hiringAgentExplanation: "Candidate applied via a bootcamp route with a non-STEM degree. Fails the academic hard gate and demonstrated skills are limited to static HTML/CSS — insufficient for a full-stack graduate programme.",
+            cvSummary: "BA Media Studies, University of Bedfordshire, 2:2. 3-month online bootcamp (HTML, CSS, basic JS). Part-time barista. No deployed full-stack projects.",
+            createdAt: DateTimeOffset.UtcNow.AddDays(-7),
+            updatedAt: DateTimeOffset.UtcNow.AddDays(-6));
 
         var eval6 = new HiringAgentEvaluation
         {
@@ -435,25 +423,23 @@ public static class DbSeeder
         // ──────────────────────────────────────────────
         // Candidate 7 – Ravi Nair (Score 80) – strong full-stack, shortlisted Tier A
         // ──────────────────────────────────────────────
-        var app7 = new ApplicationRecord
-        {
-            Id = App7Id,
-            EmailMessageId = "seed-msg-007",
-            CandidateName = "Ravi Nair",
-            CandidateEmail = "ravi.nair@warwick.ac.uk",
-            CandidateGitHubUrl = "https://github.com/ravi-builds",
-            Status = "Shortlisted",
-            ClaimedByRecruiterId = recruiterId2,
-            Tier = "Strong",
-            HardGatePassed = true,
-            HiringAgentTotalScore = 80.0m,
-            HiringAgentExplanation = "Strong full-stack profile with React/Spring Boot experience, a 6-month ThoughtWorks internship, and well-tested deployed projects. Comfortable across the entire stack.",
-            CvSummary = "BSc (Hons) Software Engineering, University of Warwick, First Class. Full-stack intern at ThoughtWorks. Built a job board platform (React + Spring Boot + PostgreSQL, deployed on Heroku). Active OSS contributor.",
-            ShortlistedByRecruiterId = "Rose@dvtsoftware.com",
-            ShortlistedAt = DateTimeOffset.UtcNow.AddDays(-3),
-            CreatedAt = DateTimeOffset.UtcNow.AddDays(-11),
-            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-3),
-        };
+        var app7 = new ApplicationRecord(
+            id: App7Id,
+            emailMessageId: "seed-msg-007",
+            candidateName: "Ravi Nair",
+            candidateEmail: "ravi.nair@warwick.ac.uk",
+            candidateGitHubUrl: "https://github.com/ravi-builds",
+            status: "Shortlisted",
+            claimedByRecruiterId: recruiterId2,
+            tier: "Strong",
+            hardGatePassed: true,
+            hiringAgentTotalScore: 80.0m,
+            hiringAgentExplanation: "Strong full-stack profile with React/Spring Boot experience, a 6-month ThoughtWorks internship, and well-tested deployed projects. Comfortable across the entire stack.",
+            cvSummary: "BSc (Hons) Software Engineering, University of Warwick, First Class. Full-stack intern at ThoughtWorks. Built a job board platform (React + Spring Boot + PostgreSQL, deployed on Heroku). Active OSS contributor.",
+            shortlistedByRecruiterId: "Rose@dvtsoftware.com",
+            shortlistedAt: DateTimeOffset.UtcNow.AddDays(-3),
+            createdAt: DateTimeOffset.UtcNow.AddDays(-11),
+            updatedAt: DateTimeOffset.UtcNow.AddDays(-3));
 
         var eval7 = new HiringAgentEvaluation
         {
@@ -496,23 +482,21 @@ public static class DbSeeder
         // ──────────────────────────────────────────────
         // Candidate 8 – Sophie Walsh (Score 54) – below-average full-stack, evaluated Tier C
         // ──────────────────────────────────────────────
-        var app8 = new ApplicationRecord
-        {
-            Id = App8Id,
-            EmailMessageId = "seed-msg-008",
-            CandidateName = "Sophie Walsh",
-            CandidateEmail = "sophie.w@herts.ac.uk",
-            CandidateGitHubUrl = "https://github.com/sophiewalsh-dev",
-            Status = "Pending",
-            Tier = "Weak",
-            ClaimedByRecruiterId = recruiterId1,
-            HardGatePassed = true,
-            HiringAgentTotalScore = 54.0m,
-            HiringAgentExplanation = "Some interest in full-stack development but projects are predominantly static front-end. The only backend work is a tutorial-level Express server with no database. No production software experience.",
-            CvSummary = "BSc Computer Science, University of Hertfordshire, 2:2. Built a to-do list app (localStorage). Tutorial Node/Express project. No deployment experience. Part-time waitress.",
-            CreatedAt = DateTimeOffset.UtcNow.AddDays(-5),
-            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-4),
-        };
+        var app8 = new ApplicationRecord(
+            id: App8Id,
+            emailMessageId: "seed-msg-008",
+            candidateName: "Sophie Walsh",
+            candidateEmail: "sophie.w@herts.ac.uk",
+            candidateGitHubUrl: "https://github.com/sophiewalsh-dev",
+            status: "Pending",
+            tier: "Weak",
+            claimedByRecruiterId: recruiterId1,
+            hardGatePassed: true,
+            hiringAgentTotalScore: 54.0m,
+            hiringAgentExplanation: "Some interest in full-stack development but projects are predominantly static front-end. The only backend work is a tutorial-level Express server with no database. No production software experience.",
+            cvSummary: "BSc Computer Science, University of Hertfordshire, 2:2. Built a to-do list app (localStorage). Tutorial Node/Express project. No deployment experience. Part-time waitress.",
+            createdAt: DateTimeOffset.UtcNow.AddDays(-5),
+            updatedAt: DateTimeOffset.UtcNow.AddDays(-4));
 
         var eval8 = new HiringAgentEvaluation
         {
@@ -555,23 +539,21 @@ public static class DbSeeder
         // ──────────────────────────────────────────────
         // Candidate 9 – Marcus Okafor (Score 44) – very weak full-stack, evaluated Tier C
         // ──────────────────────────────────────────────
-        var app9 = new ApplicationRecord
-        {
-            Id = App9Id,
-            EmailMessageId = "seed-msg-009",
-            CandidateName = "Marcus Okafor",
-            CandidateEmail = "marcus.o@northampton.ac.uk",
-            CandidateGitHubUrl = null,
-            Status = "Pending",
-            ClaimedByRecruiterId = recruiterId2,
-            Tier = "Weak",
-            HardGatePassed = true,
-            HiringAgentTotalScore = 44.0m,
-            HiringAgentExplanation = "Meets the minimum academic requirement but cannot demonstrate any meaningful full-stack capability. No GitHub, no deployed project, no relevant work experience in software.",
-            CvSummary = "BSc Information Technology, University of Northampton, 2:2. Lists HTML, CSS, and 'some JavaScript' on CV. Static university coursework website. No backend experience declared.",
-            CreatedAt = DateTimeOffset.UtcNow.AddDays(-4),
-            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-3),
-        };
+        var app9 = new ApplicationRecord(
+            id: App9Id,
+            emailMessageId: "seed-msg-009",
+            candidateName: "Marcus Okafor",
+            candidateEmail: "marcus.o@northampton.ac.uk",
+            candidateGitHubUrl: null,
+            status: "Pending",
+            claimedByRecruiterId: recruiterId2,
+            tier: "Weak",
+            hardGatePassed: true,
+            hiringAgentTotalScore: 44.0m,
+            hiringAgentExplanation: "Meets the minimum academic requirement but cannot demonstrate any meaningful full-stack capability. No GitHub, no deployed project, no relevant work experience in software.",
+            cvSummary: "BSc Information Technology, University of Northampton, 2:2. Lists HTML, CSS, and 'some JavaScript' on CV. Static university coursework website. No backend experience declared.",
+            createdAt: DateTimeOffset.UtcNow.AddDays(-4),
+            updatedAt: DateTimeOffset.UtcNow.AddDays(-3));
 
         var eval9 = new HiringAgentEvaluation
         {
@@ -614,24 +596,22 @@ public static class DbSeeder
         // ──────────────────────────────────────────────
         // Candidate 10 – Tomás Reyes (Chef / Culinary Arts) – hard gate fail, rejected
         // ──────────────────────────────────────────────
-        var app10 = new ApplicationRecord
-        {
-            Id = App10Id,
-            EmailMessageId = "seed-msg-010",
-            CandidateName = "Tomás Reyes",
-            CandidateEmail = "tomas.reyes@culinary.co.uk",
-            CandidateGitHubUrl = null,
-            ClaimedByRecruiterId = recruiterId3,
-            Status = "Rejected",
-            Tier = "Weak",
-            HardGatePassed = false,
-            HardGateReason = "Degree is in Culinary Arts – not an IT, Computer Science, or STEM discipline. No evidence of self-taught programming or compensating technical experience.",
-            HiringAgentTotalScore = 12.0m,
-            HiringAgentExplanation = "Candidate holds a Level 5 Diploma in Professional Culinary Arts with no academic computing background. Application shows no software projects, no code, no GitHub, and no technical skills relevant to a full-stack development role. This application does not meet the minimum requirements for the programme.",
-            CvSummary = "Level 5 Diploma in Professional Culinary Arts, Westminster Kingsway College. Head Chef at The Harbour Inn (3 yrs). Skills: knife skills, menu design, food hygiene. No programming background.",
-            CreatedAt = DateTimeOffset.UtcNow.AddDays(-14),
-            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-14),
-        };
+        var app10 = new ApplicationRecord(
+            id: App10Id,
+            emailMessageId: "seed-msg-010",
+            candidateName: "Tomás Reyes",
+            candidateEmail: "tomas.reyes@culinary.co.uk",
+            candidateGitHubUrl: null,
+            claimedByRecruiterId: recruiterId3,
+            status: "Rejected",
+            tier: "Weak",
+            hardGatePassed: false,
+            hardGateReason: "Degree is in Culinary Arts – not an IT, Computer Science, or STEM discipline. No evidence of self-taught programming or compensating technical experience.",
+            hiringAgentTotalScore: 12.0m,
+            hiringAgentExplanation: "Candidate holds a Level 5 Diploma in Professional Culinary Arts with no academic computing background. Application shows no software projects, no code, no GitHub, and no technical skills relevant to a full-stack development role. This application does not meet the minimum requirements for the programme.",
+            cvSummary: "Level 5 Diploma in Professional Culinary Arts, Westminster Kingsway College. Head Chef at The Harbour Inn (3 yrs). Skills: knife skills, menu design, food hygiene. No programming background.",
+            createdAt: DateTimeOffset.UtcNow.AddDays(-14),
+            updatedAt: DateTimeOffset.UtcNow.AddDays(-14));
 
         var eval10 = new HiringAgentEvaluation
         {
@@ -674,24 +654,22 @@ public static class DbSeeder
         // ──────────────────────────────────────────────
         // Candidate 11 – Harriet Langley (MBA) – hard gate fail, pending
         // ──────────────────────────────────────────────
-        var app11 = new ApplicationRecord
-        {
-            Id = App11Id,
-            EmailMessageId = "seed-msg-011",
-            CandidateName = "Harriet Langley",
-            CandidateEmail = "harriet.langley@lbs.edu",
-            CandidateGitHubUrl = null,
-            Status = "Rejected",
-            Tier = "Weak",
-            HardGatePassed = false,
-            ClaimedByRecruiterId = recruiterId2,
-            HardGateReason = "MBA is a postgraduate business qualification, not an IT or STEM degree. Undergraduate degree is in History. No compensating technical background identified.",
-            HiringAgentTotalScore = 8.0m,
-            HiringAgentExplanation = "Candidate holds a BA in History and an MBA with a Digital Business elective. Neither qualification meets the academic requirement for this full-stack graduate programme. The 'Digital Business' module does not confer programming skills. No GitHub, no code, no software projects are present on the CV or online. This is a clear hard gate failure with no compensating evidence.",
-            CvSummary = "BA History (2:1, University of Exeter). MBA with Digital Business elective, London Business School. Marketing Manager at Deloitte (2 yrs). Strong Excel and PowerPoint. No software development experience.",
-            CreatedAt = DateTimeOffset.UtcNow.AddDays(-13),
-            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-13),
-        };
+        var app11 = new ApplicationRecord(
+            id: App11Id,
+            emailMessageId: "seed-msg-011",
+            candidateName: "Harriet Langley",
+            candidateEmail: "harriet.langley@lbs.edu",
+            candidateGitHubUrl: null,
+            status: "Rejected",
+            tier: "Weak",
+            hardGatePassed: false,
+            claimedByRecruiterId: recruiterId2,
+            hardGateReason: "MBA is a postgraduate business qualification, not an IT or STEM degree. Undergraduate degree is in History. No compensating technical background identified.",
+            hiringAgentTotalScore: 8.0m,
+            hiringAgentExplanation: "Candidate holds a BA in History and an MBA with a Digital Business elective. Neither qualification meets the academic requirement for this full-stack graduate programme. The 'Digital Business' module does not confer programming skills. No GitHub, no code, no software projects are present on the CV or online. This is a clear hard gate failure with no compensating evidence.",
+            cvSummary: "BA History (2:1, University of Exeter). MBA with Digital Business elective, London Business School. Marketing Manager at Deloitte (2 yrs). Strong Excel and PowerPoint. No software development experience.",
+            createdAt: DateTimeOffset.UtcNow.AddDays(-13),
+            updatedAt: DateTimeOffset.UtcNow.AddDays(-13));
 
         var eval11 = new HiringAgentEvaluation
         {
@@ -734,24 +712,22 @@ public static class DbSeeder
         // ──────────────────────────────────────────────
         // Candidate 12 – Derek Hobson (BSc Geography + prompt injection attempt)
         // ──────────────────────────────────────────────
-        var app12 = new ApplicationRecord
-        {
-            Id = App12Id,
-            EmailMessageId = "seed-msg-012",
-            CandidateName = "Derek Hobson",
-            CandidateEmail = "derek.hobson@plymouth.ac.uk",
-            CandidateGitHubUrl = null,
-            ClaimedByRecruiterId = recruiterId3,
-            Status = "Rejected",
-            Tier = "Weak",
-            HardGatePassed = false,
-            HardGateReason = "Degree is in Physical Geography – not an IT or STEM computing discipline. Attempted prompt injection detected in CV; application automatically rejected.",
-            HiringAgentTotalScore = 5.0m,
-            HiringAgentExplanation = "Candidate's Physical Geography degree does not qualify for this programme. Additionally, a prompt injection attempt was detected in the CV text: the candidate inserted hidden instructions attempting to override the scoring rubric and award maximum marks. This is grounds for immediate rejection regardless of other factors.",
-            FlagsJson = JsonDocument.Parse("""{ "promptInjection": true, "flaggedAt": "automated-screening" }"""),
-            CreatedAt = DateTimeOffset.UtcNow.AddDays(-11),
-            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-11),
-        };
+        var app12 = new ApplicationRecord(
+            id: App12Id,
+            emailMessageId: "seed-msg-012",
+            candidateName: "Derek Hobson",
+            candidateEmail: "derek.hobson@plymouth.ac.uk",
+            candidateGitHubUrl: null,
+            claimedByRecruiterId: recruiterId3,
+            status: "Rejected",
+            tier: "Weak",
+            hardGatePassed: false,
+            hardGateReason: "Degree is in Physical Geography – not an IT or STEM computing discipline. Attempted prompt injection detected in CV; application automatically rejected.",
+            hiringAgentTotalScore: 5.0m,
+            hiringAgentExplanation: "Candidate's Physical Geography degree does not qualify for this programme. Additionally, a prompt injection attempt was detected in the CV text: the candidate inserted hidden instructions attempting to override the scoring rubric and award maximum marks. This is grounds for immediate rejection regardless of other factors.",
+            flagsJson: JsonDocument.Parse("""{ "promptInjection": true, "flaggedAt": "automated-screening" }"""),
+            createdAt: DateTimeOffset.UtcNow.AddDays(-11),
+            updatedAt: DateTimeOffset.UtcNow.AddDays(-11));
 
         var eval12 = new HiringAgentEvaluation
         {
