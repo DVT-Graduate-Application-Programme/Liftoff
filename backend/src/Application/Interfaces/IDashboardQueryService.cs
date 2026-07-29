@@ -1,5 +1,5 @@
-using Application.Queries.GetDashboardApplications;
-using Application.Queries.GetDashboardMetrics;
+using Application.Features.GetDashboardApplications;
+using Application.Features.GetDashboardMetrics;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;

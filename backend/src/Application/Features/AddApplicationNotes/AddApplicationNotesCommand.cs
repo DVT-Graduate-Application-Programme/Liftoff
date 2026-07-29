@@ -6,7 +6,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Commands.AddApplicationNotes;
+namespace Application.Features.AddApplicationNotes;
 
 public record AddApplicationNotesCommand(Guid ApplicationId, string RecruiterIdentity, string Notes) : IRequest<ApplicationRatingUpdate?>;
 

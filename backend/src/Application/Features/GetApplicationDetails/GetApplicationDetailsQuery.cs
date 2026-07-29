@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Queries.GetApplicationDetails;
+namespace Application.Features.GetApplicationDetails;
 
 public record GetApplicationDetailsQuery(Guid Id) : IRequest<ApplicationDetails?>;
 

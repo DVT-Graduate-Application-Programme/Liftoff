@@ -3,7 +3,7 @@ using Domain.Entities;
 using MediatR;
 using System.Text.Json;
 
-namespace Application.Commands.IngestTranscript;
+namespace Application.Features.IngestTranscript;
 
 public class IngestTranscriptResult
 {

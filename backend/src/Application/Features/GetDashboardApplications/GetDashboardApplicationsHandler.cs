@@ -1,7 +1,7 @@
 using Application.Interfaces;
 using MediatR;
 
-namespace Application.Queries.GetDashboardApplications;
+namespace Application.Features.GetDashboardApplications;
 
 public class GetDashboardApplicationsHandler
     : IRequestHandler<GetDashboardApplicationsQuery, List<DashboardApplicationDto>>

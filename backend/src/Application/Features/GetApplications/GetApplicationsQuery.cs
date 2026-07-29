@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Queries.GetApplications;
+namespace Application.Features.GetApplications;
 
 public class GetApplicationsQuery : IRequest<List<ApplicationRecordDto>>;
 

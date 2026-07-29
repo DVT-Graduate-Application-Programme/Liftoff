@@ -6,7 +6,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Commands.AcceptApplication;
+namespace Application.Features.AcceptApplication;
 
 public record AcceptApplicationCommand(Guid ApplicationId, string RecruiterIdentity, string? Reason) : IRequest<ApplicationStatusUpdate?>;
 

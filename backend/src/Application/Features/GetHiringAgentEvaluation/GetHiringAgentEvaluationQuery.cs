@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Queries.GetHiringAgentEvaluation;
+namespace Application.Features.GetHiringAgentEvaluation;
 
 public record GetHiringAgentEvaluationQuery(Guid ApplicationId) : IRequest<HiringAgentEvaluation?>;
 

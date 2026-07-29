@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Queries.GetApplicantInformation;
+namespace Application.Features.GetApplicantInformation;
 
 public record GetApplicantInformationQuery(Guid ApplicationId) : IRequest<Applicant?>;
 

@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace Application.Queries.GetDashboardApplications;
+namespace Application.Features.GetDashboardApplications;
 
 public class GetDashboardApplicationsQuery : IRequest<List<DashboardApplicationDto>>
 {

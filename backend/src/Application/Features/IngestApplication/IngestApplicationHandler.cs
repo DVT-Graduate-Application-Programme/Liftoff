@@ -9,7 +9,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Features.Ingestion;
+namespace Application.Features.IngestApplication;
 
 public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest, bool>
 {

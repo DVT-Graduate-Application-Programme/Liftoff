@@ -6,7 +6,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Commands.ShortlistApplication;
+namespace Application.Features.ShortlistApplication;
 
 public record ShortlistApplicationCommand(Guid ApplicationId, string RecruiterIdentity, string? Reason) : IRequest<ApplicationOwnershipShortlist?>;
 

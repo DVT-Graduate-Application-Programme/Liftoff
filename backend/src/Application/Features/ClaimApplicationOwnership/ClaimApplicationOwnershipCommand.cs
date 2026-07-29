@@ -6,7 +6,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Commands.ClaimApplicationOwnership;
+namespace Application.Features.ClaimApplicationOwnership;
 
 public record ClaimApplicationOwnershipCommand(Guid ApplicationId, string RecruiterIdentity) : IRequest<ApplicationOwnershipClaim?>;
 

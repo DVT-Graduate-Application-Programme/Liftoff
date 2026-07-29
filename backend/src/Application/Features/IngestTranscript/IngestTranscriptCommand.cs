@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace Application.Commands.IngestTranscript;
+namespace Application.Features.IngestTranscript;
 
 public class IngestTranscriptCommand : IRequest<IngestTranscriptResult>
 {
