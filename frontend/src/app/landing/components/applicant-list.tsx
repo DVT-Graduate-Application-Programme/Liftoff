@@ -123,8 +123,6 @@ function PendingApplicationCard({
       name={application.candidateName}
       institute={education.degree || application.cvSummary}
       secondaryInstitute={education.institution || undefined}
-      recruiterLabel="Recruiter"
-      recruiterName={getRecruiterLabel(application)}
       systemScore={toScorePercent(application.hiringAgentTotalScore)}
       academicAverage={academicAverage}
       createdAt={application.createdAt}
