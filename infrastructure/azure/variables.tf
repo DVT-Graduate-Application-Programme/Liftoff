@@ -56,6 +56,12 @@ variable "worker_image" {
   default     = ""
 }
 
+variable "migrations_image" {
+  description = "Fully-qualified ACR image URI for the EF Core migrations job container (built from backend/Dockerfile.migrations)."
+  type        = string
+  default     = ""
+}
+
 variable "worker_admin_api_key" {
   description = "API key guarding the worker admin endpoints (X-Admin-Api-Key header). Set in terraform.tfvars. When empty, the worker disables its admin endpoints."
   type        = string
