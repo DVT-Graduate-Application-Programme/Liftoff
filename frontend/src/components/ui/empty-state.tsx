@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { Inbox } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 
 interface EmptyStateProps {
   title: string;
