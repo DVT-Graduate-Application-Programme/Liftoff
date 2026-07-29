@@ -33,6 +33,12 @@ export default function DetailedApplicantInfo() {
   const applicantQuery = useApplicant(applicantId);
   const evaluationQuery = useEvaluation(applicantId);
 
+  //Record of whether applicant has been evaluated before 
+  const hasHadEvaluationRef = useRef(false);
+  if (evaluationQuery.data) {
+    hasHadEvaluationRef.current = true;
+  }
+
   const [leftWidth, setLeftWidth] = useState(50); // percentage
   const [isResizing, setIsResizing] = useState(false);
   const [isMobile, setIsMobile] = useState(true);
@@ -187,7 +193,7 @@ export default function DetailedApplicantInfo() {
             ) : evaluationQuery.isError ? (
               <ErrorState message="Couldn't load evaluation." onRetry={() => { void evaluationQuery.refetch(); }} />
             ) : !evaluationQuery.data ? (
-              detailQuery.data?.currentStatus === "PROCESSING" ? (
+              detailQuery.data?.currentStatus === "PROCESSING" && hasHadEvaluationRef.current ? (
                 <EmptyState
                   className="flex-1"
                   title="Re-evaluating applicant"
