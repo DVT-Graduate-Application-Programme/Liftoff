@@ -1,6 +1,6 @@
 using MediatR;
-using Application.Queries.GetDashboardApplications;
-using Application.Queries.GetDashboardMetrics;
+using Application.Features.GetDashboardApplications;
+using Application.Features.GetDashboardMetrics;
 
 namespace Api.EndPoints.Applications;
 

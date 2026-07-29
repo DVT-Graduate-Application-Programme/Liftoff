@@ -1,6 +1,6 @@
 using Application.Interfaces;
-using Application.Queries.GetDashboardApplications;
-using Application.Queries.GetDashboardMetrics;
+using Application.Features.GetDashboardApplications;
+using Application.Features.GetDashboardMetrics;
 using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using System;

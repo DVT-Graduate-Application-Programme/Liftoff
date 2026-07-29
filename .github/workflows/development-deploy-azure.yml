@@ -55,6 +55,77 @@ jobs:
           docker tag  $REPOSITORY:$IMAGE_TAG $REPOSITORY:latest
           docker push $REPOSITORY:latest
 
+      - name: Build and push migrations image
+        env:
+          # ACR_MIGRATIONS_REPOSITORY is the full repo path, e.g. myacr.azurecr.io/migrations
+          REPOSITORY: ${{ secrets.ACR_MIGRATIONS_REPOSITORY }}
+          IMAGE_TAG: dev-${{ github.sha }}
+        run: |
+          docker build -f backend/Dockerfile.migrations -t $REPOSITORY:$IMAGE_TAG ./backend
+          docker push $REPOSITORY:$IMAGE_TAG
+          docker tag  $REPOSITORY:$IMAGE_TAG $REPOSITORY:latest
+          docker push $REPOSITORY:latest
+
+      # ── Schema gate ─────────────────────────────────────────────────────────
+      # Applies EF Core migrations before any new application image goes live, so a
+      # failed migration fails the deploy rather than leaving apps running against a
+      # schema they don't expect. The job runs inside the Container Apps environment
+      # (see infrastructure/azure/migrations.tf), so the database stays closed to the
+      # public internet and no credentials leave Azure.
+      - name: Apply database migrations
+        env:
+          JOB: ${{ secrets.MIGRATIONS_JOB }}
+          RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          REPOSITORY: ${{ secrets.ACR_MIGRATIONS_REPOSITORY }}
+          IMAGE_TAG: dev-${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          az containerapp job update \
+            --name "$JOB" \
+            --resource-group "$RESOURCE_GROUP" \
+            --image "$REPOSITORY:$IMAGE_TAG" \
+            --output none
+
+          execution=$(az containerapp job start \
+            --name "$JOB" \
+            --resource-group "$RESOURCE_GROUP" \
+            --query name -o tsv)
+          echo "Started migration execution: $execution"
+
+          # replica_timeout_in_seconds is 600, so stop waiting a little after that.
+          deadline=$(( SECONDS + 660 ))
+          while [ "$SECONDS" -lt "$deadline" ]; do
+            status=$(az containerapp job execution show \
+              --name "$JOB" \
+              --resource-group "$RESOURCE_GROUP" \
+              --job-execution-name "$execution" \
+              --query properties.status -o tsv)
+
+            case "$status" in
+              Succeeded)
+                echo "Migrations applied successfully."
+                exit 0
+                ;;
+              Failed|Degraded)
+                echo "::error::Migration job execution '$execution' finished with status '$status'."
+                echo "Container logs (Log Analytics may lag by a minute):"
+                az containerapp job logs show \
+                  --name "$JOB" \
+                  --resource-group "$RESOURCE_GROUP" \
+                  --container migrations || true
+                exit 1
+                ;;
+              *)
+                echo "Migration status: $status"
+                sleep 10
+                ;;
+            esac
+          done
+
+          echo "::error::Timed out waiting for migration job execution '$execution'."
+          exit 1
+
       - name: Update backend Container App
         run: |
           az containerapp update \

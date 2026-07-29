@@ -4,8 +4,11 @@ using Application.Interfaces;
 using Backend.Application.Interfaces;
 using Backend.Application.Queries.GetResumes;
 using Backend.Infrastructure.Storage;
+using Application.Features.IngestApplication;
 
 using Infrastructure.Data;
+
+using Microsoft.EntityFrameworkCore;
 
 using Scalar.AspNetCore;
 
@@ -62,7 +65,7 @@ builder.Services.AddSingleton<IResumeStorage, LocalResumeStorage>();
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(GetResumesQuery).Assembly);
-    cfg.RegisterServicesFromAssembly(typeof(Application.Features.Ingestion.IngestApplicationRequest).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(IngestApplicationRequest).Assembly);
     cfg.AddOpenBehavior(typeof(Application.Common.Behaviors.ValidationBehavior<,>));
 });
 
@@ -76,9 +79,23 @@ var app = builder.Build();
 app.UseMiddleware<ValidationExceptionMiddleware>();
 app.UseSerilogRequestLogging();
 
-if (!app.Environment.IsEnvironment("Testing"))
+// Schema is owned by EF Core migrations (src/Infrastructure/Migrations). Deployed
+// environments apply them from the migrations job before the new image rolls out, so the
+// API never issues DDL there — a bad migration fails the deploy instead of the running app.
+// Locally the API migrates itself so `docker compose up` still gives a working database.
+//
+// Development only: never in Testing (integration tests manage their own database) and
+// never in the deployed environments, which run migrations from a job.
+if (app.Environment.IsDevelopment())
 {
-    await GradRecruitmentSchemaInitializer.EnsureSchemaAsync(app.Services);
+    await using (var scope = app.Services.CreateAsyncScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<GradRecruitmentDbContext>();
+        await dbContext.Database.MigrateAsync();
+    }
+
+    // Sample applications and recruiters are a local-development convenience only; they
+    // must never be written to the deployed databases.
     await DbSeeder.SeedAsync(app.Services);
 }
 

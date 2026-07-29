@@ -265,6 +265,29 @@ resource "azurerm_container_app" "frontend" {
     identity = azurerm_user_assigned_identity.container_apps.id
   }
 
+  # Auth.js / Microsoft Entra ID credentials for recruiter sign-in. Secret names match the
+  # ones already on the deployed app, so declaring them here adopts the existing secrets
+  # rather than replacing them.
+  secret {
+    name  = "auth-secret"
+    value = var.auth_secret
+  }
+
+  secret {
+    name  = "auth-microsoft-entra-id-id"
+    value = var.auth_microsoft_entra_id_id
+  }
+
+  secret {
+    name  = "auth-microsoft-entra-id-secret"
+    value = var.auth_microsoft_entra_id_secret
+  }
+
+  secret {
+    name  = "auth-microsoft-entra-id-issuer"
+    value = var.auth_microsoft_entra_id_issuer
+  }
+
   ingress {
     external_enabled = true
     target_port      = 3000
@@ -293,6 +316,48 @@ resource "azurerm_container_app" "frontend" {
       env {
         name  = "NEXT_PUBLIC_BACKEND_URL"
         value = "https://${azurerm_container_app.backend.latest_revision_fqdn}"
+      }
+
+      # Next.js standalone server binds to localhost by default, which the Container Apps
+      # ingress cannot reach.
+      env {
+        name  = "HOSTNAME"
+        value = "0.0.0.0"
+      }
+
+      # Auth.js builds OAuth callback URLs from AUTH_URL, so it must be the app's stable
+      # public hostname. Composed from the environment's default domain rather than this
+      # app's own fqdn attribute, which would be a self-reference and a dependency cycle.
+      env {
+        name  = "AUTH_URL"
+        value = "https://ca-${local.prefix}-frontend.${azurerm_container_app_environment.main.default_domain}"
+      }
+
+      # Ingress terminates TLS and forwards over HTTP, so Auth.js must trust the
+      # X-Forwarded-* headers to derive https callback URLs instead of http.
+      env {
+        name  = "AUTH_TRUST_HOST"
+        value = "true"
+      }
+
+      env {
+        name        = "AUTH_SECRET"
+        secret_name = "auth-secret"
+      }
+
+      env {
+        name        = "AUTH_MICROSOFT_ENTRA_ID_ID"
+        secret_name = "auth-microsoft-entra-id-id"
+      }
+
+      env {
+        name        = "AUTH_MICROSOFT_ENTRA_ID_SECRET"
+        secret_name = "auth-microsoft-entra-id-secret"
+      }
+
+      env {
+        name        = "AUTH_MICROSOFT_ENTRA_ID_ISSUER"
+        secret_name = "auth-microsoft-entra-id-issuer"
       }
     }
   }

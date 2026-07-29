@@ -1,10 +1,10 @@
-using Application.Commands.AcceptApplication;
-using Application.Commands.AddApplicationNotes;
-using Application.Commands.ClaimApplicationOwnership;
-using Application.Commands.RateApplication;
-using Application.Commands.ReevaluateApplication;
-using Application.Commands.RejectApplication;
-using Application.Commands.ShortlistApplication;
+using Application.Features.AcceptApplication;
+using Application.Features.AddApplicationNotes;
+using Application.Features.ClaimApplicationOwnership;
+using Application.Features.RateApplication;
+using Application.Features.ReevaluateApplication;
+using Application.Features.RejectApplication;
+using Application.Features.ShortlistApplication;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

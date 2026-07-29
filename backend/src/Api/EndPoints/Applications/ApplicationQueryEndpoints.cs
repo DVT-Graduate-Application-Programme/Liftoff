@@ -1,10 +1,10 @@
-using Application.Queries.GetApplicantInformation;
-using Application.Queries.GetApplicationDetails;
-using Application.Queries.GetApplicationLogs;
-using Application.Queries.GetApplicationOwnership;
-using Application.Queries.GetApplications;
-using Application.Queries.GetHardGateScreening;
-using Application.Queries.GetHiringAgentEvaluation;
+using Application.Features.GetApplicantInformation;
+using Application.Features.GetApplicationDetails;
+using Application.Features.GetApplicationLogs;
+using Application.Features.GetApplicationOwnership;
+using Application.Features.GetApplications;
+using Application.Features.GetHardGateScreening;
+using Application.Features.GetHiringAgentEvaluation;
 using Application.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
