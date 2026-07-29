@@ -33,10 +33,14 @@ export default function DetailedApplicantInfo() {
   const applicantQuery = useApplicant(applicantId);
   const evaluationQuery = useEvaluation(applicantId);
 
-  //Record of whether applicant has been evaluated before 
-  const hasHadEvaluationRef = useRef(false);
-  if (evaluationQuery.data) {
-    hasHadEvaluationRef.current = true;
+  // Record of whether the applicant has been evaluated before
+  const [lastEvaluationData, setLastEvaluationData] = useState(evaluationQuery.data);
+  const [hasHadEvaluation, setHasHadEvaluation] = useState(!!evaluationQuery.data);
+  if (evaluationQuery.data !== lastEvaluationData) {
+    setLastEvaluationData(evaluationQuery.data);
+    if (evaluationQuery.data) {
+      setHasHadEvaluation(true);
+    }
   }
 
   const [leftWidth, setLeftWidth] = useState(50); // percentage
@@ -193,7 +197,7 @@ export default function DetailedApplicantInfo() {
             ) : evaluationQuery.isError ? (
               <ErrorState message="Couldn't load evaluation." onRetry={() => { void evaluationQuery.refetch(); }} />
             ) : !evaluationQuery.data ? (
-              detailQuery.data?.currentStatus === "PROCESSING" && hasHadEvaluationRef.current ? (
+              detailQuery.data?.currentStatus === "PROCESSING" && hasHadEvaluation ? (
                 <EmptyState
                   className="flex-1"
                   title="Re-evaluating applicant"
