@@ -64,8 +64,6 @@ export default function PendingCandidateCard({
   name,
   institute,
   secondaryInstitute,
-  recruiterLabel,
-  recruiterName,
   academicAverage,
   systemScore,
   scoreLabel = "System Score",
