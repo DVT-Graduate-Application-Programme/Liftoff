@@ -33,6 +33,16 @@ output "acr_worker_repository" {
   value       = "${azurerm_container_registry.main.login_server}/worker"
 }
 
+output "acr_migrations_repository" {
+  description = "Full ACR repository path for the migrations image — use as ACR_MIGRATIONS_REPOSITORY GitHub secret."
+  value       = "${azurerm_container_registry.main.login_server}/migrations"
+}
+
+output "migrations_job_name" {
+  description = "Container Apps Job that applies EF Core migrations — use as MIGRATIONS_JOB GitHub secret."
+  value       = azurerm_container_app_job.migrations.name
+}
+
 output "container_app_environment_name" {
   description = "Container Apps Environment name — use as CONTAINER_APP_ENV GitHub secret."
   value       = azurerm_container_app_environment.main.name

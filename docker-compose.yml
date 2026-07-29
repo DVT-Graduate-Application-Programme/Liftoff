@@ -3,9 +3,11 @@ services:
     image: postgres:16-alpine
     env_file:
       - .env.development
+    # No init script: the schema comes from EF Core migrations
+    # (backend/src/Infrastructure/Migrations), which the backend applies on startup in
+    # Development. Deployed environments run the same migrations from a dedicated job.
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     ports:
       - "5432:5432"
     healthcheck:

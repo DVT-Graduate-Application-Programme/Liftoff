@@ -1,0 +1,15 @@
+# Host build output must never enter the image context: `COPY . .` runs after
+# `dotnet restore`, so a host obj/project.assets.json would overwrite the one the
+# restore just produced and break RID-specific builds (NETSDK1047).
+**/bin/
+**/obj/
+
+# Python side-artifacts from src/AI/hiring-agent (built by its own Dockerfile).
+**/__pycache__/
+**/*.pyc
+**/.venv/
+**/.pytest_cache/
+
+**/.DS_Store
+**/logs/
+**/*.user
