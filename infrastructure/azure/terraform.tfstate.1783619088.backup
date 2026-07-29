@@ -1,0 +1,89 @@
+{
+  "version": 4,
+  "terraform_version": "1.15.8",
+  "serial": 3,
+  "lineage": "5a910bd1-e3c0-e74b-9dc8-22d80ae505bf",
+  "outputs": {
+    "backend_container_app_name": {
+      "value": "ca-liftoff-dev-backend",
+      "type": "string"
+    },
+    "container_app_environment_name": {
+      "value": "cae-liftoff-dev",
+      "type": "string"
+    },
+    "frontend_container_app_name": {
+      "value": "ca-liftoff-dev-frontend",
+      "type": "string"
+    },
+    "key_vault_name": {
+      "value": "kv-liftoffdev-l2q1zj",
+      "type": "string"
+    },
+    "resource_group_name": {
+      "value": "rg-liftoff-dev",
+      "type": "string"
+    },
+    "servicebus_namespace": {
+      "value": "sb-liftoff-dev-l2q1zj",
+      "type": "string"
+    },
+    "storage_account_name": {
+      "value": "stliftoffdevl2q1zj",
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "mode": "data",
+      "type": "azurerm_client_config",
+      "name": "current",
+      "provider": "provider[\"registry.terraform.io/hashicorp/azurerm\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "client_id": "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
+            "id": "Y2xpZW50Q29uZmlncy9jbGllbnRJZD0wNGIwNzc5NS04ZGRiLTQ2MWEtYmJlZS0wMmY5ZTFiZjdiNDY7b2JqZWN0SWQ9YzU2OWNkOWUtZTE5Mi00ODIxLWJmOTYtMDYxNGUyMWU0YjFhO3N1YnNjcmlwdGlvbklkPTE0ZGFjNTk0LTJjMDUtNDQyNy1hZWE5LTNlNzRhY2ZmNTk2NDt0ZW5hbnRJZD1jYTlhOGI4Yy0zZWEzLTQ3OTktYTQzZS01NTEwMzk4ZTdhM2I=",
+            "object_id": "c569cd9e-e192-4821-bf96-0614e21e4b1a",
+            "subscription_id": "14dac594-2c05-4427-aea9-3e74acff5964",
+            "tenant_id": "ca9a8b8c-3ea3-4799-a43e-5510398e7a3b",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "random_string",
+      "name": "suffix",
+      "provider": "provider[\"registry.terraform.io/hashicorp/random\"]",
+      "instances": [
+        {
+          "schema_version": 2,
+          "attributes": {
+            "id": "l2q1zj",
+            "keepers": null,
+            "length": 6,
+            "lower": true,
+            "min_lower": 0,
+            "min_numeric": 0,
+            "min_special": 0,
+            "min_upper": 0,
+            "number": true,
+            "numeric": true,
+            "override_special": null,
+            "result": "l2q1zj",
+            "special": false,
+            "upper": false
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}

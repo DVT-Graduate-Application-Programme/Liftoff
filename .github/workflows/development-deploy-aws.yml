@@ -1,0 +1,84 @@
+name: Deploy AWS (development)
+
+on:
+  push:
+    branches: [development]
+    paths: ['backend/**', 'worker/**', 'frontend/**', '.github/workflows/development-deploy-aws.yml']
+
+env:
+  AWS_REGION: af-south-1
+
+jobs:
+  deploy:
+    name: Docker Build · Push to ECR · Deploy to ECS
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push backend image
+        env:
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          REPOSITORY: ${{ secrets.ECR_BACKEND_REPOSITORY }}
+          IMAGE_TAG: dev-${{ github.sha }}
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./backend
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker tag  $REGISTRY/$REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:latest
+          docker push $REGISTRY/$REPOSITORY:latest
+
+      # - name: Build and push worker image
+      #   if: "${{ secrets.ECR_WORKER_REPOSITORY != '' }}"
+      #   env:
+      #     REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+      #     REPOSITORY: ${{ secrets.ECR_WORKER_REPOSITORY }}
+      #     IMAGE_TAG: dev-${{ github.sha }}
+      #   run: |
+      #     docker build -f worker/Dockerfile -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+      #     docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+      #     docker tag  $REGISTRY/$REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:latest
+      #     docker push $REGISTRY/$REPOSITORY:latest
+
+      - name: Build and push frontend image
+        env:
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          REPOSITORY: ${{ secrets.ECR_FRONTEND_REPOSITORY }}
+          IMAGE_TAG: dev-${{ github.sha }}
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG ./frontend
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker tag  $REGISTRY/$REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:latest
+          docker push $REGISTRY/$REPOSITORY:latest
+
+      # - name: Force new ECS deployment (backend)
+      #   run: |
+      #     aws ecs update-service \
+      #       --cluster ${{ secrets.ECS_CLUSTER }} \
+      #       --service ${{ secrets.ECS_BACKEND_SERVICE }} \
+      #       --force-new-deployment
+
+      # - name: Force new ECS deployment (worker)
+      #   if: "${{ secrets.ECS_WORKER_SERVICE != '' }}"
+      #   run: |
+      #     aws ecs update-service \
+      #       --cluster ${{ secrets.ECS_CLUSTER }} \
+      #       --service ${{ secrets.ECS_WORKER_SERVICE }} \
+      #       --force-new-deployment
+
+      # - name: Force new ECS deployment (frontend)
+      #   run: |
+      #     aws ecs update-service \
+      #       --cluster ${{ secrets.ECS_CLUSTER }} \
+      #       --service ${{ secrets.ECS_FRONTEND_SERVICE }} \
+      #       --force-new-deployment

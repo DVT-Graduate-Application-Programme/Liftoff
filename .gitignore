@@ -5,6 +5,16 @@
 
 # dotenv files
 .env.**
+.env
+# OpenTofu / Terraform — never commit real variable values
+infrastructure/**/*.tfvars
+infrastructure/**/*.tfvars.example
+infrastructure/**/.terraform/*
+infrastructure/**/.terraform.lock.hcl
+infrastructure/**/terraform.tfstate
+infrastructure/**/terraform.tfstate.backup
+!infrastructure/**/*.tfvars.example
+
 
 # User-specific files
 *.rsuser
@@ -34,6 +44,9 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+!frontend/src/app/logs/
+!frontend/src/app/api/applications/logs/
+
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -480,3 +493,11 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# terraform
+terraform.tfvars
+*.tfstate
+*.tfstate.backup
+*.tfstate.lock.info
+.terraform/
+.terraform.lock.hcl
