@@ -9,7 +9,8 @@ function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4 bg-sidebar text-sidebar-foreground">
+    <nav className="sticky top-0 z-30 flex flex-col shrink-0 border-b bg-sidebar text-sidebar-foreground">
+      <div className="flex h-16 items-center justify-between gap-2 px-4">
       <div className="flex items-center gap-2">
         <Button
           variant="ghost"
