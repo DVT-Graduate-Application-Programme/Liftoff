@@ -35,6 +35,7 @@ class ResumeEvaluationPayload(BaseModel):
 
 class Resume(BaseModel):
     id: UUID
+    message_id: Optional[str] = None
     candidate_name: str
     document_url: str
     transcript_url: Optional[str] = None
