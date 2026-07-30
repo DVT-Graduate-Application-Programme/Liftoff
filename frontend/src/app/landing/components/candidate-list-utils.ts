@@ -43,7 +43,7 @@ export const getRecruiterLabel = (
   const email = application.claimedByRecruiterId ??
     application.shortlistedByRecruiterId ??
     application.ratedByRecruiterId ??
-    "phindi@dvtsoftware.com";
+    "Cannot get recruiter";
 
   if (recruiters) {
     const recruiter = recruiters.find((r) => r.email === email);
