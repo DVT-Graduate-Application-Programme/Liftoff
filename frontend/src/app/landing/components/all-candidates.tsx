@@ -92,7 +92,7 @@ function AllCandidateListCard({
 
 function AllCandidates() {
   const { data: session } = useSession();
-  const recruiterIdentity = session?.user?.email ?? ACTIVE_RECRUITER_ID;
+  const recruiterIdentity = session?.user.email ?? ACTIVE_RECRUITER_ID;
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [status, setStatus] = useState("");
   const [minScore, setMinScore] = useState("");

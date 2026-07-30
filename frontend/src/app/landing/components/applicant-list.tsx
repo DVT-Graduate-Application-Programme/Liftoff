@@ -156,7 +156,7 @@ export function ApplicantList({
 }: ApplicantListProps) {
   const router = useRouter();
   const { data: session } = useSession();
-  const recruiterIdentity = session?.user?.email ?? ACTIVE_RECRUITER_ID;
+  const recruiterIdentity = session?.user.email ?? ACTIVE_RECRUITER_ID;
   const { search } = useApplicantSearch();
   const { selectApplication } = useApplicantSelection();
   const { setOpen, setOpenMobile } = useSidebar();
