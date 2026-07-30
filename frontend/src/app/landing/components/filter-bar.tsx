@@ -113,7 +113,7 @@ export function FilterBar({
 }: FilterBarProps) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap justify-end gap-3">
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <button
           type="button"
           aria-expanded={filtersOpen}
@@ -124,28 +124,31 @@ export function FilterBar({
           <ListFilter size={16} />
           Advanced Filters
         </button>
-        <label className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-foreground transition-colors hover:bg-muted">
-          <ListOrdered size={16} aria-hidden="true" />
-          <span className="sr-only">Sort applicants</span>
-          <Select
-            aria-label="Sort applicants"
-            value={sort}
-            onValueChange={(selectedValue) => {
-              onSortChange(selectedValue as SortOption);
-            }}
+        <Select
+          aria-label="Sort applicants"
+          value={sort}
+          onValueChange={(selectedValue) => {
+            onSortChange(selectedValue as SortOption);
+          }}
+        >
+          <SelectTrigger className="h-auto min-w-[14rem] rounded-lg border border-border bg-card py-2 text-foreground shadow-none transition-colors hover:bg-muted focus-visible:border-border focus-visible:ring-0 data-[size=default]:h-auto">
+            <span className="flex min-w-0 items-center">
+              <ListOrdered size={16} aria-hidden="true" />
+              <SelectValue className="truncate text-left" />
+            </span>
+          </SelectTrigger>
+          <SelectContent
+            position="popper"
+            align="start"
+            className="w-[var(--radix-select-trigger-width)] min-w-[var(--radix-select-trigger-width)] max-w-[var(--radix-select-trigger-width)] data-[side=bottom]:translate-y-0 px-2"
           >
-            <SelectTrigger className="h-auto min-w-0 border-0 bg-transparent p-0 text-sm text-foreground shadow-none focus-visible:ring-0 hover:bg-transparent">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="w-[var(--radix-select-trigger-width)]">
-              {SORT_OPTIONS.map(([optionValue, label]) => (
-                <SelectItem key={optionValue} value={optionValue}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </label>
+            {SORT_OPTIONS.map(([optionValue, label]) => (
+              <SelectItem key={optionValue} value={optionValue}>
+                <span className="block truncate px-2">{label}</span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       {filtersOpen && (
         <div
