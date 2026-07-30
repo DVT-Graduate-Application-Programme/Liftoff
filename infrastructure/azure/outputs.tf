@@ -3,14 +3,20 @@ output "resource_group_name" {
   value       = azurerm_resource_group.main.name
 }
 
+# Both use the app's stable ingress FQDN rather than latest_revision_fqdn. The
+# revision-scoped hostname changes on every deploy (ca-...-backend--0000032 -> --0000033),
+# so it goes stale as soon as anything is redeployed. revision_mode is "Single" with 100%
+# of traffic on the latest revision, so the ingress hostname always routes to the current
+# revision. This matches the BACKEND_URL wiring in compute.tf.
+
 output "frontend_url" {
   description = "Public URL to access the frontend Container App."
-  value       = "https://${azurerm_container_app.frontend.latest_revision_fqdn}"
+  value       = "https://${azurerm_container_app.frontend.ingress[0].fqdn}"
 }
 
 output "api_url" {
   description = "Public URL to access the backend API."
-  value       = "https://${azurerm_container_app.backend.latest_revision_fqdn}"
+  value       = "https://${azurerm_container_app.backend.ingress[0].fqdn}"
 }
 
 output "acr_login_server" {
