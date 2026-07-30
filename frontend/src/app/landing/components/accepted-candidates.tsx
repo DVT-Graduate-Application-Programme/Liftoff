@@ -27,7 +27,6 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
 
   const applicationDetail = detailQuery.data;
   const evaluation = evaluationQuery.data;
-  const ownership = ownershipQuery.data;
 
   const isLoading =
     detailQuery.isLoading ||
@@ -62,11 +61,8 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
       secondaryScoreLabel="Academic Avg"
       showStatus={false}
       statusTone="neutral"
-      showReviewedAt
-      reviewedAt={formatDate(reviewedAt)}
       createdAt={application.createdAt}
       wrapInstitute
-      wrapReviewedAt
       recruiterLabel="Recruiter"
       recruiterName={recruiterName ?? undefined}
       actionLabel="View AI Summary"
