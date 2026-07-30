@@ -103,7 +103,7 @@ public class IngestEvaluationHandler
             hardGate.Passed,
             hardGate.Reason,
             summary,
-            ToJsonDocument(flags),
+            JsonSerializer.Serialize(flags),
             cancellationToken);
 
         if (!saved)
@@ -123,12 +123,7 @@ public class IngestEvaluationHandler
             Message = $"Evaluation received and saved for application '{request.ApplicationId}'."
         };
     }
-
-    private static JsonDocument ToJsonDocument<T>(T value)
-    {
-        return JsonDocument.Parse(JsonSerializer.Serialize(value));
-    }
-
+    
     private static object BuildEvidence(EvaluationScoresDto scores)
     {
         return new

@@ -725,7 +725,7 @@ public static class DbSeeder
             hardGateReason: "Degree is in Physical Geography – not an IT or STEM computing discipline. Attempted prompt injection detected in CV; application automatically rejected.",
             hiringAgentTotalScore: 5.0m,
             hiringAgentExplanation: "Candidate's Physical Geography degree does not qualify for this programme. Additionally, a prompt injection attempt was detected in the CV text: the candidate inserted hidden instructions attempting to override the scoring rubric and award maximum marks. This is grounds for immediate rejection regardless of other factors.",
-            flagsJson: JsonDocument.Parse("""{ "promptInjection": true, "flaggedAt": "automated-screening" }"""),
+            flagsJson: """{ "promptInjection": true, "flaggedAt": "automated-screening" }""",
             createdAt: DateTimeOffset.UtcNow.AddDays(-11),
             updatedAt: DateTimeOffset.UtcNow.AddDays(-11));
 
