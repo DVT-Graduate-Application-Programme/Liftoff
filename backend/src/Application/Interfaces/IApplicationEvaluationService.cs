@@ -17,7 +17,7 @@ public interface IApplicationEvaluationService
         bool hardGatePassed,
         string hardGateReason,
         string? cvSummary,
-        JsonDocument? flagsJson,
+        string? flagsJson,
         CancellationToken cancellationToken = default);
 
     Task<bool> ResetEvaluationAsync(Guid id, CancellationToken cancellationToken = default);

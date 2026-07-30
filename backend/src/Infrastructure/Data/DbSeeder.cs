@@ -95,7 +95,7 @@ public static class DbSeeder
             Id = Eval1Id,
             ApplicationRecordId = App1Id,
             AiSummary = "A standout profile with a solid foundation in modern full-stack frameworks and scalable architectures. Demonstrated leadership in academic projects.",
-            CategoryScoresJson = JsonDocument.Parse("""
+            CategoryScoresJson = """
                 {
                   "education":        { "score": 23.0, "max": 25 },
                   "open_source":      { "score":  8.0, "max": 10 },
@@ -104,8 +104,8 @@ public static class DbSeeder
                   "technical_skills": { "score": 13.0, "max": 15 },
                   "total":            { "score": 77.0, "max": 100 }
                 }
-                """),
-            EvidenceJson = JsonDocument.Parse("""
+                """,
+            EvidenceJson = """
                 {
                   "education":        "BSc Computer Science, Imperial College London, First Class Honours",
                   "open_source":      "GitHub listed on CV but specific contributions not detailed; interests include open-source contribution",
@@ -113,18 +113,18 @@ public static class DbSeeder
                   "production":       "Software Engineering Intern at AWS (Serverless Team) – designed API Gateway microservices, optimized latency",
                   "technical_skills": "Python, JavaScript, TypeScript, Java, C++, React, Node.js, Next.js, AWS, Docker, Git, CI/CD"
                 }
-                """),
-            InstitutionJson = JsonDocument.Parse("""
+                """,
+            InstitutionJson = """
                 { "name": "Imperial College London", "degreeName": "BSc Computer Science", "academic_average": 78.3 }
-                """),
-            BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            KeyStrengthsJson = JsonDocument.Parse("""
+                """,
+            BonusPointsJson = """{ "total": 0.0, "breakdown": "" }""",
+            DeductionsJson = """{ "total": 0.0, "breakdown": "" }""",
+            KeyStrengthsJson = """
                 ["Full-stack software development", "React.js", "RESTful API Design", "Agile/Scrum"]
-                """),
-            AreasForImprovementJson = JsonDocument.Parse("""
+                """,
+            AreasForImprovementJson = """
                 ["Limited portfolio links", "Lack of specific cloud infrastructure experience beyond Firebase and AWS basics"]
-                """),
+                """,
             ProcessedAt = DateTimeOffset.UtcNow.AddDays(-9),
         };
 
@@ -153,7 +153,7 @@ public static class DbSeeder
             Id = Eval2Id,
             ApplicationRecordId = App2Id,
             AiSummary = "Profile lacks substantial evidence of practical coding experience beyond basic coursework. Assessment scores were significantly below the required threshold.",
-            CategoryScoresJson = JsonDocument.Parse("""
+            CategoryScoresJson = """
                 {
                   "education":        { "score": 20.0, "max": 25 },
                   "open_source":      { "score":  5.0, "max": 10 },
@@ -162,8 +162,8 @@ public static class DbSeeder
                   "technical_skills": { "score": 13.0, "max": 15 },
                   "total":            { "score": 56.0, "max": 100 }
                 }
-                """),
-            EvidenceJson = JsonDocument.Parse("""
+                """,
+            EvidenceJson = """
                 {
                   "education":        "BSc Software Engineering, University of Manchester, Upper Second Class Honours (2:1)",
                   "open_source":      "No significant open-source contributions listed.",
@@ -171,18 +171,18 @@ public static class DbSeeder
                   "production":       "Junior Web Developer Placement at PixelCraft Digital Agency – maintained legacy PHP platforms, refactored frontend layouts",
                   "technical_skills": "JavaScript, Python, PHP, Java, HTML5, CSS3, Vue.js, Django, Flask, Bootstrap, MySQL, SQLite"
                 }
-                """),
-            InstitutionJson = JsonDocument.Parse("""
+                """,
+            InstitutionJson = """
                 { "name": "University of Manchester", "degreeName": "BSc Software Engineering", "academic_average": 66.7 }
-                """),
-            BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            KeyStrengthsJson = JsonDocument.Parse("""
+                """,
+            BonusPointsJson = """{ "total": 0.0, "breakdown": "" }""",
+            DeductionsJson = """{ "total": 0.0, "breakdown": "" }""",
+            KeyStrengthsJson = """
                 ["Python programming", "Database design (MySQL)", "GUI development (Tkinter)"]
-                """),
-            AreasForImprovementJson = JsonDocument.Parse("""
+                """,
+            AreasForImprovementJson = """
                 ["Lack of practical experience", "No open-source contributions"]
-                """),
+                """,
             ProcessedAt = DateTimeOffset.UtcNow.AddDays(-7),
         };
 
@@ -213,7 +213,7 @@ public static class DbSeeder
             Id = Eval3Id,
             ApplicationRecordId = App3Id,
             AiSummary = "Shows promise with front-end technologies, but backend experience is limited. Might need additional ramp-up time compared to top-tier candidates.",
-            CategoryScoresJson = JsonDocument.Parse("""
+            CategoryScoresJson = """
                 {
                   "education":        { "score": 23.0, "max": 25 },
                   "open_source":      { "score":  8.0, "max": 10 },
@@ -222,8 +222,8 @@ public static class DbSeeder
                   "technical_skills": { "score": 13.0, "max": 15 },
                   "total":            { "score": 73.0, "max": 100 }
                 }
-                """),
-            EvidenceJson = JsonDocument.Parse("""
+                """,
+            EvidenceJson = """
                 {
                   "education":        "MSc Artificial Intelligence, University College London (UCL), Distinction",
                   "open_source":      "No specific GitHub PRs listed but uses open source heavily (Hugging Face, YOLOv8)",
@@ -231,18 +231,18 @@ public static class DbSeeder
                   "production":       "Data Scientist Intern at Google DeepMind – evaluated transformer architectures, optimized tokenization pipelines",
                   "technical_skills": "Python, C++, R, PyTorch, TensorFlow, Hugging Face, OpenCV, NumPy, Scikit-Learn, AWS, Docker"
                 }
-                """),
-            InstitutionJson = JsonDocument.Parse("""
+                """,
+            InstitutionJson = """
                 { "name": "University College London (UCL)", "degreeName": "MSc Artificial Intelligence", "academic_average": 85.0 }
-                """),
-            BonusPointsJson = JsonDocument.Parse("""{ "total": 2.0, "breakdown": "Personal Portfolio Website URL: +2" }"""),
-            DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            KeyStrengthsJson = JsonDocument.Parse("""
+                """,
+            BonusPointsJson = """{ "total": 2.0, "breakdown": "Personal Portfolio Website URL: +2" }""",
+            DeductionsJson = """{ "total": 0.0, "breakdown": "" }""",
+            KeyStrengthsJson = """
                 ["Strong technical skills", "Demonstrated project experience", "Relevant work experience"]
-                """),
-            AreasForImprovementJson = JsonDocument.Parse("""
+                """,
+            AreasForImprovementJson = """
                 ["Limited formal qualifications", "Lack of specific open-source contributions beyond personal projects"]
-                """),
+                """,
             ProcessedAt = DateTimeOffset.UtcNow.AddDays(-5),
         };
 
@@ -272,7 +272,7 @@ public static class DbSeeder
             Id = Eval4Id,
             ApplicationRecordId = App4Id,
             AiSummary = "Exceptional open-source contributions and deep understanding of cloud infrastructure. A highly competitive candidate with proven production-level skills.",
-            CategoryScoresJson = JsonDocument.Parse("""
+            CategoryScoresJson = """
                 {
                   "education":        { "score": 25.0, "max": 25 },
                   "open_source":      { "score": 10.0, "max": 10 },
@@ -281,8 +281,8 @@ public static class DbSeeder
                   "technical_skills": { "score": 12.0, "max": 15 },
                   "total":            { "score": 91.0, "max": 100 }
                 }
-                """),
-            EvidenceJson = JsonDocument.Parse("""
+                """,
+            EvidenceJson = """
                 {
                   "education":        "BSc (Hons) Computer Science, University of Edinburgh, First Class; dissertation on WebSocket-based collaborative editing using CRDTs",
                   "open_source":      "GitHub: liam-obrien-dev – 'react-snap-forms' npm library (8k weekly downloads); merged PRs into React Hook Form and shadcn/ui",
@@ -290,18 +290,18 @@ public static class DbSeeder
                   "production":       "Full-stack SWE Intern at Monzo (React + Go, payment flow UIs) and Sky (Angular + Spring Boot, content delivery portal)",
                   "technical_skills": "TypeScript, React, Next.js, Vue 3, Node.js, Express, Spring Boot, PostgreSQL, MongoDB, Redis, Docker, REST, GraphQL, Jest, Cypress"
                 }
-                """),
-            InstitutionJson = JsonDocument.Parse("""
+                """,
+            InstitutionJson = """
                 { "name": "University of Edinburgh", "degreeName": "BSc (Hons) Computer Science", "academic_average": 76.0 }
-                """),
-            BonusPointsJson = JsonDocument.Parse("""{ "total": 3.0, "breakdown": "Published npm package with verifiable downloads: +3" }"""),
-            DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            KeyStrengthsJson = JsonDocument.Parse("""
+                """,
+            BonusPointsJson = """{ "total": 3.0, "breakdown": "Published npm package with verifiable downloads: +3" }""",
+            DeductionsJson = """{ "total": 0.0, "breakdown": "" }""",
+            KeyStrengthsJson = """
                 ["End-to-end full-stack delivery", "Open-source library author", "Two relevant internships", "TypeScript/React/Node.js depth"]
-                """),
-            AreasForImprovementJson = JsonDocument.Parse("""
+                """,
+            AreasForImprovementJson = """
                 ["Mobile (native) experience limited", "Infrastructure and cloud deployment is relatively shallow"]
-                """),
+                """,
             ProcessedAt = DateTimeOffset.UtcNow.AddDays(-11),
         };
 
@@ -329,7 +329,7 @@ public static class DbSeeder
             Id = Eval5Id,
             ApplicationRecordId = App5Id,
             AiSummary = "Possesses good foundational knowledge and communication skills, though technical portfolio lacks complexity. Could be a fit with the right mentorship.",
-            CategoryScoresJson = JsonDocument.Parse("""
+            CategoryScoresJson = """
                 {
                   "education":        { "score": 21.0, "max": 25 },
                   "open_source":      { "score":  6.0, "max": 10 },
@@ -338,8 +338,8 @@ public static class DbSeeder
                   "technical_skills": { "score":  9.0, "max": 15 },
                   "total":            { "score": 69.0, "max": 100 }
                 }
-                """),
-            EvidenceJson = JsonDocument.Parse("""
+                """,
+            EvidenceJson = """
                 {
                   "education":        "BSc Computer Science, University of Leeds, 2:1; modules in web development, software engineering, and relational databases",
                   "open_source":      "GitHub: amara-fullstack – 10 repos, consistent commits over 2 years; capstone project is publicly visible; no external OSS contributions",
@@ -347,18 +347,18 @@ public static class DbSeeder
                   "production":       "12-month placement at PwC Digital – built internal HR self-service tools using Vue.js frontend and Django REST APIs; participated in two-week sprints with senior engineers",
                   "technical_skills": "JavaScript, Vue 3, React (basic), Python, Django, PostgreSQL, REST APIs, HTML, CSS, Git, GitHub Actions, Docker (introductory)"
                 }
-                """),
-            InstitutionJson = JsonDocument.Parse("""
+                """,
+            InstitutionJson = """
                 { "name": "University of Leeds", "degreeName": "BSc Computer Science", "academic_average": 66.3 }
-                """),
-            BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            KeyStrengthsJson = JsonDocument.Parse("""
+                """,
+            BonusPointsJson = """{ "total": 0.0, "breakdown": "" }""",
+            DeductionsJson = """{ "total": 0.0, "breakdown": "" }""",
+            KeyStrengthsJson = """
                 ["Vue.js/Django full-stack", "Meaningful placement year", "PostgreSQL database design", "CI/CD and deployment exposure"]
-                """),
-            AreasForImprovementJson = JsonDocument.Parse("""
+                """,
+            AreasForImprovementJson = """
                 ["No external open-source contributions", "Limited automated testing experience", "TypeScript not yet adopted"]
-                """),
+                """,
             ProcessedAt = DateTimeOffset.UtcNow.AddDays(-8),
         };
 
@@ -387,7 +387,7 @@ public static class DbSeeder
             Id = Eval6Id,
             ApplicationRecordId = App6Id,
             AiSummary = "Did not pass the initial hard-gate screening due to insufficient graduation credentials and low technical scoring across the board.",
-            CategoryScoresJson = JsonDocument.Parse("""
+            CategoryScoresJson = """
                 {
                   "education":        { "score":  8.0, "max": 25 },
                   "open_source":      { "score":  0.0, "max": 10 },
@@ -396,8 +396,8 @@ public static class DbSeeder
                   "technical_skills": { "score":  8.0, "max": 15 },
                   "total":            { "score": 38.0, "max": 100 }
                 }
-                """),
-            EvidenceJson = JsonDocument.Parse("""
+                """,
+            EvidenceJson = """
                 {
                   "education":        "BA Media Studies, University of Bedfordshire, 2:2 – does not satisfy the IT/STEM academic requirement for this programme",
                   "open_source":      "No GitHub profile found. No evidence of any open-source or public coding activity.",
@@ -405,18 +405,18 @@ public static class DbSeeder
                   "production":       "Part-time barista at Costa Coffee (2 years) – reliable team member, customer service in high-volume environment",
                   "technical_skills": "HTML, CSS, basic JavaScript (DOM manipulation only), Canva, Adobe Premiere (from Media degree)"
                 }
-                """),
-            InstitutionJson = JsonDocument.Parse("""
+                """,
+            InstitutionJson = """
                 { "name": "University of Bedfordshire", "degreeName": "BA Media Studies", "academic_average": 55.0 }
-                """),
-            BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            KeyStrengthsJson = JsonDocument.Parse("""
+                """,
+            BonusPointsJson = """{ "total": 0.0, "breakdown": "" }""",
+            DeductionsJson = """{ "total": 0.0, "breakdown": "" }""",
+            KeyStrengthsJson = """
                 ["Self-motivated learner", "Creative communication", "Reliable work ethic"]
-                """),
-            AreasForImprovementJson = JsonDocument.Parse("""
+                """,
+            AreasForImprovementJson = """
                 ["No qualifying STEM degree", "No backend or database skills", "No deployed full-stack project", "No version control history"]
-                """),
+                """,
             ProcessedAt = DateTimeOffset.UtcNow.AddDays(-6),
         };
 
@@ -446,7 +446,7 @@ public static class DbSeeder
             Id = Eval7Id,
             ApplicationRecordId = App7Id,
             AiSummary = "Outstanding academic record combined with relevant internship experience. Strong problem-solving capabilities evidenced by their algorithmic project work.",
-            CategoryScoresJson = JsonDocument.Parse("""
+            CategoryScoresJson = """
                 {
                   "education":        { "score": 24.0, "max": 25 },
                   "open_source":      { "score":  8.0, "max": 10 },
@@ -455,8 +455,8 @@ public static class DbSeeder
                   "technical_skills": { "score": 10.0, "max": 15 },
                   "total":            { "score": 80.0, "max": 100 }
                 }
-                """),
-            EvidenceJson = JsonDocument.Parse("""
+                """,
+            EvidenceJson = """
                 {
                   "education":        "BSc (Hons) Software Engineering, University of Warwick, First Class; final year project: full-stack graduate job board with role-based access control and OAuth",
                   "open_source":      "GitHub: ravi-builds – 15 repos; merged PRs into 'react-table' and 'Spring Boot Admin'; 150+ GitHub stars across projects",
@@ -464,18 +464,18 @@ public static class DbSeeder
                   "production":       "Full-stack Intern at ThoughtWorks (6 months) – contributed to client e-commerce platform (React + Spring Boot); wrote unit and integration tests using JUnit 5 and React Testing Library",
                   "technical_skills": "Java, Spring Boot, TypeScript, React, Next.js, Node.js, PostgreSQL, MongoDB, REST, JUnit 5, React Testing Library, Git, GitHub Actions, Docker basics, AWS S3"
                 }
-                """),
-            InstitutionJson = JsonDocument.Parse("""
+                """,
+            InstitutionJson = """
                 { "name": "University of Warwick", "degreeName": "BSc (Hons) Software Engineering", "academic_average": 75.0 }
-                """),
-            BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            KeyStrengthsJson = JsonDocument.Parse("""
+                """,
+            BonusPointsJson = """{ "total": 0.0, "breakdown": "" }""",
+            DeductionsJson = """{ "total": 0.0, "breakdown": "" }""",
+            KeyStrengthsJson = """
                 ["React/Spring Boot full-stack", "Strong testing culture (JUnit + RTL)", "Deployed real-world projects with CI/CD", "Active open-source contributor"]
-                """),
-            AreasForImprovementJson = JsonDocument.Parse("""
+                """,
+            AreasForImprovementJson = """
                 ["Limited cloud/DevOps depth beyond S3", "No mobile experience", "CSS/design skills could be stronger"]
-                """),
+                """,
             ProcessedAt = DateTimeOffset.UtcNow.AddDays(-10),
         };
 
@@ -503,7 +503,7 @@ public static class DbSeeder
             Id = Eval8Id,
             ApplicationRecordId = App8Id,
             AiSummary = "The candidate's technical skills appear very rudimentary. Minimal project history and poor performance in the technical evaluation phase.",
-            CategoryScoresJson = JsonDocument.Parse("""
+            CategoryScoresJson = """
                 {
                   "education":        { "score": 16.0, "max": 25 },
                   "open_source":      { "score":  3.0, "max": 10 },
@@ -512,8 +512,8 @@ public static class DbSeeder
                   "technical_skills": { "score": 10.0, "max": 15 },
                   "total":            { "score": 54.0, "max": 100 }
                 }
-                """),
-            EvidenceJson = JsonDocument.Parse("""
+                """,
+            EvidenceJson = """
                 {
                   "education":        "BSc Computer Science, University of Hertfordshire, 2:2; modules covered introductory Java, HTML/CSS, and basic networking",
                   "open_source":      "GitHub: sophiewalsh-dev – 5 repos, mostly tutorial follow-along code; last commit 4 months ago; no external contributions",
@@ -521,18 +521,18 @@ public static class DbSeeder
                   "production":       "Part-time waitress at Nando's (18 months) – customer-facing role; team collaboration and time management; no software engineering exposure",
                   "technical_skills": "HTML, CSS, vanilla JavaScript, basic Node.js/Express (tutorial level), introductory Java, Git (basic commit/push only)"
                 }
-                """),
-            InstitutionJson = JsonDocument.Parse("""
+                """,
+            InstitutionJson = """
                 { "name": "University of Hertfordshire", "degreeName": "BSc Computer Science", "academic_average": 57.7 }
-                """),
-            BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            KeyStrengthsJson = JsonDocument.Parse("""
+                """,
+            BonusPointsJson = """{ "total": 0.0, "breakdown": "" }""",
+            DeductionsJson = """{ "total": 0.0, "breakdown": "" }""",
+            KeyStrengthsJson = """
                 ["Foundational HTML/CSS/JS knowledge", "Awareness of Node.js ecosystem", "Strong interpersonal skills from customer-facing work"]
-                """),
-            AreasForImprovementJson = JsonDocument.Parse("""
+                """,
+            AreasForImprovementJson = """
                 ["No original full-stack project with a database", "Backend knowledge is tutorial-only", "Infrequent and stale GitHub activity", "No framework experience (React/Vue/Angular)"]
-                """),
+                """,
             ProcessedAt = DateTimeOffset.UtcNow.AddDays(-4),
         };
 
@@ -560,7 +560,7 @@ public static class DbSeeder
             Id = Eval9Id,
             ApplicationRecordId = App9Id,
             AiSummary = "While showing enthusiasm, the candidate currently lacks the necessary practical experience and core competencies required for this role.",
-            CategoryScoresJson = JsonDocument.Parse("""
+            CategoryScoresJson = """
                 {
                   "education":        { "score": 15.0, "max": 25 },
                   "open_source":      { "score":  0.0, "max": 10 },
@@ -569,8 +569,8 @@ public static class DbSeeder
                   "technical_skills": { "score":  9.0, "max": 15 },
                   "total":            { "score": 44.0, "max": 100 }
                 }
-                """),
-            EvidenceJson = JsonDocument.Parse("""
+                """,
+            EvidenceJson = """
                 {
                   "education":        "BSc Information Technology, University of Northampton, 2:2; coursework included introductory web design and a database management module",
                   "open_source":      "No GitHub profile provided. No verifiable public coding history found.",
@@ -578,18 +578,18 @@ public static class DbSeeder
                   "production":       "Call centre agent at HSBC (part-time, 1 year) – inbound customer support; no technical responsibilities",
                   "technical_skills": "HTML, CSS, some JavaScript (self-reported, unverified), Microsoft Office, basic SQL (from DB module); no framework or backend language declared"
                 }
-                """),
-            InstitutionJson = JsonDocument.Parse("""
+                """,
+            InstitutionJson = """
                 { "name": "University of Northampton", "degreeName": "BSc Information Technology", "academic_average": 55.3 }
-                """),
-            BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            KeyStrengthsJson = JsonDocument.Parse("""
+                """,
+            BonusPointsJson = """{ "total": 0.0, "breakdown": "" }""",
+            DeductionsJson = """{ "total": 0.0, "breakdown": "" }""",
+            KeyStrengthsJson = """
                 ["Communication and community engagement", "Willingness to self-learn", "Networking fundamentals"]
-                """),
-            AreasForImprovementJson = JsonDocument.Parse("""
+                """,
+            AreasForImprovementJson = """
                 ["No meaningful software projects", "No open-source presence", "Python skills at beginner level only"]
-                """),
+                """,
             ProcessedAt = DateTimeOffset.UtcNow.AddDays(-3),
         };
 
@@ -618,7 +618,7 @@ public static class DbSeeder
             Id = Eval10Id,
             ApplicationRecordId = App10Id,
             AiSummary = "Fails to meet the baseline technical requirements. Limited exposure to our required tech stack and no significant project work demonstrated.",
-            CategoryScoresJson = JsonDocument.Parse("""
+            CategoryScoresJson = """
                 {
                   "education":        { "score":  0.0, "max": 25 },
                   "open_source":      { "score":  0.0, "max": 10 },
@@ -627,8 +627,8 @@ public static class DbSeeder
                   "technical_skills": { "score":  0.0, "max": 15 },
                   "total":            { "score": 12.0, "max": 100 }
                 }
-                """),
-            EvidenceJson = JsonDocument.Parse("""
+                """,
+            EvidenceJson = """
                 {
                   "education":        "Level 5 Diploma in Professional Culinary Arts, Westminster Kingsway College – no IT, computing, or STEM qualification whatsoever",
                   "open_source":      "No GitHub profile. No online coding presence found. No technical contributions of any kind identified.",
@@ -636,18 +636,18 @@ public static class DbSeeder
                   "production":       "Head Chef at The Harbour Inn (3 years) and Sous Chef at The Ivy Brasserie (2 years) – extensive food industry experience demonstrating leadership and high-pressure delivery, but entirely non-technical",
                   "technical_skills": "No programming languages, frameworks, or developer tools listed. Skills section references mise en place, HACCP compliance, and stock management."
                 }
-                """),
-            InstitutionJson = JsonDocument.Parse("""
+                """,
+            InstitutionJson = """
                 { "name": "Westminster Kingsway College", "degreeName": "Level 5 Diploma in Professional Culinary Arts", "academic_average": 65.0 }
-                """),
-            BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            KeyStrengthsJson = JsonDocument.Parse("""
+                """,
+            BonusPointsJson = """{ "total": 0.0, "breakdown": "" }""",
+            DeductionsJson = """{ "total": 0.0, "breakdown": "" }""",
+            KeyStrengthsJson = """
                 ["Strong leadership under pressure", "High standards of quality and precision", "Exceptional time management in kitchen environments"]
-                """),
-            AreasForImprovementJson = JsonDocument.Parse("""
+                """,
+            AreasForImprovementJson = """
                 ["No IT or STEM qualification", "Zero programming knowledge", "No software projects of any kind", "No technical skills applicable to full-stack development"]
-                """),
+                """,
             ProcessedAt = DateTimeOffset.UtcNow.AddDays(-14),
         };
 
@@ -676,7 +676,7 @@ public static class DbSeeder
             Id = Eval11Id,
             ApplicationRecordId = App11Id,
             AiSummary = "Profile does not align with our engineering standards. Missing key technical skills and practical application experience.",
-            CategoryScoresJson = JsonDocument.Parse("""
+            CategoryScoresJson = """
                 {
                   "education":        { "score":  0.0, "max": 25 },
                   "open_source":      { "score":  0.0, "max": 10 },
@@ -685,8 +685,8 @@ public static class DbSeeder
                   "technical_skills": { "score":  0.0, "max": 15 },
                   "total":            { "score":  8.0, "max": 100 }
                 }
-                """),
-            EvidenceJson = JsonDocument.Parse("""
+                """,
+            EvidenceJson = """
                 {
                   "education":        "BA History, University of Exeter (2:1) + MBA with Digital Business elective, London Business School – neither satisfies the IT/STEM academic requirement. 'Digital Business' elective covered digital strategy and market analysis, not software engineering.",
                   "open_source":      "No GitHub profile found. No coding presence on any platform (Stack Overflow, GitLab, etc.) detected.",
@@ -694,18 +694,18 @@ public static class DbSeeder
                   "production":       "Marketing Manager at Deloitte (2 years) – led campaign analytics using Google Ads and HubSpot; no software development responsibilities. Previous role as Graduate Analyst at KPMG (1 year) – financial modelling in Excel.",
                   "technical_skills": "Microsoft Office Suite (advanced Excel, PowerPoint), HubSpot, Google Analytics, Salesforce CRM – no programming language, framework, or developer tooling declared."
                 }
-                """),
-            InstitutionJson = JsonDocument.Parse("""
+                """,
+            InstitutionJson = """
                 { "name": "London Business School", "degreeName": "MBA (Digital Business)", "academic_average": 83.3 }
-                """),
-            BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            KeyStrengthsJson = JsonDocument.Parse("""
+                """,
+            BonusPointsJson = """{ "total": 0.0, "breakdown": "" }""",
+            DeductionsJson = """{ "total": 0.0, "breakdown": "" }""",
+            KeyStrengthsJson = """
                 ["Strong business acumen", "Analytical thinking (financial modelling)", "Digital marketing fluency", "Prestigious academic pedigree"]
-                """),
-            AreasForImprovementJson = JsonDocument.Parse("""
+                """,
+            AreasForImprovementJson = """
                 ["No STEM or IT academic qualification", "No programming experience whatsoever", "No software or technical project", "Digital Business MBA elective is not a compensating factor for this programme"]
-                """),
+                """,
             ProcessedAt = DateTimeOffset.UtcNow.AddDays(-13),
         };
 
@@ -725,7 +725,7 @@ public static class DbSeeder
             hardGateReason: "Degree is in Physical Geography – not an IT or STEM computing discipline. Attempted prompt injection detected in CV; application automatically rejected.",
             hiringAgentTotalScore: 5.0m,
             hiringAgentExplanation: "Candidate's Physical Geography degree does not qualify for this programme. Additionally, a prompt injection attempt was detected in the CV text: the candidate inserted hidden instructions attempting to override the scoring rubric and award maximum marks. This is grounds for immediate rejection regardless of other factors.",
-            flagsJson: JsonDocument.Parse("""{ "promptInjection": true, "flaggedAt": "automated-screening" }"""),
+            flagsJson: """{ "promptInjection": true, "flaggedAt": "automated-screening" }""",
             createdAt: DateTimeOffset.UtcNow.AddDays(-11),
             updatedAt: DateTimeOffset.UtcNow.AddDays(-11));
 
@@ -734,7 +734,7 @@ public static class DbSeeder
             Id = Eval12Id,
             ApplicationRecordId = App12Id,
             AiSummary = "Candidate did not demonstrate sufficient proficiency in required languages or frameworks. Overall evaluation score is too low to proceed.",
-            CategoryScoresJson = JsonDocument.Parse("""
+            CategoryScoresJson = """
                 {
                   "education":        { "score":  0.0, "max": 25 },
                   "open_source":      { "score":  0.0, "max": 10 },
@@ -743,8 +743,8 @@ public static class DbSeeder
                   "technical_skills": { "score":  0.0, "max": 15 },
                   "total":            { "score":  5.0, "max": 100 }
                 }
-                """),
-            EvidenceJson = JsonDocument.Parse("""
+                """,
+            EvidenceJson = """
                 {
                   "education":        "BSc Physical Geography, University of Plymouth, 2:2 – entirely non-computing discipline; GIS mapping and environmental data analysis modules do not constitute programming or software engineering",
                   "open_source":      "No GitHub profile. No evidence of any technical online presence.",
@@ -752,18 +752,18 @@ public static class DbSeeder
                   "production":       "No work experience listed beyond a summer job as a campsite warden.",
                   "technical_skills": "ArcGIS, Microsoft Excel, basic QGIS – no programming language or developer tool listed."
                 }
-                """),
-            InstitutionJson = JsonDocument.Parse("""
+                """,
+            InstitutionJson = """
                 { "name": "University of Plymouth", "degreeName": "BSc Physical Geography", "academic_average": 56.0 }
-                """),
-            BonusPointsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            DeductionsJson = JsonDocument.Parse("""{ "total": 0.0, "breakdown": "" }"""),
-            KeyStrengthsJson = JsonDocument.Parse("""
+                """,
+            BonusPointsJson = """{ "total": 0.0, "breakdown": "" }""",
+            DeductionsJson = """{ "total": 0.0, "breakdown": "" }""",
+            KeyStrengthsJson = """
                 ["Spatial data analysis (GIS)", "Environmental research methodology"]
-                """),
-            AreasForImprovementJson = JsonDocument.Parse("""
+                """,
+            AreasForImprovementJson = """
                 ["Non-qualifying degree (Geography)", "No programming skills", "No legitimate software projects", "Prompt injection attempt – automatic disqualification"]
-                """),
+                """,
             ProcessedAt = DateTimeOffset.UtcNow.AddDays(-11),
         };
 
