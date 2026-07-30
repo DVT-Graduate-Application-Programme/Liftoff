@@ -1,122 +1,93 @@
-import ApplicantCard from "@/components/applicant-card/applicant-card";
-import { ListFilter, ListOrdered, X } from "lucide-react";
-import React from "react";
+"use client";
+
+import { useMemo, useState } from "react";
+import { useSession } from "next-auth/react";
+import type { ApplicationFilters } from "@/types/api";
+import { ApplicantList } from "./applicant-list";
+import { FilterBar, type ActiveFilter, type FilterFieldConfig, type SortOption } from "./filter-bar";
+import { ACTIVE_RECRUITER_ID } from "@/hooks/use-claim-application";
 
 const PendingCandidates = () => {
+  const { data: session } = useSession();
+  const recruiterIdentity = session?.user?.email ?? ACTIVE_RECRUITER_ID;
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [tier, setTier] = useState("");
+  const [minScore, setMinScore] = useState("");
+  const [hardGate, setHardGate] = useState("all");
+  const [claimed, setClaimed] = useState("all");
+  const [dateRange, setDateRange] = useState("all");
+  const [sort, setSort] = useState<SortOption>("score_desc");
+
+  const filters = useMemo(() => {
+    const next: Omit<ApplicationFilters, "status" | "search" | "limit" | "cursor"> = { sort };
+    next.recruiterIdentity = recruiterIdentity;
+    if (tier) next.tier = tier;
+    if (minScore) next.minScore = Number(minScore);
+    if (hardGate !== "all") next.hardGatePassed = hardGate === "passed";
+    if (claimed !== "all") next.claimed = claimed === "claimed";
+    if (dateRange !== "all") {
+      const from = new Date();
+      from.setDate(from.getDate() - Number(dateRange));
+      next.dateFrom = from.toISOString();
+    }
+    return next;
+  }, [claimed, dateRange, hardGate, minScore, recruiterIdentity, sort, tier]);
+
+  const clearFilters = () => {
+    setTier("");
+    setMinScore("");
+    setHardGate("all");
+    setClaimed("all");
+    setDateRange("all");
+  };
+
+  const fields: FilterFieldConfig[] = [
+    { key: "minScore", label: "Minimum score", type: "number", value: minScore, onChange: setMinScore, options: [], placeholder: "Any score" },
+    { key: "tier", label: "Candidate tier", value: tier, onChange: setTier, options: [["", "All tiers"], ["A", "A"], ["B", "B"], ["C", "C"], ["D", "D"]] },
+    { key: "hardGate", label: "Screening", value: hardGate, onChange: setHardGate, options: [["all", "All results"], ["passed", "Passed"], ["failed", "Failed"]] },
+    { key: "claimed", label: "Ownership", value: claimed, onChange: setClaimed, options: [["all", "All candidates"], ["unclaimed", "Unclaimed"], ["claimed", "Claimed"]] },
+    { key: "dateRange", label: "Received", value: dateRange, onChange: setDateRange, options: [["all", "Any time"], ["7", "Last 7 days"], ["30", "Last 30 days"]] },
+  ];
+
+  const activeFilters: ActiveFilter[] = [
+    minScore && { label: `Score: ${minScore}+`, onClear: () => { setMinScore(""); } },
+    tier && { label: `Tier: ${tier.toLowerCase()}`, onClear: () => { setTier(""); } },
+    hardGate !== "all" && { label: hardGate === "passed" ? "Screening: passed" : "Screening: failed", onClear: () => { setHardGate("all"); } },
+    claimed !== "all" && { label: claimed === "claimed" ? "Claimed" : "Unclaimed", onClear: () => { setClaimed("all"); } },
+    dateRange !== "all" && { label: `Last ${dateRange} days`, onClear: () => { setDateRange("all"); } },
+  ].filter(Boolean) as ActiveFilter[];
+
   return (
     <>
       <section className="flex flex-col gap-6 mb-8">
-        <div className="flex justify-between items-end">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">
-              Applicant Pipeline
-            </h2>
-            <p className="text-muted-foreground">
-              Manage and screen incoming talent for the Engineering Team
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg text-foreground hover:bg-muted transition-colors">
-              <ListFilter size={16} />
-              Advanced Filters
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg text-foreground hover:bg-muted transition-colors">
-              <ListOrdered size={16} />
-              Sort: Higher System Score
-            </button>
-          </div>
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">
+            Applicant Pipeline
+          </h2>
+          <p className="text-muted-foreground">
+            Manage and screen incoming talent for the Engineering Team
+          </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[12px] font-bold border border-primary/20 flex items-center gap-1">
-            Score: 70+
-            <X size={14} />
-          </span>
-          <span className="px-3 py-1 bg-card text-muted-foreground rounded-full text-[12px] font-medium border border-border">
-            Degree: BSc Computer Science
-          </span>
-          <span className="px-3 py-1 bg-card text-muted-foreground rounded-full text-[12px] font-medium border border-border">
-            Experience: 2+ Years
-          </span>
-          <button className="text-primary text-[12px] font-bold ml-2">
-            Clear all
-          </button>
-        </div>
+        <FilterBar
+          id="pending-candidate-filters"
+          filtersOpen={filtersOpen}
+          onToggleFilters={() => { setFiltersOpen((open) => !open); }}
+          fields={fields}
+          sort={sort}
+          onSortChange={setSort}
+          activeFilters={activeFilters}
+          onClearAll={clearFilters}
+        />
       </section>
 
-      <div className="space-y-10">
-        {/* Today section */}
-        <section>
-          <div className="flex items-center gap-4 mb-4">
-            <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
-              Today
-            </h3>
-            <div className="h-px flex-1 bg-border"></div>
-            <span className="text-[12px] text-muted-foreground font-medium">
-              3 New Applicants
-            </span>
-          </div>
-          <div className="grid grid-cols-1 gap-4">
-            <ApplicantCard
-              name="Sarah Jenkins"
-              institute="BSc Computer Science • 3 Years Exp"
-              grades={[
-                { subject: "Maths", mark: 88 },
-                { subject: "Prog", mark: 92 },
-                { subject: "IT", mark: 79 },
-              ]}
-              systemScore={86.3}
-            />
-            <ApplicantCard
-              name="Neo Rankapole"
-              institute="BSc Computer Science • 1 Years Exp"
-              grades={[
-                { subject: "Maths", mark: 97 },
-                { subject: "Prog", mark: 99 },
-                { subject: "IT", mark: 99 },
-              ]}
-              systemScore={99.65}
-            />
-            <ApplicantCard
-              name="Jake Benkins"
-              institute="BSc Computer Science • 3 Years Exp"
-              grades={[
-                { subject: "Maths", mark: 83 },
-                { subject: "Prog", mark: 78 },
-                { subject: "IT", mark: 60 },
-              ]}
-              systemScore={86.3}
-            />
-          </div>
-        </section>
-
-        {/* Week section */}
-        <section>
-          <div className="flex items-center gap-4 mb-4">
-            <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
-              This Week
-            </h3>
-            <div className="h-px flex-1 bg-border"></div>
-            <span className="text-[12px] text-muted-foreground font-medium">
-              12 Applicants
-            </span>
-          </div>
-          <div className="grid grid-cols-1 gap-4">
-            <ApplicantCard
-              name="Sarah Jenkins"
-              institute="BSc Computer Science • 3 Years Exp"
-              grades={[
-                { subject: "Maths", mark: 88 },
-                { subject: "Prog", mark: 92 },
-                { subject: "IT", mark: 79 },
-              ]}
-              systemScore={86.3}
-            />
-            <div className="flex items-center justify-center py-8 border-2 border-dashed border-border rounded-xl text-muted-foreground font-medium hover:bg-muted transition-colors cursor-pointer">
-              Load 11 More Applicants
-            </div>
-          </div>
-        </section>
-      </div>
+      <ApplicantList
+        status="PENDING,PROCESSING"
+        tabKey="pending"
+        filters={filters}
+        emptyTitle="No pending applicants"
+        showReviewedAt={false}
+        groupByDate
+      />
     </>
   );
 };

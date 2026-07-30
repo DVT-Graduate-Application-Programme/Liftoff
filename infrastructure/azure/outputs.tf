@@ -28,6 +28,21 @@ output "acr_frontend_repository" {
   value       = "${azurerm_container_registry.main.login_server}/frontend"
 }
 
+output "acr_worker_repository" {
+  description = "Full ACR repository path for the worker image — use as ACR_WORKER_REPOSITORY GitHub secret."
+  value       = "${azurerm_container_registry.main.login_server}/worker"
+}
+
+output "acr_migrations_repository" {
+  description = "Full ACR repository path for the migrations image — use as ACR_MIGRATIONS_REPOSITORY GitHub secret."
+  value       = "${azurerm_container_registry.main.login_server}/migrations"
+}
+
+output "migrations_job_name" {
+  description = "Container Apps Job that applies EF Core migrations — use as MIGRATIONS_JOB GitHub secret."
+  value       = azurerm_container_app_job.migrations.name
+}
+
 output "container_app_environment_name" {
   description = "Container Apps Environment name — use as CONTAINER_APP_ENV GitHub secret."
   value       = azurerm_container_app_environment.main.name
@@ -41,6 +56,11 @@ output "backend_container_app_name" {
 output "frontend_container_app_name" {
   description = "Frontend Container App name — use as FRONTEND_CONTAINER_APP GitHub secret."
   value       = azurerm_container_app.frontend.name
+}
+
+output "worker_container_app_name" {
+  description = "Worker Container App name — use as WORKER_CONTAINER_APP GitHub secret."
+  value       = azurerm_container_app.worker.name
 }
 
 output "postgresql_fqdn" {

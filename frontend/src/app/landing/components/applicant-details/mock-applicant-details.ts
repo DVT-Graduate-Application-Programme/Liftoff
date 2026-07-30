@@ -1,48 +1,19 @@
-export type ApplicantDetailsEvaluation = {
-  institution: {
-    name: string;
-    degreeName: string;
-  };
-  scores: {
-    open_source: {
-      score: number;
-      max: number;
-      evidence: string;
-    };
-    self_projects: {
-      score: number;
-      max: number;
-      evidence: string;
-    };
-    production: {
-      score: number;
-      max: number;
-      evidence: string;
-    };
-    technical_skills: {
-      score: number;
-      max: number;
-      evidence: string;
-    };
-  };
-  bonus_points: {
-    total: number;
-    breakdown: Record<string, number>;
-  };
-  deductions: {
-    total: number;
-    reasons: string[];
-  };
-  key_strengths: string[];
-  areas_for_improvement: string[];
-};
+import type { Evaluation, EvaluationScore } from "@/types/api";
+
+export type ApplicantDetailsEvaluation = Evaluation;
+export type ApplicantDetailsScoreCategory = EvaluationScore;
 
 export const mockApplicantDetails: ApplicantDetailsEvaluation = {
-  institution: {
-    name: "University of South Africa",
-    degreeName: "BSc Information Technology",
-  },
-  scores: {
+  id: "mock-evaluation",
+  applicationRecordId: "mock-application",
+  institutionJson: null,
+  categoryScoresJson: {
+    education: {
+      score: 23,
+      max: 25,
+      evidence:
+        "BSc Information Technology coursework demonstrates strong formal technical foundations.",
+    },
     open_source: {
       score: 10,
       max: 35,
@@ -68,26 +39,25 @@ export const mockApplicantDetails: ApplicantDetailsEvaluation = {
         "Demonstrated breadth across multiple modern stacks: Backend (.NET Core, C#, Web API), Frontend (Angular 21, React, TypeScript), Testing (xUnit, Moq, TDD), and Algorithms & Forensics (Python, Autopsy). Strong emphasis on SOLID principles and software architecture.",
     },
   },
-  bonus_points: {
+  evidenceJson: null,
+  bonusPointsJson: {
     total: 3,
-    breakdown: {
-      linkedin_profile: 1,
-      technical_communication: 2,
-    },
+    breakdown: "LinkedIn profile: +1; technical communication: +2",
   },
-  deductions: {
-    total: 0,
-    reasons: [],
-  },
-  key_strengths: [
+  deductionsJson: null,
+  keyStrengthsJson: [
     "Deep understanding of software architecture principles (SOLID, Clean Architecture)",
     "Proven ability to build complex full-stack applications demonstrating high technical proficiency",
     "Experience in enterprise development environments and agile methodologies",
     "Strong commitment to quality assurance through Test-Driven Development (TDD) and code reviews",
   ],
-  areas_for_improvement: [
+  areasForImprovementJson: [
     "Contribute to established open-source projects to demonstrate community involvement.",
     "Provide live demos or deployed versions of self-projects where possible.",
     "Expand professional experience beyond internships to demonstrate sustained industry impact.",
   ],
+  gitHubProfileDataJson: null,
+  projectClassificationsJson: null,
+  aiSummary: "Strong technical candidate with consistent academic performance and an active GitHub history.",
+  processedAt: new Date().toISOString(),
 };

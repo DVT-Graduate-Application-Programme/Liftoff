@@ -65,8 +65,18 @@ export interface MockApplication {
   } | null;
 
   documents: {
-    cvDocument: { url: string; filename: string; uploadedDate: string; sizeKb: number };
-    transcriptDocument: { url: string; filename: string; uploadedDate: string; sizeKb: number } | null;
+    cvDocument: {
+      url: string;
+      filename: string;
+      uploadedDate: string;
+      sizeKb: number;
+    };
+    transcriptDocument: {
+      url: string;
+      filename: string;
+      uploadedDate: string;
+      sizeKb: number;
+    } | null;
   };
 
   ownership: {
@@ -97,7 +107,10 @@ export const applications: MockApplication[] = [
     },
     screening: { hardGatePassed: true, hardGateReason: null },
     evaluation: {
-      institution: { name: "University of South Africa", degreeName: "BSc Information Technology" },
+      institution: {
+        name: "University of South Africa",
+        degreeName: "BSc Information Technology",
+      },
       scores: {
         open_source: {
           score: 10,
@@ -124,7 +137,10 @@ export const applications: MockApplication[] = [
             "Backend: .NET Core, C#, Web API. Frontend: Angular 21, React, TypeScript. Testing: xUnit, Moq, TDD. Strong emphasis on SOLID principles.",
         },
       },
-      bonusPoints: { total: 3, breakdown: { linkedin_profile: 1, technical_communication: 2 } },
+      bonusPoints: {
+        total: 3,
+        breakdown: { linkedin_profile: 1, technical_communication: 2 },
+      },
       deductions: { total: 0, reasons: [] },
       keyStrengths: [
         "Deep understanding of software architecture principles (SOLID, Clean Architecture)",
@@ -154,12 +170,13 @@ export const applications: MockApplication[] = [
       },
     },
     ownership: {
-      claimedByRecruiterId: "recruiter1@company.com",
+      claimedByRecruiterId: "rose@dvtsoftware.com",
       claimedAt: "2025-01-15T11:00:00Z",
       shortlistedByRecruiterId: null,
       shortlistedAt: null,
     },
-    cvSummary: "Strong technical candidate with consistent academic performance and an active GitHub history.",
+    cvSummary:
+      "Strong technical candidate with consistent academic performance and an active GitHub history.",
     flags: ["No GitHub found"],
   },
 
@@ -176,17 +193,44 @@ export const applications: MockApplication[] = [
     },
     screening: { hardGatePassed: true, hardGateReason: null },
     evaluation: {
-      institution: { name: "University of Pretoria", degreeName: "BEng Computer Engineering" },
+      institution: {
+        name: "University of Pretoria",
+        degreeName: "BEng Computer Engineering",
+      },
       scores: {
-        open_source: { score: 15, max: 35, evidence: "A handful of forked repos, one small merged PR to a community project." },
-        self_projects: { score: 14, max: 30, evidence: "One IoT dashboard project, moderate complexity, no tests." },
-        production: { score: 10, max: 25, evidence: "Part-time freelance work, no formal internship experience." },
-        technical_skills: { score: 6, max: 10, evidence: "Solid grasp of JavaScript/Node, limited backend exposure." },
+        open_source: {
+          score: 15,
+          max: 35,
+          evidence:
+            "A handful of forked repos, one small merged PR to a community project.",
+        },
+        self_projects: {
+          score: 14,
+          max: 30,
+          evidence: "One IoT dashboard project, moderate complexity, no tests.",
+        },
+        production: {
+          score: 10,
+          max: 25,
+          evidence:
+            "Part-time freelance work, no formal internship experience.",
+        },
+        technical_skills: {
+          score: 6,
+          max: 10,
+          evidence: "Solid grasp of JavaScript/Node, limited backend exposure.",
+        },
       },
       bonusPoints: { total: 1, breakdown: { linkedin_profile: 1 } },
       deductions: { total: 2, reasons: ["Late submission of transcript"] },
-      keyStrengths: ["Comfortable across the JS ecosystem", "Good written communication in CV"],
-      areasForImprovement: ["Needs more depth in backend/production experience", "Should contribute to larger codebases"],
+      keyStrengths: [
+        "Comfortable across the JS ecosystem",
+        "Good written communication in CV",
+      ],
+      areasForImprovement: [
+        "Needs more depth in backend/production experience",
+        "Should contribute to larger codebases",
+      ],
       hiringAgentTotalScore: 2.6,
     },
     documents: {
@@ -209,7 +253,8 @@ export const applications: MockApplication[] = [
       shortlistedByRecruiterId: null,
       shortlistedAt: null,
     },
-    cvSummary: "Borderline candidate with promising JS skills but limited production experience.",
+    cvSummary:
+      "Borderline candidate with promising JS skills but limited production experience.",
     flags: ["Late transcript"],
   },
 
@@ -226,17 +271,44 @@ export const applications: MockApplication[] = [
     },
     screening: { hardGatePassed: true, hardGateReason: null },
     evaluation: {
-      institution: { name: "Vaal University of Technology", degreeName: "National Diploma IT" },
+      institution: {
+        name: "Vaal University of Technology",
+        degreeName: "National Diploma IT",
+      },
       scores: {
-        open_source: { score: 0, max: 35, evidence: "No GitHub profile found." },
-        self_projects: { score: 5, max: 30, evidence: "One coursework group project, minimal individual contribution visible." },
-        production: { score: 0, max: 25, evidence: "No production or internship experience listed." },
-        technical_skills: { score: 3, max: 10, evidence: "Introductory-level HTML/CSS/JS only." },
+        open_source: {
+          score: 0,
+          max: 35,
+          evidence: "No GitHub profile found.",
+        },
+        self_projects: {
+          score: 5,
+          max: 30,
+          evidence:
+            "One coursework group project, minimal individual contribution visible.",
+        },
+        production: {
+          score: 0,
+          max: 25,
+          evidence: "No production or internship experience listed.",
+        },
+        technical_skills: {
+          score: 3,
+          max: 10,
+          evidence: "Introductory-level HTML/CSS/JS only.",
+        },
       },
       bonusPoints: { total: 0, breakdown: {} },
-      deductions: { total: 5, reasons: ["No GitHub found", "CV formatting issues"] },
+      deductions: {
+        total: 5,
+        reasons: ["No GitHub found", "CV formatting issues"],
+      },
       keyStrengths: ["Completed diploma coursework on schedule"],
-      areasForImprovement: ["Build and publish personal projects", "Create a GitHub profile", "Seek internship experience"],
+      areasForImprovement: [
+        "Build and publish personal projects",
+        "Create a GitHub profile",
+        "Seek internship experience",
+      ],
       hiringAgentTotalScore: 0.4,
     },
     documents: {
@@ -254,7 +326,8 @@ export const applications: MockApplication[] = [
       shortlistedByRecruiterId: null,
       shortlistedAt: null,
     },
-    cvSummary: "Entry-level candidate with limited demonstrable technical evidence.",
+    cvSummary:
+      "Entry-level candidate with limited demonstrable technical evidence.",
     flags: ["No GitHub found", "No transcript"],
   },
 
@@ -271,7 +344,8 @@ export const applications: MockApplication[] = [
     },
     screening: {
       hardGatePassed: false,
-      hardGateReason: "CV could not be parsed — file appears to be corrupted or password-protected.",
+      hardGateReason:
+        "CV could not be parsed — file appears to be corrupted or password-protected.",
     },
     // Never reached the Hiring Agent because it failed the hard gate.
     evaluation: null,
@@ -307,18 +381,40 @@ export const applications: MockApplication[] = [
     },
     screening: { hardGatePassed: true, hardGateReason: null },
     evaluation: {
-      institution: { name: "North-West University", degreeName: "BSc Computer Science" },
+      institution: {
+        name: "North-West University",
+        degreeName: "BSc Computer Science",
+      },
       scores: {
-        open_source: { score: 8, max: 35, evidence: "Minimal open-source footprint." },
-        self_projects: { score: 16, max: 30, evidence: "Two self-projects of moderate complexity." },
-        production: { score: 8, max: 25, evidence: "Short-term vacation work, limited scope." },
-        technical_skills: { score: 5, max: 10, evidence: "Reasonable coverage of core CS fundamentals." },
+        open_source: {
+          score: 8,
+          max: 35,
+          evidence: "Minimal open-source footprint.",
+        },
+        self_projects: {
+          score: 16,
+          max: 30,
+          evidence: "Two self-projects of moderate complexity.",
+        },
+        production: {
+          score: 8,
+          max: 25,
+          evidence: "Short-term vacation work, limited scope.",
+        },
+        technical_skills: {
+          score: 5,
+          max: 10,
+          evidence: "Reasonable coverage of core CS fundamentals.",
+        },
       },
       // Deliberately sparse: no bonus points earned, no deductions applied — tests empty-state rendering.
       bonusPoints: { total: 0, breakdown: {} },
       deductions: { total: 0, reasons: [] },
       keyStrengths: ["Solid CS fundamentals"],
-      areasForImprovement: ["Needs a GitHub presence", "More production exposure"],
+      areasForImprovement: [
+        "Needs a GitHub presence",
+        "More production exposure",
+      ],
       hiringAgentTotalScore: 1.9,
     },
     documents: {
@@ -337,7 +433,8 @@ export const applications: MockApplication[] = [
       shortlistedByRecruiterId: null,
       shortlistedAt: null,
     },
-    cvSummary: "Candidate with sparse supporting data — good case for testing empty/optional fields.",
+    cvSummary:
+      "Candidate with sparse supporting data — good case for testing empty/optional fields.",
     flags: [],
   },
 
@@ -354,14 +451,42 @@ export const applications: MockApplication[] = [
     },
     screening: { hardGatePassed: true, hardGateReason: null },
     evaluation: {
-      institution: { name: "University of Cape Town", degreeName: "BSc Computer Science" },
-      scores: {
-        open_source: { score: 28, max: 35, evidence: "Active contributor to two open-source libraries, 40+ merged PRs." },
-        self_projects: { score: 27, max: 30, evidence: "Well-documented, deployed self-projects with CI pipelines." },
-        production: { score: 22, max: 25, evidence: "Two internships, one at a scaling fintech startup." },
-        technical_skills: { score: 10, max: 10, evidence: "Broad, deep stack across frontend, backend, and DevOps." },
+      institution: {
+        name: "University of Cape Town",
+        degreeName: "BSc Computer Science",
       },
-      bonusPoints: { total: 5, breakdown: { linkedin_profile: 1, technical_communication: 2, open_source_maintainer: 2 } },
+      scores: {
+        open_source: {
+          score: 28,
+          max: 35,
+          evidence:
+            "Active contributor to two open-source libraries, 40+ merged PRs.",
+        },
+        self_projects: {
+          score: 27,
+          max: 30,
+          evidence:
+            "Well-documented, deployed self-projects with CI pipelines.",
+        },
+        production: {
+          score: 22,
+          max: 25,
+          evidence: "Two internships, one at a scaling fintech startup.",
+        },
+        technical_skills: {
+          score: 10,
+          max: 10,
+          evidence: "Broad, deep stack across frontend, backend, and DevOps.",
+        },
+      },
+      bonusPoints: {
+        total: 5,
+        breakdown: {
+          linkedin_profile: 1,
+          technical_communication: 2,
+          open_source_maintainer: 2,
+        },
+      },
       deductions: { total: 0, reasons: [] },
       keyStrengths: [
         "Exceptional open-source track record",
@@ -386,12 +511,13 @@ export const applications: MockApplication[] = [
       },
     },
     ownership: {
-      claimedByRecruiterId: "recruiter1@company.com",
+      claimedByRecruiterId: "rose@dvtsoftware.com",
       claimedAt: "2025-01-21T10:00:00Z",
-      shortlistedByRecruiterId: "recruiter1@company.com",
+      shortlistedByRecruiterId: "rose@dvtsoftware.com",
       shortlistedAt: "2025-01-22T16:10:00Z",
     },
-    cvSummary: "Exceptional candidate — already shortlisted. Use to test the shortlisted UI state.",
+    cvSummary:
+      "Exceptional candidate — already shortlisted. Use to test the shortlisted UI state.",
     flags: [],
   },
 
@@ -429,6 +555,143 @@ export const applications: MockApplication[] = [
   },
 ];
 
-export function findApplication(applicationId: string): MockApplication | undefined {
+// Synthetic extra applications so pagination/infinite-scroll and name search have
+// enough data to actually demonstrate multiple pages across every status.
+const SYNTHETIC_NAMES = [
+  "Sarah Jenkins",
+  "Neo Rankapole",
+  "Jake Benkins",
+  "Amahle Zulu",
+  "Kagiso Mthembu",
+  "Tumi Radebe",
+  "Zanele Ngcobo",
+  "Bongani Sithole",
+  "Palesa Mokgadi",
+  "Sibusiso Ndlovu",
+  "Refilwe Mabaso",
+  "Katlego Sebola",
+  "Ayanda Cele",
+  "Mpho Tshabalala",
+  "Nomsa Khoza",
+  "Sarah Okonkwo",
+  "Lindiwe Buthelezi",
+  "Sarah Adams",
+  "Thandeka Mahlangu",
+  "Kabelo Modise",
+  "Nokuthula Zwane",
+  "Sarah Petersen",
+  "Vusi Mahlaba",
+  "Dineo Mokoena",
+  "Sarah Williams",
+  "Andile Ngwenya",
+  "Precious Nkuna",
+  "Sarah Botha",
+];
+
+const SYNTHETIC_STATUSES: CurrentStatus[] = [
+  "PENDING",
+  "PROCESSING",
+  "VALID",
+  "VALID",
+  "MANUAL_REVIEW",
+  "SHORTLISTED",
+  "ERROR",
+  "INVALID",
+];
+
+const SYNTHETIC_TIERS: Tier[] = ["STRONG", "BORDERLINE", "WEAK"];
+
+function buildSyntheticApplication(index: number): MockApplication {
+  const name = SYNTHETIC_NAMES[index % SYNTHETIC_NAMES.length];
+  const status = SYNTHETIC_STATUSES[index % SYNTHETIC_STATUSES.length];
+  // INVALID tier is reserved for applications that failed the hard gate, matching the status.
+  const tier =
+    status === "INVALID"
+      ? "INVALID"
+      : SYNTHETIC_TIERS[index % SYNTHETIC_TIERS.length];
+  const hasEvaluation =
+    status !== "PENDING" && status !== "INVALID" && status !== "ERROR";
+  const createdAt = new Date(
+    Date.UTC(2025, index % 12, (index % 27) + 1, 9, 0, 0),
+  ).toISOString();
+  const score = Math.min(5, ((index * 7) % 50) / 10 + 0.5);
+
+  return {
+    applicationId: `synthetic-${String(index).padStart(4, "0")}`,
+    currentStatus: status,
+    tier,
+    createdAt,
+    updatedAt: createdAt,
+    applicant: {
+      candidateName: name,
+      candidateEmail: `${name.toLowerCase().replace(/\s+/g, ".")}@email.com`,
+      candidateGitHubUrl:
+        index % 3 === 0
+          ? null
+          : `https://github.com/${name.toLowerCase().replace(/\s+/g, "-")}`,
+    },
+    screening: {
+      hardGatePassed: status !== "INVALID",
+      hardGateReason: status === "INVALID" ? "CV could not be parsed." : null,
+    },
+    evaluation: hasEvaluation
+      ? {
+          institution: {
+            name: "University of the Witwatersrand",
+            degreeName: "BSc Computer Science",
+          },
+          scores: {
+            open_source: {
+              score: 10,
+              max: 35,
+              evidence: "Synthetic evidence.",
+            },
+            self_projects: {
+              score: 15,
+              max: 30,
+              evidence: "Synthetic evidence.",
+            },
+            production: { score: 10, max: 25, evidence: "Synthetic evidence." },
+            technical_skills: {
+              score: 6,
+              max: 10,
+              evidence: "Synthetic evidence.",
+            },
+          },
+          bonusPoints: { total: 0, breakdown: {} },
+          deductions: { total: 0, reasons: [] },
+          keyStrengths: ["Solid fundamentals"],
+          areasForImprovement: ["More production experience"],
+          hiringAgentTotalScore: score,
+        }
+      : null,
+    documents: {
+      cvDocument: {
+        url: `https://storageaccount.blob.core.windows.net/cvs/synthetic-${String(index)}-cv.pdf`,
+        filename: `synthetic-${String(index)}-cv.pdf`,
+        uploadedDate: createdAt,
+        sizeKb: 500 + index * 10,
+      },
+      transcriptDocument: null,
+    },
+    ownership: {
+      claimedByRecruiterId: null,
+      claimedAt: null,
+      shortlistedByRecruiterId:
+        status === "SHORTLISTED" ? "rose@dvtsoftware.com" : null,
+      shortlistedAt: null,
+    },
+    cvSummary: "Synthetic candidate generated for pagination/search testing.",
+    flags: [],
+  };
+}
+
+for (let i = 0; i < 30; i++) {
+  applications.push(buildSyntheticApplication(i));
+}
+
+export function findApplication(
+  applicationId: string,
+): MockApplication | undefined {
   return applications.find((a) => a.applicationId === applicationId);
 }

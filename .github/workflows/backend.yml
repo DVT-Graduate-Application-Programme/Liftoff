@@ -2,15 +2,15 @@ name: Backend
 
 on:
   push:
-    branches: [main, development]
-    paths: ['backend/**', '.github/workflows/backend.yml']
+    branches: [main, development, feature/backend/stable]
+    paths: ['backend/**', 'worker/**', '.github/workflows/backend.yml']
   pull_request:
-    branches: [main, development]
-    paths: ['backend/**', '.github/workflows/backend.yml']
+    branches: [main, development, feature/backend/stable]
+    paths: ['backend/**', 'worker/**', '.github/workflows/backend.yml']
 
 jobs:
   build:
-    name: Restore · Build · Test
+    name: Restore · Build · Test (C# .NET)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -22,6 +22,37 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - run: dotnet restore
-      - run: dotnet build --no-restore -c Release
-      - run: dotnet test --no-build -c Release
+      - run: dotnet restore LiftOff.slnx
+      - run: dotnet build LiftOff.slnx --no-restore -c Release
+      - run: dotnet test LiftOff.slnx --no-build -c Release
+
+  worker-docker:
+    name: Verify Worker Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Worker Docker Image
+        run: docker build -f worker/Dockerfile .
+
+  python-tests:
+    name: Run Python hiring-agent Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/src/AI/hiring-agent
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run unit tests
+        run: |
+          python -m unittest discover -s tests -p "test_*.py"

@@ -16,9 +16,9 @@ public class GraphEmailService : IGraphEmailService
     public GraphEmailService(IConfiguration configuration)
     {
         // Using Client Credentials flow
-        var tenantId = configuration["Graph:TenantId"] ?? "";
-        var clientId = configuration["Graph:ClientId"] ?? "";
-        var clientSecret = configuration["Graph:ClientSecret"] ?? "";
+        var tenantId = configuration["Graph:TenantId"];
+        var clientId = configuration["Graph:ClientId"];
+        var clientSecret = configuration["Graph:ClientSecret"];
 
         var options = new ClientSecretCredentialOptions
         {

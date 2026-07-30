@@ -57,9 +57,12 @@ resource "azurerm_monitor_metric_alert" "backend_5xx" {
   criteria {
     metric_namespace = "Microsoft.App/containerApps"
     metric_name      = "Requests"
-    aggregation      = "Total"
-    operator         = "GreaterThan"
-    threshold        = 5
+    # Requests supports only Average/Total/Maximum/Minimum — "Count" is rejected by the
+    # Monitor API. Total is the metric's primary aggregation and matches the intent here:
+    # more than `threshold` 5xx responses summed across the window_size.
+    aggregation = "Total"
+    operator    = "GreaterThan"
+    threshold   = 5
 
     dimension {
       name     = "statusCodeCategory"

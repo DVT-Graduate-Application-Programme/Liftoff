@@ -1,7 +1,7 @@
 from typing import List, Optional, Dict, Tuple, Any, Protocol, runtime_checkable
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, computed_field
 from enum import Enum
-
+import logging
 
 class ModelProvider(Enum):
     """Enum for supported model providers."""
@@ -306,7 +306,15 @@ class EducationScore(CategoryScore):
     academic_requirement_met: AcademicRequirementStatus
     experience_requirement_met: ExperienceRequirementStatus
 
+class TotalScore(BaseModel):
+    """Computed rollup — never produced by the LLM. It's arithmetic over
+    already-validated category scores, so unlike CategoryScore there's no
+    `evidence` field: nothing here is an AI judgment to attribute.
+    """
 
+    score: float = Field(ge=0, description="Sum of category scores, each capped at its own max")
+    max: int = Field(gt=0, description="Sum of category maximums")
+                     
 class Scores(BaseModel):
     education: EducationScore
     open_source: CategoryScore
@@ -314,6 +322,41 @@ class Scores(BaseModel):
     production: CategoryScore
     technical_skills: CategoryScore
 
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def total(self) -> TotalScore:
+        """Derived on every access/serialization -- can't drift from its
+        inputs, can't be hallucinated by the LLM (scoring prompts don't
+        need to, and shouldn't, produce this key).
+
+        Deliberately excludes bonus_points: Scores has no visibility into
+        BonusPoints, which lives as a sibling field on EvaluationData.
+        Folding a discretionary bonus into the rubric total would blur two
+        different kinds of number. For rubric+bonus combined, see
+        EvaluationData.grand_total below.
+        """
+        categories: List[Tuple[str, CategoryScore]] = [
+            ("education", self.education),
+            ("open_source", self.open_source),
+            ("self_projects", self.self_projects),
+            ("production", self.production),
+            ("technical_skills", self.technical_skills),
+        ]
+
+        score = 0.0
+        max_score = 0
+        for name, category in categories:
+            capped = min(category.score, category.max)
+            if capped < category.score:
+                print(
+                    "%s score capped from %s to %s (max: %s) — scoring "
+                    "prompt returned a value above its own stated ceiling",
+                    name, category.score, capped, category.max,
+                )
+            score += capped
+            max_score += category.max
+
+        return TotalScore(score=score, max=max_score)
 
 class BonusPoints(BaseModel):
     total: float = Field(ge=0, le=20, description="Total bonus points")
@@ -345,7 +388,6 @@ class EvaluationData(BaseModel):
     # that's more permissive than the prompt it validates doesn't catch a
     # prompt violation if the LLM ever ignores the 1-3 instruction.
     areas_for_improvement: List[str] = Field(min_items=1, max_items=3)
-
 
 # OPEN QUESTION, not resolved here: resume_scoring_recruiter.jinja's JSON
 # output includes a top-level `candidate_name` field; resume_scoring_
@@ -422,6 +464,8 @@ class OllamaProvider:
 class GeminiProvider:
     """Google Gemini API provider implementation."""
 
+    _last_call_time = 0.0
+
     def __init__(self, api_key: str):
         import google.generativeai as genai
 
@@ -466,6 +510,14 @@ class GeminiProvider:
 
         for attempt in range(MAX_RETRIES):
             try:
+                # Enforce rate limit: max 15 RPM (1 request every 4 seconds)
+                # We use 4.5s to be safe
+                elapsed = time.time() - GeminiProvider._last_call_time
+                if elapsed < 4.5:
+                    time.sleep(4.5 - elapsed)
+                
+                GeminiProvider._last_call_time = time.time()
+
                 # Send the chat request
                 response = gemini_model.generate_content(gemini_messages)
 

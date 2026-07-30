@@ -1,471 +1,218 @@
 "use client";
 
 import * as React from "react";
+import AllCandidateCard from "@/components/applicant-card/all-candidate-card";
 import { useRouter } from "next/navigation";
-import {
-  ChevronDown,
-  Calendar,
-  RotateCcw,
-  CheckCircle2,
-  XCircle,
-  CircleHelp,
-  RefreshCw,
-} from "lucide-react";
+import { useInfiniteApplications } from "@/hooks/use-infinite-applications";
+import type { CandidateApplication } from "@/types/candidate";
+import type { PaginatedApplications } from "@/types/api";
+import { ListFilter, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { LoadMoreButton } from "@/components/load-more-button";
 import { Separator } from "@/components/ui/separator";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+  FilterField,
+  FilterSelect,
+  type ActiveFilter,
+} from "@/app/landing/components/filter-bar";
+import { SidebarInset, SidebarProvider, useSidebar } from "@/components/ui/sidebar";
+import { ApplicantDetailsSidebar } from "@/app/landing/components/applicant-details/applicant-details-sidebar";
+import {
+  ApplicantSelectionProvider,
+  useApplicantSelection,
+} from "@/components/providers/applicant-selection-provider";
+import { useApplicant } from "@/hooks/use-applicant";
+import { useEvaluation } from "@/hooks/use-evaluation";
+import { getStatusLabel, parseEducationEvidence } from "@/app/landing/components/candidate-list-utils";
 
+function SelectedApplicantDetailsSidebar() {
+  const { selectedApplicationId, selectedTabKey } = useApplicantSelection();
+  const applicantQuery = useApplicant(selectedApplicationId ?? "");
+  const evaluationQuery = useEvaluation(selectedApplicationId ?? "");
 
-type Decision = "yes" | "no" | "maybe";
-
-interface Candidate {
-  id: string;
-  name: string;
-  role: string;
-  decision: Decision;
-  systemScore: number;
-  systemScoreLabel: string;
-  academicAverage: number;
-  academicAverageLabel: string;
-  reviewedAt: string;
-  avatarInitials: string;
-}
-
-const TODAY_CANDIDATES: Candidate[] = [
-  {
-    id: "1",
-    name: "Alexander Sterling",
-    role: "Software Engineer — Backend",
-    decision: "yes",
-    systemScore: 91,
-    systemScoreLabel: "Strong",
-    academicAverage: 87,
-    academicAverageLabel: "High",
-    reviewedAt: "Today, 08:42 AM",
-    avatarInitials: "AS",
-  },
-  {
-    id: "2",
-    name: "Sophia Chen",
-    role: "Data Analyst — Insights Team",
-    decision: "maybe",
-    systemScore: 88,
-    systemScoreLabel: "Strong",
-    academicAverage: 82,
-    academicAverageLabel: "High",
-    reviewedAt: "Today., 09:15 AM",
-    avatarInitials: "SC",
-  },
-  {
-    id: "3",
-    name: "Marcus Thorne",
-    role: "UX Designer — Product Design",
-    decision: "no",
-    systemScore: 54,
-    systemScoreLabel: "Weaker",
-    academicAverage: 61,
-    academicAverageLabel: "Average",
-    reviewedAt: "Today, 10:03 AM",
-    avatarInitials: "MT",
-  },
-];
-
-const YESTERDAY_CANDIDATES: Candidate[] = [
-  {
-    id: "4",
-    name: "Priya Nair",
-    role: "DevOps Engineer — Infrastructure",
-    decision: "yes",
-    systemScore: 79,
-    systemScoreLabel: "Good",
-    academicAverage: 74,
-    academicAverageLabel: "Good",
-    reviewedAt: "Yesterday, 03:30 PM",
-    avatarInitials: "PN",
-  },
-  {
-    id: "5",
-    name: "Ethan Voss",
-    role: "Product Manager — Growth",
-    decision: "no",
-    systemScore: 47,
-    systemScoreLabel: "Weaker",
-    academicAverage: 55,
-    academicAverageLabel: "Below Avg",
-    reviewedAt: "Yesterday, 04:00 PM",
-    avatarInitials: "EV",
-  },
-  {
-    id: "6",
-    name: "Lena Hoffmann",
-    role: "Marketing Strategist",
-    decision: "maybe",
-    systemScore: 83,
-    systemScoreLabel: "Strong",
-    academicAverage: 79,
-    academicAverageLabel: "High",
-    reviewedAt: "Yesterday, 05:22 PM",
-    avatarInitials: "LH",
-  },
-];
-
-const EARLIER_CANDIDATES: Candidate[] = [
-  {
-    id: "7",
-    name: "James Okafor",
-    role: "Cybersecurity Analyst",
-    decision: "yes",
-    systemScore: 95,
-    systemScoreLabel: "Exceptional",
-    academicAverage: 91,
-    academicAverageLabel: "High",
-    reviewedAt: "5 Jul, 11:10 AM",
-    avatarInitials: "JO",
-  },
-  {
-    id: "8",
-    name: "Amara Diallo",
-    role: "Financial Analyst — Risk",
-    decision: "no",
-    systemScore: 38,
-    systemScoreLabel: "Weaker",
-    academicAverage: 48,
-    academicAverageLabel: "Below Avg",
-    reviewedAt: "5 Jul, 02:45 PM",
-    avatarInitials: "AD",
-  },
-];
-
-const GROUPS = [
-  { label: "Processed Today", candidates: TODAY_CANDIDATES },
-  { label: "Applied Yesterday", candidates: YESTERDAY_CANDIDATES },
-  { label: "Earlier This Week", candidates: EARLIER_CANDIDATES },
-];
-
-const DECISION_STYLES = {
-  yes: {
-    label: "Yes",
-    Icon: CheckCircle2,
-    iconClass: "text-primary",
-    borderClass: "border-l-primary",
-  },
-  no: {
-    label: "No",
-    Icon: XCircle,
-    iconClass: "text-destructive",
-    borderClass: "border-l-destructive",
-  },
-  maybe: {
-    label: "Maybe",
-    Icon: CircleHelp,
-    iconClass: "text-chart-4",
-    borderClass: "border-l-chart-4",
-  },
-} satisfies Record<
-  Decision,
-  {
-    label: string;
-    Icon: React.ComponentType<{ className?: string }>;
-    iconClass: string;
-    borderClass: string;
-  }
->;
-
-const DECISION_ORDER: Decision[] = ["yes", "no", "maybe"];
-
-function getNextDecision(decision: Decision) {
-  const currentIndex = DECISION_ORDER.indexOf(decision);
-  return DECISION_ORDER[(currentIndex + 1) % DECISION_ORDER.length];
-}
-
-function ScoreTag({ score }: { score: number }) {
-  const colorClass =
-    score >= 80
-      ? "text-primary"
-      : score >= 65
-        ? "text-chart-4"
-        : "text-destructive";
+  const evaluationMessage = !selectedApplicationId
+    ? "Select a candidate's “Show AI Summary” to view their evaluation here."
+    : evaluationQuery.isError
+      ? "Couldn't load evaluation."
+      : null;
 
   return (
-    <div className="flex min-w-12 justify-center">
-      <span className={cn("text-xl font-black leading-none tabular-nums", colorClass)}>
-        {score}%
-      </span>
-    </div>
+    <ApplicantDetailsSidebar
+      applicantId={selectedApplicationId}
+      candidateName={applicantQuery.data?.candidateName ?? "Applicant"}
+      evaluation={evaluationQuery.data ?? null}
+      isLoadingEvaluation={Boolean(selectedApplicationId) && (applicantQuery.isLoading || evaluationQuery.isLoading)}
+      evaluationMessage={evaluationMessage}
+      tabKey={selectedTabKey}
+    />
   );
 }
 
-function DecisionBadge({
-  decision,
-}: {
-  decision: Decision;
-}) {
-  const { Icon, label, iconClass } = DECISION_STYLES[decision];
+// Filter bar — restyled to match the dashboard tabs' FilterBar shell
+// (toggle button, collapsible field grid, active-filter chips), while
+// keeping History's own client-side filtering and date-range control.
+const HISTORY_STATUS_OPTIONS: [string, string][] = [
+  ["All", "All statuses"],
+  ["PENDING", "Pending"],
+  ["SHORTLISTED", "Shortlisted"],
+  ["REJECTED", "Rejected"],
+];
 
+function HistoryFilterBar({
+  filtersOpen,
+  onToggleFilters,
+  status,
+  onStatusChange,
+  dateRange,
+  onDateRangeChange,
+  activeFilters,
+  onClearAll,
+}: {
+  filtersOpen: boolean;
+  onToggleFilters: () => void;
+  status: string;
+  onStatusChange: (value: string) => void;
+  score: string;
+  onScoreChange: (value: string) => void;
+  dateRange: { start: string; end: string };
+  onDateRangeChange: (value: { start: string; end: string }) => void;
+  activeFilters: ActiveFilter[];
+  onClearAll: () => void;
+}) {
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span
-          aria-label={`Decision: ${label}`}
-          className={cn(
-            "inline-flex items-center justify-center align-middle select-none",
-            iconClass
-          )}
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap justify-end gap-3">
+        <button
+          type="button"
+          aria-expanded={filtersOpen}
+          aria-controls="history-filters"
+          onClick={onToggleFilters}
+          className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-foreground transition-colors hover:bg-muted"
         >
-          <Icon className="size-4 shrink-0" />
-        </span>
-      </TooltipTrigger>
-      <TooltipContent side="top" sideOffset={6}>
-        {label}
-      </TooltipContent>
-    </Tooltip>
-  );
-}
-
-function FilterDropdown({
-  label,
-  icon,
-}: {
-  label: string;
-  icon?: React.ReactNode;
-}) {
-  const [open, setOpen] = React.useState(false);
-
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        aria-expanded={open}
-        onClick={() => {
-          setOpen((v) => !v);
-        }}
-        className={cn(
-          "inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground",
-          "transition-all hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-          open && "bg-muted border-ring/30"
-        )}
-      >
-        {icon && <span className="text-muted-foreground">{icon}</span>}
-        {label}
-        <ChevronDown
-          className={cn(
-            "size-3.5 text-muted-foreground transition-transform",
-            open && "rotate-180"
-          )}
-        />
-      </button>
-      {open && (
-        <div className="absolute top-full left-0 mt-1.5 z-20 min-w-40 rounded-xl border border-border bg-card p-1 shadow-lg ring-1 ring-foreground/5">
-          <p className="px-2 py-1.5 text-xs text-muted-foreground font-medium">
-            Options
-          </p>
-          {["All", "Yes", "No","Maybe"].map((opt) => (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => {
-                setOpen(false);
+          <ListFilter size={16} />
+          Advanced Filters
+        </button>
+      </div>
+      {filtersOpen && (
+        <div
+          id="history-filters"
+          className="grid gap-4 rounded-xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3"
+        >
+          <FilterField label="Status">
+            <FilterSelect value={status} onChange={onStatusChange} options={HISTORY_STATUS_OPTIONS} />
+          </FilterField>
+          <FilterField label="Received from">
+            <input
+              aria-label="Received from"
+              type="date"
+              value={dateRange.start}
+              onChange={(event) => {
+                onDateRangeChange({ ...dateRange, start: event.target.value });
               }}
-              className="w-full rounded-lg px-2 py-1.5 text-left text-sm text-foreground hover:bg-muted transition-colors"
-            >
-              {opt}
-            </button>
+              className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+            />
+          </FilterField>
+          <FilterField label="Received to">
+            <input
+              aria-label="Received to"
+              type="date"
+              value={dateRange.end}
+              onChange={(event) => {
+                onDateRangeChange({ ...dateRange, end: event.target.value });
+              }}
+              className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+            />
+          </FilterField>
+        </div>
+      )}
+      {activeFilters.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2" aria-label="Active filters">
+          {activeFilters.map((filter) => (
+            <Badge key={filter.label} variant="outline" className="gap-1.5 px-3 py-1">
+              {filter.label}
+              <button type="button" onClick={filter.onClear} aria-label={`Clear ${filter.label}`}>
+                ×
+              </button>
+            </Badge>
           ))}
+          <Button type="button" variant="ghost" size="sm" className="h-5 px-2 text-xs" onClick={onClearAll}>
+            Clear all
+          </Button>
         </div>
       )}
     </div>
   );
 }
 
-function ChangeDecisionModal({
+function CandidateHistoryCard({
   candidate,
-  onClose,
 }: {
-  candidate: Candidate;
-  onClose: () => void;
+  candidate: CandidateApplication;
 }) {
-  const newDecision = getNextDecision(candidate.decision);
-  const nextDecisionStyle = DECISION_STYLES[newDecision];
-  const NextDecisionIcon = nextDecisionStyle.Icon;
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="mx-4 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl ring-1 ring-foreground/5"
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
-      >
-        <div className="mb-4 flex items-center gap-3">
-          <div
-            className={cn(
-              "flex size-10 items-center justify-center rounded-full",
-              nextDecisionStyle.iconClass
-            )}
-          >
-            <RefreshCw
-              className="size-5"
-            />
-          </div>
-          <div>
-            <h3 className="font-semibold text-foreground">Change Decision</h3>
-            <p className="text-xs text-muted-foreground">
-              {candidate.name} · {candidate.role}
-            </p>
-          </div>
-        </div>
-
-        <p className="mb-6 text-sm text-muted-foreground leading-relaxed">
-          You are about to change the decision for{" "}
-          <strong className="text-foreground">{candidate.name}</strong> from{" "}
-          <DecisionBadge decision={candidate.decision} /> to{" "}
-          <span
-            aria-label={nextDecisionStyle.label}
-            title={nextDecisionStyle.label}
-            className={cn(
-              "inline-flex items-center gap-1.5 align-middle text-xs font-semibold",
-              nextDecisionStyle.iconClass
-            )}
-          >
-            <NextDecisionIcon className="size-4" />
-            {nextDecisionStyle.label}
-          </span>
-          . This action will be logged in the audit trail.
-        </p>
-
-        <div className="flex gap-2 justify-end">
-          <Button variant="outline" size="sm" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            variant={newDecision === "no" ? "destructive" : "default"}
-            size="sm"
-            onClick={onClose}
-          >
-            Confirm {nextDecisionStyle.label}
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function CandidateHistoryCard({ candidate }: { candidate: Candidate }) {
   const router = useRouter();
-  const [showModal, setShowModal] = React.useState(false);
-  const decisionStyle = DECISION_STYLES[candidate.decision];
+  const { selectApplication } = useApplicantSelection();
+  const { setOpen, setOpenMobile } = useSidebar();
+  const evaluationQuery = useEvaluation(candidate.applicationId);
 
   const handleCardClick = () => {
-    router.push(`/applicants/${candidate.id}`);
+    router.push(`/applicants/${candidate.applicationId}?from=history`);
   };
 
-  const handleChangeDecision = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowModal(true);
+  const getStatusTone = (status: string) => {
+    const s = status.toUpperCase();
+    if (s === "SHORTLISTED" || s === "HIRED" || s === "VALID") return "positive";
+    if (s === "INVALID" || s === "REJECTED") return "negative";
+    return "warning";
   };
+
+  const getTierTone = (tier: string) => {
+    const t = tier.toUpperCase();
+    if (t === "STRONG") return "positive";
+    if (t === "BORDERLINE") return "warning";
+    if (t === "WEAK") return "negative";
+    return "neutral";
+  };
+
+  const education = parseEducationEvidence(
+    evaluationQuery.data?.evidenceJson?.education.trim() || candidate.cvSummary,
+  );
+  const institutionName = evaluationQuery.data?.institutionJson?.name ?? education.institution;
+  const degreeName = evaluationQuery.data?.institutionJson?.degreeName ?? education.degree;
+
+  const academicAverage =
+    evaluationQuery.data?.institutionJson?.academic_average ??
+    evaluationQuery.data?.categoryScoresJson.education.score;
 
   return (
-    <>
-      {showModal && (
-        <ChangeDecisionModal
-          candidate={candidate}
-          onClose={() => {
-            setShowModal(false);
-          }}
-        />
-      )}
-
-      <div
-        role="button"
-        tabIndex={0}
-        aria-label={`View details for ${candidate.name}`}
-        onClick={handleCardClick}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            handleCardClick();
-          }
-        }}
-        className={cn(
-          "group relative flex cursor-pointer items-center gap-4 rounded-xl border bg-card p-4",
-          "border-l-4 transition-all hover:-translate-y-px",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-          decisionStyle.borderClass,
-          "border-border"
-        )}
-      >
-        <div
-          className={cn(
-            "flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary"
-          )}
-        >
-          {candidate.avatarInitials}
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <h4 className="font-semibold text-foreground leading-tight">
-            {candidate.name}
-          </h4>
-          <p className="mt-0.5 text-xs text-muted-foreground truncate">
-            {candidate.role}
-          </p>
-        </div>
-
-        <div className="hidden sm:flex w-[13rem] shrink-0 items-center justify-center gap-3">
-          <div className="flex w-20 flex-col items-center gap-0.5">
-            <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-medium">
-              Sys Score
-            </span>
-            <ScoreTag score={candidate.systemScore} />
-          </div>
-          <div className="w-px h-10 bg-border" />
-          <div className="flex w-20 flex-col items-center gap-0.5">
-            <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-medium">
-              Acad. Avg
-            </span>
-            <ScoreTag score={candidate.academicAverage} />
-          </div>
-        </div>
-
-        <div className="flex w-12 shrink-0 flex-col items-center justify-center gap-0.5">
-          <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-medium">
-            Decision
-          </span>
-          <DecisionBadge decision={candidate.decision} />
-        </div>
-
-        <div className="hidden md:flex w-36 shrink-0 flex-col items-end gap-0.5">
-          <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-medium">
-            Reviewed
-          </span>
-          <span className="max-w-full truncate whitespace-nowrap text-right text-xs font-medium tabular-nums text-foreground">
-            {candidate.reviewedAt}
-          </span>
-        </div>
-
-        <div className="shrink-0 pl-2">
-          <Button
-            variant="outline"
-            size="sm"
-            aria-label={`Change decision for ${candidate.name}`}
-            onClick={handleChangeDecision}
-            className="gap-1.5 text-xs"
-          >
-            <RotateCcw className="size-3.5" />
-            <span className="hidden sm:inline">Change Decision</span>
-            <span className="sm:hidden">Change</span>
-          </Button>
-        </div>
-      </div>
-    </>
+    <AllCandidateCard
+      key={candidate.applicationId}
+      name={candidate.candidateName}
+      institute={institutionName}
+      subtitle={degreeName}
+      academicAverage={academicAverage}
+      systemScore={candidate.hiringAgentTotalScore}
+      scoreLabel="Sys Score"
+      scoreClassName="font-semibold"
+      layout="history"
+      statusLabel={getStatusLabel(candidate.currentStatus)}
+      statusTone={getStatusTone(candidate.currentStatus)}
+      tierLabel={candidate.tier}
+      tierTone={getTierTone(candidate.tier)}
+      reviewedAt={new Date(candidate.createdAt).toLocaleDateString()}
+      showReviewedAt={true}
+      createdAt={candidate.createdAt}
+      onClick={handleCardClick}
+      onActionClick={() => {
+        selectApplication(candidate.applicationId, "history");
+        setOpen(true);
+        setOpenMobile(true);
+      }}
+      secondaryActionLabel="View Applicant"
+      onSecondaryActionClick={() => {
+        handleCardClick();
+      }}
+    />
   );
 }
 
@@ -474,8 +221,10 @@ function DateGroup({
   candidates,
 }: {
   label: string;
-  candidates: Candidate[];
+  candidates: CandidateApplication[];
 }) {
+  if (candidates.length === 0) return null;
+
   return (
     <section aria-label={label} className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
@@ -487,54 +236,158 @@ function DateGroup({
 
       <div className="flex flex-col gap-2.5">
         {candidates.map((c) => (
-          <CandidateHistoryCard key={c.id} candidate={c} />
+          <CandidateHistoryCard
+            key={c.applicationId}
+            candidate={c}
+          />
         ))}
       </div>
     </section>
   );
 }
 
-
 export default function HistoryPage() {
+  const [filtersOpen, setFiltersOpen] = React.useState(false);
+  const [filterDecision, setFilterDecision] = React.useState("All");
+  const [filterDateRange, setFilterDateRange] = React.useState({ start: "", end: "" });
+  const [filterScore, setFilterScore] = React.useState("All");
+
+  const clearFilters = () => {
+    setFilterDecision("All");
+    setFilterDateRange({ start: "", end: "" });
+    setFilterScore("All");
+  };
+
+  const activeFilters: ActiveFilter[] = [
+    filterDecision !== "All" && {
+      label: `Status: ${filterDecision}`,
+      onClear: () => { setFilterDecision("All"); },
+    },
+    filterScore !== "All" && {
+      label: `Tier: ${filterScore}`,
+      onClear: () => { setFilterScore("All"); },
+    },
+    (filterDateRange.start || filterDateRange.end) && {
+      label: `Received: ${filterDateRange.start || "Any"} to ${filterDateRange.end || "Any"}`,
+      onClear: () => { setFilterDateRange({ start: "", end: "" }); },
+    },
+  ].filter(Boolean) as ActiveFilter[];
+
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteApplications({
+    status: filterDecision !== "All" ? filterDecision : undefined,
+    tier: filterScore !== "All" ? filterScore : undefined,
+    dateFrom: filterDateRange.start || undefined,
+    dateTo: filterDateRange.end || undefined,
+    limit: 12,
+  });
+  const filteredCandidates = React.useMemo(
+    () => (data?.pages ?? []).flatMap((page: PaginatedApplications) => page.applications),
+    [data?.pages],
+  );
+
+  let groups: { label: string; candidates: CandidateApplication[] }[] = [];
+
+  if (filteredCandidates.length > 0) {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterdayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+
+    const todayCandidates = filteredCandidates.filter((c: CandidateApplication) => new Date(c.createdAt) >= todayStart);
+    const yesterdayCandidates = filteredCandidates.filter(
+      (c: CandidateApplication) => new Date(c.createdAt) >= yesterdayStart && new Date(c.createdAt) < todayStart
+    );
+    const earlierCandidates = filteredCandidates.filter((c: CandidateApplication) => new Date(c.createdAt) < yesterdayStart);
+
+    groups = [
+      { label: "Processed Today", candidates: todayCandidates },
+      { label: "Processed Yesterday", candidates: yesterdayCandidates },
+      { label: "Earlier", candidates: earlierCandidates },
+    ];
+  }
+
+  groups = groups.filter((g) => g.candidates.length > 0);
+
   return (
-    <TooltipProvider>
-      <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl space-y-6">
+    <ApplicantSelectionProvider>
+      <div className="w-full overflow-hidden">
+        <SidebarProvider defaultOpen={false} className="min-h-0 w-full">
+          <div className="flex h-full min-h-0 w-full overflow-hidden">
+            <SidebarInset className="flex-1 overflow-y-auto">
+              <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-5xl space-y-6">
 
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">
-                Review History
-              </h1>
-              <p className="mt-1 text-sm text-muted-foreground max-w-md">
-                An audit trail of all finalized candidate decisions — yes, no,
-                and maybe across every hiring round.
-              </p>
-            </div>
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h1 className="text-2xl font-bold text-foreground">
+                        Review History
+                      </h1>
+                      <p className="mt-1 text-sm text-muted-foreground max-w-md">
+                        An audit trail of all candidate applications.
+                      </p>
+                    </div>
+                  </div>
+
+                  <HistoryFilterBar
+                    filtersOpen={filtersOpen}
+                    onToggleFilters={() => { setFiltersOpen((open) => !open); }}
+                    status={filterDecision}
+                    onStatusChange={setFilterDecision}
+                    score={filterScore}
+                    onScoreChange={setFilterScore}
+                    dateRange={filterDateRange}
+                    onDateRangeChange={setFilterDateRange}
+                    activeFilters={activeFilters}
+                    onClearAll={clearFilters}
+                  />
+
+                  {isLoading ? (
+                    <div className="flex h-64 items-center justify-center">
+                      <Loader2 className="size-8 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : error ? (
+                    <div className="flex h-64 items-center justify-center text-destructive">
+                      <p>Error loading history.</p>
+                    </div>
+                  ) : filteredCandidates.length === 0 ? (
+                    <div className="flex h-64 items-center justify-center rounded-xl border border-dashed border-border bg-muted/30">
+                      <p className="text-sm text-muted-foreground">No candidate history matches your filters.</p>
+                    </div>
+                  ) : (
+                    <div className="@container flex flex-col gap-8">
+                      {groups.map(({ label, candidates }) => (
+                        <DateGroup
+                          key={label}
+                          label={label}
+                          candidates={candidates}
+                        />
+                      ))}
+                      {hasNextPage && (
+                        <div className="flex justify-center">
+                          <LoadMoreButton
+                            hasNextPage={hasNextPage}
+                            isFetchingNextPage={isFetchingNextPage}
+                            onClick={() => {
+                              void fetchNextPage();
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </main>
+            </SidebarInset>
+            <SelectedApplicantDetailsSidebar />
           </div>
-
-          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 shadow-sm ring-1 ring-foreground/5">
-            <FilterDropdown label="All Decisions" />
-            <FilterDropdown
-              label="Date Range"
-              icon={<Calendar className="size-3.5" />}
-            />
-            <FilterDropdown label="System Score" />
-
-            <div className="flex-1" />
-
-            <Button variant="default" size="default" className="gap-1.5">
-              Apply
-            </Button>
-          </div>
-
-          <div className="flex flex-col gap-8">
-            {GROUPS.map(({ label, candidates }) => (
-              <DateGroup key={label} label={label} candidates={candidates} />
-            ))}
-          </div>
-        </div>
-      </main>
-    </TooltipProvider>
+        </SidebarProvider>
+      </div>
+    </ApplicantSelectionProvider>
   );
 }

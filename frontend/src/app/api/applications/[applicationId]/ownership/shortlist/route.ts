@@ -1,32 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { findApplication } from "../../../../_lib/mockData";
-import { badRequest, checkReservedTestIds, notFound, simulateLatency } from "../../../../_lib/helpers";
+import { auth } from "@/auth";
+import { proxyPostJson } from "../../../../_lib/backend";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ applicationId: string }> }) {
-  await simulateLatency();
-
   const { applicationId } = await params;
-
-  const reserved = checkReservedTestIds(applicationId);
-  if (reserved) return reserved;
-
-  const app = findApplication(applicationId);
-  if (!app) return notFound();
-
-  const body = (await req.json().catch(() => null)) as { recruiterIdentity?: string } | null;
-  if (!body?.recruiterIdentity) {
-    return badRequest("recruiterIdentity is required.");
+  const session = await auth();
+  const recruiterIdentity = session?.user?.email;
+  if (!recruiterIdentity) {
+    return NextResponse.json(
+      { error: "UNAUTHORIZED", message: "Authentication required." },
+      { status: 401 },
+    );
   }
 
-  const shortlistedAt = new Date().toISOString();
-  app.ownership.shortlistedByRecruiterId = body.recruiterIdentity;
-  app.ownership.shortlistedAt = shortlistedAt;
-  app.currentStatus = "SHORTLISTED";
-  app.updatedAt = shortlistedAt;
+  const body = (await req.json().catch(() => null)) as { reason?: unknown } | null;
+  const payload: { recruiterIdentity: string; reason?: string } = { recruiterIdentity };
+  if (typeof body?.reason === "string") {
+    payload.reason = body.reason;
+  }
 
-  return NextResponse.json({
-    shortlistedByRecruiterId: app.ownership.shortlistedByRecruiterId,
-    shortlistedAt: app.ownership.shortlistedAt,
-    updatedStatus: app.currentStatus,
-  });
+  return proxyPostJson(`/api/applications/${applicationId}/ownership/shortlist`, payload);
 }

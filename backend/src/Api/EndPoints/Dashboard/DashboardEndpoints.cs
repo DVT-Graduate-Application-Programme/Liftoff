@@ -1,6 +1,6 @@
 using MediatR;
-using Application.Queries.GetDashboardApplications;
-using Application.Queries.GetDashboardMetrics;
+using Application.Features.GetDashboardApplications;
+using Application.Features.GetDashboardMetrics;
 
 namespace Api.EndPoints.Applications;
 
@@ -17,6 +17,7 @@ public static class DashboardEndpoints
             bool? hardGatePassed,
             bool? isClaimed,
             bool? isShortlisted,
+            string? recruiterIdentity,
             DateTime? fromDate,
             DateTime? toDate) =>
         {
@@ -27,6 +28,7 @@ public static class DashboardEndpoints
                 HardGatePassed= hardGatePassed,
                 IsClaimed     = isClaimed,
                 IsShortlisted = isShortlisted,
+                RecruiterIdentity = recruiterIdentity,
                 FromDate      = fromDate,
                 ToDate        = toDate
             };

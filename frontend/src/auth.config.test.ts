@@ -9,14 +9,14 @@ function authorized(pathname: string, isLoggedIn: boolean) {
 }
 
 describe("authConfig.callbacks.authorized", () => {
-  it.each(["/dashboard", "/landing", "/applicants", "/history"])(
+  it.each(["/landing", "/applicants", "/history"])(
     "denies %s when logged out",
     (pathname) => {
       expect(authorized(pathname, false)).toBe(false)
     },
   )
 
-  it.each(["/dashboard", "/landing", "/applicants", "/history"])(
+  it.each(["/landing", "/applicants", "/history"])(
     "allows %s when logged in",
     (pathname) => {
       expect(authorized(pathname, true)).toBe(true)

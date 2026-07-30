@@ -1,0 +1,74 @@
+# backend/Dockerfile.migrations
+#
+# Builds the EF Core migration bundle as a standalone image. The bundle is an executable
+# containing every migration in src/Infrastructure/Migrations plus the EF runtime — it needs
+# no SDK and no source at run time, and applies only the migrations not yet recorded in
+# __EFMigrationsHistory.
+#
+# It is deployed as a run-to-completion job (Azure Container Apps Job / ECS task) that
+# executes inside the same network as the database, so neither public database access nor a
+# CI firewall rule is required. See infrastructure/azure/migrations.tf and
+# infrastructure/aws/migrations.tf.
+#
+# Supply the database via ConnectionStrings__Default, or via the same POSTGRES_* variables
+# the API uses — GradRecruitmentDbContextFactory accepts both.
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY .config/dotnet-tools.json ./.config/
+RUN dotnet tool restore
+
+COPY *.slnx ./
+COPY Directory.Build.Props ./
+COPY src/Domain/*.csproj ./src/Domain/
+COPY src/Application/*.csproj ./src/Application/
+COPY src/Infrastructure/*.csproj ./src/Infrastructure/
+COPY src/Api/*.csproj ./src/Api/
+RUN dotnet restore src/Api/Api.csproj
+
+COPY . .
+
+# Api is the startup project (the bundle requires an executable one); Infrastructure holds
+# the migrations. AddInfrastructure is never invoked — EF finds GradRecruitmentDbContextFactory
+# in the referenced Infrastructure assembly and uses that instead of building the web host,
+# so no Service Bus connection string is needed here.
+#
+# Deliberately no --self-contained/--runtime: those place build output under a RID subfolder
+# that `migrations bundle` does not probe, which fails with "Could not load file or assembly
+# 'Api'". The bundle is framework-dependent and runs on the aspnet runtime image below.
+RUN dotnet ef migrations bundle \
+        --project src/Infrastructure \
+        --startup-project src/Api \
+        --configuration Release \
+        --force \
+        --output /app/efbundle
+
+# aspnet rather than runtime: Infrastructure.csproj carries a FrameworkReference to
+# Microsoft.AspNetCore.App, so the bundle resolves against the ASP.NET shared framework.
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+RUN useradd --no-create-home --shell /bin/false appuser
+
+# Npgsql probes for GSSAPI/Kerberos at connect time. Without it the migration still runs,
+# but logs a red-herring "Error: libgssapi_krb5.so.2: cannot open shared object file" that
+# reads like a failure in the job output.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgssapi-krb5-2 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /app/efbundle ./efbundle
+RUN chown -R appuser:appuser /app && chmod 755 /app/efbundle
+
+# efbundle is a single-file app: it extracts its embedded files at startup and needs a
+# writable directory. appuser has no home, so point the extractor at a directory it owns.
+ENV DOTNET_BUNDLE_EXTRACT_BASE_DIR=/tmp/efbundle
+RUN mkdir -p /tmp/efbundle && chown appuser:appuser /tmp/efbundle
+
+USER appuser
+
+# Run with no arguments: the job definitions pass the database as POSTGRES_* environment
+# variables, which GradRecruitmentDbContextFactory reads. Deliberately not --connection,
+# which would expose the password in the process command line. A failed migration exits
+# non-zero, which is what gates the image rollout in CI.
+ENTRYPOINT ["./efbundle"]

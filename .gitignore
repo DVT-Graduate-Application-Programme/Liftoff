@@ -5,7 +5,7 @@
 
 # dotenv files
 .env.**
-
+.env
 # OpenTofu / Terraform — never commit real variable values
 infrastructure/**/*.tfvars
 infrastructure/**/*.tfvars.example
@@ -44,6 +44,9 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+!frontend/src/app/logs/
+!frontend/src/app/api/applications/logs/
+
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

@@ -1,24 +1,29 @@
 using Application.Interfaces;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Data;
 
 public class ApplicationRecordRepository : IApplicationRecordRepository
 {
     private readonly GradRecruitmentDbContext _dbContext;
+    private readonly IApplicationEventService _events;
 
-    public ApplicationRecordRepository(GradRecruitmentDbContext dbContext)
+    public ApplicationRecordRepository(
+        GradRecruitmentDbContext dbContext,
+        IApplicationEventService events)
     {
         _dbContext = dbContext;
+        _events = events;
     }
 
     public async Task<List<ApplicationRecord>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _dbContext.ApplicationRecords
             .AsNoTracking()
+            .Include(r => r.HiringAgentEvaluations)
+            .Include(r => r.RecruiterActions)
+            .Include(r => r.AuditLogs)
             .OrderByDescending(r => r.CreatedAt)
             .ToListAsync(cancellationToken);
     }
@@ -27,7 +32,17 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
     {
         return await _dbContext.ApplicationRecords
             .AsNoTracking()
+            .Include(r => r.HiringAgentEvaluations)
+            .Include(r => r.RecruiterActions)
+            .Include(r => r.AuditLogs)
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+    }
+
+    public async Task<ApplicationRecord?> GetByEmailMessageIdAsync(string emailMessageId, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.ApplicationRecords
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.EmailMessageId == emailMessageId, cancellationToken);
     }
 
     public async Task<bool> ExistsAsync(string emailMessageId, CancellationToken cancellationToken = default)
@@ -39,6 +54,11 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
     public async Task AddAsync(ApplicationRecord record, CancellationToken cancellationToken = default)
     {
         await _dbContext.ApplicationRecords.AddAsync(record, cancellationToken);
+        _events.PublishApplicationIngested(record.Id);
+    }
+    public async Task AddAuditLogAsync(AuditLog auditLog, CancellationToken cancellationToken = default)
+    {
+        await _dbContext.AuditLogs.AddAsync(auditLog, cancellationToken);
     }
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
