@@ -97,9 +97,9 @@ function ScoreTag({
 
 function InfoRow({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">{label}</span>
-      <span className="min-w-0 flex-1 truncate text-foreground">
+    <div className="flex items-baseline gap-1.5">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}:</span>
+      <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
         {children}
       </span>
     </div>
@@ -146,6 +146,10 @@ export default function AllCandidateCard({
   const statusStyle = statusStyles[currentStatusTone];
   const daysAgo = createdAt ? getDaysAgo(createdAt) : null;
   const displaySubtitle = subtitle ?? institute;
+  const recruiterFirstName = recruiterName?.split("@")[0].split(/[. ]/)[0];
+  const displayRecruiterName = recruiterFirstName 
+    ? recruiterFirstName.charAt(0).toUpperCase() + recruiterFirstName.slice(1).toLowerCase()
+    : undefined;
 
   return (
     <div
@@ -185,13 +189,7 @@ export default function AllCandidateCard({
                 <p className="whitespace-normal break-words">{institute}</p>
               </div>
             )}
-            {recruiterName && (
-              <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
-                <InfoRow label={recruiterLabel ?? "Recruiter"}>
-                  {recruiterName}
-                </InfoRow>
-              </div>
-            )}
+
           </div>
         </>
       ) : (
@@ -209,13 +207,7 @@ export default function AllCandidateCard({
               ) : null}
             </div>
           )}
-          {recruiterName && (
-            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
-              <InfoRow label={recruiterLabel ?? "Recruiter"}>
-                {recruiterName}
-              </InfoRow>
-            </div>
-          )}
+
         </div>
       )}
 
@@ -258,6 +250,17 @@ export default function AllCandidateCard({
             </span>
           )}
         </div>
+
+        {displayRecruiterName && (
+          <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 @4xl:flex">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+              {recruiterLabel ?? "Recruiter"}
+            </span>
+            <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium text-foreground">
+              {displayRecruiterName}
+            </span>
+          </div>
+        )}
 
         {layout === "history" && (
           <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 @4xl:flex">
