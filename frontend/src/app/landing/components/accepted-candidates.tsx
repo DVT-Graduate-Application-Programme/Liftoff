@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ApplicantList } from "./applicant-list";
 import { FilterBar, type ActiveFilter, type FilterFieldConfig, type SortOption } from "./filter-bar";
 import type { CandidateApplication } from "@/types/candidate";
+import { getRecruiterLabel } from "./candidate-list-utils";
 type Filters = Omit<ApplicationFilters, "status" | "search" | "limit" | "cursor">;
 
 function AcceptedCandidateCard({ application }: { application: CandidateApplication }) {
@@ -23,7 +24,7 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
   const detailQuery = useApplicationDetail(application.applicationId);
   const evaluationQuery = useEvaluation(application.applicationId);
   const ownershipQuery = useOwnership(application.applicationId);
-
+  const recruitersQuery = useRecruiters();
 
   const applicationDetail = detailQuery.data;
   const evaluation = evaluationQuery.data;
@@ -44,11 +45,7 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
   const institution = evaluation?.institutionJson;
   const academicAverage =
     institution?.academic_average ?? evaluation?.categoryScoresJson.education.score;
-  const recruiterId =
-    application.shortlistedByRecruiterId ??
-    application.claimedByRecruiterId ??
-    application.ratedByRecruiterId;
-  const recruiterName = recruiterId;
+  const recruiterName = getRecruiterLabel(application, recruitersQuery.data);
 
   return (
     <ApplicantCard
