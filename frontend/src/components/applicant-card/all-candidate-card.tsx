@@ -33,30 +33,30 @@ type AllCandidateCardProps = {
 function getScoreColor(score?: number | null) {
   if (score == null || Number.isNaN(score)) return "text-muted-foreground";
   if (score >= 80) return "text-primary";
-  if (score >= 65) return "text-chart-4";
-  return "text-destructive";
+  if (score >= 65) return "text-amber-600 dark:text-amber-400";
+  return "text-red-600 dark:text-red-400";
 }
 
 const statusStyles = {
   positive: {
     border: "border-l-primary",
-    text: "text-primary",
-    background: "bg-primary/10",
+    text: "text-primary dark:text-white",
+    background: "bg-primary/10 dark:bg-sky-700",
   },
   warning: {
     border: "border-l-chart-4",
-    text: "text-chart-4",
-    background: "bg-chart-4/10",
+    text: "text-amber-700 dark:text-black",
+    background: "bg-amber-100 dark:bg-chart-4",
   },
   negative: {
     border: "border-l-destructive",
-    text: "text-destructive",
-    background: "bg-destructive/10",
+    text: "text-red-700 dark:text-white",
+    background: "bg-red-100 dark:bg-destructive",
   },
   neutral: {
     border: "border-l-border",
-    text: "text-muted-foreground",
-    background: "bg-muted",
+    text: "text-muted-foreground dark:text-secondary-foreground",
+    background: "bg-muted dark:bg-secondary",
   },
 } satisfies Record<
   StatusTone,
@@ -302,7 +302,7 @@ export default function AllCandidateCard({
           type="button"
           variant="outline"
           size="sm"
-          className="w-full justify-center gap-1 text-xs bg-primary text-white @2xl:w-30"
+          className="w-full justify-center gap-1 text-xs bg-primary text-white dark:bg-sky-500 dark:hover:bg-sky-400 @2xl:w-30"
           onClick={(event) => {
             event.stopPropagation();
             if (onActionClick) {
