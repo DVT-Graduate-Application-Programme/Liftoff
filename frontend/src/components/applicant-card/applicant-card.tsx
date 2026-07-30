@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -91,16 +91,7 @@ function ScoreTag({ score }: { score?: number | null }) {
   );
 }
 
-function InfoRow({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex items-baseline gap-1.5">
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}:</span>
-      <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
-        {children}
-      </span>
-    </div>
-  );
-}
+
 
 function getDaysAgo(dateString: string): number | null {
   const inputDate = new Date(dateString);
