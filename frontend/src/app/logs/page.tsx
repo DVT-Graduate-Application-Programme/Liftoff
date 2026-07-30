@@ -10,8 +10,10 @@ import { ScrollText, ArrowRight, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LoadMoreButton } from "@/components/load-more-button";
+import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
 
 export default function LogsPage() {
+  const { search } = useApplicantSearch();
   const {
     data,
     isLoading,
@@ -25,6 +27,11 @@ export default function LogsPage() {
     () => (data?.pages ?? []).flatMap((page: { logs: RecruiterActionLog[] }) => page.logs),
     [data?.pages],
   );
+  const filteredLogs = React.useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return logs;
+    return logs.filter((log) => log.recruiterIdentity.toLowerCase().includes(query));
+  }, [logs, search]);
 
   return (
     <main className="w-full px-4 py-8 sm:px-6 lg:px-8">
@@ -49,11 +56,15 @@ export default function LogsPage() {
             message={error instanceof Error ? error.message : "An unknown error occurred"}
             onRetry={() => { void refetch(); }}
           />
-        ) : logs.length === 0 ? (
+        ) : filteredLogs.length === 0 ? (
           <EmptyState
             icon={<ScrollText className="size-5" />}
             title="No logs found"
-            description="There are currently no recruiter actions recorded."
+            description={
+              search.trim()
+                ? `No recruiter actions match "${search}".`
+                : "There are currently no recruiter actions recorded."
+            }
           />
         ) : (
           <div className="w-fit max-w-full rounded-md border bg-card text-card-foreground shadow-sm overflow-hidden">
@@ -70,7 +81,7 @@ export default function LogsPage() {
                 </tr>
                 </thead>
                 <tbody className="divide-y">
-                {logs.map((log) => (
+                {filteredLogs.map((log) => (
                   <tr key={log.id} className="hover:bg-muted/30 transition-colors">
                     <td className="px-3 py-3 whitespace-nowrap text-muted-foreground sm:px-6 sm:py-4">
                       {new Date(log.actionedAt).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false })}

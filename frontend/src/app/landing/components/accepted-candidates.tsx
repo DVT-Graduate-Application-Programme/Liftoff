@@ -26,6 +26,7 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
   const evaluationQuery = useEvaluation(application.applicationId);
   const ownershipQuery = useOwnership(application.applicationId);
 
+
   const applicationDetail = detailQuery.data;
   const evaluation = evaluationQuery.data;
   const ownership = ownershipQuery.data;
@@ -48,6 +49,12 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
     institution?.academic_average ?? evaluation?.categoryScoresJson.education.score;
   const reviewedAt = ownership?.shortlistedAt ?? applicationDetail.updatedAt;
 
+  const recruiterId =
+    application.shortlistedByRecruiterId ??
+    application.claimedByRecruiterId ??
+    application.ratedByRecruiterId;
+  const recruiterName = recruiterId;
+
   return (
     <ApplicantCard
       name={application.candidateName}
@@ -64,6 +71,8 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
       createdAt={application.createdAt}
       wrapInstitute
       wrapReviewedAt
+      recruiterLabel="Recruiter"
+      recruiterName={recruiterName ?? undefined}
       actionLabel="View AI Summary"
       actionVariant="default"
       onActionClick={() => {
@@ -137,9 +146,9 @@ function AcceptedCandidates() {
     <>
       <section className="mb-8 flex flex-col gap-6">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Accepted Applicants</h2>
+          <h2 className="text-2xl font-bold text-foreground">Team Shortlist</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Narrow the shortlist and reorder it by the signal that matters most.
+            Every shortlisted candidate, across the team — narrow it down and reorder by what matters most
           </p>
         </div>
         <FilterBar
