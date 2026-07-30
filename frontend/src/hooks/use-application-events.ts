@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { queryKeys } from "@/lib/query-keys";
 import type { ApplicationSseEvent } from "@/app/api/internal/notify/route";
 
@@ -32,6 +33,7 @@ export function useApplicationEvents() {
         case "application-ingested":
           // A new application arrived — invalidate every variant of the list.
           void queryClient.invalidateQueries({ queryKey: ["applications"] });
+          toast.info("New application received");
           break;
 
         case "evaluation-saved":
@@ -45,6 +47,7 @@ export function useApplicationEvents() {
           });
           // Also bump the list so status/tier/score columns update.
           void queryClient.invalidateQueries({ queryKey: ["applications"] });
+          toast.info("Evaluation updated");
           break;
 
         case "ownership-changed":
@@ -60,6 +63,7 @@ export function useApplicationEvents() {
           });
           // Refresh list so claimed/shortlisted columns stay in sync.
           void queryClient.invalidateQueries({ queryKey: ["applications"] });
+          toast.info("Application updated");
           break;
       }
     };
