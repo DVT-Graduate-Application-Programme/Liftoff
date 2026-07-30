@@ -80,6 +80,13 @@ variable "worker_admin_api_key" {
   default     = ""
 }
 
+# -- Backend --
+variable "internal_api_key" {
+  description = "Internal api key for the backend and hiring agent to use"
+  type        = string
+  sensitive   = true
+}
+
 # ── Frontend authentication (Auth.js + Microsoft Entra ID) ────────────────────
 # These were already present in terraform.tfvars but had no variable blocks, so Terraform
 # ignored them and planned to strip the corresponding secrets from the live frontend.

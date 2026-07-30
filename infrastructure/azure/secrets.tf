@@ -97,3 +97,10 @@ resource "azurerm_key_vault_secret" "worker_admin_api_key" {
   key_vault_id = azurerm_key_vault.main.id
   depends_on   = [azurerm_key_vault_access_policy.deployer]
 }
+
+resource "azurerm_key_vault_secret" "internal_api_key" {
+  name         = "internal-api-key"
+  value        = var.internal_api_key
+  key_vault_id = azurerm_key_vault.main.id
+  depends_on   = [azurerm_key_vault_access_policy.deployer]
+}
