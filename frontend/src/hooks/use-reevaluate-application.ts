@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { apiFetch } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import type { CandidateApplication } from "@/types/candidate";
@@ -58,6 +59,7 @@ export function useReevaluateApplication(applicationId: string) {
       context?.previousQueries.forEach(([queryKey, data]) => {
         queryClient.setQueryData(queryKey, data);
       });
+      toast.error("Couldn't re-evaluate application");
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.applicationDetail(applicationId) });
@@ -65,6 +67,7 @@ export function useReevaluateApplication(applicationId: string) {
       void queryClient.invalidateQueries({ queryKey: queryKeys.evaluation(applicationId) });
       void queryClient.invalidateQueries({ queryKey: ["applications"] });
       void queryClient.invalidateQueries({ queryKey: queryKeys.logs() });
+      toast.success("Application re-evaluation started");
     },
   });
 }
