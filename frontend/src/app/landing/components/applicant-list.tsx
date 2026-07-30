@@ -36,14 +36,6 @@ import {
 } from "./candidate-list-utils";
 import type { Evaluation } from "@/types/api";
 
-type SessionValue = {
-  user?: {
-    email?: string | null;
-  } | null;
-} | null;
-
-const useTypedSession = useSession as unknown as () => { data: SessionValue };
-
 interface ApplicantListProps {
   status?: string;
   tabKey: "pending" | "all" | "accepted";
@@ -163,7 +155,7 @@ export function ApplicantList({
   renderCard,
 }: ApplicantListProps) {
   const router = useRouter();
-  const { data: session } = useTypedSession();
+  const { data: session } = useSession();
   const recruiterIdentity = session?.user?.email ?? ACTIVE_RECRUITER_ID;
   const { search } = useApplicantSearch();
   const { selectApplication } = useApplicantSelection();
