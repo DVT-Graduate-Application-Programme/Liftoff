@@ -101,6 +101,66 @@ export function FilterSelect({
   );
 }
 
+export interface FilterBarShellProps {
+  id: string;
+  filtersOpen: boolean;
+  onToggleFilters: () => void;
+  gridClassName: string;
+  children: ReactNode;
+  activeFilters: ActiveFilter[];
+  onClearAll: () => void;
+}
+
+export function FilterBarShell({
+  id,
+  filtersOpen,
+  onToggleFilters,
+  gridClassName,
+  children,
+  activeFilters,
+  onClearAll,
+}: FilterBarShellProps) {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap justify-end gap-3">
+        <button
+          type="button"
+          aria-expanded={filtersOpen}
+          aria-controls={id}
+          onClick={onToggleFilters}
+          className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-foreground transition-colors hover:bg-muted"
+        >
+          <ListFilter size={16} />
+          Advanced Filters
+        </button>
+      </div>
+      {filtersOpen && (
+        <div
+          id={id}
+          className={cn("grid gap-4 rounded-xl border border-border bg-card p-4", gridClassName)}
+        >
+          {children}
+        </div>
+      )}
+      {activeFilters.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2" aria-label="Active filters">
+          {activeFilters.map((filter) => (
+            <Badge key={filter.label} variant="outline" className="gap-1.5 px-3 py-1">
+              {filter.label}
+              <button type="button" onClick={filter.onClear} aria-label={`Clear ${filter.label}`}>
+                ×
+              </button>
+            </Badge>
+          ))}
+          <Button type="button" variant="ghost" size="sm" className="h-5 px-2 text-xs" onClick={onClearAll}>
+            Clear all
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function FilterBar({
   id,
   filtersOpen,
