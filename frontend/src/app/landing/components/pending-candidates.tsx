@@ -14,7 +14,7 @@ import { ACTIVE_RECRUITER_ID } from "@/hooks/use-claim-application";
 
 const PendingCandidates = () => {
   const { data: session } = useSession();
-  const recruiterIdentity = session?.user?.email ?? ACTIVE_RECRUITER_ID;
+  const recruiterIdentity = session?.user.email ?? ACTIVE_RECRUITER_ID;
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [minScore, setMinScore] = useState("");
   const [dateRange, setDateRange] = useState("all");

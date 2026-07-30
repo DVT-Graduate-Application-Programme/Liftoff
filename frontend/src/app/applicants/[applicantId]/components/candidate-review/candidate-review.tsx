@@ -81,7 +81,7 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
   const rating = ratingOverride ?? ownershipQuery.data?.recruiterRating ?? 0;
   const notes = notesOverride ?? ownershipQuery.data?.recruiterRatingNote ?? "";
   const statusUpper = currentStatus?.toUpperCase() ?? "";
-  const recruiterIdentity = session?.user?.email ?? ACTIVE_RECRUITER_ID;
+  const recruiterIdentity = session?.user.email ?? ACTIVE_RECRUITER_ID;
   const isAssignedToCurrentRecruiter =
     ownershipQuery.data?.claimedByRecruiterId === recruiterIdentity ||
     ownershipQuery.data?.shortlistedByRecruiterId === recruiterIdentity ||
