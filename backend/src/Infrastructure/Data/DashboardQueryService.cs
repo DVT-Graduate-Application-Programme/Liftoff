@@ -144,13 +144,13 @@ public class DashboardQueryService : IDashboardQueryService
         };
     }
 
-    private static double? GetAcademicAverage(JsonDocument? instJson, JsonDocument? scoreJson)
+    private static double? GetAcademicAverage(string? instJson, string? scoreJson)
     {
         if (instJson != null)
         {
             try
             {
-                var root = instJson.RootElement;
+                var root = JsonSerializer.Deserialize<JsonElement>(instJson);
                 if (root.TryGetProperty("academic_average", out var avgProp) && avgProp.TryGetDouble(out var val))
                 {
                     return val;
@@ -167,7 +167,7 @@ public class DashboardQueryService : IDashboardQueryService
         {
             try
             {
-                var root = scoreJson.RootElement;
+                var root = JsonSerializer.Deserialize<JsonElement>(scoreJson);
                 if (root.TryGetProperty("education", out var eduProp) && 
                     eduProp.TryGetProperty("score", out var scoreProp) && 
                     scoreProp.TryGetDouble(out var val))
