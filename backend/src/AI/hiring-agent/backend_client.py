@@ -96,7 +96,8 @@ def send_eval(eval_data: EvaluationData, message_id: UUID, prompt_version: str, 
     if institution:
         final_payload["institution"] = institution
 
-    ## TODO: add auth token check on endpoint
+    internal_api_key = os.environ.get("INTERNAL_API_KEY", "local-internal-key")
+    headers = {"X-Internal-Api-Key": internal_api_key}
 
     with httpx.Client(timeout=REQUEST_TIMEOUT) as client:
         for attempt in range(1, MAX_RETRIES + 1):
@@ -104,6 +105,7 @@ def send_eval(eval_data: EvaluationData, message_id: UUID, prompt_version: str, 
                 response = client.post(
                     url,
                     json=final_payload,
+                    headers=headers,
                 )
 
                 if response.status_code == 400:
