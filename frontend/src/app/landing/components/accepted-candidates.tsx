@@ -14,8 +14,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ApplicantList } from "./applicant-list";
 import { FilterBar, type ActiveFilter, type FilterFieldConfig, type SortOption } from "./filter-bar";
 import type { CandidateApplication } from "@/types/candidate";
-import { formatDate } from "./candidate-list-utils";
-
 type Filters = Omit<ApplicationFilters, "status" | "search" | "limit" | "cursor">;
 
 function AcceptedCandidateCard({ application }: { application: CandidateApplication }) {
@@ -47,8 +45,6 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
   const institution = evaluation?.institutionJson;
   const academicAverage =
     institution?.academic_average ?? evaluation?.categoryScoresJson.education.score;
-  const reviewedAt = ownership?.shortlistedAt ?? applicationDetail.updatedAt;
-
   const recruiterId =
     application.shortlistedByRecruiterId ??
     application.claimedByRecruiterId ??
