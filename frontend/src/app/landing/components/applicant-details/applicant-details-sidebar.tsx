@@ -186,7 +186,7 @@ export function ApplicantDetailsSidebar({
             type="button"
             asChild={Boolean(applicantId)}
             disabled={!applicantId}
-            className="mt-6 h-11 w-full text-base font-medium"
+            className="mt-6 h-11 w-full text-base font-medium text-white hover:bg-primary/80"
           >
             {applicantId ? (
               <Link href={tabKey ? `/applicants/${applicantId}?from=${tabKey}` : `/applicants/${applicantId}`}>
