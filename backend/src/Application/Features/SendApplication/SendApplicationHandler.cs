@@ -5,7 +5,7 @@ using Domain.Enums;
 using Domain.Messaging;
 using MediatR;
 
-namespace Application.Features.SendApplicaton;
+namespace Application.Features.SendApplication;
 
 public class SendApplicationHandler
     : IRequestHandler<SendApplicationCommand, SendApplicationResult>

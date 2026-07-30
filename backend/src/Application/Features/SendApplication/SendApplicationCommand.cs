@@ -1,7 +1,7 @@
 using System.IO;
 using MediatR;
 
-namespace Application.Features.SendApplicaton;
+namespace Application.Features.SendApplication;
 
 public class SendApplicationCommand : IRequest<SendApplicationResult>
 {
