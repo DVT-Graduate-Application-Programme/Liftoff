@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LoadMoreButton } from "@/components/load-more-button";
 import { Separator } from "@/components/ui/separator";
+import { ErrorState } from "@/components/ui/error-state";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   FilterField,
   FilterSelect,
@@ -335,16 +337,18 @@ export default function HistoryPage() {
                       <Loader2 className="size-8 animate-spin text-muted-foreground" />
                     </div>
                   ) : error ? (
-                    <div className="flex h-64 items-center justify-center text-destructive">
-                      <p>Error loading history.</p>
+                    <div className="mx-auto w-full max-w-lg">
+                      <ErrorState message="Error loading history." />
                     </div>
                   ) : filteredCandidates.length === 0 ? (
-                    <div className="flex h-64 items-center justify-center rounded-xl border border-dashed border-border bg-muted/30">
-                      <p className="text-sm text-muted-foreground">
-                        {search.trim()
-                          ? `No candidate history matches "${search}".`
-                          : "No candidate history matches your filters."}
-                      </p>
+                    <div className="mx-auto w-full max-w-lg">
+                      <EmptyState
+                        title={
+                          search.trim()
+                            ? `No candidate history matches "${search}".`
+                            : "No candidate history matches your filters."
+                        }
+                      />
                     </div>
                   ) : (
                     <div className="@container flex flex-col gap-8">
