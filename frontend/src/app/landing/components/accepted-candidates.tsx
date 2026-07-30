@@ -61,7 +61,7 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
       createdAt={application.createdAt}
       wrapInstitute
       recruiterLabel="Recruiter"
-      recruiterName={recruiterName ?? undefined}
+      recruiterName={recruiterName}
       actionLabel="View AI Summary"
       actionVariant="default"
       onActionClick={() => {
