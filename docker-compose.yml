@@ -84,6 +84,7 @@ services:
       NOTIFICATIONS__NEXTJS__WEBHOOKURL: "${NEXTJS_WEBHOOK_URL:-http://host.docker.internal:3000/api/internal/notify}"
       # Defaults to the local emulator; override with a real Azure connection string.
       SERVICEBUS_CONNECTION_STRING: "${SERVICEBUS_CONNECTION_STRING:-Endpoint=sb://servicebus-emulator;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;}"
+      INTERNAL_API_KEY: "${INTERNAL_API_KEY:-local-internal-key}"
     ports:
       - "5000:5000"
     depends_on:
@@ -122,6 +123,7 @@ services:
       environment:
         BACKEND_BASE_URL: "http://backend:5000"
         OLLAMA_HOST: "http://host.docker.internal:11434"
+        INTERNAL_API_KEY: "${INTERNAL_API_KEY:-local-internal-key}"
 
       ports:
         - "8001:8001"

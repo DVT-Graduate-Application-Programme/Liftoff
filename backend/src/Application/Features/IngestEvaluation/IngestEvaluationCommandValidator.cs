@@ -9,11 +9,6 @@ public class IngestEvaluationCommandValidator : AbstractValidator<IngestEvaluati
     {
         RuleFor(x => x.ApplicationId)
             .NotEmpty().WithMessage("ApplicationId is required.")
-            .Must(BeAValidGuid).WithMessage("ApplicationId must be a valid GUID.");
-    }
-
-    private static bool BeAValidGuid(string id)
-    {
-        return Guid.TryParse(id, out _);
+            .Must(id => Guid.TryParse(id, out _)).WithMessage("ApplicationId must be a valid GUID.");
     }
 }

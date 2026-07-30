@@ -1,4 +1,4 @@
-using Application.Features.SendApplicaton;
+using Application.Features.SendApplication;
 using FluentAssertions;
 
 namespace Application.UnitTests;
