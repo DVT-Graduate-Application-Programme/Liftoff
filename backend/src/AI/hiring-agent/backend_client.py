@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from typing import Optional
 from models import  EvaluationData
 from uuid import UUID
+import asyncio
 
 BACKEND_BASE_URL = os.environ.get("BACKEND_BASE_URL", "http://localhost:5000")
 
@@ -34,6 +35,7 @@ class ResumeEvaluationPayload(BaseModel):
 
 class Resume(BaseModel):
     id: UUID
+    message_id: Optional[str] = None
     candidate_name: str
     document_url: str
     transcript_url: Optional[str] = None
@@ -41,17 +43,17 @@ class Resume(BaseModel):
     model_config = {"alias_generator": to_camel, "populate_by_name": True}
 
 
-def get_resume(candidate_id: UUID) -> Resume:
+async def get_resume(candidate_id: UUID) -> Resume:
     url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/applicant"
-    with httpx.Client() as client:
-        response = client.get(url)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url)
         response.raise_for_status()
         metadata = response.json()
 
         cv_url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/cv"
         transcript_url = f"{BACKEND_BASE_URL}/api/applications/{candidate_id}/transcript"
 
-        transcript_check = client.get(transcript_url) # if transript is available
+        transcript_check = await client.get(transcript_url) # if transript is available
         if transcript_check.status_code == 404:
             transcript_url = None
 
@@ -64,21 +66,21 @@ def get_resume(candidate_id: UUID) -> Resume:
     )
 
 
-def get_all_resumes() -> list[Resume]:
+async def get_all_resumes() -> list[Resume]:
     """
     Fetches all resumes — use this if the agent processes a queue
     rather than being triggered per-resume.
     """
     url = f"{BACKEND_BASE_URL}/api/resumes"
 
-    with httpx.Client() as client:
-        response = client.get(url)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url)
         response.raise_for_status()
 
     return [Resume.model_validate(item) for item in response.json()]
 
 
-def send_eval(eval_data: EvaluationData, message_id: UUID, prompt_version: str, institution: dict = None):
+async def send_eval(eval_data: EvaluationData, message_id: UUID, prompt_version: str, institution: dict = None):
     """
     After AI has completed processing, return results and post to API ingest layer.
     message_id must be the ID returned by the C# Ingest API when the PENDING record was created.
@@ -99,10 +101,10 @@ def send_eval(eval_data: EvaluationData, message_id: UUID, prompt_version: str, 
     internal_api_key = os.environ.get("INTERNAL_API_KEY", "local-internal-key")
     headers = {"X-Internal-Api-Key": internal_api_key}
 
-    with httpx.Client(timeout=REQUEST_TIMEOUT) as client:
+    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
         for attempt in range(1, MAX_RETRIES + 1):
             try:
-                response = client.post(
+                response = await client.post(
                     url,
                     json=final_payload,
                     headers=headers,
@@ -116,7 +118,7 @@ def send_eval(eval_data: EvaluationData, message_id: UUID, prompt_version: str, 
 
                 if response.status_code in RetryStatusCodes and attempt < MAX_RETRIES:
                     delay_time = BASE_BACKOFF_SECONDS * (2 ** (attempt - 1))
-                    time.sleep(delay_time)
+                    await asyncio.sleep(delay_time)
                     continue
 
                 response.raise_for_status()

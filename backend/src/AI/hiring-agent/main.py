@@ -14,7 +14,7 @@ async def run_forever(queue: JobQueue):
     while True:
         candidate_id = await queue.dequeue()
         try:
-            await asyncio.to_thread(process_candidate, candidate_id)
+            await process_candidate(candidate_id)
             logger.info(f"Processed candidate {candidate_id}")
         except Exception as e:
             logger.error(f"Failed processing candidate {candidate_id}: {e}")

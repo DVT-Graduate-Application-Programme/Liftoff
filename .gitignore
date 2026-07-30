@@ -495,9 +495,27 @@ $RECYCLE.BIN/
 *.swp
 
 # terraform
+# State in any form is secret: it stores db_password, auth_secret and the Entra client
+# secret in cleartext, regardless of `sensitive = true` on the variable.
 terraform.tfvars
+*.tfvars
+!*.tfvars.example
+*.auto.tfvars
 *.tfstate
 *.tfstate.backup
+# Terraform writes pre-migration backups as terraform.tfstate.<epoch>.backup, which matches
+# neither *.tfstate nor *.tfstate.backup. That gap is how
+# infrastructure/azure/terraform.tfstate.1783619088.backup ended up committed.
+*.tfstate.*.backup
 *.tfstate.lock.info
 .terraform/
-.terraform.lock.hcl
+.terraform.tfstate.lock.info
+# Crash logs embed the state values that were in memory at the time.
+crash.log
+crash.*.log
+# Saved plan files contain the full resolved configuration, secrets included.
+*.tfplan
+*.tfplan.*
+
+# .terraform.lock.hcl is deliberately NOT ignored — it pins provider checksums and belongs
+# in version control so every machine and CI runner resolves identical providers.

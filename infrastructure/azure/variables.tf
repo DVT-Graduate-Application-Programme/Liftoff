@@ -16,6 +16,16 @@ variable "environment" {
   default     = "dev"
 }
 
+variable "subscription_id" {
+  description = "Azure subscription id."
+  type        = string
+}
+
+variable "tenant_id" {
+  description = "Azure tenant id."
+  type        = string
+}
+
 # ── Database ──────────────────────────────────────────────────────────────────
 
 variable "db_name" {
@@ -35,6 +45,7 @@ variable "db_password" {
   type        = string
   sensitive   = true
 }
+
 
 # ── Compute ───────────────────────────────────────────────────────────────────
 
