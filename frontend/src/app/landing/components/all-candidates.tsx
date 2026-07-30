@@ -52,6 +52,7 @@ function AllCandidateListCard({
   onClaim: () => void;
   onOpen: () => void;
 }) {
+  const recruitersQuery = useRecruiters();
   const evaluationQuery = useEvaluation(application.applicationId);
   const education = parseEducationEvidence(
     evaluationQuery.data?.evidenceJson?.education.trim() ||
@@ -78,7 +79,7 @@ function AllCandidateListCard({
         reviewedAt={formatDate(application.createdAt)}
         showReviewedAt={false}
         createdAt={application.createdAt}
-        recruiterName={getRecruiterLabel(application)}
+        recruiterName={getRecruiterLabel(application, recruitersQuery.data)}
         secondaryActionLabel={isClaimed ? "Claimed" : "Claim for review"}
         isSecondaryActionDisabled={isClaimed || isClaiming}
         isSecondaryActionLoading={isClaiming}

@@ -10,6 +10,7 @@ import {
 } from "@/components/providers/applicant-selection-provider";
 import { useInfiniteApplications } from "@/hooks/use-infinite-applications";
 import { useEvaluation } from "@/hooks/use-evaluation";
+import { useRecruiters } from "@/hooks/use-recruiters";
 import {
   ACTIVE_RECRUITER_ID,
   useClaimApplication,
@@ -167,6 +168,7 @@ export function ApplicantList({
   const { search } = useApplicantSearch();
   const { selectApplication } = useApplicantSelection();
   const { setOpen, setOpenMobile } = useSidebar();
+  const recruitersQuery = useRecruiters();
 
   // Opens the details panel. The Sidebar mounts one branch at a time — a mobile
   // Sheet (openMobile) or a desktop offcanvas (open) — so set both to reliably
@@ -277,7 +279,7 @@ export function ApplicantList({
       showReviewedAt,
       showStatus: tabKey !== "pending",
       createdAt: application.createdAt,
-      recruiterName: getRecruiterLabel(application),
+      recruiterName: getRecruiterLabel(application, recruitersQuery.data),
       statusLabel: getStatusLabel(displayStatus),
       ...(enableClaim
         ? {

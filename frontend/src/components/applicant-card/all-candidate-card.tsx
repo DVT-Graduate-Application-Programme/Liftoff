@@ -135,10 +135,7 @@ export default function AllCandidateCard({
   const statusStyle = statusStyles[currentStatusTone];
   const daysAgo = createdAt ? getDaysAgo(createdAt) : null;
   const displaySubtitle = subtitle ?? institute;
-  const recruiterFirstName = recruiterName?.split("@")[0].split(/[. ]/)[0];
-  const displayRecruiterName = recruiterFirstName 
-    ? recruiterFirstName.charAt(0).toUpperCase() + recruiterFirstName.slice(1).toLowerCase()
-    : undefined;
+  const displayRecruiterName = recruiterName;
 
   return (
     <div

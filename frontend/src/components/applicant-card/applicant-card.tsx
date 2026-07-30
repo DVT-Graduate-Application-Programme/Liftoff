@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -91,16 +91,7 @@ function ScoreTag({ score }: { score?: number | null }) {
   );
 }
 
-function InfoRow({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex items-baseline gap-1.5">
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}:</span>
-      <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
-        {children}
-      </span>
-    </div>
-  );
-}
+
 
 function getDaysAgo(dateString: string): number | null {
   const inputDate = new Date(dateString);
@@ -151,6 +142,7 @@ export default function ApplicantCard({
   const currentStatusTone = statusTone ?? "positive";
   const statusStyle = statusStyles[currentStatusTone];
   const daysAgo = createdAt ? getDaysAgo(createdAt) : null;
+  const displayRecruiterName = recruiterName;
 
   return (
     <div
@@ -192,13 +184,7 @@ export default function ApplicantCard({
               )}
             </div>
           )}
-          {recruiterName && (
-            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
-              <InfoRow label={recruiterLabel ?? "Recruiter"}>
-                {recruiterName}
-              </InfoRow>
-            </div>
-          )}
+
         </div>
       </div>
 
@@ -285,6 +271,16 @@ export default function ApplicantCard({
             </span>
             <span className="text-xs font-medium tabular-nums text-muted-foreground">
               --
+            </span>
+          </div>
+        )}
+        {displayRecruiterName && (
+          <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 pl-2 @4xl:flex">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+              {recruiterLabel ?? "Recruiter"}
+            </span>
+            <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium text-foreground">
+              {displayRecruiterName}
             </span>
           </div>
         )}

@@ -14,8 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ApplicantList } from "./applicant-list";
 import { FilterBar, type ActiveFilter, type FilterFieldConfig, type SortOption } from "./filter-bar";
 import type { CandidateApplication } from "@/types/candidate";
-import { formatDate } from "./candidate-list-utils";
-
+import { getRecruiterLabel } from "./candidate-list-utils";
 type Filters = Omit<ApplicationFilters, "status" | "search" | "limit" | "cursor">;
 
 function AcceptedCandidateCard({ application }: { application: CandidateApplication }) {
@@ -25,11 +24,10 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
   const detailQuery = useApplicationDetail(application.applicationId);
   const evaluationQuery = useEvaluation(application.applicationId);
   const ownershipQuery = useOwnership(application.applicationId);
-
+  const recruitersQuery = useRecruiters();
 
   const applicationDetail = detailQuery.data;
   const evaluation = evaluationQuery.data;
-  const ownership = ownershipQuery.data;
 
   const isLoading =
     detailQuery.isLoading ||
@@ -47,13 +45,7 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
   const institution = evaluation?.institutionJson;
   const academicAverage =
     institution?.academic_average ?? evaluation?.categoryScoresJson.education.score;
-  const reviewedAt = ownership?.shortlistedAt ?? applicationDetail.updatedAt;
-
-  const recruiterId =
-    application.shortlistedByRecruiterId ??
-    application.claimedByRecruiterId ??
-    application.ratedByRecruiterId;
-  const recruiterName = recruiterId;
+  const recruiterName = getRecruiterLabel(application, recruitersQuery.data);
 
   return (
     <ApplicantCard
@@ -66,13 +58,10 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
       secondaryScoreLabel="Academic Avg"
       showStatus={false}
       statusTone="neutral"
-      showReviewedAt
-      reviewedAt={formatDate(reviewedAt)}
       createdAt={application.createdAt}
       wrapInstitute
-      wrapReviewedAt
       recruiterLabel="Recruiter"
-      recruiterName={recruiterName ?? undefined}
+      recruiterName={recruiterName}
       actionLabel="View AI Summary"
       actionVariant="default"
       onActionClick={() => {
