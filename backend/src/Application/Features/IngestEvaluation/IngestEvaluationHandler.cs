@@ -1,8 +1,11 @@
 using Application.Evaluation;
 using Application.Interfaces;
+
 using Domain.Entities;
 using Domain.Enums;
+
 using MediatR;
+
 using System.Text.Json;
 
 namespace Application.Features.IngestEvaluation;
@@ -67,17 +70,17 @@ public class IngestEvaluationHandler
 
         var evaluation = new HiringAgentEvaluation
         {
-            InstitutionJson = institutionDto != null ? ToJsonDocument(institutionDto) : null,
-            CategoryScoresJson = ToJsonDocument(request.Scores),
-            EvidenceJson = ToJsonDocument(BuildEvidence(request.Scores)),
-            BonusPointsJson = ToJsonDocument(request.BonusPoints),
-            DeductionsJson = ToJsonDocument(new
+            InstitutionJson = institutionDto != null ? JsonSerializer.Serialize(institutionDto) : null,
+            CategoryScoresJson = JsonSerializer.Serialize(request.Scores),
+            EvidenceJson = JsonSerializer.Serialize(BuildEvidence(request.Scores)),
+            BonusPointsJson = JsonSerializer.Serialize(request.BonusPoints),
+            DeductionsJson = JsonSerializer.Serialize(new
             {
                 promptInjectionDetected = request.PromptInjectionDetected,
                 promptInjectionEvidence = request.PromptInjectionEvidence
             }),
-            KeyStrengthsJson = ToJsonDocument(request.KeyStrengths),
-            AreasForImprovementJson = ToJsonDocument(request.AreasForImprovement),
+            KeyStrengthsJson = JsonSerializer.Serialize(request.KeyStrengths),
+            AreasForImprovementJson = JsonSerializer.Serialize(request.AreasForImprovement),
             ProcessedAt = DateTimeOffset.UtcNow
         };
 
@@ -100,7 +103,7 @@ public class IngestEvaluationHandler
             hardGate.Passed,
             hardGate.Reason,
             summary,
-            ToJsonDocument(flags),
+            JsonSerializer.Serialize(flags),
             cancellationToken);
 
         if (!saved)
@@ -120,12 +123,7 @@ public class IngestEvaluationHandler
             Message = $"Evaluation received and saved for application '{request.ApplicationId}'."
         };
     }
-
-    private static JsonDocument ToJsonDocument<T>(T value)
-    {
-        return JsonDocument.Parse(JsonSerializer.Serialize(value));
-    }
-
+    
     private static object BuildEvidence(EvaluationScoresDto scores)
     {
         return new

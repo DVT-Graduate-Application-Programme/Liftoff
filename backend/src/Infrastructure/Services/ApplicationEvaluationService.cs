@@ -33,7 +33,7 @@ public class ApplicationEvaluationService : IApplicationEvaluationService
         bool hardGatePassed,
         string hardGateReason,
         string? cvSummary,
-        JsonDocument? flagsJson,
+        string? flagsJson,
         CancellationToken cancellationToken = default)
     {
         var applicationRecord = await _dbContext.ApplicationRecords
