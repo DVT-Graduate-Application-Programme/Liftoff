@@ -210,7 +210,7 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
         ) : null}
 
         <Button
-          className="h-11 w-full text-base font-medium"
+          className="h-11 w-full text-base font-medium text-white hover:bg-primary/80"
           disabled={!isAssignedToCurrentRecruiter || rating === 0 || rateMutation.isPending}
           onClick={() => {
             rateMutation.mutate(
