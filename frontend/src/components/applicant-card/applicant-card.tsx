@@ -325,7 +325,7 @@ export default function ApplicantCard({
           className={cn(
             "gap-1.5 text-xs w-full @2xl:w-auto",
             actionVariant === "default"
-              ? "text-white hover:bg-primary/80"
+              ? "text-white hover:bg-primary/80 dark:bg-sky-500 dark:hover:bg-sky-400"
               : undefined,
             secondaryActionLabel
               ? stackActions
