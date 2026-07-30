@@ -6,12 +6,11 @@ import { useRouter } from "next/navigation";
 import { useInfiniteApplications } from "@/hooks/use-infinite-applications";
 import type { CandidateApplication } from "@/types/candidate";
 import type { PaginatedApplications } from "@/types/api";
-import { ListFilter, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import { LoadMoreButton } from "@/components/load-more-button";
 import { Separator } from "@/components/ui/separator";
 import {
+  FilterBarShell,
   FilterField,
   FilterSelect,
   type ActiveFilter,
@@ -50,9 +49,6 @@ function SelectedApplicantDetailsSidebar() {
   );
 }
 
-// Filter bar — restyled to match the dashboard tabs' FilterBar shell
-// (toggle button, collapsible field grid, active-filter chips), while
-// keeping History's own client-side filtering and date-range control.
 const HISTORY_STATUS_OPTIONS: [string, string][] = [
   ["All", "All statuses"],
   ["PENDING", "Pending"],
@@ -80,67 +76,40 @@ function HistoryFilterBar({
   onClearAll: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap justify-end gap-3">
-        <button
-          type="button"
-          aria-expanded={filtersOpen}
-          aria-controls="history-filters"
-          onClick={onToggleFilters}
-          className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-foreground transition-colors hover:bg-muted"
-        >
-          <ListFilter size={16} />
-          Advanced Filters
-        </button>
-      </div>
-      {filtersOpen && (
-        <div
-          id="history-filters"
-          className="grid gap-4 rounded-xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          <FilterField label="Status">
-            <FilterSelect value={status} onChange={onStatusChange} options={HISTORY_STATUS_OPTIONS} />
-          </FilterField>
-          <FilterField label="Received from">
-            <input
-              aria-label="Received from"
-              type="date"
-              value={dateRange.start}
-              onChange={(event) => {
-                onDateRangeChange({ ...dateRange, start: event.target.value });
-              }}
-              className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
-            />
-          </FilterField>
-          <FilterField label="Received to">
-            <input
-              aria-label="Received to"
-              type="date"
-              value={dateRange.end}
-              onChange={(event) => {
-                onDateRangeChange({ ...dateRange, end: event.target.value });
-              }}
-              className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
-            />
-          </FilterField>
-        </div>
-      )}
-      {activeFilters.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2" aria-label="Active filters">
-          {activeFilters.map((filter) => (
-            <Badge key={filter.label} variant="outline" className="gap-1.5 px-3 py-1">
-              {filter.label}
-              <button type="button" onClick={filter.onClear} aria-label={`Clear ${filter.label}`}>
-                ×
-              </button>
-            </Badge>
-          ))}
-          <Button type="button" variant="ghost" size="sm" className="h-5 px-2 text-xs" onClick={onClearAll}>
-            Clear all
-          </Button>
-        </div>
-      )}
-    </div>
+    <FilterBarShell
+      id="history-filters"
+      filtersOpen={filtersOpen}
+      onToggleFilters={onToggleFilters}
+      gridClassName="sm:grid-cols-2 lg:grid-cols-3"
+      activeFilters={activeFilters}
+      onClearAll={onClearAll}
+    >
+      <FilterField label="Status">
+        <FilterSelect value={status} onChange={onStatusChange} options={HISTORY_STATUS_OPTIONS} />
+      </FilterField>
+      <FilterField label="Received from">
+        <input
+          aria-label="Received from"
+          type="date"
+          value={dateRange.start}
+          onChange={(event) => {
+            onDateRangeChange({ ...dateRange, start: event.target.value });
+          }}
+          className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+        />
+      </FilterField>
+      <FilterField label="Received to">
+        <input
+          aria-label="Received to"
+          type="date"
+          value={dateRange.end}
+          onChange={(event) => {
+            onDateRangeChange({ ...dateRange, end: event.target.value });
+          }}
+          className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+        />
+      </FilterField>
+    </FilterBarShell>
   );
 }
 
