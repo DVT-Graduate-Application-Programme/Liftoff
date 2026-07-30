@@ -187,13 +187,7 @@ export default function ApplicantCard({
               )}
             </div>
           )}
-          {recruiterName && (
-            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
-              <InfoRow label={recruiterLabel ?? "Recruiter"}>
-                {recruiterName}
-              </InfoRow>
-            </div>
-          )}
+
         </div>
       </div>
 
@@ -280,6 +274,16 @@ export default function ApplicantCard({
             </span>
             <span className="text-xs font-medium tabular-nums text-muted-foreground">
               --
+            </span>
+          </div>
+        )}
+        {displayRecruiterName && (
+          <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 pl-2 @4xl:flex">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+              {recruiterLabel ?? "Recruiter"}
+            </span>
+            <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium text-foreground">
+              {displayRecruiterName}
             </span>
           </div>
         )}
