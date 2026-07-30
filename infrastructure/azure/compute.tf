@@ -5,7 +5,7 @@
 #
 # Routing mirrors the AWS ALB listener rules:
 #   /          → frontend Container App (external ingress on port 3000)
-#   /api/* etc → backend Container App  (external ingress on port 8080)
+#   /api/* etc → backend Container App  (external ingress on port 5000)
 
 # ── Azure Container Registry (equivalent to ECR) ──────────────────────────────
 
@@ -80,7 +80,12 @@ resource "azurerm_container_app" "backend" {
 
   ingress {
     external_enabled = true
-    target_port      = 8080
+
+    # Matches ASPNETCORE_URLS=http://+:5000 baked into backend/Dockerfile, and the port the
+    # backend is published on locally in docker-compose.yml. Keeping Azure on the image's
+    # own port means the deployed environment behaves the same as the local one, with no
+    # env override to keep in sync.
+    target_port = 5000
 
     traffic_weight {
       percentage      = 100
@@ -140,7 +145,7 @@ resource "azurerm_container_app" "backend" {
 
       liveness_probe {
         path                    = "/health"
-        port                    = 8080
+        port                    = 5000
         transport               = "HTTP"
         initial_delay           = 60
         interval_seconds        = 30
@@ -285,14 +290,19 @@ resource "azurerm_container_app" "frontend" {
       cpu    = 0.25
       memory = "0.5Gi"
 
+      # The app's stable FQDN, not latest_revision_fqdn. The revision-scoped hostname
+      # changes on every backend deploy (ca-...-backend--0000032 -> --0000033), which both
+      # produced a permanent diff on this resource and pinned the frontend to one specific
+      # revision. revision_mode is "Single" with 100% traffic to the latest revision, so
+      # this hostname always routes to the current backend.
       env {
         name  = "BACKEND_URL"
-        value = "https://${azurerm_container_app.backend.latest_revision_fqdn}"
+        value = "https://${azurerm_container_app.backend.ingress[0].fqdn}"
       }
 
       env {
         name  = "NEXT_PUBLIC_BACKEND_URL"
-        value = "https://${azurerm_container_app.backend.latest_revision_fqdn}"
+        value = "https://${azurerm_container_app.backend.ingress[0].fqdn}"
       }
     }
   }
