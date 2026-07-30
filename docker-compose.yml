@@ -70,6 +70,10 @@ services:
       - .env.development
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      # Local only. Applies EF Core migrations and seeds mock data on startup. Deployed
+      # environments leave this unset and run migrations from a dedicated job — DbSeeder
+      # truncates before seeding, so this must never be true against a real database.
+      Database__AutoMigrateAndSeed: "true"
       Ollama__BaseUrl: "http://host.docker.internal:11434"
       POSTGRES_HOST: db
       POSTGRES_PORT: "5432"

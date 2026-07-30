@@ -84,9 +84,12 @@ app.UseSerilogRequestLogging();
 // API never issues DDL there — a bad migration fails the deploy instead of the running app.
 // Locally the API migrates itself so `docker compose up` still gives a working database.
 //
-// Development only: never in Testing (integration tests manage their own database) and
-// never in the deployed environments, which run migrations from a job.
-if (app.Environment.IsDevelopment())
+// Gated on an explicit opt-in flag rather than ASPNETCORE_ENVIRONMENT, because the deployed
+// Azure backend also runs as "Development" (it relies on that to expose the Scalar UI). An
+// environment-name check would therefore migrate the deployed database on every boot and,
+// worse, let DbSeeder truncate it. Only docker-compose.yml sets this flag, so no deployed
+// environment can seed by accident regardless of what it calls itself.
+if (app.Configuration.GetValue<bool>("Database:AutoMigrateAndSeed"))
 {
     await using (var scope = app.Services.CreateAsyncScope())
     {
