@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Star, X } from "lucide-react";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -103,6 +104,10 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
       );
       setNotesOverride(null);
       void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
+      toast.success("Notes saved");
+    },
+    onError: () => {
+      toast.error("Couldn't save notes");
     },
   });
 
@@ -172,7 +177,11 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
                   shortlistMutation.mutate(undefined, {
                     onSuccess: () => {
                       void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
-                    }
+                      toast.success("Candidate shortlisted");
+                    },
+                    onError: () => {
+                      toast.error("Couldn't shortlist candidate");
+                    },
                   });
                 }}
                 className={cn(
@@ -192,7 +201,11 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
                   rejectMutation.mutate(undefined, {
                     onSuccess: () => {
                       void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
-                    }
+                      toast.success("Candidate rejected");
+                    },
+                    onError: () => {
+                      toast.error("Couldn't reject candidate");
+                    },
                   });
                 }}
                 className={cn(
@@ -220,7 +233,11 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
                   setRatingOverride(null);
                   setNotesOverride(null);
                   void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
-                }
+                  toast.success("Rating saved");
+                },
+                onError: () => {
+                  toast.error("Couldn't save rating");
+                },
               }
             );
           }}
