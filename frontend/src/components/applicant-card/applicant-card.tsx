@@ -93,9 +93,9 @@ function ScoreTag({ score }: { score?: number | null }) {
 
 function InfoRow({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      <span className="font-medium tracking-widest">{label}</span>
-      <span className="min-w-0 flex-1 truncate text-foreground">
+    <div className="flex items-baseline gap-1.5">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}:</span>
+      <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
         {children}
       </span>
     </div>
