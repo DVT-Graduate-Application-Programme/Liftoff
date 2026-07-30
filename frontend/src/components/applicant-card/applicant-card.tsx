@@ -142,6 +142,10 @@ export default function ApplicantCard({
   const currentStatusTone = statusTone ?? "positive";
   const statusStyle = statusStyles[currentStatusTone];
   const daysAgo = createdAt ? getDaysAgo(createdAt) : null;
+  const recruiterFirstName = recruiterName?.split("@")[0].split(/[. ]/)[0];
+  const displayRecruiterName = recruiterFirstName 
+    ? recruiterFirstName.charAt(0).toUpperCase() + recruiterFirstName.slice(1).toLowerCase()
+    : undefined;
 
   return (
     <div
