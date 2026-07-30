@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from typing import Optional
 from models import  EvaluationData
 from uuid import UUID
+import asyncio
 
 BACKEND_BASE_URL = os.environ.get("BACKEND_BASE_URL", "http://localhost:5000")
 
@@ -114,7 +115,7 @@ async def send_eval(eval_data: EvaluationData, message_id: UUID, prompt_version:
 
                 if response.status_code in RetryStatusCodes and attempt < MAX_RETRIES:
                     delay_time = BASE_BACKOFF_SECONDS * (2 ** (attempt - 1))
-                    time.sleep(delay_time)
+                    await asyncio.sleep(delay_time)
                     continue
 
                 response.raise_for_status()
