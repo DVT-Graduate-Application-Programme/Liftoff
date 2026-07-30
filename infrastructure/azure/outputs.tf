@@ -18,25 +18,9 @@ output "acr_login_server" {
   value       = azurerm_container_registry.main.login_server
 }
 
-output "acr_backend_repository" {
-  description = "Full ACR repository path for the backend image — use as ACR_BACKEND_REPOSITORY GitHub secret."
-  value       = "${azurerm_container_registry.main.login_server}/backend"
-}
-
-output "acr_frontend_repository" {
-  description = "Full ACR repository path for the frontend image — use as ACR_FRONTEND_REPOSITORY GitHub secret."
-  value       = "${azurerm_container_registry.main.login_server}/frontend"
-}
-
-output "acr_worker_repository" {
-  description = "Full ACR repository path for the worker image — use as ACR_WORKER_REPOSITORY GitHub secret."
-  value       = "${azurerm_container_registry.main.login_server}/worker"
-}
-
-output "acr_migrations_repository" {
-  description = "Full ACR repository path for the migrations image — use as ACR_MIGRATIONS_REPOSITORY GitHub secret."
-  value       = "${azurerm_container_registry.main.login_server}/migrations"
-}
+# No per-image repository outputs. The deploy workflow composes image paths itself as
+# "${ACR_REPOSITORY}/${matrix.component}", so it needs only the registry host above —
+# one secret instead of four that drift apart every time the registry is recreated.
 
 output "migrations_job_name" {
   description = "Container Apps Job that applies EF Core migrations — use as MIGRATIONS_JOB GitHub secret."
