@@ -198,7 +198,7 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
                 className={cn(
                   "flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
                   isRejected
-                    ? "border-destructive bg-destructive/10 text-destructive"
+                    ? "border-destructive bg-destructive text-destructive-foreground"
                     : "border-input hover:bg-destructive hover:text-white",
                 )}
               >

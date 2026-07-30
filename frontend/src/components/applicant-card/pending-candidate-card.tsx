@@ -22,8 +22,8 @@ type PendingCandidateCardProps = {
 function getScoreColor(score?: number | null) {
   if (score == null || Number.isNaN(score)) return "text-muted-foreground";
   if (score >= 80) return "text-primary";
-  if (score >= 65) return "text-chart-4";
-  return "text-destructive";
+  if (score >= 65) return "text-amber-600 dark:text-amber-400";
+  return "text-red-600 dark:text-red-400";
 }
 
 function ScoreTag({ score }: { score?: number | null }) {
