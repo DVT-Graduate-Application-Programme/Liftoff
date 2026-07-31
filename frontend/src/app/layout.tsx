@@ -44,7 +44,7 @@ export default function RootLayout({
             <QueryProvider>
               <ApplicantSearchProvider>
                 <AppShell>{children}</AppShell>
-                <Toaster />
+                <Toaster position="top-right" />
               </ApplicantSearchProvider>
             </QueryProvider>
           </AuthSessionProvider>
