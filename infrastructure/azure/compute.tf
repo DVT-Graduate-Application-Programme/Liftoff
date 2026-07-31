@@ -80,7 +80,7 @@ resource "azurerm_container_app" "backend" {
 
   secret {
     name  = "internal-api-key"
-    value = var.internal_api_key 
+    value = var.internal_api_key
   }
 
   ingress {
@@ -280,6 +280,31 @@ resource "azurerm_container_app" "frontend" {
     identity = azurerm_user_assigned_identity.container_apps.id
   }
 
+  # Auth.js (frontend/src/auth.ts) reads these at runtime. Without them the app builds and
+  # serves, but every sign-in fails — which is what happened when these were declared as
+  # variables and written to Key Vault without ever being wired to the container.
+  #
+  # Secret names are lower-case with hyphens: Container Apps rejects underscores.
+  secret {
+    name  = "auth-secret"
+    value = var.auth_secret
+  }
+
+  secret {
+    name  = "auth-entra-client-id"
+    value = var.auth_microsoft_entra_id_id
+  }
+
+  secret {
+    name  = "auth-entra-client-secret"
+    value = var.auth_microsoft_entra_id_secret
+  }
+
+  secret {
+    name  = "auth-entra-issuer"
+    value = var.auth_microsoft_entra_id_issuer
+  }
+
   ingress {
     external_enabled = true
     target_port      = 3000
@@ -313,6 +338,56 @@ resource "azurerm_container_app" "frontend" {
       env {
         name  = "NEXT_PUBLIC_BACKEND_URL"
         value = "https://${azurerm_container_app.backend.ingress[0].fqdn}"
+      }
+
+      # ── Auth.js ───────────────────────────────────────────────────────────
+      # session.strategy is "jwt" (frontend/src/auth.ts), so AUTH_SECRET is required to
+      # sign and encrypt the token. Auth.js reads it implicitly from the environment,
+      # which is why it never appears in the source.
+      env {
+        name        = "AUTH_SECRET"
+        secret_name = "auth-secret"
+      }
+
+      env {
+        name        = "AUTH_MICROSOFT_ENTRA_ID_ID"
+        secret_name = "auth-entra-client-id"
+      }
+
+      env {
+        name        = "AUTH_MICROSOFT_ENTRA_ID_SECRET"
+        secret_name = "auth-entra-client-secret"
+      }
+
+      env {
+        name        = "AUTH_MICROSOFT_ENTRA_ID_ISSUER"
+        secret_name = "auth-entra-issuer"
+      }
+
+      # Auth.js v5 only trusts the incoming Host header when this is set, when running on
+      # Vercel, or outside production. Behind Container Apps' ingress none of those hold,
+      # so without it every sign-in fails with UntrustedHost even once the values above
+      # are present.
+      env {
+        name  = "AUTH_TRUST_HOST"
+        value = "true"
+      }
+
+      # Pins the OAuth redirect_uri to the app's stable ingress hostname.
+      #
+      # Without this, AUTH_TRUST_HOST makes Auth.js build redirect_uri from the incoming
+      # request's Host header. Reaching the app through a revision hostname
+      # (ca-...-frontend--0000002.<domain>) would then send Entra a redirect_uri that is not
+      # in the app registration, and sign-in fails with AADSTS50011. Pinning it means the
+      # value is identical on every revision, so exactly one URI needs registering.
+      #
+      # Built from the environment's default_domain rather than
+      # azurerm_container_app.frontend.ingress[0].fqdn: a resource cannot reference its own
+      # attributes without creating a dependency cycle. Container Apps composes external
+      # ingress FQDNs as "<app-name>.<default_domain>", so this resolves to the same value.
+      env {
+        name  = "AUTH_URL"
+        value = "https://ca-${local.prefix}-frontend.${azurerm_container_app_environment.main.default_domain}"
       }
     }
   }
