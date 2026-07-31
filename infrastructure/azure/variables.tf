@@ -16,6 +16,16 @@ variable "environment" {
   default     = "dev"
 }
 
+variable "subscription_id" {
+  description = "Azure subscription id."
+  type        = string
+}
+
+variable "tenant_id" {
+  description = "Azure tenant id."
+  type        = string
+}
+
 # ── Database ──────────────────────────────────────────────────────────────────
 
 variable "db_name" {
@@ -35,6 +45,7 @@ variable "db_password" {
   type        = string
   sensitive   = true
 }
+
 
 # ── Compute ───────────────────────────────────────────────────────────────────
 
@@ -67,6 +78,13 @@ variable "worker_admin_api_key" {
   type        = string
   sensitive   = true
   default     = ""
+}
+
+# -- Backend --
+variable "internal_api_key" {
+  description = "Internal api key for the backend and hiring agent to use"
+  type        = string
+  sensitive   = true
 }
 
 # ── Frontend authentication (Auth.js + Microsoft Entra ID) ────────────────────

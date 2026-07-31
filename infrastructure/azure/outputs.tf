@@ -3,14 +3,20 @@ output "resource_group_name" {
   value       = azurerm_resource_group.main.name
 }
 
+# Both use the app's stable ingress FQDN rather than latest_revision_fqdn. The
+# revision-scoped hostname changes on every deploy (ca-...-backend--0000032 -> --0000033),
+# so it goes stale as soon as anything is redeployed. revision_mode is "Single" with 100%
+# of traffic on the latest revision, so the ingress hostname always routes to the current
+# revision. This matches the BACKEND_URL wiring in compute.tf.
+
 output "frontend_url" {
   description = "Public URL to access the frontend Container App."
-  value       = "https://${azurerm_container_app.frontend.latest_revision_fqdn}"
+  value       = "https://${azurerm_container_app.frontend.ingress[0].fqdn}"
 }
 
 output "api_url" {
   description = "Public URL to access the backend API."
-  value       = "https://${azurerm_container_app.backend.latest_revision_fqdn}"
+  value       = "https://${azurerm_container_app.backend.ingress[0].fqdn}"
 }
 
 output "acr_login_server" {
@@ -18,25 +24,9 @@ output "acr_login_server" {
   value       = azurerm_container_registry.main.login_server
 }
 
-output "acr_backend_repository" {
-  description = "Full ACR repository path for the backend image — use as ACR_BACKEND_REPOSITORY GitHub secret."
-  value       = "${azurerm_container_registry.main.login_server}/backend"
-}
-
-output "acr_frontend_repository" {
-  description = "Full ACR repository path for the frontend image — use as ACR_FRONTEND_REPOSITORY GitHub secret."
-  value       = "${azurerm_container_registry.main.login_server}/frontend"
-}
-
-output "acr_worker_repository" {
-  description = "Full ACR repository path for the worker image — use as ACR_WORKER_REPOSITORY GitHub secret."
-  value       = "${azurerm_container_registry.main.login_server}/worker"
-}
-
-output "acr_migrations_repository" {
-  description = "Full ACR repository path for the migrations image — use as ACR_MIGRATIONS_REPOSITORY GitHub secret."
-  value       = "${azurerm_container_registry.main.login_server}/migrations"
-}
+# No per-image repository outputs. The deploy workflow composes image paths itself as
+# "${ACR_REPOSITORY}/${matrix.component}", so it needs only the registry host above —
+# one secret instead of four that drift apart every time the registry is recreated.
 
 output "migrations_job_name" {
   description = "Container Apps Job that applies EF Core migrations — use as MIGRATIONS_JOB GitHub secret."

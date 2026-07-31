@@ -28,9 +28,13 @@ resource "aws_secretsmanager_secret" "app_secrets" {
 resource "aws_secretsmanager_secret_version" "app_secrets" {
   secret_id = aws_secretsmanager_secret.app_secrets.id
 
-  # Placeholder — populate with real keys before deploying
+  # GEMINI_API_KEY / OLLAMA_BASE_URL are placeholders — not yet wired to any task, populate before use
   secret_string = jsonencode({
-    GEMINI_API_KEY  = "replace-me"
-    OLLAMA_BASE_URL = "replace-me"
+    GEMINI_API_KEY                 = "replace-me"
+    OLLAMA_BASE_URL                = "replace-me"
+    AUTH_SECRET                    = var.auth_secret
+    AUTH_MICROSOFT_ENTRA_ID_ID     = var.auth_microsoft_entra_id_id
+    AUTH_MICROSOFT_ENTRA_ID_SECRET = var.auth_microsoft_entra_id_secret
+    AUTH_MICROSOFT_ENTRA_ID_ISSUER = var.auth_microsoft_entra_id_issuer
   })
 }

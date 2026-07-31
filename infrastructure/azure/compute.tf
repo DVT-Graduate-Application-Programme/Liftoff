@@ -5,7 +5,7 @@
 #
 # Routing mirrors the AWS ALB listener rules:
 #   /          → frontend Container App (external ingress on port 3000)
-#   /api/* etc → backend Container App  (external ingress on port 8080)
+#   /api/* etc → backend Container App  (external ingress on port 5000)
 
 # ── Azure Container Registry (equivalent to ECR) ──────────────────────────────
 
@@ -78,9 +78,19 @@ resource "azurerm_container_app" "backend" {
     value = azurerm_servicebus_namespace.main.default_primary_connection_string
   }
 
+  secret {
+    name  = "internal-api-key"
+    value = var.internal_api_key 
+  }
+
   ingress {
     external_enabled = true
-    target_port      = 8080
+
+    # Matches ASPNETCORE_URLS=http://+:5000 baked into backend/Dockerfile, and the port the
+    # backend is published on locally in docker-compose.yml. Keeping Azure on the image's
+    # own port means the deployed environment behaves the same as the local one, with no
+    # env override to keep in sync.
+    target_port = 5000
 
     traffic_weight {
       percentage      = 100
@@ -138,9 +148,14 @@ resource "azurerm_container_app" "backend" {
         secret_name = "servicebus-connection-string"
       }
 
+      env {
+        name        = "INTERNAL_API_KEY"
+        secret_name = "internal-api-key"
+      }
+
       liveness_probe {
         path                    = "/health"
-        port                    = 8080
+        port                    = 5000
         transport               = "HTTP"
         initial_delay           = 60
         interval_seconds        = 30
@@ -265,29 +280,6 @@ resource "azurerm_container_app" "frontend" {
     identity = azurerm_user_assigned_identity.container_apps.id
   }
 
-  # Auth.js / Microsoft Entra ID credentials for recruiter sign-in. Secret names match the
-  # ones already on the deployed app, so declaring them here adopts the existing secrets
-  # rather than replacing them.
-  secret {
-    name  = "auth-secret"
-    value = var.auth_secret
-  }
-
-  secret {
-    name  = "auth-microsoft-entra-id-id"
-    value = var.auth_microsoft_entra_id_id
-  }
-
-  secret {
-    name  = "auth-microsoft-entra-id-secret"
-    value = var.auth_microsoft_entra_id_secret
-  }
-
-  secret {
-    name  = "auth-microsoft-entra-id-issuer"
-    value = var.auth_microsoft_entra_id_issuer
-  }
-
   ingress {
     external_enabled = true
     target_port      = 3000
@@ -308,56 +300,19 @@ resource "azurerm_container_app" "frontend" {
       cpu    = 0.25
       memory = "0.5Gi"
 
+      # The app's stable FQDN, not latest_revision_fqdn. The revision-scoped hostname
+      # changes on every backend deploy (ca-...-backend--0000032 -> --0000033), which both
+      # produced a permanent diff on this resource and pinned the frontend to one specific
+      # revision. revision_mode is "Single" with 100% traffic to the latest revision, so
+      # this hostname always routes to the current backend.
       env {
         name  = "BACKEND_URL"
-        value = "https://${azurerm_container_app.backend.latest_revision_fqdn}"
+        value = "https://${azurerm_container_app.backend.ingress[0].fqdn}"
       }
 
       env {
         name  = "NEXT_PUBLIC_BACKEND_URL"
-        value = "https://${azurerm_container_app.backend.latest_revision_fqdn}"
-      }
-
-      # Next.js standalone server binds to localhost by default, which the Container Apps
-      # ingress cannot reach.
-      env {
-        name  = "HOSTNAME"
-        value = "0.0.0.0"
-      }
-
-      # Auth.js builds OAuth callback URLs from AUTH_URL, so it must be the app's stable
-      # public hostname. Composed from the environment's default domain rather than this
-      # app's own fqdn attribute, which would be a self-reference and a dependency cycle.
-      env {
-        name  = "AUTH_URL"
-        value = "https://ca-${local.prefix}-frontend.${azurerm_container_app_environment.main.default_domain}"
-      }
-
-      # Ingress terminates TLS and forwards over HTTP, so Auth.js must trust the
-      # X-Forwarded-* headers to derive https callback URLs instead of http.
-      env {
-        name  = "AUTH_TRUST_HOST"
-        value = "true"
-      }
-
-      env {
-        name        = "AUTH_SECRET"
-        secret_name = "auth-secret"
-      }
-
-      env {
-        name        = "AUTH_MICROSOFT_ENTRA_ID_ID"
-        secret_name = "auth-microsoft-entra-id-id"
-      }
-
-      env {
-        name        = "AUTH_MICROSOFT_ENTRA_ID_SECRET"
-        secret_name = "auth-microsoft-entra-id-secret"
-      }
-
-      env {
-        name        = "AUTH_MICROSOFT_ENTRA_ID_ISSUER"
-        secret_name = "auth-microsoft-entra-id-issuer"
+        value = "https://${azurerm_container_app.backend.ingress[0].fqdn}"
       }
     }
   }

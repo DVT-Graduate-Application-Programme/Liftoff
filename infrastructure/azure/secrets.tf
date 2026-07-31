@@ -54,8 +54,12 @@ resource "azurerm_key_vault_secret" "app_secrets" {
   name = "app-secrets"
   # Placeholder — populate with real keys before deploying
   value = jsonencode({
-    GEMINI_API_KEY  = "replace-me"
-    OLLAMA_BASE_URL = "replace-me"
+    GEMINI_API_KEY                 = "replace-me"
+    OLLAMA_BASE_URL                = "replace-me"
+    AUTH_SECRET                    = var.auth_secret
+    AUTH_MICROSOFT_ENTRA_ID_ID     = var.auth_microsoft_entra_id_id
+    AUTH_MICROSOFT_ENTRA_ID_SECRET = var.auth_microsoft_entra_id_secret
+    AUTH_MICROSOFT_ENTRA_ID_ISSUER = var.auth_microsoft_entra_id_issuer
   })
   key_vault_id = azurerm_key_vault.main.id
   depends_on   = [azurerm_key_vault_access_policy.deployer]
@@ -90,6 +94,13 @@ resource "azurerm_key_vault_secret" "worker_admin_api_key" {
   count        = var.worker_admin_api_key != "" ? 1 : 0
   name         = "WorkerAdminApiKey"
   value        = var.worker_admin_api_key
+  key_vault_id = azurerm_key_vault.main.id
+  depends_on   = [azurerm_key_vault_access_policy.deployer]
+}
+
+resource "azurerm_key_vault_secret" "internal_api_key" {
+  name         = "internal-api-key"
+  value        = var.internal_api_key
   key_vault_id = azurerm_key_vault.main.id
   depends_on   = [azurerm_key_vault_access_policy.deployer]
 }

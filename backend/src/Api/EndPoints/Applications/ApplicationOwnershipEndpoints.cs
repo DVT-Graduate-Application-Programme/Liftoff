@@ -22,87 +22,93 @@ public static class ApplicationOwnershipEndpoints
         var group = app.MapGroup("/api/applications").WithTags("Applications");
 
         // POST /api/applications/{id}/ownership/claim
-        group.MapPost("/{id:guid}/ownership/claim", async (Guid id, ClaimOwnershipRequest request, IMediator mediator, ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/ownership/claim", async (Guid id, ClaimOwnershipRequest request, HttpContext context, IMediator mediator, ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
-            logger.LogInformation("Recruiter {RecruiterIdentity} is claiming application {ApplicationId}", request.RecruiterIdentity, id);
+            var recruiterIdentity = ResolveRecruiterIdentity(context, request.RecruiterIdentity);
+            logger.LogInformation("Recruiter {RecruiterIdentity} is claiming application {ApplicationId}", recruiterIdentity, id);
             
-            var claim = await mediator.Send(new ClaimApplicationOwnershipCommand(id, request.RecruiterIdentity), ct);
+            var claim = await mediator.Send(new ClaimApplicationOwnershipCommand(id, recruiterIdentity), ct);
             if (claim is null)
             {
                 logger.LogWarning("Claim ownership failed: Application {ApplicationId} not found", id);
                 return Results.NotFound();
             }
 
-            logger.LogInformation("Recruiter {RecruiterIdentity} successfully claimed application {ApplicationId}", request.RecruiterIdentity, id);
+            logger.LogInformation("Recruiter {RecruiterIdentity} successfully claimed application {ApplicationId}", recruiterIdentity, id);
             return Results.Ok(claim);
         })
         .WithName("ClaimApplicationOwnership");
 
         // POST /api/applications/{id}/ownership/shortlist
-        group.MapPost("/{id:guid}/ownership/shortlist", async (Guid id, ShortlistOwnershipRequest request, IMediator mediator, ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/ownership/shortlist", async (Guid id, ShortlistOwnershipRequest request, HttpContext context, IMediator mediator, ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
-            logger.LogInformation("Recruiter {RecruiterIdentity} is shortlisting application {ApplicationId}", request.RecruiterIdentity, id);
+            var recruiterIdentity = ResolveRecruiterIdentity(context, request.RecruiterIdentity);
+            logger.LogInformation("Recruiter {RecruiterIdentity} is shortlisting application {ApplicationId}", recruiterIdentity, id);
 
-            var shortlist = await mediator.Send(new ShortlistApplicationCommand(id, request.RecruiterIdentity, request.Reason), ct);
+            var shortlist = await mediator.Send(new ShortlistApplicationCommand(id, recruiterIdentity, request.Reason), ct);
             if (shortlist is null)
             {
                 logger.LogWarning("Shortlist failed: Application {ApplicationId} not found", id);
                 return Results.NotFound();
             }
 
-            logger.LogInformation("Recruiter {RecruiterIdentity} successfully shortlisted application {ApplicationId}", request.RecruiterIdentity, id);
+            logger.LogInformation("Recruiter {RecruiterIdentity} successfully shortlisted application {ApplicationId}", recruiterIdentity, id);
             return Results.Ok(shortlist);
         })
         .WithName("ShortlistApplicationOwnership");
 
         // POST /api/applications/{id}/ownership/accept
-        group.MapPost("/{id:guid}/ownership/accept", async (Guid id, AcceptApplicationRequest request, IMediator mediator, ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/ownership/accept", async (Guid id, AcceptApplicationRequest request, HttpContext context, IMediator mediator, ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
-            logger.LogInformation("Recruiter {RecruiterIdentity} is accepting application {ApplicationId}", request.RecruiterIdentity, id);
+            var recruiterIdentity = ResolveRecruiterIdentity(context, request.RecruiterIdentity);
+            logger.LogInformation("Recruiter {RecruiterIdentity} is accepting application {ApplicationId}", recruiterIdentity, id);
             
-            var result = await mediator.Send(new AcceptApplicationCommand(id, request.RecruiterIdentity, request.Reason), ct);
+            var result = await mediator.Send(new AcceptApplicationCommand(id, recruiterIdentity, request.Reason), ct);
             if (result is null) return Results.NotFound();
             
-            logger.LogInformation("Recruiter {RecruiterIdentity} successfully accepted application {ApplicationId}", request.RecruiterIdentity, id);
+            logger.LogInformation("Recruiter {RecruiterIdentity} successfully accepted application {ApplicationId}", recruiterIdentity, id);
             return Results.Ok(result);
         })
         .WithName("AcceptApplication");
 
         // POST /api/applications/{id}/ownership/reject
-        group.MapPost("/{id:guid}/ownership/reject", async (Guid id, RejectApplicationRequest request, IMediator mediator, ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/ownership/reject", async (Guid id, RejectApplicationRequest request, HttpContext context, IMediator mediator, ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
-            logger.LogInformation("Recruiter {RecruiterIdentity} is rejecting application {ApplicationId}", request.RecruiterIdentity, id);
+            var recruiterIdentity = ResolveRecruiterIdentity(context, request.RecruiterIdentity);
+            logger.LogInformation("Recruiter {RecruiterIdentity} is rejecting application {ApplicationId}", recruiterIdentity, id);
             
-            var result = await mediator.Send(new RejectApplicationCommand(id, request.RecruiterIdentity, request.Reason), ct);
+            var result = await mediator.Send(new RejectApplicationCommand(id, recruiterIdentity, request.Reason), ct);
             if (result is null) return Results.NotFound();
             
-            logger.LogInformation("Recruiter {RecruiterIdentity} successfully rejected application {ApplicationId}", request.RecruiterIdentity, id);
+            logger.LogInformation("Recruiter {RecruiterIdentity} successfully rejected application {ApplicationId}", recruiterIdentity, id);
             return Results.Ok(result);
         })
         .WithName("RejectApplication");
 
         // POST /api/applications/{id}/ownership/rate
-        group.MapPost("/{id:guid}/ownership/rate", async (Guid id, RateApplicationRequest request, IMediator mediator, ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/ownership/rate", async (Guid id, RateApplicationRequest request, HttpContext context, IMediator mediator, ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
-            logger.LogInformation("Recruiter {RecruiterIdentity} is rating application {ApplicationId} with {Rating} stars", request.RecruiterIdentity, id, request.Rating);
+            var recruiterIdentity = ResolveRecruiterIdentity(context, request.RecruiterIdentity);
+            logger.LogInformation("Recruiter {RecruiterIdentity} is rating application {ApplicationId} with {Rating} stars", recruiterIdentity, id, request.Rating);
             
-            var result = await mediator.Send(new RateApplicationCommand(id, request.RecruiterIdentity, request.Rating, request.Notes), ct);
+            var result = await mediator.Send(new RateApplicationCommand(id, recruiterIdentity, request.Rating, request.Notes), ct);
             if (result is null) return Results.NotFound();
             
-            logger.LogInformation("Recruiter {RecruiterIdentity} successfully rated application {ApplicationId}", request.RecruiterIdentity, id);
+            logger.LogInformation("Recruiter {RecruiterIdentity} successfully rated application {ApplicationId}", recruiterIdentity, id);
             return Results.Ok(result);
         })
         .WithName("RateApplication");
 
         // POST /api/applications/{id}/ownership/notes
-        group.MapPost("/{id:guid}/ownership/notes", async (Guid id, AddNotesRequest request, IMediator mediator, ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/ownership/notes", async (Guid id, AddNotesRequest request, HttpContext context, IMediator mediator, ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
-            logger.LogInformation("Recruiter {RecruiterIdentity} is adding notes to application {ApplicationId}", request.RecruiterIdentity, id);
+            var recruiterIdentity = ResolveRecruiterIdentity(context, request.RecruiterIdentity);
+            logger.LogInformation("Recruiter {RecruiterIdentity} is adding notes to application {ApplicationId}", recruiterIdentity, id);
             
-            var result = await mediator.Send(new AddApplicationNotesCommand(id, request.RecruiterIdentity, request.Notes), ct);
+            var result = await mediator.Send(new AddApplicationNotesCommand(id, recruiterIdentity, request.Notes), ct);
             if (result is null) return Results.NotFound();
             
-            logger.LogInformation("Recruiter {RecruiterIdentity} successfully added notes to application {ApplicationId}", request.RecruiterIdentity, id);
+            logger.LogInformation("Recruiter {RecruiterIdentity} successfully added notes to application {ApplicationId}", recruiterIdentity, id);
             return Results.Ok(result);
         })
         .WithName("AddApplicationNotes");
@@ -120,6 +126,26 @@ public static class ApplicationOwnershipEndpoints
             return Results.Ok(new { success = true });
         })
         .WithName("ReevaluateApplication");
+    }
+
+    private static string ResolveRecruiterIdentity(HttpContext context, string requestedIdentity)
+    {
+        var claimIdentity = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            ?? context.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
+            ?? context.User.Identity?.Name;
+
+        if (!string.IsNullOrWhiteSpace(claimIdentity))
+        {
+            return claimIdentity;
+        }
+
+        var headerIdentity = context.Request.Headers["X-Recruiter-Identity"].ToString();
+        if (!string.IsNullOrWhiteSpace(headerIdentity))
+        {
+            return headerIdentity;
+        }
+
+        return requestedIdentity;
     }
 
     public record ClaimOwnershipRequest(string RecruiterIdentity);

@@ -56,7 +56,7 @@ public class IngestEvaluationHandlerTests
                 true,
                 "Academic requirement met.",
                 Arg.Is<string>(summary => summary.Contains("Total score: 50/100")),
-                Arg.Any<System.Text.Json.JsonDocument>(),
+                Arg.Any<string>(),
                 Arg.Any<CancellationToken>())
             .Returns(true);
 
@@ -79,7 +79,7 @@ public class IngestEvaluationHandlerTests
             Arg.Is<string>(summary =>
                 summary.Contains("Strengths: Strong C# fundamentals")
                 && summary.Contains("Improvements: Needs more production exposure")),
-            Arg.Any<System.Text.Json.JsonDocument>(),
+            Arg.Any<string>(),
             Arg.Any<CancellationToken>());
         await _repository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
@@ -101,7 +101,7 @@ public class IngestEvaluationHandlerTests
                 Arg.Any<bool>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
-                Arg.Any<System.Text.Json.JsonDocument>(),
+                Arg.Any<string>(),
                 Arg.Any<CancellationToken>())
             .Returns(false);
 
@@ -131,7 +131,7 @@ public class IngestEvaluationHandlerTests
                 Arg.Any<bool>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
-                Arg.Any<System.Text.Json.JsonDocument>(),
+                Arg.Any<string>(),
                 Arg.Any<CancellationToken>())
             .Returns(true);
 
@@ -146,7 +146,7 @@ public class IngestEvaluationHandlerTests
             Arg.Any<bool>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
-            Arg.Any<System.Text.Json.JsonDocument>(),
+            Arg.Any<string>(),
             Arg.Any<CancellationToken>());
     }
 

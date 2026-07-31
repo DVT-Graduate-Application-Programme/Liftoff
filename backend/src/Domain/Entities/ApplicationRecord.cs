@@ -29,7 +29,7 @@ public class ApplicationRecord
     public decimal? HiringAgentTotalScore { get; private set; }
     public string? HiringAgentExplanation { get; private set; }
     public string? CvSummary { get; private set; }
-    public JsonDocument? FlagsJson { get; private set; }
+    public string? FlagsJson { get; private set; }
 
     // Claim ownership
     public string? ClaimedByRecruiterId { get; private set; }
@@ -79,7 +79,7 @@ public class ApplicationRecord
         decimal? hiringAgentTotalScore = null,
         string? hiringAgentExplanation = null,
         string? cvSummary = null,
-        JsonDocument? flagsJson = null,
+        string? flagsJson = null,
         DateTimeOffset? createdAt = null,
         DateTimeOffset? updatedAt = null,
         string? cvAttachmentId = null,
@@ -339,7 +339,7 @@ public class ApplicationRecord
         string hardGateReason,
         decimal totalScore,
         string? cvSummary,
-        JsonDocument? flagsJson,
+        string? flagsJson,
         DateTimeOffset? timestamp = null)
     {
         var now = timestamp ?? DateTimeOffset.UtcNow;

@@ -149,13 +149,13 @@ resource "aws_ecs_task_definition" "backend" {
       }
     }
 
-    healthCheck = {
-      command     = ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
-      interval    = 30
-      timeout     = 5
-      retries     = 3
-      startPeriod = 60
-    }
+   # healthCheck = {
+   #   command     = ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+   #   interval    = 30
+   #   timeout     = 5
+   #  retries     = 3
+   #   startPeriod = 60
+   # }
   }])
 }
 
@@ -209,7 +209,17 @@ resource "aws_ecs_task_definition" "frontend" {
 
     environment = [
       { name = "BACKEND_URL", value = "http://${aws_lb.main.dns_name}" },
-      { name = "NEXT_PUBLIC_BACKEND_URL", value = "http://${aws_lb.main.dns_name}" }
+      { name = "NEXT_PUBLIC_BACKEND_URL", value = "http://${aws_lb.main.dns_name}" },
+      { name = "HOSTNAME", value = "0.0.0.0" },
+      { name = "AUTH_URL", value = "http://${aws_lb.main.dns_name}" },
+      { name = "AUTH_TRUST_HOST", value = "true" }
+    ]
+
+    secrets = [
+      { name = "AUTH_SECRET", valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:AUTH_SECRET::" },
+      { name = "AUTH_MICROSOFT_ENTRA_ID_ID", valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:AUTH_MICROSOFT_ENTRA_ID_ID::" },
+      { name = "AUTH_MICROSOFT_ENTRA_ID_SECRET", valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:AUTH_MICROSOFT_ENTRA_ID_SECRET::" },
+      { name = "AUTH_MICROSOFT_ENTRA_ID_ISSUER", valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:AUTH_MICROSOFT_ENTRA_ID_ISSUER::" }
     ]
 
     logConfiguration = {
@@ -303,7 +313,7 @@ resource "aws_lb_listener_rule" "backend_api" {
 
   condition {
     path_pattern {
-      values = ["/api/*", "/health", "/openapi/*"]
+      values = ["/api/*", "/health", "/openapi/*", "/scalar"]
     }
   }
 

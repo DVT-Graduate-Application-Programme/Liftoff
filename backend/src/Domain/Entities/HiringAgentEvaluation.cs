@@ -1,5 +1,4 @@
 using System;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Domain.Entities;
@@ -10,27 +9,27 @@ public class HiringAgentEvaluation
     public Guid ApplicationRecordId { get; set; }
 
     // Institution: { name, degreeName }
-    public JsonDocument? InstitutionJson { get; set; }
+    public string? InstitutionJson { get; set; }
 
     // Per-category scores
-    public JsonDocument? CategoryScoresJson { get; set; }
+    public string? CategoryScoresJson { get; set; }
 
     // Evidence per category
-    public JsonDocument? EvidenceJson { get; set; }
+    public string? EvidenceJson { get; set; }
 
     // Bonus points
-    public JsonDocument? BonusPointsJson { get; set; }
+    public string? BonusPointsJson { get; set; }
 
     // Deductions
-    public JsonDocument? DeductionsJson { get; set; }
+    public string? DeductionsJson { get; set; }
 
     // Human-readable strengths and improvement areas
-    public JsonDocument? KeyStrengthsJson { get; set; }
-    public JsonDocument? AreasForImprovementJson { get; set; }
+    public string? KeyStrengthsJson { get; set; }
+    public string? AreasForImprovementJson { get; set; }
 
     // Raw GitHub and project classification data
-    public JsonDocument? GitHubProfileDataJson { get; set; }
-    public JsonDocument? ProjectClassificationsJson { get; set; }
+    public string? GitHubProfileDataJson { get; set; }
+    public string? ProjectClassificationsJson { get; set; }
 
     public string? AiSummary { get; set; }
 
