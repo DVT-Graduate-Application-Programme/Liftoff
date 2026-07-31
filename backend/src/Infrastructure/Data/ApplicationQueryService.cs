@@ -1,3 +1,4 @@
+using Application.DTOs;
 using Application.Interfaces;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -18,23 +19,42 @@ public class ApplicationQueryService : IApplicationQueryService
         _dbContext = dbContext;
     }
 
-    public Task<ApplicationDetails?> GetApplicationDetailsAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<ApplicationDetails?> GetApplicationDetailsAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return _dbContext.ApplicationRecords
+        var record = await _dbContext.ApplicationRecords
             .Where(r => r.Id == id)
-            .Select(r => new ApplicationDetails
+            .Select(r => new
             {
-                Id = r.Id,
-                Status = r.Status,
-                Tier = r.Tier,
-                CreatedAt = r.CreatedAt,
-                UpdatedAt = r.UpdatedAt,
+                r.Id,
+                r.Status,
+                r.Tier,
+                r.CreatedAt,
+                r.UpdatedAt,
                 HiringAgentEvaluations = r.HiringAgentEvaluations.ToList(),
                 RecruiterActions = r.RecruiterActions.ToList(),
                 AuditLogs = r.AuditLogs.ToList()
             })
             .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
+
+        if (record is null)
+        {
+            return null;
+        }
+
+        return new ApplicationDetails
+        {
+            Id = record.Id,
+            Status = record.Status,
+            Tier = record.Tier,
+            CreatedAt = record.CreatedAt,
+            UpdatedAt = record.UpdatedAt,
+            // Mapped after materialisation rather than inside the projection: ToDto parses
+            // the jsonb text with JsonDocument, which EF cannot translate to SQL.
+            HiringAgentEvaluations = record.HiringAgentEvaluations.Select(e => e.ToDto()).ToList(),
+            RecruiterActions = record.RecruiterActions,
+            AuditLogs = record.AuditLogs
+        };
     }
 
     public Task<Applicant?> GetApplicantByApplicationIdAsync(Guid id, CancellationToken cancellationToken = default)
