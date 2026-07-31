@@ -153,6 +153,11 @@ resource "azurerm_container_app" "backend" {
         secret_name = "internal-api-key"
       }
 
+      env {
+        name  = "NOTIFICATIONS__NEXTJS__WEBHOOKURL"
+        value = "https://${local.frontend_app_name}.${azurerm_container_app_environment.main.default_domain}/api/internal/notify"
+      }
+
       liveness_probe {
         path                    = "/health"
         port                    = 5000
@@ -264,7 +269,7 @@ resource "azurerm_container_app" "worker" {
 # ── Frontend Container App ────────────────────────────────────────────────────
 
 resource "azurerm_container_app" "frontend" {
-  name                         = "ca-${local.prefix}-frontend"
+  name                         = local.frontend_app_name
   container_app_environment_id = azurerm_container_app_environment.main.id
   resource_group_name          = azurerm_resource_group.main.name
   revision_mode                = "Single"
