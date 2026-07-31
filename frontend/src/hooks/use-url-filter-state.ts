@@ -5,7 +5,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 export function useUrlFilterState<T extends string = string>(
   key: string,
-  defaultValue: T,
+  defaultValue: NoInfer<T>,
 ): [T, (value: T) => void] {
   const router = useRouter();
   const pathname = usePathname();
