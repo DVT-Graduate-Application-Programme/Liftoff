@@ -61,6 +61,7 @@ builder.Services.AddScoped<IApplicationEventService, ApplicationWebhookNotifier>
 
 // ── Graph / AI ingestion pipeline – not needed for POC ──
 builder.Services.AddSingleton<IResumeStorage, LocalResumeStorage>();
+builder.Services.AddScoped<ICvStorage, LocalStorage>(); 
 
 builder.Services.AddMediatR(cfg =>
 {
