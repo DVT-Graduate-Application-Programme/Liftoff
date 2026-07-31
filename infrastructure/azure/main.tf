@@ -11,6 +11,8 @@ resource "random_string" "suffix" {
 locals {
   prefix = "${var.project_name}-${var.environment}"
   suffix = random_string.suffix.result
+  
+  frontend_app_name = "ca-${var.project_name}-${var.environment}-frontend"
 
   common_tags = {
     environment = var.environment
