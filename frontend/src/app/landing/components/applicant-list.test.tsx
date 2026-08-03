@@ -71,7 +71,9 @@ describe("ApplicantList", () => {
   });
 
   it("renders applicants on success", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse({ applications: [makeApplication()], nextCursor: null }));
+    vi.spyOn(global, "fetch").mockImplementation(() =>
+      Promise.resolve(jsonResponse({ applications: [makeApplication()], nextCursor: null })),
+    );
 
     renderList();
 
@@ -122,7 +124,9 @@ describe("ApplicantList", () => {
   });
 
   it("shows the default empty state when there are no applicants and no search", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse({ applications: [], nextCursor: null }));
+    vi.spyOn(global, "fetch").mockImplementation(() =>
+      Promise.resolve(jsonResponse({ applications: [], nextCursor: null })),
+    );
 
     renderList({ emptyTitle: "No pending applicants" });
 

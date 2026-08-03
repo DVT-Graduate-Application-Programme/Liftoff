@@ -12,6 +12,12 @@ function renderLogsPage() {
   );
 }
 
+function requestUrl(input: RequestInfo | URL): string {
+  if (typeof input === "string") return input;
+  if (input instanceof URL) return input.href;
+  return input.url;
+}
+
 function makeLog(overrides: Partial<Record<string, unknown>> = {}) {
   return {
     id: "log-1",
@@ -71,7 +77,11 @@ describe("Logs page", () => {
 
   it("appends a second page when 'Load more' is clicked", async () => {
     let call = 0;
-    vi.spyOn(global, "fetch").mockImplementation(() => {
+    vi.spyOn(global, "fetch").mockImplementation((input) => {
+      const url = requestUrl(input);
+      if (url.includes("/api/applications/recruiter")) {
+        return Promise.resolve(jsonResponse([]));
+      }
       call += 1;
       if (call === 1) {
         return Promise.resolve(

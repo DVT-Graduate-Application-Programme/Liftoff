@@ -60,7 +60,8 @@ describe("History page", () => {
 
     const { default: userEvent } = await import("@testing-library/user-event");
     await userEvent.click(screen.getByRole("button", { name: "Advanced Filters" }));
-    const options = Array.from(screen.getAllByRole("option")).map((option) => option.textContent);
+    await userEvent.click(screen.getByRole("combobox", { name: "Status" }));
+    const options = Array.from(await screen.findAllByRole("option")).map((option) => option.textContent);
     expect(options).toEqual(["All statuses", "Pending", "Shortlisted", "Rejected"]);
   });
 
