@@ -37,6 +37,12 @@ public class SendApplicationHandler
 
         var emailMessageId = BuildEmailMessageId(request);
         var existingRecord = await _repository.GetByEmailMessageIdAsync(emailMessageId, cancellationToken);
+
+        if (existingRecord is null)
+        {
+            existingRecord = await _repository.GetByCandidateEmailAsync(request.CandidateEmail, cancellationToken);
+        }
+
         if (existingRecord is not null)
         {
             return new SendApplicationResult

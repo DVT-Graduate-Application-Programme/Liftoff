@@ -39,7 +39,7 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
 
         firstResponse.EnsureSuccessStatusCode();
         Assert.Equal(HttpStatusCode.Accepted, firstResponse.StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, secondResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Accepted, secondResponse.StatusCode);
 
         var firstResult = await firstResponse.Content.ReadFromJsonAsync<IngestResponse>();
         Assert.NotNull(firstResult);
@@ -57,7 +57,7 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
     }
 
     [Fact]
-    public async Task Ingest_WithDuplicateCandidateEmailWithoutIdempotencyKey_ReturnsBadRequest()
+    public async Task Ingest_WithDuplicateCandidateEmailWithoutIdempotencyKey_ReturnsExistingApplication()
     {
         var client = _factory.CreateClient();
         using var firstRequest = CreateIngestRequest("Grace Hopper", "Grace.Hopper@example.com", includeTranscript: true);
@@ -68,7 +68,14 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
 
         firstResponse.EnsureSuccessStatusCode();
         Assert.Equal(HttpStatusCode.Accepted, firstResponse.StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, duplicateResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Accepted, duplicateResponse.StatusCode);
+
+        var firstResult = await firstResponse.Content.ReadFromJsonAsync<IngestResponse>();
+        var duplicateResult = await duplicateResponse.Content.ReadFromJsonAsync<IngestResponse>();
+
+        Assert.NotNull(firstResult);
+        Assert.NotNull(duplicateResult);
+        Assert.Equal(firstResult.ApplicationId, duplicateResult.ApplicationId);
 
         using var scope = _factory.Services.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IApplicationRecordRepository>();
@@ -76,6 +83,38 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
 
         Assert.Equal("Grace.Hopper@example.com", record.CandidateEmail);
         Assert.Equal("manual:grace.hopper@example.com", record.EmailMessageId);
+    }
+
+    [Fact]
+    public async Task Ingest_WithDuplicateCandidateEmailAndDifferentIdempotencyKey_ReturnsExistingApplication()
+    {
+        var client = _factory.CreateClient();
+        using var firstRequest = CreateIngestRequest("Grace Hopper", "Grace.Hopper@example.com", includeTranscript: true);
+        firstRequest.Headers.Add("Idempotency-Key", "custom-key-1");
+
+        using var duplicateRequest = CreateIngestRequest("Rear Admiral Hopper", " grace.hopper@example.com ", includeTranscript: true);
+        duplicateRequest.Headers.Add("Idempotency-Key", "custom-key-2");
+
+        var firstResponse = await client.SendAsync(firstRequest);
+        var duplicateResponse = await client.SendAsync(duplicateRequest);
+
+        firstResponse.EnsureSuccessStatusCode();
+        Assert.Equal(HttpStatusCode.Accepted, firstResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Accepted, duplicateResponse.StatusCode);
+
+        var firstResult = await firstResponse.Content.ReadFromJsonAsync<IngestResponse>();
+        var duplicateResult = await duplicateResponse.Content.ReadFromJsonAsync<IngestResponse>();
+
+        Assert.NotNull(firstResult);
+        Assert.NotNull(duplicateResult);
+        Assert.Equal(firstResult.ApplicationId, duplicateResult.ApplicationId);
+
+        using var scope = _factory.Services.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IApplicationRecordRepository>();
+        var record = Assert.Single(await repository.GetAllAsync());
+
+        Assert.Equal("Grace.Hopper@example.com", record.CandidateEmail);
+        Assert.Equal("manual:custom-key-1", record.EmailMessageId);
     }
 
     [Fact]
@@ -225,6 +264,12 @@ internal sealed class TestApplicationRecordRepository : IApplicationRecordReposi
     public Task<ApplicationRecord?> GetByEmailMessageIdAsync(string emailMessageId, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_records.FirstOrDefault(record => record.EmailMessageId == emailMessageId));
+    }
+
+    public Task<ApplicationRecord?> GetByCandidateEmailAsync(string candidateEmail, CancellationToken cancellationToken = default)
+    {
+        var normalizedCandidateEmail = candidateEmail.Trim().ToLowerInvariant();
+        return Task.FromResult(_records.FirstOrDefault(record => record.CandidateEmail != null && record.CandidateEmail.Trim().ToLowerInvariant() == normalizedCandidateEmail));
     }
 
     public Task AddAsync(ApplicationRecord record, CancellationToken cancellationToken = default)

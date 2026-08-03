@@ -1,11 +1,9 @@
 using Application.Features.SendApplication;
-using Application.Interfaces;
-
-using Domain.Entities;
-
+using System.IO;
+using System.Linq;
+using System.Threading;
+using Application.Features.SendApplication;
 using FluentAssertions;
-
-using NSubstitute;
 
 namespace Application.UnitTests;
 
@@ -15,12 +13,7 @@ public class SendApplicationCommandValidatorTests
 
     public SendApplicationCommandValidatorTests()
     {
-        var repository = Substitute.For<IApplicationRecordRepository>();
-        repository
-            .GetByEmailMessageIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns((ApplicationRecord?)null); // simulate no duplicate
-
-        _validator = new SendApplicationCommandValidator(repository);
+        _validator = new SendApplicationCommandValidator();
     }
 
     [Fact]
@@ -30,10 +23,10 @@ public class SendApplicationCommandValidatorTests
         {
             CandidateName = "Candidate One",
             CandidateEmail = "candidate@example.com",
-            CvStream = new MemoryStream([1, 2, 3])
+            CvStream = new MemoryStream(new byte[] { 1, 2, 3 })
         };
 
-        var result = await _validator.ValidateAsync(command);
+        var result = await _validator.ValidateAsync(command, CancellationToken.None);
 
         result.IsValid.Should().BeTrue();
     }
@@ -48,14 +41,14 @@ public class SendApplicationCommandValidatorTests
             CvStream = null!
         };
 
-        var result = await _validator.ValidateAsync(command);
+        var result = await _validator.ValidateAsync(command, CancellationToken.None);
 
         result.IsValid.Should().BeFalse();
         result.Errors.Select(error => error.PropertyName)
-            .Should().BeEquivalentTo([
+            .Should().BeEquivalentTo(new[] {
                 nameof(SendApplicationCommand.CandidateName),
                 nameof(SendApplicationCommand.CandidateEmail),
                 nameof(SendApplicationCommand.CvStream)
-            ]);
+            });
     }
 }
