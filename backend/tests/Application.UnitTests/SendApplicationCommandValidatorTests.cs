@@ -1,11 +1,26 @@
 using Application.Features.SendApplication;
+using Application.Interfaces;
+
+using Domain.Entities;
+
 using FluentAssertions;
+using NSubstitute; 
 
 namespace Application.UnitTests;
 
 public class SendApplicationCommandValidatorTests
 {
-    private readonly SendApplicationCommandValidator _validator = new();
+    private readonly SendApplicationCommandValidator _validator ;
+
+    public SendApplicationCommandValidatorTests()
+    {
+        var repository = Substitute.For<IApplicationRecordRepository>();
+        repository
+            .GetByEmailMessageIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns((ApplicationRecord?)null); // simulate no duplicate
+
+        _validator = new SendApplicationCommandValidator(repository);
+    }
 
     [Fact]
     public void Validate_PassesForCompleteApplication()
