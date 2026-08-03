@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import type { ApplicationFilters } from "@/types/api";
 import { ApplicantList } from "./applicant-list";
+import { useUrlFilterState } from "@/hooks/use-url-filter-state";
 import {
   FilterBar,
   type ActiveFilter,
@@ -52,6 +53,7 @@ function AllCandidateListCard({
   onClaim: () => void;
   onOpen: () => void;
 }) {
+  const recruitersQuery = useRecruiters();
   const evaluationQuery = useEvaluation(application.applicationId);
   const education = parseEducationEvidence(
     evaluationQuery.data?.evidenceJson?.education.trim() ||
@@ -78,7 +80,7 @@ function AllCandidateListCard({
         reviewedAt={formatDate(application.createdAt)}
         showReviewedAt={false}
         createdAt={application.createdAt}
-        recruiterName={getRecruiterLabel(application)}
+        recruiterName={getRecruiterLabel(application, recruitersQuery.data)}
         secondaryActionLabel={isClaimed ? "Claimed" : "Claim for review"}
         isSecondaryActionDisabled={isClaimed || isClaiming}
         isSecondaryActionLoading={isClaiming}
@@ -91,13 +93,16 @@ function AllCandidateListCard({
 
 function AllCandidates() {
   const { data: session } = useSession();
-  const recruiterIdentity = session?.user?.email ?? ACTIVE_RECRUITER_ID;
+  const recruiterIdentity = session?.user.email ?? ACTIVE_RECRUITER_ID;
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [status, setStatus] = useState("");
-  const [minScore, setMinScore] = useState("");
-  const [ownership, setOwnership] = useState("all");
-  const [dateRange, setDateRange] = useState("all");
-  const [sort, setSort] = useState<SortOption>("date_desc");
+  const [status, setStatus] = useUrlFilterState("allStatus", "");
+  const [minScore, setMinScore] = useUrlFilterState("allMinScore", "");
+  const [ownership, setOwnership] = useUrlFilterState("allOwnership", "all");
+  const [dateRange, setDateRange] = useUrlFilterState("allDateRange", "all");
+  const [sort, setSort] = useUrlFilterState<SortOption>(
+    "allSort",
+    "date_desc",
+  );
 
   const recruitersQuery = useRecruiters();
 

@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -14,8 +13,6 @@ type AllCandidateCardProps = {
   scoreClassName?: string;
   statusLabel?: string;
   statusTone?: StatusTone;
-  tierLabel?: string;
-  tierTone?: StatusTone;
   layout?: "default" | "history";
   showInstitute?: boolean;
   reviewedAt?: string;
@@ -35,30 +32,30 @@ type AllCandidateCardProps = {
 function getScoreColor(score?: number | null) {
   if (score == null || Number.isNaN(score)) return "text-muted-foreground";
   if (score >= 80) return "text-primary";
-  if (score >= 65) return "text-chart-4";
-  return "text-destructive";
+  if (score >= 65) return "text-amber-600 dark:text-amber-400";
+  return "text-red-600 dark:text-red-400";
 }
 
 const statusStyles = {
   positive: {
     border: "border-l-primary",
-    text: "text-primary",
-    background: "bg-primary/10",
+    text: "text-primary dark:text-white",
+    background: "bg-primary/10 dark:bg-sky-700",
   },
   warning: {
     border: "border-l-chart-4",
-    text: "text-chart-4",
-    background: "bg-chart-4/10",
+    text: "text-amber-700 dark:text-black",
+    background: "bg-amber-100 dark:bg-chart-4",
   },
   negative: {
     border: "border-l-destructive",
-    text: "text-destructive",
-    background: "bg-destructive/10",
+    text: "text-red-700 dark:text-white",
+    background: "bg-red-100 dark:bg-destructive",
   },
   neutral: {
     border: "border-l-border",
-    text: "text-muted-foreground",
-    background: "bg-muted",
+    text: "text-muted-foreground dark:text-secondary-foreground",
+    background: "bg-muted dark:bg-secondary",
   },
 } satisfies Record<
   StatusTone,
@@ -97,16 +94,6 @@ function ScoreTag({
   );
 }
 
-function InfoRow({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      <span className="font-medium tracking-widest">{label}</span>
-      <span className="min-w-0 flex-1 truncate text-foreground">
-        {children}
-      </span>
-    </div>
-  );
-}
 
 function getDaysAgo(dateString: string): number | null {
   const inputDate = new Date(dateString);
@@ -127,7 +114,7 @@ export default function AllCandidateCard({
   systemScore,
   scoreLabel = "System Score",
   scoreClassName,
-  statusLabel = "Pending",
+  statusLabel = "Processing",
   statusTone,
   layout = "default",
   showInstitute = true,
@@ -148,6 +135,7 @@ export default function AllCandidateCard({
   const statusStyle = statusStyles[currentStatusTone];
   const daysAgo = createdAt ? getDaysAgo(createdAt) : null;
   const displaySubtitle = subtitle ?? institute;
+  const displayRecruiterName = recruiterName;
 
   return (
     <div
@@ -187,13 +175,7 @@ export default function AllCandidateCard({
                 <p className="whitespace-normal break-words">{institute}</p>
               </div>
             )}
-            {recruiterName && (
-              <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
-                <InfoRow label={recruiterLabel ?? "Recruiter"}>
-                  {recruiterName}
-                </InfoRow>
-              </div>
-            )}
+
           </div>
         </>
       ) : (
@@ -211,13 +193,7 @@ export default function AllCandidateCard({
               ) : null}
             </div>
           )}
-          {recruiterName && (
-            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
-              <InfoRow label={recruiterLabel ?? "Recruiter"}>
-                {recruiterName}
-              </InfoRow>
-            </div>
-          )}
+
         </div>
       )}
 
@@ -261,6 +237,17 @@ export default function AllCandidateCard({
           )}
         </div>
 
+        {displayRecruiterName && (
+          <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 @4xl:flex">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+              {recruiterLabel ?? "Recruiter"}
+            </span>
+            <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium text-foreground">
+              {displayRecruiterName}
+            </span>
+          </div>
+        )}
+
         {layout === "history" && (
           <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 @4xl:flex">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
@@ -301,7 +288,7 @@ export default function AllCandidateCard({
           type="button"
           variant="outline"
           size="sm"
-          className="w-full justify-center gap-1 text-xs bg-primary text-white @2xl:w-30"
+          className="w-full justify-center gap-1 text-xs bg-primary text-white dark:bg-sky-500 dark:hover:bg-sky-400 @2xl:w-30"
           onClick={(event) => {
             event.stopPropagation();
             if (onActionClick) {

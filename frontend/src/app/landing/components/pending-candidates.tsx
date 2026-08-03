@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import type { ApplicationFilters } from "@/types/api";
 import { ApplicantList } from "./applicant-list";
+import { useUrlFilterState } from "@/hooks/use-url-filter-state";
 import {
   FilterBar,
   type ActiveFilter,
@@ -14,11 +15,17 @@ import { ACTIVE_RECRUITER_ID } from "@/hooks/use-claim-application";
 
 const PendingCandidates = () => {
   const { data: session } = useSession();
-  const recruiterIdentity = session?.user?.email ?? ACTIVE_RECRUITER_ID;
+  const recruiterIdentity = session?.user.email ?? ACTIVE_RECRUITER_ID;
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [minScore, setMinScore] = useState("");
-  const [dateRange, setDateRange] = useState("all");
-  const [sort, setSort] = useState<SortOption>("score_desc");
+  const [minScore, setMinScore] = useUrlFilterState("pendingMinScore", "");
+  const [dateRange, setDateRange] = useUrlFilterState(
+    "pendingDateRange",
+    "all",
+  );
+  const [sort, setSort] = useUrlFilterState<SortOption>(
+    "pendingSort",
+    "score_desc",
+  );
 
   const filters = useMemo(() => {
     const next: Omit<

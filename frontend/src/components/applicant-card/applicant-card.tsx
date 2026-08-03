@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -38,30 +38,30 @@ type ApplicantCardProps = {
 function getScoreColor(score?: number | null) {
   if (score == null || Number.isNaN(score)) return "text-muted-foreground";
   if (score >= 80) return "text-primary";
-  if (score >= 65) return "text-chart-4";
-  return "text-destructive";
+  if (score >= 65) return "text-amber-600 dark:text-amber-400";
+  return "text-red-600 dark:text-red-400";
 }
 
 const statusStyles = {
   positive: {
     border: "border-l-primary",
-    text: "text-primary",
-    background: "bg-primary/10",
+    text: "text-primary dark:text-white",
+    background: "bg-primary/10 dark:bg-sky-700",
   },
   warning: {
     border: "border-l-chart-4",
-    text: "text-chart-4",
-    background: "bg-chart-4/10",
+    text: "text-amber-700 dark:text-black",
+    background: "bg-amber-100 dark:bg-chart-4",
   },
   negative: {
     border: "border-l-destructive",
-    text: "text-destructive",
-    background: "bg-destructive/10",
+    text: "text-red-700 dark:text-white",
+    background: "bg-red-100 dark:bg-destructive",
   },
   neutral: {
     border: "border-l-border",
-    text: "text-muted-foreground",
-    background: "bg-muted",
+    text: "text-muted-foreground dark:text-secondary-foreground",
+    background: "bg-muted dark:bg-secondary",
   },
 } satisfies Record<
   StatusTone,
@@ -91,16 +91,7 @@ function ScoreTag({ score }: { score?: number | null }) {
   );
 }
 
-function InfoRow({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      <span className="font-medium tracking-widest">{label}</span>
-      <span className="min-w-0 flex-1 truncate text-foreground">
-        {children}
-      </span>
-    </div>
-  );
-}
+
 
 function getDaysAgo(dateString: string): number | null {
   const inputDate = new Date(dateString);
@@ -151,6 +142,7 @@ export default function ApplicantCard({
   const currentStatusTone = statusTone ?? "positive";
   const statusStyle = statusStyles[currentStatusTone];
   const daysAgo = createdAt ? getDaysAgo(createdAt) : null;
+  const displayRecruiterName = recruiterName;
 
   return (
     <div
@@ -192,13 +184,7 @@ export default function ApplicantCard({
               )}
             </div>
           )}
-          {recruiterName && (
-            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
-              <InfoRow label={recruiterLabel ?? "Recruiter"}>
-                {recruiterName}
-              </InfoRow>
-            </div>
-          )}
+
         </div>
       </div>
 
@@ -288,6 +274,16 @@ export default function ApplicantCard({
             </span>
           </div>
         )}
+        {displayRecruiterName && (
+          <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 pl-2 @4xl:flex">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+              {recruiterLabel ?? "Recruiter"}
+            </span>
+            <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium text-foreground">
+              {displayRecruiterName}
+            </span>
+          </div>
+        )}
       </div>
 
       <div
@@ -325,7 +321,7 @@ export default function ApplicantCard({
           className={cn(
             "gap-1.5 text-xs w-full @2xl:w-auto",
             actionVariant === "default"
-              ? "text-white hover:bg-primary/80"
+              ? "text-white hover:bg-primary/80 dark:bg-sky-500 dark:hover:bg-sky-400"
               : undefined,
             secondaryActionLabel
               ? stackActions

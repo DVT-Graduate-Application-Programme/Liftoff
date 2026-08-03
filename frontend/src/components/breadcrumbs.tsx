@@ -68,7 +68,7 @@ export function Breadcrumbs() {
   }
 
   return (
-    <Breadcrumb className="border-b px-4 py-2 sm:px-6 lg:px-8">
+    <Breadcrumb className="sticky top-16 z-20 border-b bg-background px-4 py-2 sm:px-6 lg:px-8">
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink asChild>

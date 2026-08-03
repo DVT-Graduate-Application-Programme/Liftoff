@@ -5,8 +5,6 @@ type PendingCandidateCardProps = {
   name: string;
   institute: string;
   secondaryInstitute?: string;
-  recruiterLabel?: string;
-  recruiterName?: string;
   academicAverage?: number;
   systemScore: number;
   scoreLabel?: string;
@@ -24,8 +22,8 @@ type PendingCandidateCardProps = {
 function getScoreColor(score?: number | null) {
   if (score == null || Number.isNaN(score)) return "text-muted-foreground";
   if (score >= 80) return "text-primary";
-  if (score >= 65) return "text-chart-4";
-  return "text-destructive";
+  if (score >= 65) return "text-amber-600 dark:text-amber-400";
+  return "text-red-600 dark:text-red-400";
 }
 
 function ScoreTag({ score }: { score?: number | null }) {
@@ -64,8 +62,6 @@ export default function PendingCandidateCard({
   name,
   institute,
   secondaryInstitute,
-  recruiterLabel,
-  recruiterName,
   academicAverage,
   systemScore,
   scoreLabel = "System Score",
@@ -112,18 +108,6 @@ export default function PendingCandidateCard({
               ) : null}
             </div>
           )}
-          {recruiterName ? (
-            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="font-medium tracking-widest">
-                  {recruiterLabel ?? "Recruiter"}
-                </span>
-                <span className="min-w-0 flex-1 truncate text-foreground">
-                  {recruiterName}
-                </span>
-              </div>
-            </div>
-          ) : null}
         </div>
       </div>
 
@@ -188,7 +172,7 @@ export default function PendingCandidateCard({
           type="button"
           variant="outline"
           size="sm"
-          className="w-full justify-center gap-1 text-xs bg-primary text-white @2xl:w-30"
+          className="w-full justify-center gap-1 text-xs bg-primary text-white dark:bg-sky-500 dark:hover:bg-sky-400 @2xl:w-30"
           onClick={(event) => {
             event.stopPropagation();
             if (onActionClick) {
