@@ -150,7 +150,7 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
       <CardHeader>
         <CardTitle>Candidate Review</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Decide, rate, and leave notes for this applicant
+          Rate, choose shortlist or reject, add notes, then submit your review
         </p>
       </CardHeader>
 
@@ -204,17 +204,11 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                disabled={shortlistMutation.isPending}
-                onClick={() => {
-                  shortlistMutation.mutate(undefined, {
-                    onSuccess: () => {
-                      void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
-                    }
-                  });
-                }}
+                disabled={isSubmitting}
+                onClick={() => { setDecisionOverride("shortlist"); }}
                 className={cn(
                   "flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
-                  isShortlisted
+                  decision === "shortlist"
                     ? "border-primary bg-primary/10 text-primary"
                     : "border-input hover:bg-accent hover:text-white",
                 )}
