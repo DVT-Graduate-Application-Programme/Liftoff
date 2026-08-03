@@ -67,6 +67,8 @@ interface RateResponse {
   ratedAt: string | null;
 }
 
+type ReviewDecision = "shortlist" | "reject";
+
 export function CandidateReview({ applicationId, currentStatus }: { applicationId: string; currentStatus?: string }) {
   const queryClient = useQueryClient();
   const { data: session } = useSession();
@@ -77,6 +79,8 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
 
   const [ratingOverride, setRatingOverride] = useState<number | null>(null);
   const [notesOverride, setNotesOverride] = useState<string | null>(null);
+  const [decisionOverride, setDecisionOverride] = useState<ReviewDecision | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const rating = ratingOverride ?? ownershipQuery.data?.recruiterRating ?? 0;
   const notes = notesOverride ?? ownershipQuery.data?.recruiterRatingNote ?? "";
@@ -88,6 +92,17 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
     ownershipQuery.data?.ratedByRecruiterId === recruiterIdentity;
   const isShortlisted = statusUpper === "SHORTLISTED";
   const isRejected = statusUpper === "REJECTED";
+  const decision =
+    decisionOverride ??
+    (isShortlisted ? "shortlist" : isRejected ? "reject" : null);
+  const isSubmitting =
+    rateMutation.isPending || shortlistMutation.isPending || rejectMutation.isPending;
+  const canSubmit =
+    isAssignedToCurrentRecruiter &&
+    rating > 0 &&
+    decision !== null &&
+    notes.trim().length > 0 &&
+    !isSubmitting;
 
   // Mutation to save notes only
   const notesMutation = useMutation({
@@ -107,6 +122,28 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
   });
 
   const isNotesChanged = notesOverride !== null && notesOverride !== (ownershipQuery.data?.recruiterRatingNote ?? "");
+
+  const handleConfirmSubmit = () => {
+    if (!decision) return;
+
+    void (async () => {
+      try {
+        await rateMutation.mutateAsync({ rating, notes });
+        if (decision === "shortlist") {
+          await shortlistMutation.mutateAsync(undefined);
+        } else {
+          await rejectMutation.mutateAsync(undefined);
+        }
+        setRatingOverride(null);
+        setNotesOverride(null);
+        setDecisionOverride(null);
+        setConfirmOpen(false);
+        void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
+      } catch {
+        // Mutations surface errors via react-query
+      }
+    })();
+  };
 
   return (
     <Card className="shrink-0">
