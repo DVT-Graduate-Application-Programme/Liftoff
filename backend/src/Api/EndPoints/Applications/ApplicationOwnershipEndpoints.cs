@@ -114,7 +114,7 @@ public static class ApplicationOwnershipEndpoints
         .WithName("AddApplicationNotes");
 
         // POST /api/applications/{id}/re-evaluate
-        group.MapPost("/{id:guid}/re-evaluate", async (Guid id, IMediator mediator, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/re-evaluate", async (Guid id, IMediator mediator, ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
             var success = await mediator.Send(new ReevaluateApplicationCommand(id), ct);
             if (!success)
@@ -122,8 +122,12 @@ public static class ApplicationOwnershipEndpoints
                 return Results.NotFound();
             }
 
-            await IngestEndpoints.NotifyHiringAgent(id);
-            return Results.Ok(new { success = true });
+            // 202, not 200: the handler has cleared the old evaluation and queued the new one,
+            // but the scoring itself happens in the worker. The application has no score until
+            // that completes, which may be some time later if the hiring agent is down.
+            // New status: "REEVALUATING" indicates that the application is in the process of being re-evaluated.
+            logger.LogInformation("Application {ApplicationId} queued for re-evaluation", id);
+            return Results.Accepted(value: new { success = true, status = "REEVALUATING" });
         })
         .WithName("ReevaluateApplication");
     }
