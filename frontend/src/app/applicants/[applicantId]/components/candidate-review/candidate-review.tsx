@@ -213,19 +213,13 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
                     : "border-input hover:bg-accent hover:text-white",
                 )}
               >
-                <Star className={cn("size-4", isShortlisted && "fill-primary")} />
-                {shortlistMutation.isPending ? "Shortlisting..." : "Shortlist"}
+                <Star className={cn("size-4", decision === "shortlist" && "fill-primary")} />
+                Shortlist
               </button>
               <button
                 type="button"
-                disabled={rejectMutation.isPending}
-                onClick={() => {
-                  rejectMutation.mutate(undefined, {
-                    onSuccess: () => {
-                      void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
-                    }
-                  });
-                }}
+                disabled={isSubmitting}
+                onClick={() => { setDecisionOverride("reject"); }}
                 className={cn(
                   "flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
                   isRejected
