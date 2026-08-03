@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Star, X } from "lucide-react";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -118,6 +119,10 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
       );
       setNotesOverride(null);
       void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
+      toast.success("Notes saved");
+    },
+    onError: () => {
+      toast.error("Couldn't save notes");
     },
   });
 
