@@ -34,10 +34,14 @@ builder.Services.AddSerilog((services, loggerConfiguration) =>
 });
 
 // Bind worker configuration (env vars override appsettings; e.g. Worker__QueueName)
+// ValidateOnStart surfaces a missing HiringAgentBaseUrl as a startup failure. Without it
+// the options are first resolved inside the HttpClient factory delegate, so a misconfigured
+// worker would start healthy and only fail once the first message arrived.
 builder.Services
     .AddOptions<WorkerOptions>()
     .Bind(builder.Configuration.GetSection(WorkerOptions.SectionName))
-    .ValidateDataAnnotations();
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 // Service Bus client (long-lived singleton)
 var serviceBusConnectionString = Environment.GetEnvironmentVariable("SERVICEBUS_CONNECTION_STRING")
