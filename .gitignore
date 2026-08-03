@@ -519,3 +519,6 @@ crash.*.log
 
 # .terraform.lock.hcl is deliberately NOT ignored — it pins provider checksums and belongs
 # in version control so every machine and CI runner resolves identical providers.
+
+_bmad
+.claude
