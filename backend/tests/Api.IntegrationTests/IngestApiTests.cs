@@ -38,17 +38,11 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
         var secondResponse = await client.SendAsync(secondRequest);
 
         firstResponse.EnsureSuccessStatusCode();
-        secondResponse.EnsureSuccessStatusCode();
-
         Assert.Equal(HttpStatusCode.Accepted, firstResponse.StatusCode);
-        Assert.Equal(HttpStatusCode.Accepted, secondResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, secondResponse.StatusCode);
 
         var firstResult = await firstResponse.Content.ReadFromJsonAsync<IngestResponse>();
-        var secondResult = await secondResponse.Content.ReadFromJsonAsync<IngestResponse>();
-
         Assert.NotNull(firstResult);
-        Assert.NotNull(secondResult);
-        Assert.Equal(firstResult.ApplicationId, secondResult.ApplicationId);
         Assert.Equal("PROCESSING", firstResult.Status);
 
         using var scope = _factory.Services.CreateScope();
@@ -63,7 +57,7 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
     }
 
     [Fact]
-    public async Task Ingest_WithDuplicateCandidateEmailWithoutIdempotencyKey_ReturnsExistingApplication()
+    public async Task Ingest_WithDuplicateCandidateEmailWithoutIdempotencyKey_ReturnsBadRequest()
     {
         var client = _factory.CreateClient();
         using var firstRequest = CreateIngestRequest("Grace Hopper", "Grace.Hopper@example.com", includeTranscript: true);
@@ -73,14 +67,8 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
         var duplicateResponse = await client.SendAsync(duplicateRequest);
 
         firstResponse.EnsureSuccessStatusCode();
-        duplicateResponse.EnsureSuccessStatusCode();
-
-        var firstResult = await firstResponse.Content.ReadFromJsonAsync<IngestResponse>();
-        var duplicateResult = await duplicateResponse.Content.ReadFromJsonAsync<IngestResponse>();
-
-        Assert.NotNull(firstResult);
-        Assert.NotNull(duplicateResult);
-        Assert.Equal(firstResult.ApplicationId, duplicateResult.ApplicationId);
+        Assert.Equal(HttpStatusCode.Accepted, firstResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, duplicateResponse.StatusCode);
 
         using var scope = _factory.Services.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IApplicationRecordRepository>();
@@ -254,12 +242,6 @@ internal sealed class TestApplicationRecordRepository : IApplicationRecordReposi
     {
         _records.Clear();
     }
-
-
-
-
-
-
 
     public Task<bool> ExistsAsync(string emailMessageId, CancellationToken cancellationToken = default)
     {

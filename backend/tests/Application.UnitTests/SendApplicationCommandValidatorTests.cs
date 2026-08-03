@@ -4,13 +4,14 @@ using Application.Interfaces;
 using Domain.Entities;
 
 using FluentAssertions;
-using NSubstitute; 
+
+using NSubstitute;
 
 namespace Application.UnitTests;
 
 public class SendApplicationCommandValidatorTests
 {
-    private readonly SendApplicationCommandValidator _validator ;
+    private readonly SendApplicationCommandValidator _validator;
 
     public SendApplicationCommandValidatorTests()
     {
@@ -23,7 +24,7 @@ public class SendApplicationCommandValidatorTests
     }
 
     [Fact]
-    public void Validate_PassesForCompleteApplication()
+    public async Task Validate_PassesForCompleteApplication()
     {
         var command = new SendApplicationCommand
         {
@@ -32,13 +33,13 @@ public class SendApplicationCommandValidatorTests
             CvStream = new MemoryStream([1, 2, 3])
         };
 
-        var result = _validator.Validate(command);
+        var result = await _validator.ValidateAsync(command);
 
         result.IsValid.Should().BeTrue();
     }
 
     [Fact]
-    public void Validate_FailsWhenRequiredFieldsAreMissingOrInvalid()
+    public async Task Validate_FailsWhenRequiredFieldsAreMissingOrInvalid()
     {
         var command = new SendApplicationCommand
         {
@@ -47,7 +48,7 @@ public class SendApplicationCommandValidatorTests
             CvStream = null!
         };
 
-        var result = _validator.Validate(command);
+        var result = await _validator.ValidateAsync(command);
 
         result.IsValid.Should().BeFalse();
         result.Errors.Select(error => error.PropertyName)
