@@ -68,6 +68,8 @@ interface RateResponse {
   ratedAt: string | null;
 }
 
+type ReviewDecision = "shortlist" | "reject";
+
 export function CandidateReview({ applicationId, currentStatus }: { applicationId: string; currentStatus?: string }) {
   const queryClient = useQueryClient();
   const { data: session } = useSession();
@@ -78,6 +80,8 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
 
   const [ratingOverride, setRatingOverride] = useState<number | null>(null);
   const [notesOverride, setNotesOverride] = useState<string | null>(null);
+  const [decisionOverride, setDecisionOverride] = useState<ReviewDecision | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const rating = ratingOverride ?? ownershipQuery.data?.recruiterRating ?? 0;
   const notes = notesOverride ?? ownershipQuery.data?.recruiterRatingNote ?? "";
@@ -89,6 +93,17 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
     ownershipQuery.data?.ratedByRecruiterId === recruiterIdentity;
   const isShortlisted = statusUpper === "SHORTLISTED";
   const isRejected = statusUpper === "REJECTED";
+  const decision =
+    decisionOverride ??
+    (isShortlisted ? "shortlist" : isRejected ? "reject" : null);
+  const isSubmitting =
+    rateMutation.isPending || shortlistMutation.isPending || rejectMutation.isPending;
+  const canSubmit =
+    isAssignedToCurrentRecruiter &&
+    rating > 0 &&
+    decision !== null &&
+    notes.trim().length > 0 &&
+    !isSubmitting;
 
   // Mutation to save notes only
   const notesMutation = useMutation({
@@ -113,12 +128,34 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
 
   const isNotesChanged = notesOverride !== null && notesOverride !== (ownershipQuery.data?.recruiterRatingNote ?? "");
 
+  const handleConfirmSubmit = () => {
+    if (!decision) return;
+
+    void (async () => {
+      try {
+        await rateMutation.mutateAsync({ rating, notes });
+        if (decision === "shortlist") {
+          await shortlistMutation.mutateAsync(undefined);
+        } else {
+          await rejectMutation.mutateAsync(undefined);
+        }
+        setRatingOverride(null);
+        setNotesOverride(null);
+        setDecisionOverride(null);
+        setConfirmOpen(false);
+        void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
+      } catch {
+        // Mutations surface errors via react-query
+      }
+    })();
+  };
+
   return (
     <Card className="shrink-0">
       <CardHeader>
         <CardTitle>Candidate Review</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Decide, rate, and leave notes for this applicant
+          Rate, choose shortlist or reject, add notes, then submit your review
         </p>
       </CardHeader>
 
@@ -172,51 +209,31 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                disabled={shortlistMutation.isPending}
-                onClick={() => {
-                  shortlistMutation.mutate(undefined, {
-                    onSuccess: () => {
-                      void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
-                      toast.success("Candidate shortlisted");
-                    },
-                    onError: () => {
-                      toast.error("Couldn't shortlist candidate");
-                    },
-                  });
-                }}
+                disabled={isSubmitting}
+                onClick={() => { setDecisionOverride("shortlist"); }}
                 className={cn(
                   "flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
-                  isShortlisted
+                  decision === "shortlist"
                     ? "border-primary bg-primary/10 text-primary"
                     : "border-input hover:bg-accent hover:text-white",
                 )}
               >
-                <Star className={cn("size-4", isShortlisted && "fill-primary")} />
-                {shortlistMutation.isPending ? "Shortlisting..." : "Shortlist"}
+                <Star className={cn("size-4", decision === "shortlist" && "fill-primary")} />
+                Shortlist
               </button>
               <button
                 type="button"
-                disabled={rejectMutation.isPending}
-                onClick={() => {
-                  rejectMutation.mutate(undefined, {
-                    onSuccess: () => {
-                      void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
-                      toast.success("Candidate rejected");
-                    },
-                    onError: () => {
-                      toast.error("Couldn't reject candidate");
-                    },
-                  });
-                }}
+                disabled={isSubmitting}
+                onClick={() => { setDecisionOverride("reject"); }}
                 className={cn(
                   "flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
-                  isRejected
+                  decision === "reject"
                     ? "border-destructive bg-destructive text-destructive-foreground"
                     : "border-input hover:bg-destructive hover:text-white",
                 )}
               >
                 <X className="size-4" />
-                {rejectMutation.isPending ? "Rejecting..." : "Reject"}
+                Reject
               </button>
             </div>
           </div>
@@ -224,27 +241,39 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
 
         <Button
           className="h-11 w-full text-base font-medium text-white hover:bg-primary/80"
-          disabled={!isAssignedToCurrentRecruiter || rating === 0 || rateMutation.isPending}
-          onClick={() => {
-            rateMutation.mutate(
-              { rating, notes: notes.length > 0 ? notes : undefined },
-              {
-                onSuccess: () => {
-                  setRatingOverride(null);
-                  setNotesOverride(null);
-                  void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
-                  toast.success("Rating saved");
-                },
-                onError: () => {
-                  toast.error("Couldn't save rating");
-                },
-              }
-            );
-          }}
+          disabled={!canSubmit}
+          onClick={() => { setConfirmOpen(true); }}
         >
-          {rateMutation.isPending ? "Submitting..." : "Submit Rating"}
+          {isSubmitting ? "Submitting..." : "Submit Rating"}
         </Button>
       </CardContent>
+
+      {confirmOpen && decision ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-background border rounded-lg shadow-lg w-full max-w-md p-6 flex flex-col gap-4 animate-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-semibold">
+              {decision === "shortlist" ? "Confirm Shortlist" : "Confirm Rejection"}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {decision === "shortlist"
+                ? "Are you sure you want to shortlist this applicant? This will submit your rating, notes, and mark them as shortlisted."
+                : "Are you sure you want to reject this applicant? This will submit your rating, notes, and mark them as rejected."}
+            </p>
+            <div className="flex justify-end gap-3 mt-4">
+              <Button variant="ghost" onClick={() => { setConfirmOpen(false); }} disabled={isSubmitting}>
+                Cancel
+              </Button>
+              <Button
+                variant={decision === "reject" ? "destructive" : "default"}
+                onClick={handleConfirmSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Submitting..." : "Confirm"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </Card>
   );
 }

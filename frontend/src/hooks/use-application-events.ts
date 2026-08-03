@@ -45,7 +45,7 @@ export function useApplicationEvents() {
           void queryClient.invalidateQueries({
             queryKey: queryKeys.evaluation(applicationId),
           });
-          // Also bump the list so status/tier/score columns update.
+          // Also bump the list so status/score columns update.
           void queryClient.invalidateQueries({ queryKey: ["applications"] });
           toast.info("Evaluation updated");
           break;
