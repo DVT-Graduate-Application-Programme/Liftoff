@@ -7,6 +7,7 @@ import { useApplicationDetail } from "@/hooks/use-application-detail";
 import { useEvaluation } from "@/hooks/use-evaluation";
 import { useOwnership } from "@/hooks/use-ownership";
 import { useRecruiters } from "@/hooks/use-recruiters";
+import { useUrlFilterState } from "@/hooks/use-url-filter-state";
 import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
 import { useSidebar } from "@/components/ui/sidebar";
 import ApplicantCard from "@/components/applicant-card/applicant-card";
@@ -84,9 +85,15 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
 
 function AcceptedCandidates() {
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [minScore, setMinScore] = useState("");
-  const [ownership, setOwnership] = useState("all");
-  const [sort, setSort] = useState<SortOption>("score_desc");
+  const [minScore, setMinScore] = useUrlFilterState("acceptedMinScore", "");
+  const [ownership, setOwnership] = useUrlFilterState(
+    "acceptedOwnership",
+    "all",
+  );
+  const [sort, setSort] = useUrlFilterState<SortOption>(
+    "acceptedSort",
+    "score_desc",
+  );
 
   const recruitersQuery = useRecruiters();
 
