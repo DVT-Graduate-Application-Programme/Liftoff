@@ -53,6 +53,18 @@ output "worker_container_app_name" {
   value       = azurerm_container_app.worker.name
 }
 
+output "hiring_agent_container_app_name" {
+  description = "Hiring agent Container App name — use as HIRING_AGENT_CONTAINER_APP GitHub secret."
+  value       = azurerm_container_app.hiring_agent.name
+}
+
+# Internal ingress: resolvable only from inside the Container Apps environment. Exposed
+# here so the worker's Worker__HiringAgentBaseUrl can be verified without opening the portal.
+output "hiring_agent_internal_url" {
+  description = "Internal URL of the hiring agent — reachable only from within the Container Apps environment."
+  value       = "https://${azurerm_container_app.hiring_agent.ingress[0].fqdn}"
+}
+
 output "postgresql_fqdn" {
   description = "PostgreSQL Flexible Server FQDN."
   value       = azurerm_postgresql_flexible_server.main.fqdn

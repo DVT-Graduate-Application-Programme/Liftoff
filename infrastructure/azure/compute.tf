@@ -158,6 +158,7 @@ resource "azurerm_container_app" "backend" {
         value = "https://${local.frontend_app_name}.${azurerm_container_app_environment.main.default_domain}/api/internal/notify"
       }
 
+
       liveness_probe {
         path                    = "/health"
         port                    = 5000
@@ -246,8 +247,14 @@ resource "azurerm_container_app" "worker" {
         secret_name = "worker-admin-api-key"
       }
 
-      # Worker__HiringAgentBaseUrl falls back to appsettings.json; override it with the
-      # hiring agent's internal Container Apps URL once that service is deployed here.
+      # The worker is the only service that talks to the hiring agent. appsettings.json has no
+      # value for this and WorkerOptions has no default, so the worker fails at startup rather
+      # than silently pointing at a host that does not exist. The agent's internal ingress FQDN
+      # is reachable from inside the Container Apps environment only, over HTTPS on 443.
+      env {
+        name  = "Worker__HiringAgentBaseUrl"
+        value = "https://${azurerm_container_app.hiring_agent.ingress[0].fqdn}"
+      }
 
       env {
         name  = "APPLICATIONINSIGHTS_CONNECTION_STRING"
@@ -262,6 +269,127 @@ resource "azurerm_container_app" "worker" {
         interval_seconds        = 30
         failure_count_threshold = 3
       }
+    }
+  }
+}
+
+# ── Hiring Agent Container App ─────────────────────────────────────────────────
+# Python/FastAPI resume-scoring agent (backend/src/AI/hiring-agent). The worker POSTs
+# /notify with a candidate id; the agent enqueues it and a background task pulls the CV
+# and transcript from the backend, scores them with the configured LLM, and POSTs the
+# result back to /internal/evaluation using the shared internal API key.
+#
+# Internal ingress only: the worker is the sole caller, from inside this Container Apps
+# environment, and /notify has no auth of its own.
+#
+# min = max = 1 is a correctness constraint, not a cost choice. job_queue.InMemoryJobQueue
+# is an asyncio.Queue living in the process, so a second replica would hold a queue the
+# notifying replica cannot see, and a scale-to-zero would drop everything still queued.
+
+resource "azurerm_container_app" "hiring_agent" {
+  name                         = "ca-${local.prefix}-hiring-agent"
+  container_app_environment_id = azurerm_container_app_environment.main.id
+  resource_group_name          = azurerm_resource_group.main.name
+  revision_mode                = "Single"
+  tags                         = local.common_tags
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.container_apps.id]
+  }
+
+  registry {
+    server   = azurerm_container_registry.main.login_server
+    identity = azurerm_user_assigned_identity.container_apps.id
+  }
+
+  # Same key the backend holds, so X-Internal-Api-Key on the evaluation callback matches.
+  secret {
+    name  = "internal-api-key"
+    value = var.internal_api_key
+  }
+
+  secret {
+    name  = "gemini-api-key"
+    value = var.gemini_api_key
+  }
+
+  # secret {
+  #  name  = "github-token"
+  #  value = var.github_token
+  # }
+
+  ingress {
+    external_enabled = false
+
+    # Matches EXPOSE 8001 / uvicorn --port 8001 in the agent's Dockerfile and the port it
+    # is published on in docker-compose.yml.
+    target_port = 8001
+
+    traffic_weight {
+      percentage      = 100
+      latest_revision = true
+    }
+  }
+
+  template {
+    min_replicas = 1
+    max_replicas = 1
+
+    container {
+      name  = "hiring-agent"
+      image = var.hiring_agent_image != "" ? var.hiring_agent_image : "${azurerm_container_registry.main.login_server}/hiring-agent:latest"
+
+      # Larger than the .NET apps: PyMuPDF rendering plus the tesseract OCR fallback on
+      # scanned PDFs is the memory peak, and extraction runs one LLM call per resume
+      # section. 0.5/1.0Gi is the smallest valid Container Apps pairing above the 0.25/0.5Gi
+      # the other apps use.
+      cpu    = 0.5
+      memory = "1Gi"
+
+      # Stable app FQDN, not latest_revision_fqdn — see the note on the frontend below.
+      env {
+        name  = "BACKEND_BASE_URL"
+        value = "https://${azurerm_container_app.backend.ingress[0].fqdn}"
+      }
+
+      env {
+        name        = "INTERNAL_API_KEY"
+        secret_name = "internal-api-key"
+      }
+
+      env {
+        name  = "LLM_PROVIDER"
+        value = var.llm_provider
+      }
+
+      env {
+        name  = "DEFAULT_MODEL"
+        value = var.hiring_agent_model
+      }
+
+      # Empty unless LLM_PROVIDER=gemini; prompt.py reads it either way.
+      env {
+        name        = "GEMINI_API_KEY"
+        secret_name = "gemini-api-key"
+      }
+
+      # Optional — raises the GitHub API rate limit when enriching a candidate's profile.
+      #env {
+      #  name        = "GITHUB_TOKEN"
+      #  secret_name = "github-token"
+      #}
+
+      # Off in Azure: development mode writes resume_evaluations.csv and caches extraction
+      # JSON under cache/, both of which are lost on every revision and only useful locally.
+      env {
+        name  = "DEVELOPMENT_MODE"
+        value = "False"
+      }
+
+      # No liveness probe. The app exposes only POST /notify — there is no health endpoint
+      # to poll, and Container Apps' default TCP check on the ingress port already restarts
+      # a replica whose uvicorn process has died. Add an HTTP probe here if /health lands.
     }
   }
 }
