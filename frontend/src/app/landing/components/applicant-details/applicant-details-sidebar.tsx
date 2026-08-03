@@ -64,7 +64,7 @@ export function ApplicantDetailsSidebar({
     <Sidebar
       side="right"
       collapsible="offcanvas"
-      className="top-16 h-auto font-sans text-sidebar-foreground"
+      className="top-16 z-30 h-auto font-sans text-sidebar-foreground"
     >
       <SidebarContent className="py-2">
         <SidebarGroup className="flex h-full min-h-0 flex-1 flex-col p-5">
