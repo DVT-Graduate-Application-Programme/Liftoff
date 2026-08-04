@@ -205,6 +205,8 @@ export default function AllCandidateCard({
           <ScoreTag score={systemScore} className={scoreClassName} />
         </div>
 
+        <div className="h-10 w-px bg-border" />
+
         <div className="flex w-20 shrink-0 flex-col items-center gap-0.5">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
             Acad. Avg
