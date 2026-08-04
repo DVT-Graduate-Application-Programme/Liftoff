@@ -3,6 +3,7 @@
 import { useMemo, type ReactElement, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
 import {
   useApplicantSelection,
@@ -15,6 +16,8 @@ import {
   ACTIVE_RECRUITER_ID,
   useClaimApplication,
 } from "@/hooks/use-claim-application";
+import { useShortlistApplication } from "@/hooks/use-shortlist-application";
+import { useRejectApplication } from "@/hooks/use-reject-application";
 import { useSidebar } from "@/components/ui/sidebar";
 import { LoadMoreButton } from "@/components/load-more-button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -95,6 +98,9 @@ function PendingApplicationCard({
 }) {
   const router = useRouter();
   const evaluationQuery = useEvaluation(application.applicationId);
+  const shortlistMutation = useShortlistApplication(application.applicationId);
+  const rejectMutation = useRejectApplication(application.applicationId);
+
   const isClaimed = isClaimedByActiveRecruiter(application, recruiterIdentity);
   const isClaiming =
     enableClaim &&
@@ -107,8 +113,26 @@ function PendingApplicationCard({
 
   const academicAverage =
     evaluationQuery.data?.institutionJson?.academic_average ??
-    evaluationQuery.data?.categoryScoresJson.education.score ??
+    evaluationQuery.data?.categoryScoresJson?.education?.score ??
     application.academicAverage;
+
+  const handleAccept = async () => {
+    try {
+      await shortlistMutation.mutateAsync(undefined);
+      toast.success("Candidate accepted");
+    } catch {
+      toast.error("Couldn't accept candidate");
+    }
+  };
+
+  const handleReject = async () => {
+    try {
+      await rejectMutation.mutateAsync(undefined);
+      toast.success("Candidate rejected");
+    } catch {
+      toast.error("Couldn't reject candidate");
+    }
+  };
 
   return (
     <PendingCandidateCard
@@ -132,10 +156,16 @@ function PendingApplicationCard({
                 },
           }
         : {})}
+      onViewDetail={() => {
+        router.push(`/applicants/${application.applicationId}`);
+      }}
+      onAccept={handleAccept}
+      isAccepting={shortlistMutation.isPending}
+      onReject={handleReject}
+      isRejecting={rejectMutation.isPending}
       onClick={() => {
         router.push(`/applicants/${application.applicationId}`);
       }}
-
       onActionClick={() => {
         openDetails(application.applicationId);
       }}

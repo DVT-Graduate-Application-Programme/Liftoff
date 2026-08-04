@@ -45,7 +45,7 @@ export const getRecruiterLabel = (
     application.ratedByRecruiterId ??
     "Cannot get recruiter";
 
-  if (recruiters) {
+  if (Array.isArray(recruiters)) {
     const recruiter = recruiters.find((r) => r.email === email);
     if (recruiter?.fullName) {
       const parts = recruiter.fullName.trim().split(" ");
