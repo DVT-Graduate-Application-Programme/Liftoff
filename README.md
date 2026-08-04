@@ -124,11 +124,29 @@ Environment is loaded from `.env.development`, referenced by every Compose servi
 | `GEMINI_API_KEY` | Required when `LLM_PROVIDER=gemini` |
 | `OLLAMA_HOST` / `Ollama__BaseUrl` | Ollama endpoint; defaults to `http://host.docker.internal:11434` |
 | `BACKEND_BASE_URL` / `NEXT_PUBLIC_BACKEND_URL` | Service-to-service and browser-facing API URLs |
+| `STORAGE_CONNECTION_STRING` | Blob storage holding uploaded CVs and transcripts. Compose defaults it to the Azurite emulator; the backend refuses to start without it |
 | `AUTH_MICROSOFT_ENTRA_ID_ID` / `_SECRET` / `_ISSUER` | Microsoft Entra ID OAuth app |
 | `AUTH_SECRET` / `AUTH_TRUST_HOST` | NextAuth session signing |
 
 Ollama can also run as a Compose service — the `ollama` and `ollama-init` definitions are
 present in `docker-compose.yml`, currently commented out in favour of a host install.
+
+### Document storage
+
+Uploaded CVs and transcripts go to Azure Blob Storage, in the `cvs` and `transcripts`
+containers — never to the container filesystem, which is ephemeral and loses every upload
+when a replica restarts. The application record stores a `blob://{container}/{id}.pdf`
+reference; `GET /api/applications/{id}/cv` resolves it and streams the file back.
+
+Compose runs [Azurite](https://learn.microsoft.com/azure/storage/common/storage-use-azurite)
+as the local stand-in, so uploads behave the same locally as in Azure and survive
+`docker compose down`. Running the API natively against it needs the emulator reachable on
+localhost:
+
+```bash
+docker compose up -d azurite
+export STORAGE_CONNECTION_STRING='DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;'
+```
 
 > **Secrets:** `.env.development` is committed and contains live-looking Entra ID and NextAuth
 > values. Rotate them and move real credentials out of version control before this goes near

@@ -17,6 +17,17 @@ services:
       retries: 10
       start_period: 10s
 
+  # ── Azurite: Azure Blob Storage emulator (local dev only) ────────────────────
+  # Backs the same "cvs"/"transcripts" containers the backend uses in Azure, so uploads
+  # behave identically here. The named volume keeps CVs across `docker compose down`.
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    command: ["azurite-blob", "--blobHost", "0.0.0.0", "--blobPort", "10000", "--location", "/data"]
+    volumes:
+      - azurite_data:/data
+    ports:
+      - "10000:10000"
+
   # ── Azure Service Bus emulator (local dev only) ──────────────────────────────
   # Official emulator; needs a SQL Edge backing store. No Azure account required.
   # Connection string uses UseDevelopmentEmulator=true (plaintext AMQP on 5672).
@@ -84,6 +95,10 @@ services:
       NOTIFICATIONS__NEXTJS__WEBHOOKURL: "${NEXTJS_WEBHOOK_URL:-http://host.docker.internal:3000/api/internal/notify}"
       # Defaults to the local emulator; override with a real Azure connection string.
       SERVICEBUS_CONNECTION_STRING: "${SERVICEBUS_CONNECTION_STRING:-Endpoint=sb://servicebus-emulator;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;}"
+      # CVs and transcripts go to blob storage, never to the container filesystem. Defaults to
+      # the Azurite emulator using its well-known public dev credentials; deployed environments
+      # override this with the storage account's connection string.
+      STORAGE_CONNECTION_STRING: "${STORAGE_CONNECTION_STRING:-DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;}"
       INTERNAL_API_KEY: "${INTERNAL_API_KEY:-local-internal-key}"
       # No hiring agent URL here on purpose: the backend never calls the agent. Both ingest
       # and re-evaluate publish to the ingest queue and the worker owns the hand-off.
@@ -93,6 +108,8 @@ services:
       db:
         condition: service_healthy
       servicebus-emulator:
+        condition: service_started
+      azurite:
         condition: service_started
 
   worker:
@@ -152,4 +169,5 @@ services:
 
 volumes:
   pgdata:
+  azurite_data:
   ollama_data:

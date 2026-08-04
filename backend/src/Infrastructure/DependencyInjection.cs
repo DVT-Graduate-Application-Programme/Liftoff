@@ -1,8 +1,10 @@
 using Application.Interfaces;
 using Azure.Messaging.ServiceBus;
+using Azure.Storage.Blobs;
 using Infrastructure.Data;
 using Infrastructure.Messaging;
 using Infrastructure.Services;
+using Infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,8 +52,39 @@ public static class DependencyInjection
         });
 
         AddServiceBusPublisher(services, configuration);
+        AddDocumentStorage(services, configuration);
 
         return services;
+    }
+
+    private static void AddDocumentStorage(IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = Environment.GetEnvironmentVariable("STORAGE_CONNECTION_STRING")
+            ?? configuration["Storage:ConnectionString"];
+
+        // Deliberately fatal rather than falling back to local disk: a silent fallback is
+        // exactly the failure mode this replaces — the app keeps working right up until the
+        // container recycles, and every CV uploaded since the last restart is gone.
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new InvalidOperationException(
+                "Blob storage connection string is not set. Provide STORAGE_CONNECTION_STRING or Storage:ConnectionString.");
+        }
+
+        var options = new DocumentStorageOptions
+        {
+            CvContainer = Environment.GetEnvironmentVariable("STORAGE_CV_CONTAINER")
+                ?? configuration["Storage:CvContainer"]
+                ?? "cvs",
+            TranscriptContainer = Environment.GetEnvironmentVariable("STORAGE_TRANSCRIPT_CONTAINER")
+                ?? configuration["Storage:TranscriptContainer"]
+                ?? "transcripts"
+        };
+
+        // BlobServiceClient is thread-safe and intended to be long-lived, like ServiceBusClient.
+        services.AddSingleton(_ => new BlobServiceClient(connectionString));
+        services.AddSingleton(options);
+        services.AddSingleton<IDocumentStorage, BlobDocumentStorage>();
     }
 
     private static void AddServiceBusPublisher(IServiceCollection services, IConfiguration configuration)
