@@ -10,8 +10,8 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusTones: Record<string, "positive" | "warning" | "negative" | "neutral"> = {
-  pending: "neutral",
-  processing: "positive",
+  pending: "warning",
+  processing: "neutral",
   evaluated: "warning",
   forwarded: "warning",
   rejected: "negative",
