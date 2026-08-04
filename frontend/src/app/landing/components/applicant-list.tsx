@@ -218,6 +218,7 @@ export function ApplicantList({
   showReviewedAt = true,
   enableClaim = false,
   groupByDate = false,
+  groupByMarks = false,
   renderItem,
   renderCard,
 }: ApplicantListProps) {
@@ -420,6 +421,33 @@ export function ApplicantList({
       </div>
     );
   }
+
+  if (groupByMarks) {
+    const groupedApplications = groupApplicationsByMarks(applications);
+
+    return (
+      <div className="space-y-10">
+        {MARKS_BUCKET_SECTIONS.map(
+          ({
+            key,
+            label,
+            countLabel,
+            emptyText,
+            headerColorClass,
+            lineColorClass,
+            countColorClass,
+          }) => {
+            const bucketApplications = groupedApplications[key];
+
+            return (
+              <section key={key}>
+                <div className="mb-4 flex items-center gap-4">
+                  <h3
+                    className={cn(
+                      "text-xs font-bold uppercase tracking-widest",
+                      headerColorClass,
+                    )}
+                  >
 
   return (
     <div className="@container flex flex-col gap-3">
