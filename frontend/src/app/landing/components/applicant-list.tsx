@@ -116,6 +116,13 @@ const MARKS_BUCKET_SECTIONS = [
   },
 ];
 
+function getMarksBucket(systemScore?: number | null): "excellent" | "good" | "average" | "fail" {
+  const score = systemScore ?? 0;
+  if (score >= 85) return "excellent";
+  if (score >= 75) return "good";
+  if (score >= 65) return "average";
+  return "fail";
+}
 
 function getEducationSubtitle(evaluation: Evaluation | null | undefined, fallback: string) {
   const educationEvidence = evaluation?.evidenceJson?.education.trim();
