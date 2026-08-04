@@ -193,7 +193,7 @@ export function FilterBar({
           }}
         >
           <SelectTrigger className="h-auto min-w-[14rem] rounded-lg border border-border bg-card py-2 text-foreground shadow-none transition-colors hover:bg-muted focus-visible:border-border focus-visible:ring-0 data-[size=default]:h-auto">
-            <span className="flex min-w-0 items-center">
+            <span className="flex min-w-0 items-center gap-2">
               <ListOrdered size={16} aria-hidden="true" />
               <SelectValue className="truncate text-left">
                 {sortLabel}
