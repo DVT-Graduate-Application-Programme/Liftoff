@@ -44,7 +44,7 @@ describe("ApplicantList Quick Actions & View Detail", () => {
     mockPush.mockReset();
   });
 
-  it("renders Shortlist, Reject, and View Detail buttons on My Candidates tab (pending)", async () => {
+  it("renders Quick Actions dropdown trigger and stacked View Detail button on My Candidates tab (pending)", async () => {
     vi.spyOn(global, "fetch").mockImplementation((input) => {
       const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
       if (url.includes("/api/applications")) {
@@ -62,9 +62,14 @@ describe("ApplicantList Quick Actions & View Detail", () => {
     );
 
     expect(await screen.findByText("Sarah Connor")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /shortlist/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /reject/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /view detail/i })).toBeInTheDocument();
+
+    const quickActionsBtn = screen.getByRole("button", { name: /quick actions/i });
+    expect(quickActionsBtn).toBeInTheDocument();
+
+    fireEvent.click(quickActionsBtn);
+    expect(screen.getByRole("button", { name: /shortlist candidate/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /reject candidate/i })).toBeInTheDocument();
   });
 
   it("navigates to candidate route when View Detail button is clicked", async () => {
@@ -91,7 +96,7 @@ describe("ApplicantList Quick Actions & View Detail", () => {
     expect(mockPush).toHaveBeenCalledWith("/applicants/app-quick-1");
   });
 
-  it("triggers shortlist mutation when Shortlist is clicked", async () => {
+  it("triggers shortlist mutation when Shortlist is confirmed from modal", async () => {
     let shortlistCalled = false;
     vi.spyOn(global, "fetch").mockImplementation((input) => {
       const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
@@ -114,15 +119,20 @@ describe("ApplicantList Quick Actions & View Detail", () => {
     );
 
     expect(await screen.findByText("Sarah Connor")).toBeInTheDocument();
-    const shortlistBtn = screen.getByRole("button", { name: /shortlist/i });
+    fireEvent.click(screen.getByRole("button", { name: /quick actions/i }));
+
+    const shortlistBtn = screen.getByRole("button", { name: /shortlist candidate/i });
     fireEvent.click(shortlistBtn);
+
+    const confirmBtn = await screen.findByRole("button", { name: /confirm shortlist/i });
+    fireEvent.click(confirmBtn);
 
     await waitFor(() => {
       expect(shortlistCalled).toBe(true);
     });
   });
 
-  it("triggers reject mutation when Reject is clicked", async () => {
+  it("triggers reject mutation when Reject is confirmed from modal", async () => {
     let rejectCalled = false;
     vi.spyOn(global, "fetch").mockImplementation((input) => {
       const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
@@ -145,15 +155,20 @@ describe("ApplicantList Quick Actions & View Detail", () => {
     );
 
     expect(await screen.findByText("Sarah Connor")).toBeInTheDocument();
-    const rejectBtn = screen.getByRole("button", { name: /reject/i });
+    fireEvent.click(screen.getByRole("button", { name: /quick actions/i }));
+
+    const rejectBtn = screen.getByRole("button", { name: /reject candidate/i });
     fireEvent.click(rejectBtn);
+
+    const confirmBtn = await screen.findByRole("button", { name: /confirm rejection/i });
+    fireEvent.click(confirmBtn);
 
     await waitFor(() => {
       expect(rejectCalled).toBe(true);
     });
   });
 
-  it("hides quick-action Shortlist and Reject buttons on other tabs", async () => {
+  it("hides quick-action menu on other tabs", async () => {
     vi.spyOn(global, "fetch").mockImplementation((input) => {
       const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
       if (url.includes("/api/recruiters")) {
@@ -174,8 +189,6 @@ describe("ApplicantList Quick Actions & View Detail", () => {
     );
 
     expect(await screen.findByText("Sarah Connor")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /shortlist/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /reject/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /quick actions/i })).not.toBeInTheDocument();
   });
-
 });
