@@ -1,0 +1,29 @@
+# The Dockerfile does `COPY . .`, so anything not listed here ships inside the image.
+# Sample CVs and transcripts are real candidate documents — they must never be baked
+# into a pushed image, and the agent fetches the documents it scores from the backend
+# at runtime anyway.
+*.pdf
+cache/
+resume_evaluations.csv
+
+# Local secrets — the deployed agent gets these as Container App env vars.
+.env
+.env.*
+!.env.example
+
+# Build/runtime noise that only bloats the layer.
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Tests run in CI (see .github/workflows/backend.yml), not in the runtime image.
+tests/
+
+.git/
+.gitignore
+*.md
+LICENSE

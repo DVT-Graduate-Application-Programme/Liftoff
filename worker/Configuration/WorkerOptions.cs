@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Worker.Configuration;
 
 /// <summary>
@@ -21,8 +23,15 @@ public sealed class WorkerOptions
     /// <summary>Service Bus queue to consume application-ingest messages from.</summary>
     public string QueueName { get; set; } = "application-ingest";
 
-    /// <summary>Base URL of the hiring agent FastAPI service.</summary>
-    public string HiringAgentBaseUrl { get; set; } = "http://hiring-agent:8001";
+    /// <summary>
+    /// Base URL of the hiring agent FastAPI service. No default in code — it differs per
+    /// environment (the compose hostname locally, the agent's internal Container Apps URL
+    /// when deployed), so it comes from appsettings.json or the <c>Worker__HiringAgentBaseUrl</c>
+    /// environment variable. Startup fails when it is missing rather than silently pointing
+    /// the worker at a host that does not exist.
+    /// </summary>
+    [Required]
+    public string HiringAgentBaseUrl { get; set; } = string.Empty;
 
     /// <summary>Maximum messages processed concurrently by the Service Bus processor.</summary>
     public int MaxConcurrentCalls { get; set; } = 1;

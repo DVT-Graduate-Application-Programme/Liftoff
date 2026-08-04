@@ -3,8 +3,8 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using Application.Interfaces;
-using Application.Queries.GetDashboardApplications;
-using Application.Queries.GetDashboardMetrics;
+using Application.Features.GetDashboardApplications;
+using Application.Features.GetDashboardMetrics;
 using Domain.Entities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -38,18 +38,12 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
         var secondResponse = await client.SendAsync(secondRequest);
 
         firstResponse.EnsureSuccessStatusCode();
-        secondResponse.EnsureSuccessStatusCode();
-
         Assert.Equal(HttpStatusCode.Accepted, firstResponse.StatusCode);
         Assert.Equal(HttpStatusCode.Accepted, secondResponse.StatusCode);
 
         var firstResult = await firstResponse.Content.ReadFromJsonAsync<IngestResponse>();
-        var secondResult = await secondResponse.Content.ReadFromJsonAsync<IngestResponse>();
-
         Assert.NotNull(firstResult);
-        Assert.NotNull(secondResult);
-        Assert.Equal(firstResult.ApplicationId, secondResult.ApplicationId);
-        Assert.Equal("PENDING", firstResult.Status);
+        Assert.Equal("PROCESSING", firstResult.Status);
 
         using var scope = _factory.Services.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IApplicationRecordRepository>();
@@ -73,7 +67,8 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
         var duplicateResponse = await client.SendAsync(duplicateRequest);
 
         firstResponse.EnsureSuccessStatusCode();
-        duplicateResponse.EnsureSuccessStatusCode();
+        Assert.Equal(HttpStatusCode.Accepted, firstResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Accepted, duplicateResponse.StatusCode);
 
         var firstResult = await firstResponse.Content.ReadFromJsonAsync<IngestResponse>();
         var duplicateResult = await duplicateResponse.Content.ReadFromJsonAsync<IngestResponse>();
@@ -91,6 +86,38 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
     }
 
     [Fact]
+    public async Task Ingest_WithDuplicateCandidateEmailAndDifferentIdempotencyKey_ReturnsExistingApplication()
+    {
+        var client = _factory.CreateClient();
+        using var firstRequest = CreateIngestRequest("Grace Hopper", "Grace.Hopper@example.com", includeTranscript: true);
+        firstRequest.Headers.Add("Idempotency-Key", "custom-key-1");
+
+        using var duplicateRequest = CreateIngestRequest("Rear Admiral Hopper", " grace.hopper@example.com ", includeTranscript: true);
+        duplicateRequest.Headers.Add("Idempotency-Key", "custom-key-2");
+
+        var firstResponse = await client.SendAsync(firstRequest);
+        var duplicateResponse = await client.SendAsync(duplicateRequest);
+
+        firstResponse.EnsureSuccessStatusCode();
+        Assert.Equal(HttpStatusCode.Accepted, firstResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Accepted, duplicateResponse.StatusCode);
+
+        var firstResult = await firstResponse.Content.ReadFromJsonAsync<IngestResponse>();
+        var duplicateResult = await duplicateResponse.Content.ReadFromJsonAsync<IngestResponse>();
+
+        Assert.NotNull(firstResult);
+        Assert.NotNull(duplicateResult);
+        Assert.Equal(firstResult.ApplicationId, duplicateResult.ApplicationId);
+
+        using var scope = _factory.Services.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IApplicationRecordRepository>();
+        var record = Assert.Single(await repository.GetAllAsync());
+
+        Assert.Equal("Grace.Hopper@example.com", record.CandidateEmail);
+        Assert.Equal("manual:custom-key-1", record.EmailMessageId);
+    }
+
+    [Fact]
     public async Task Ingest_WithoutTranscriptAttachment_AcceptsApplicationAndLeavesTranscriptAttachmentEmpty()
     {
         var client = _factory.CreateClient();
@@ -103,7 +130,7 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
 
         var result = await response.Content.ReadFromJsonAsync<IngestResponse>();
         Assert.NotNull(result);
-        Assert.Equal("PENDING", result.Status);
+        Assert.Equal("PROCESSING", result.Status);
 
         using var scope = _factory.Services.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IApplicationRecordRepository>();
@@ -115,32 +142,26 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
     }
 
     [Fact]
-    public async Task DequeueNextPending_TransitionsStatusFromPendingToProcessing()
+    public async Task IngestedApplication_HasPendingStatus()
     {
         using var scope = _factory.Services.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IApplicationRecordRepository>();
 
-        var pendingRecord = new ApplicationRecord
-        {
-            Id = Guid.NewGuid(),
-            EmailMessageId = "test-msg-queue-1",
-            CandidateEmail = "worker-test@example.com",
-            CandidateName = "Worker Test",
-            Status = "PENDING",
-            CreatedAt = DateTimeOffset.UtcNow
-        };
+        var pendingRecord = new ApplicationRecord(
+            id: Guid.NewGuid(),
+            emailMessageId: "test-msg-queue-1",
+            candidateName: "Worker Test",
+            candidateEmail: "worker-test@example.com",
+            status: "PENDING",
+            createdAt: DateTimeOffset.UtcNow);
 
         await repository.AddAsync(pendingRecord);
 
-        var dequeued = await repository.DequeueNextPendingAsync();
+        var retrieved = await repository.GetByIdAsync(pendingRecord.Id);
 
-        Assert.NotNull(dequeued);
-        Assert.Equal(pendingRecord.Id, dequeued.Id);
-        Assert.Equal("PROCESSING", dequeued.Status);
-
-        // Next dequeue when queue is empty returns null
-        var nextDequeued = await repository.DequeueNextPendingAsync();
-        Assert.Null(nextDequeued);
+        Assert.NotNull(retrieved);
+        Assert.Equal(pendingRecord.Id, retrieved.Id);
+        Assert.Equal("PENDING", retrieved.Status);
     }
 
     private static HttpRequestMessage CreateIngestRequest(
@@ -166,9 +187,10 @@ public class IngestApiTests : IClassFixture<IngestApiFactory>
         };
     }
 
-    private static ByteArrayContent CreatePdfContent(string text)
+    private static ByteArrayContent CreatePdfContent(string label)
     {
-        var content = new ByteArrayContent(Encoding.UTF8.GetBytes(text));
+        var bytes = Encoding.UTF8.GetBytes($"%PDF-1.7 Fake PDF Content for {label}");
+        var content = new ByteArrayContent(bytes);
         content.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
         return content;
     }
@@ -187,12 +209,25 @@ public sealed class IngestApiFactory : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("POSTGRES_DB", "test");
         Environment.SetEnvironmentVariable("POSTGRES_USER", "test");
         Environment.SetEnvironmentVariable("POSTGRES_PASSWORD", "test");
+        Environment.SetEnvironmentVariable("SERVICEBUS_CONNECTION_STRING", "Endpoint=sb://localhost/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=123");
+        // AddInfrastructure refuses to start without one; the registration is replaced below,
+        // so no emulator has to be running for these tests.
+        Environment.SetEnvironmentVariable("STORAGE_CONNECTION_STRING", "UseDevelopmentStorage=true");
 
         builder.UseEnvironment("Testing");
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<IApplicationRecordRepository>();
             services.AddSingleton<IApplicationRecordRepository>(_repository);
+
+            services.RemoveAll<IApplicationQueuePublisher>();
+            services.AddSingleton<IApplicationQueuePublisher, TestQueuePublisher>();
+
+            services.RemoveAll<IDocumentStorage>();
+            services.AddSingleton<IDocumentStorage, InMemoryDocumentStorage>();
+
+            services.RemoveAll<IRecruiterRepository>();
+            services.AddSingleton<IRecruiterRepository, TestRecruiterRepository>();
         });
     }
 
@@ -200,6 +235,67 @@ public sealed class IngestApiFactory : WebApplicationFactory<Program>
     {
         _repository.Clear();
     }
+}
+
+/// <summary>
+/// Stands in for blob storage so the ingest tests need no emulator. Mirrors the real
+/// reference format so anything asserting on the stored reference stays meaningful.
+/// </summary>
+internal sealed class InMemoryDocumentStorage : IDocumentStorage
+{
+    private const string ReferenceScheme = "blob://";
+
+    private readonly Dictionary<string, byte[]> _documents = [];
+
+    public async Task<string> SaveAsync(
+        DocumentKind kind,
+        Guid applicationId,
+        Stream content,
+        string contentType,
+        CancellationToken cancellationToken = default)
+    {
+        using var buffer = new MemoryStream();
+        await content.CopyToAsync(buffer, cancellationToken);
+
+        var reference = kind == DocumentKind.Cv
+            ? $"{ReferenceScheme}cvs/{applicationId}_cv.pdf"
+            : $"{ReferenceScheme}transcripts/{applicationId}_transcript.pdf";
+
+        lock (_documents)
+        {
+            _documents[reference] = buffer.ToArray();
+        }
+
+        return reference;
+    }
+
+    public Task<Stream?> GetAsync(string reference, CancellationToken cancellationToken = default)
+    {
+        lock (_documents)
+        {
+            return Task.FromResult<Stream?>(
+                _documents.TryGetValue(reference, out var bytes) ? new MemoryStream(bytes) : null);
+        }
+    }
+
+    public bool OwnsReference(string reference) =>
+        reference.StartsWith(ReferenceScheme, StringComparison.OrdinalIgnoreCase);
+}
+
+internal sealed class TestQueuePublisher : IApplicationQueuePublisher
+{
+    public Task PublishAsync(Domain.Messaging.CvProcessingMessage message, CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
+}
+
+internal sealed class TestRecruiterRepository : IRecruiterRepository
+{
+    public Task<Recruiter?> GetRecruiters(CancellationToken cancellationToken = default) => Task.FromResult<Recruiter?>(null);
+    public Task<List<Recruiter>> GetRecruitersAsync(CancellationToken cancellationToken = default) => Task.FromResult(new List<Recruiter>());
+    public Task AddRecruiterAsync(RecruiterPostDto recruiter, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public Task SaveChangesAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 }
 
 internal sealed class TestApplicationRecordRepository : IApplicationRecordRepository
@@ -221,13 +317,14 @@ internal sealed class TestApplicationRecordRepository : IApplicationRecordReposi
         return Task.FromResult(_records.FirstOrDefault(record => record.EmailMessageId == emailMessageId));
     }
 
+    public Task<ApplicationRecord?> GetByCandidateEmailAsync(string candidateEmail, CancellationToken cancellationToken = default)
+    {
+        var normalizedCandidateEmail = candidateEmail.Trim().ToLowerInvariant();
+        return Task.FromResult(_records.FirstOrDefault(record => record.CandidateEmail != null && record.CandidateEmail.Trim().ToLowerInvariant() == normalizedCandidateEmail));
+    }
+
     public Task AddAsync(ApplicationRecord record, CancellationToken cancellationToken = default)
     {
-        if (record.Id == Guid.Empty)
-        {
-            record.Id = Guid.NewGuid();
-        }
-
         _records.Add(record);
         return Task.CompletedTask;
     }
@@ -241,12 +338,6 @@ internal sealed class TestApplicationRecordRepository : IApplicationRecordReposi
     {
         _records.Clear();
     }
-
-
-
-
-
-
 
     public Task<bool> ExistsAsync(string emailMessageId, CancellationToken cancellationToken = default)
     {

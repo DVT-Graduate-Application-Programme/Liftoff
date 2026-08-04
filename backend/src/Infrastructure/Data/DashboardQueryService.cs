@@ -1,8 +1,11 @@
 using Application.Interfaces;
-using Application.Queries.GetDashboardApplications;
-using Application.Queries.GetDashboardMetrics;
+using Application.Features.GetDashboardApplications;
+using Application.Features.GetDashboardMetrics;
+
 using Domain.Enums;
+
 using Microsoft.EntityFrameworkCore;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -144,13 +147,13 @@ public class DashboardQueryService : IDashboardQueryService
         };
     }
 
-    private static double? GetAcademicAverage(JsonDocument? instJson, JsonDocument? scoreJson)
+    private static double? GetAcademicAverage(string? instJson, string? scoreJson)
     {
         if (instJson != null)
         {
             try
             {
-                var root = instJson.RootElement;
+                var root = JsonSerializer.Deserialize<JsonElement>(instJson);
                 if (root.TryGetProperty("academic_average", out var avgProp) && avgProp.TryGetDouble(out var val))
                 {
                     return val;
@@ -167,9 +170,9 @@ public class DashboardQueryService : IDashboardQueryService
         {
             try
             {
-                var root = scoreJson.RootElement;
-                if (root.TryGetProperty("education", out var eduProp) && 
-                    eduProp.TryGetProperty("score", out var scoreProp) && 
+                var root = JsonSerializer.Deserialize<JsonElement>(scoreJson);
+                if (root.TryGetProperty("education", out var eduProp) &&
+                    eduProp.TryGetProperty("score", out var scoreProp) &&
                     scoreProp.TryGetDouble(out var val))
                 {
                     return val;
@@ -181,17 +184,30 @@ public class DashboardQueryService : IDashboardQueryService
         return null;
     }
 
-    private static List<string> ReadFlags(JsonDocument? flagsJson)
+    private static List<string> ReadFlags(string? flagsJson)
     {
-        if (flagsJson is null || flagsJson.RootElement.ValueKind != JsonValueKind.Array)
+        if (flagsJson is null)
         {
             return [];
         }
 
-        return flagsJson.RootElement
-            .EnumerateArray()
-            .Where(flag => flag.ValueKind == JsonValueKind.String)
-            .Select(flag => flag.GetString()!)
-            .ToList();
+        try
+        {
+            var root = JsonSerializer.Deserialize<JsonElement>(flagsJson);
+            if (root.ValueKind != JsonValueKind.Array)
+            {
+                return [];
+            }
+
+            return root
+                .EnumerateArray()
+                .Where(flag => flag.ValueKind == JsonValueKind.String)
+                .Select(flag => flag.GetString()!)
+                .ToList();
+        }
+        catch
+        {
+            return [];
+        }
     }
 }

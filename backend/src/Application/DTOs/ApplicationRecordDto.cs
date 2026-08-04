@@ -19,7 +19,7 @@ public class ApplicationRecordDto
     public decimal? HiringAgentTotalScore { get; set; }
     public string? HiringAgentExplanation { get; set; }
     public string? CvSummary { get; set; }
-    public JsonDocument? FlagsJson { get; set; }
+    public string? FlagsJson { get; set; }
     public string? ClaimedByRecruiterId { get; set; }
     public DateTimeOffset? ClaimedAt { get; set; }
     public string? ShortlistedByRecruiterId { get; set; }

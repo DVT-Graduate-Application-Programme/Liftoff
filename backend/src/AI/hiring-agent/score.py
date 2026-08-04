@@ -1,5 +1,6 @@
 import os
 import sys
+import asyncio
 import json
 import logging
 import csv
@@ -642,18 +643,18 @@ def main(pdf_path, transcript_path=None):
                     f"Failed to clean up downloaded transcript PDF {downloaded_transcript_path}: {e}"
                 )
 
-def process_candidate(candidate_id) -> dict:
+async def process_candidate(candidate_id) -> dict:
     """
     Given an applicant_id, fetches resume details from the C# backend
     and runs the full evaluation pipeline. Same logic previously inline
     in the __main__ fallback branch.
     """
     
-    resume = get_resume(candidate_id)   # HTTP call — GET /api/candidates/{id}
+    resume = await get_resume(candidate_id)   # HTTP call — GET /api/candidates/{id}
         
-    return _evaluate_and_send(resume)
+    return await _evaluate_and_send(resume)
 
-def _evaluate_and_send(resume: Resume) -> dict:
+async def _evaluate_and_send(resume: Resume) -> dict:
     pdf_path = resume.document_url
     transcript_path = resume.transcript_url
     message_id = str(resume.id)
@@ -661,7 +662,7 @@ def _evaluate_and_send(resume: Resume) -> dict:
     if not pdf_path:
         raise ValueError("No PDF path found for candidate.")
 
-    resp, transcript_data, resume_data = main(pdf_path, transcript_path)
+    resp, transcript_data, resume_data = await asyncio.to_thread(main, pdf_path, transcript_path)
     
     # Calculate institution payload
     institution = None
@@ -702,7 +703,7 @@ def _evaluate_and_send(resume: Resume) -> dict:
             "academic_average": float(academic_average)
         }
 
-    send_eval(resp, message_id, DEFAULT_MODEL, institution=institution)
+    await send_eval(resp, message_id, DEFAULT_MODEL, institution=institution)
     return resp
 
 if __name__ == "__main__":
@@ -713,11 +714,11 @@ if __name__ == "__main__":
         transcript_path = sys.argv[2] if len(sys.argv) >= 3 else None
         resp, _, _ = main(pdf_path, transcript_path)
         print(resp)
-        send_eval(resp, "TestEnvironment", DEFAULT_MODEL)
+        asyncio.run(send_eval(resp, "TestEnvironment", DEFAULT_MODEL))
     elif len(sys.argv) >= 2:
         # python score.py <candidate-guid>
         candidate_id = UUID(sys.argv[1])
-        resp = process_candidate(candidate_id)
+        resp = asyncio.run(process_candidate(candidate_id))
         print(resp)
     else:
         print("Usage: python score.py <pdf_path> [transcript_path]")

@@ -20,12 +20,22 @@ public class GradRecruitmentDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // No pgcrypto extension: gen_random_uuid() has been core PostgreSQL since 13, and
+        // every server here runs 16. The old schema initializer created the extension
+        // explicitly, but Azure Database for PostgreSQL refuses it unless an operator adds
+        // it to the azure.extensions allow-list — requesting it would make the migration
+        // fail on Azure for a function the server already provides.
         modelBuilder.Entity<ApplicationRecord>(entity =>
         {
-            entity.ToTable("ApplicationRecords");
+            // Constraint and index names below are pinned to the names the previously
+            // hand-written DDL produced, so an existing database can be baselined into
+            // __EFMigrationsHistory without the two schemas drifting apart.
+            entity.ToTable("ApplicationRecords", t => t.HasCheckConstraint(
+                "ApplicationRecords_RecruiterRating_check",
+                "\"RecruiterRating\" BETWEEN 1 AND 5"));
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName(nameof(ApplicationRecord.Id)).HasDefaultValueSql("gen_random_uuid()");
-            entity.HasIndex(e => e.EmailMessageId).IsUnique();
+            entity.HasIndex(e => e.EmailMessageId).IsUnique().HasDatabaseName("UQ_EmailMessageId");
 
             // Ingest fields
             entity.Property(e => e.EmailMessageId).HasColumnName(nameof(ApplicationRecord.EmailMessageId)).IsRequired().HasMaxLength(255);
@@ -90,12 +100,15 @@ public class GradRecruitmentDbContext : DbContext
             entity.HasOne(d => d.ApplicationRecord)
                 .WithMany(p => p.HiringAgentEvaluations)
                 .HasForeignKey(d => d.ApplicationRecordId)
+                .HasConstraintName("FK_HiringAgentEvaluations_ApplicationRecords")
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<RecruiterAction>(entity =>
         {
-            entity.ToTable("RecruiterActions");
+            entity.ToTable("RecruiterActions", t => t.HasCheckConstraint(
+                "RecruiterActions_RatingValue_check",
+                "\"RatingValue\" BETWEEN 1 AND 5"));
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName(nameof(RecruiterAction.Id)).HasDefaultValueSql("gen_random_uuid()");
             entity.Property(e => e.ApplicationRecordId).HasColumnName(nameof(RecruiterAction.ApplicationRecordId));
@@ -110,6 +123,7 @@ public class GradRecruitmentDbContext : DbContext
             entity.HasOne(d => d.ApplicationRecord)
                 .WithMany(p => p.RecruiterActions)
                 .HasForeignKey(d => d.ApplicationRecordId)
+                .HasConstraintName("FK_RecruiterActions_ApplicationRecords")
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -128,6 +142,7 @@ public class GradRecruitmentDbContext : DbContext
             entity.HasOne(d => d.ApplicationRecord)
                 .WithMany(p => p.AuditLogs)
                 .HasForeignKey(d => d.ApplicationRecordId)
+                .HasConstraintName("FK_AuditLogs_ApplicationRecords")
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
@@ -137,11 +152,11 @@ public class GradRecruitmentDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName(nameof(Recruiter.Id)).HasDefaultValueSql("gen_random_uuid()");
             entity.Property(e => e.IdentityId).HasColumnName(nameof(Recruiter.IdentityId)).IsRequired().HasMaxLength(255);
-            entity.HasIndex(e => e.IdentityId).IsUnique();
+            entity.HasIndex(e => e.IdentityId).IsUnique().HasDatabaseName("UQ_Recruiters_IdentityId");
             entity.Property(e => e.FirstName).HasColumnName(nameof(Recruiter.FirstName)).IsRequired().HasMaxLength(100);
             entity.Property(e => e.LastName).HasColumnName(nameof(Recruiter.LastName)).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Email).HasColumnName(nameof(Recruiter.Email)).IsRequired().HasMaxLength(255);
-            entity.HasIndex(e => e.Email).IsUnique();
+            entity.HasIndex(e => e.Email).IsUnique().HasDatabaseName("UQ_Recruiters_Email");
             entity.Property(e => e.IsActive).HasColumnName(nameof(Recruiter.IsActive)).HasDefaultValue(true);
             entity.Property(e => e.CreatedAt).HasColumnName(nameof(Recruiter.CreatedAt)).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.UpdatedAt).HasColumnName(nameof(Recruiter.UpdatedAt)).HasDefaultValueSql("CURRENT_TIMESTAMP");

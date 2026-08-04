@@ -25,7 +25,7 @@ This project is structured according to **Clean Architecture** guidelines, ensur
 backend/
 ├── LiftOff.slnx                  # Solution configuration (VS 2022 format)
 ├── Dockerfile                    # Docker build configuration for production
-├── init.sql                      # Database schema blueprint for PostgreSQL
+├── Dockerfile.migrations         # Builds the EF Core migration bundle run by the deploy pipeline
 ├── .env.development              # Dev environment variable configuration
 ├── src/
 │   ├── Domain/                   # Domain entities and aggregates
@@ -62,7 +62,7 @@ backend/
 
 ## Database Schema Overview
 
-The database contains four primary tables under the `public` schema. The SQL script is available in `./init.sql`.
+The database contains four primary tables under the `public` schema. The schema is defined by EF Core migrations in `./src/Infrastructure/Migrations/` — see [Database Schema and Migrations](#database-schema-and-migrations).
 
 1. **`ApplicationRecords`**:
    Tracks the primary candidate metadata, current status (`PENDING`, `PROCESSING`, `VALID`, `INVALID`, `MANUAL_REVIEW`, `SHORTLISTED`, `ACCEPTED`, `REJECTED`, `ERROR`), AI-assessed evaluation tier (`STRONG`, `BORDERLINE`, `WEAK`), and recruiter ownership.
@@ -127,8 +127,57 @@ Ensure you have the .NET 10 SDK installed and PostgreSQL running.
    ```
    The service will start listening on `http://localhost:5000`.
 
-### Database Auto-Initialization
-On application startup, `GradRecruitmentSchemaInitializer` checks and creates the tables if they don't exist. In non-test environments, `DbSeeder` automatically populates default mock profiles so that you can view mock data on the dashboard immediately.
+---
+
+## Database Schema and Migrations
+
+The schema is owned by EF Core migrations in `src/Infrastructure/Migrations/`. There is no
+`init.sql` and no runtime DDL — a migration is the only way the schema changes.
+
+### Local development
+
+`dotnet run` and `docker compose up` apply any pending migrations at startup and then seed
+mock profiles, so a fresh database is immediately usable. Both are **Development-only**:
+deployed environments never run DDL or seed data from the application process.
+
+### Adding a migration
+
+`Api` is the startup project (EF needs an executable one); `Infrastructure` holds the
+migrations and the `GradRecruitmentDbContextFactory` that supplies the connection.
+
+```bash
+cd backend
+dotnet tool restore                       # first time only — installs dotnet-ef locally
+
+dotnet ef migrations add <DescriptiveName> -p src/Infrastructure -s src/Api
+dotnet ef migrations script -p src/Infrastructure -s src/Api   # review the DDL before committing
+```
+
+Review the generated SQL before committing. Drop the last unapplied migration with
+`dotnet ef migrations remove -p src/Infrastructure -s src/Api`. Never edit a migration that
+has already been applied to a deployed environment — write a new one.
+
+### How migrations reach the deployed databases
+
+The deploy workflows build `Dockerfile.migrations` into an `efbundle` image and run it as a
+gate **before** the new application images roll out, so a failed migration fails the deploy
+instead of leaving the API running against an unexpected schema:
+
+| Cloud | Mechanism | Definition |
+| ----- | --------- | ---------- |
+| Azure | Container Apps Job (manual trigger) | `infrastructure/azure/migrations.tf` |
+| AWS   | One-off ECS Fargate task | `infrastructure/aws/migrations.tf` |
+
+Both run inside the environment that already has database access, so neither database is
+exposed publicly and no credentials leave the cloud account.
+
+### Baselining a pre-migrations database
+
+Any database created before migrations were introduced already has the tables, and
+`InitialCreate` would fail against it with `relation "ApplicationRecords" already exists`.
+Run `src/Infrastructure/Migrations/baseline-existing-database.sql` against it once — the
+script is idempotent and documents exactly what it reconciles. Brand-new databases need
+nothing.
 
 ---
 

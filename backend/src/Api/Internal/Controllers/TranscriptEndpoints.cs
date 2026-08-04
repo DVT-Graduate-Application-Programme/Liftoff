@@ -1,5 +1,5 @@
 using MediatR;
-using Application.Commands.IngestTranscript;
+using Application.Features.IngestTranscript;
 
 namespace Api.Internal;
 

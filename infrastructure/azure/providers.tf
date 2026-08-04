@@ -1,11 +1,11 @@
 terraform {
   required_providers {
     azurerm = {
-      source  = "hashicorp/azurerm"
+      source  = "registry.terraform.io/hashicorp/azurerm"
       version = "~> 3.100"
     }
     random = {
-      source  = "hashicorp/random"
+      source  = "registry.terraform.io/hashicorp/random"
       version = "~> 3.0"
     }
   }
@@ -15,6 +15,9 @@ terraform {
 }
 
 provider "azurerm" {
+  subscription_id            = var.subscription_id
+  tenant_id                  = var.tenant_id
+  skip_provider_registration = true
   features {
     key_vault {
       # Fully removes Key Vault on destroy instead of soft-deleting it.
