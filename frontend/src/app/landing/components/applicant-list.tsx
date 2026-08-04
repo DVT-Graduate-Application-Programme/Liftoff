@@ -10,6 +10,7 @@ import {
 } from "@/components/providers/applicant-selection-provider";
 import { useInfiniteApplications } from "@/hooks/use-infinite-applications";
 import { useEvaluation } from "@/hooks/use-evaluation";
+import { useRecruiters } from "@/hooks/use-recruiters";
 import {
   ACTIVE_RECRUITER_ID,
   useClaimApplication,
@@ -34,14 +35,6 @@ import {
   toScorePercent,
 } from "./candidate-list-utils";
 import type { Evaluation } from "@/types/api";
-
-type SessionValue = {
-  user?: {
-    email?: string | null;
-  } | null;
-} | null;
-
-const useTypedSession = useSession as unknown as () => { data: SessionValue };
 
 interface ApplicantListProps {
   status?: string;
@@ -123,8 +116,6 @@ function PendingApplicationCard({
       name={application.candidateName}
       institute={education.degree || application.cvSummary}
       secondaryInstitute={education.institution || undefined}
-      recruiterLabel="Recruiter"
-      recruiterName={getRecruiterLabel(application)}
       systemScore={toScorePercent(application.hiringAgentTotalScore)}
       academicAverage={academicAverage}
       createdAt={application.createdAt}
@@ -164,11 +155,12 @@ export function ApplicantList({
   renderCard,
 }: ApplicantListProps) {
   const router = useRouter();
-  const { data: session } = useTypedSession();
-  const recruiterIdentity = session?.user?.email ?? ACTIVE_RECRUITER_ID;
+  const { data: session } = useSession();
+  const recruiterIdentity = session?.user.email ?? ACTIVE_RECRUITER_ID;
   const { search } = useApplicantSearch();
   const { selectApplication } = useApplicantSelection();
   const { setOpen, setOpenMobile } = useSidebar();
+  const recruitersQuery = useRecruiters();
 
   // Opens the details panel. The Sidebar mounts one branch at a time — a mobile
   // Sheet (openMobile) or a desktop offcanvas (open) — so set both to reliably
@@ -279,7 +271,7 @@ export function ApplicantList({
       showReviewedAt,
       showStatus: tabKey !== "pending",
       createdAt: application.createdAt,
-      recruiterName: getRecruiterLabel(application),
+      recruiterName: getRecruiterLabel(application, recruitersQuery.data),
       statusLabel: getStatusLabel(displayStatus),
       ...(enableClaim
         ? {

@@ -18,6 +18,12 @@ vi.mock("@/components/ui/sidebar", () => ({
   useSidebar: () => ({ setOpen: vi.fn() }),
 }));
 
+function requestUrl(input: RequestInfo | URL): string {
+  if (typeof input === "string") return input;
+  if (input instanceof URL) return input.href;
+  return input.url;
+}
+
 function makeApplication(
   overrides: Partial<CandidateApplication> = {},
 ): CandidateApplication {
@@ -65,7 +71,9 @@ describe("ApplicantList", () => {
   });
 
   it("renders applicants on success", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse({ applications: [makeApplication()], nextCursor: null }));
+    vi.spyOn(global, "fetch").mockImplementation(() =>
+      Promise.resolve(jsonResponse({ applications: [makeApplication()], nextCursor: null })),
+    );
 
     renderList();
 
@@ -74,17 +82,22 @@ describe("ApplicantList", () => {
   });
 
   it("appends a second page when 'Load more' is clicked", async () => {
-    let call = 0;
-    vi.spyOn(global, "fetch").mockImplementation(() => {
-      call += 1;
-      if (call === 1) {
+    let listCall = 0;
+    vi.spyOn(global, "fetch").mockImplementation((input) => {
+      const url = requestUrl(input);
+      if (url.includes("/api/applications?")) {
+        listCall += 1;
+        if (listCall === 1) {
+          return Promise.resolve(
+            jsonResponse({ applications: [makeApplication({ applicationId: "app-1", candidateName: "Ada Lovelace" })], nextCursor: 1 })
+          );
+        }
         return Promise.resolve(
-          jsonResponse({ applications: [makeApplication({ applicationId: "app-1", candidateName: "Ada Lovelace" })], nextCursor: 1 })
+          jsonResponse({ applications: [makeApplication({ applicationId: "app-2", candidateName: "Grace Hopper" })], nextCursor: null })
         );
       }
-      return Promise.resolve(
-        jsonResponse({ applications: [makeApplication({ applicationId: "app-2", candidateName: "Grace Hopper" })], nextCursor: null })
-      );
+      // Per-card evaluation lookups: treat every candidate as "not yet evaluated".
+      return Promise.resolve(new Response(null, { status: 404 }));
     });
 
     const { default: userEvent } = await import("@testing-library/user-event");
@@ -111,7 +124,9 @@ describe("ApplicantList", () => {
   });
 
   it("shows the default empty state when there are no applicants and no search", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse({ applications: [], nextCursor: null }));
+    vi.spyOn(global, "fetch").mockImplementation(() =>
+      Promise.resolve(jsonResponse({ applications: [], nextCursor: null })),
+    );
 
     renderList({ emptyTitle: "No pending applicants" });
 

@@ -2,6 +2,7 @@ import type { CandidateApplication } from "@/types/candidate";
 
 const statusLabels: Record<string, string> = {
   pending: "Pending",
+  processing: "Processing",
   evaluated: "Evaluated",
   forwarded: "Forwarded",
   rejected: "Rejected",
@@ -10,6 +11,7 @@ const statusLabels: Record<string, string> = {
 
 const statusTones: Record<string, "positive" | "warning" | "negative" | "neutral"> = {
   pending: "neutral",
+  processing: "positive",
   evaluated: "warning",
   forwarded: "warning",
   rejected: "negative",
@@ -34,11 +36,27 @@ export const formatDate = (isoDate: string) =>
 
 export const toScorePercent = (score: number) => Math.round(score * 10) / 10;
 
-export const getRecruiterLabel = (application: CandidateApplication) =>
-  application.claimedByRecruiterId ??
-  application.shortlistedByRecruiterId ??
-  application.ratedByRecruiterId ??
-  "phindi@dvtsoftware.com";
+export const getRecruiterLabel = (
+  application: CandidateApplication,
+  recruiters?: { email: string; fullName: string }[]
+) => {
+  const email = application.claimedByRecruiterId ??
+    application.shortlistedByRecruiterId ??
+    application.ratedByRecruiterId ??
+    "Cannot get recruiter";
+
+  if (recruiters) {
+    const recruiter = recruiters.find((r) => r.email === email);
+    if (recruiter?.fullName) {
+      const parts = recruiter.fullName.trim().split(" ");
+      if (parts.length > 0) {
+        return parts[0];
+      }
+      return recruiter.fullName;
+    }
+  }
+  return email;
+};
 
 export const isClaimedByActiveRecruiter = (
   application: CandidateApplication,

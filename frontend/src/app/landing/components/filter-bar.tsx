@@ -1,11 +1,18 @@
 "use client";
 
-import { ChevronDown, ListFilter, ListOrdered, X } from "lucide-react";
+import { ListFilter, ListOrdered, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ApplicationFilters } from "@/types/api";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export type SortOption = NonNullable<ApplicationFilters["sort"]>;
 
@@ -42,7 +49,13 @@ interface FilterBarProps {
   onClearAll: () => void;
 }
 
-export function FilterField({ label, children }: { label: string; children: ReactNode }) {
+export function FilterField({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
   return (
     <label className="grid gap-1.5 text-sm font-medium text-foreground">
       <span>{label}</span>
@@ -60,24 +73,90 @@ export function FilterSelect({
   onChange: (value: string) => void;
   options: [string, string][];
 }) {
+  const selectedLabel =
+    options.find(([optionValue]) => optionValue === value)?.[1] ??
+    "Select option";
   return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(event) => {
-          onChange(event.target.value);
-        }}
+    <Select
+      value={value}
+      onValueChange={(selectedValue) => {
+        onChange(selectedValue);
+      }}
+    >
+      <SelectTrigger
         className={cn(
-          "h-9 w-full appearance-none rounded-md border border-input bg-background px-2 pr-8 text-sm text-foreground",
+          "h-9 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground",
         )}
       >
+        <SelectValue>{selectedLabel}</SelectValue>
+      </SelectTrigger>
+      <SelectContent>
         {options.map(([optionValue, label]) => (
-          <option key={optionValue} value={optionValue}>
+          <SelectItem key={optionValue} value={optionValue}>
             {label}
-          </option>
+          </SelectItem>
         ))}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-2 top-2.5 size-4 text-muted-foreground" />
+      </SelectContent>
+    </Select>
+  );
+}
+
+export interface FilterBarShellProps {
+  id: string;
+  filtersOpen: boolean;
+  onToggleFilters: () => void;
+  gridClassName: string;
+  children: ReactNode;
+  activeFilters: ActiveFilter[];
+  onClearAll: () => void;
+}
+
+export function FilterBarShell({
+  id,
+  filtersOpen,
+  onToggleFilters,
+  gridClassName,
+  children,
+  activeFilters,
+  onClearAll,
+}: FilterBarShellProps) {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap justify-end gap-3">
+        <button
+          type="button"
+          aria-expanded={filtersOpen}
+          aria-controls={id}
+          onClick={onToggleFilters}
+          className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-foreground transition-colors hover:bg-muted"
+        >
+          <ListFilter size={16} />
+          Advanced Filters
+        </button>
+      </div>
+      {filtersOpen && (
+        <div
+          id={id}
+          className={cn("grid gap-4 rounded-xl border border-border bg-card p-4", gridClassName)}
+        >
+          {children}
+        </div>
+      )}
+      {activeFilters.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2" aria-label="Active filters">
+          {activeFilters.map((filter) => (
+            <Badge key={filter.label} variant="outline" className="gap-1.5 px-3 py-1">
+              {filter.label}
+              <button type="button" onClick={filter.onClear} aria-label={`Clear ${filter.label}`}>
+                ×
+              </button>
+            </Badge>
+          ))}
+          <Button type="button" variant="ghost" size="sm" className="h-5 px-2 text-xs" onClick={onClearAll}>
+            Clear all
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -94,7 +173,7 @@ export function FilterBar({
 }: FilterBarProps) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap justify-end gap-3">
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <button
           type="button"
           aria-expanded={filtersOpen}
@@ -105,25 +184,31 @@ export function FilterBar({
           <ListFilter size={16} />
           Advanced Filters
         </button>
-        <label className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-foreground">
-          <ListOrdered size={16} aria-hidden="true" />
-          <span className="sr-only">Sort applicants</span>
-          <select
-            aria-label="Sort applicants"
-            value={sort}
-            onChange={(event) => {
-              onSortChange(event.target.value as SortOption);
-            }}
-            className="appearance-none bg-transparent pr-1 text-sm outline-none"
+        <Select
+          aria-label="Sort applicants"
+          value={sort}
+          onValueChange={(selectedValue) => {
+            onSortChange(selectedValue as SortOption);
+          }}
+        >
+          <SelectTrigger className="h-auto min-w-[14rem] rounded-lg border border-border bg-card py-2 text-foreground shadow-none transition-colors hover:bg-muted focus-visible:border-border focus-visible:ring-0 data-[size=default]:h-auto">
+            <span className="flex min-w-0 items-center">
+              <ListOrdered size={16} aria-hidden="true" />
+              <SelectValue className="truncate text-left" />
+            </span>
+          </SelectTrigger>
+          <SelectContent
+            position="popper"
+            align="start"
+            className="w-[var(--radix-select-trigger-width)] min-w-[var(--radix-select-trigger-width)] max-w-[var(--radix-select-trigger-width)] data-[side=bottom]:translate-y-0 px-2"
           >
             {SORT_OPTIONS.map(([optionValue, label]) => (
-              <option key={optionValue} value={optionValue}>
-                {label}
-              </option>
+              <SelectItem key={optionValue} value={optionValue}>
+                <span className="block truncate px-2">{label}</span>
+              </SelectItem>
             ))}
-          </select>
-          <ChevronDown className="size-4 text-muted-foreground" aria-hidden="true" />
-        </label>
+          </SelectContent>
+        </Select>
       </div>
       {filtersOpen && (
         <div
@@ -146,23 +231,44 @@ export function FilterBar({
                   placeholder={field.placeholder ?? "Any"}
                 />
               ) : (
-                <FilterSelect value={field.value} onChange={field.onChange} options={field.options} />
+                <FilterSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={field.options}
+                />
               )}
             </FilterField>
           ))}
         </div>
       )}
       {activeFilters.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2" aria-label="Active filters">
+        <div
+          className="flex flex-wrap items-center gap-2"
+          aria-label="Active filters"
+        >
           {activeFilters.map((filter) => (
-            <Badge key={filter.label} variant="outline" className="gap-1.5 px-3 py-1">
+            <Badge
+              key={filter.label}
+              variant="outline"
+              className="px-3 py-4 gap-1.5 md:py-1"
+            >
               {filter.label}
-              <button type="button" onClick={filter.onClear} aria-label={`Clear ${filter.label}`}>
-                <X size={12} />
+              <button
+                type="button"
+                onClick={filter.onClear}
+                aria-label={`Clear ${filter.label}`}
+              >
+                <X className="size-4 md:size-3" />
               </button>
             </Badge>
           ))}
-          <Button type="button" variant="ghost" size="sm" className="h-5 px-2 text-xs" onClick={onClearAll}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-5 px-2 text-xs"
+            onClick={onClearAll}
+          >
             Clear all
           </Button>
         </div>

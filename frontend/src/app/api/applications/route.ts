@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { badRequest, conflict, simulateLatency } from "../_lib/helpers";
+import { badRequest, conflict } from "../_lib/helpers";
 import { backendUrl } from "../_lib/backend";
 import type { CandidateApplication } from "@/types/candidate";
 
@@ -88,7 +88,6 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  await simulateLatency();
 
   const body = (await req.json().catch(() => null)) as { emailMessageId?: string } | null;
   if (!body?.emailMessageId) {

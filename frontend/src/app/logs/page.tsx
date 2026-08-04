@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useInfiniteLogs, type RecruiterActionLog } from "@/hooks/use-recruiter-logs";
+import { useRecruiters } from "@/hooks/use-recruiters";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -11,6 +12,82 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LoadMoreButton } from "@/components/load-more-button";
 import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
+import {
+  FilterBarShell,
+  FilterField,
+  FilterSelect,
+  type ActiveFilter,
+} from "@/app/landing/components/filter-bar";
+
+const ALL_VALUE = "All";
+
+function LogsFilterBar({
+  filtersOpen,
+  onToggleFilters,
+  actionType,
+  onActionTypeChange,
+  actionTypeOptions,
+  recruiter,
+  onRecruiterChange,
+  recruiterOptions,
+  dateRange,
+  onDateRangeChange,
+  activeFilters,
+  onClearAll,
+}: {
+  filtersOpen: boolean;
+  onToggleFilters: () => void;
+  actionType: string;
+  onActionTypeChange: (value: string) => void;
+  actionTypeOptions: [string, string][];
+  recruiter: string;
+  onRecruiterChange: (value: string) => void;
+  recruiterOptions: [string, string][];
+  dateRange: { start: string; end: string };
+  onDateRangeChange: (value: { start: string; end: string }) => void;
+  activeFilters: ActiveFilter[];
+  onClearAll: () => void;
+}) {
+  return (
+    <FilterBarShell
+      id="logs-filters"
+      filtersOpen={filtersOpen}
+      onToggleFilters={onToggleFilters}
+      gridClassName="sm:grid-cols-2 lg:grid-cols-4"
+      activeFilters={activeFilters}
+      onClearAll={onClearAll}
+    >
+      <FilterField label="Action">
+        <FilterSelect value={actionType} onChange={onActionTypeChange} options={actionTypeOptions} />
+      </FilterField>
+      <FilterField label="Recruiter">
+        <FilterSelect value={recruiter} onChange={onRecruiterChange} options={recruiterOptions} />
+      </FilterField>
+      <FilterField label="From">
+        <input
+          aria-label="From"
+          type="date"
+          value={dateRange.start}
+          onChange={(event) => {
+            onDateRangeChange({ ...dateRange, start: event.target.value });
+          }}
+          className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+        />
+      </FilterField>
+      <FilterField label="To">
+        <input
+          aria-label="To"
+          type="date"
+          value={dateRange.end}
+          onChange={(event) => {
+            onDateRangeChange({ ...dateRange, end: event.target.value });
+          }}
+          className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+        />
+      </FilterField>
+    </FilterBarShell>
+  );
+}
 
 export default function LogsPage() {
   const { search } = useApplicantSearch();
@@ -23,15 +100,78 @@ export default function LogsPage() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteLogs();
+  const { data: recruiters } = useRecruiters();
+
+  const [filtersOpen, setFiltersOpen] = React.useState(false);
+  const [filterActionType, setFilterActionType] = React.useState(ALL_VALUE);
+  const [filterRecruiter, setFilterRecruiter] = React.useState(ALL_VALUE);
+  const [filterDateRange, setFilterDateRange] = React.useState({ start: "", end: "" });
+
+  const clearFilters = () => {
+    setFilterActionType(ALL_VALUE);
+    setFilterRecruiter(ALL_VALUE);
+    setFilterDateRange({ start: "", end: "" });
+  };
+
   const logs = React.useMemo(
     () => (data?.pages ?? []).flatMap((page: { logs: RecruiterActionLog[] }) => page.logs),
     [data?.pages],
   );
+
+  const actionTypeOptions = React.useMemo<[string, string][]>(() => {
+    const distinct = Array.from(new Set(logs.map((log) => log.actionType))).sort();
+    return [
+      [ALL_VALUE, "All actions"],
+      ...distinct.map((value): [string, string] => [value, value.replace(/_/g, " ")]),
+    ];
+  }, [logs]);
+
+  const recruiterOptions = React.useMemo<[string, string][]>(() => {
+    const known = new Set((recruiters ?? []).map((r) => r.email));
+    const extra = logs
+      .map((log) => log.recruiterIdentity)
+      .filter((identity) => !known.has(identity));
+    const identities = [
+      ...(recruiters ?? []).map((r) => r.email),
+      ...Array.from(new Set(extra)),
+    ];
+    return [
+      [ALL_VALUE, "All recruiters"],
+      ...identities.map((identity): [string, string] => [identity, identity]),
+    ];
+  }, [recruiters, logs]);
+
+  const activeFilters: ActiveFilter[] = [
+    filterActionType !== ALL_VALUE && {
+      label: `Action: ${filterActionType.replace(/_/g, " ")}`,
+      onClear: () => { setFilterActionType(ALL_VALUE); },
+    },
+    filterRecruiter !== ALL_VALUE && {
+      label: `Recruiter: ${filterRecruiter}`,
+      onClear: () => { setFilterRecruiter(ALL_VALUE); },
+    },
+    (filterDateRange.start || filterDateRange.end) && {
+      label: `Date: ${filterDateRange.start || "Any"} to ${filterDateRange.end || "Any"}`,
+      onClear: () => { setFilterDateRange({ start: "", end: "" }); },
+    },
+  ].filter(Boolean) as ActiveFilter[];
+
   const filteredLogs = React.useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) return logs;
-    return logs.filter((log) => log.recruiterIdentity.toLowerCase().includes(query));
-  }, [logs, search]);
+    const start = filterDateRange.start ? new Date(filterDateRange.start) : null;
+    const end = filterDateRange.end ? new Date(filterDateRange.end) : null;
+    if (end) end.setHours(23, 59, 59, 999);
+
+    return logs.filter((log) => {
+      if (query && !log.recruiterIdentity.toLowerCase().includes(query)) return false;
+      if (filterActionType !== ALL_VALUE && log.actionType !== filterActionType) return false;
+      if (filterRecruiter !== ALL_VALUE && log.recruiterIdentity !== filterRecruiter) return false;
+      const actionedAt = new Date(log.actionedAt);
+      if (start && actionedAt < start) return false;
+      if (end && actionedAt > end) return false;
+      return true;
+    });
+  }, [logs, search, filterActionType, filterRecruiter, filterDateRange]);
 
   return (
     <main className="w-full px-4 py-8 sm:px-6 lg:px-8">
@@ -43,6 +183,21 @@ export default function LogsPage() {
               History of all recruiter actions across the system.
             </p>
           </div>
+
+          <LogsFilterBar
+            filtersOpen={filtersOpen}
+            onToggleFilters={() => { setFiltersOpen((open) => !open); }}
+            actionType={filterActionType}
+            onActionTypeChange={setFilterActionType}
+            actionTypeOptions={actionTypeOptions}
+            recruiter={filterRecruiter}
+            onRecruiterChange={setFilterRecruiter}
+            recruiterOptions={recruiterOptions}
+            dateRange={filterDateRange}
+            onDateRangeChange={setFilterDateRange}
+            activeFilters={activeFilters}
+            onClearAll={clearFilters}
+          />
 
         {isLoading ? (
           <div className="flex flex-col gap-4">
@@ -63,7 +218,9 @@ export default function LogsPage() {
             description={
               search.trim()
                 ? `No recruiter actions match "${search}".`
-                : "There are currently no recruiter actions recorded."
+                : activeFilters.length > 0
+                  ? "No recruiter actions match the selected filters."
+                  : "There are currently no recruiter actions recorded."
             }
           />
         ) : (

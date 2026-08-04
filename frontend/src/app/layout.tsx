@@ -5,6 +5,7 @@ import QueryProvider from "@/components/providers/query-provider";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { ApplicantSearchProvider } from "@/components/providers/applicant-search-provider";
 import AppShell from "@/components/app-shell";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -43,6 +44,7 @@ export default function RootLayout({
             <QueryProvider>
               <ApplicantSearchProvider>
                 <AppShell>{children}</AppShell>
+                <Toaster position="top-right" />
               </ApplicantSearchProvider>
             </QueryProvider>
           </AuthSessionProvider>

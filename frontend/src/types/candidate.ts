@@ -2,6 +2,7 @@ export type CandidateTier = "STRONG" | "BORDERLINE" | "WEAK";
 
 export type CandidateStatus =
   | "PENDING"
+  | "PROCESSING"
   | "evaluated"
   | "forwarded"
   | "rejected"
