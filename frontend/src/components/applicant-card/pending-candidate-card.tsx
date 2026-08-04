@@ -319,7 +319,6 @@ export default function PendingCandidateCard({
           isShortlisting={isShortlistLoading}
           onReject={onReject ? () => setConfirmAction("reject") : undefined}
           isRejecting={isRejecting}
-          onViewDetail={handleViewDetailClick}
         />
 
         <div className="flex items-center gap-2">
