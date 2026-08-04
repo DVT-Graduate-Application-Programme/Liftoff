@@ -24,7 +24,7 @@ const PendingCandidates = () => {
   );
   const [sort, setSort] = useUrlFilterState<SortOption>(
     "pendingSort",
-    "score_desc",
+    "date_desc",
   );
 
   const filters = useMemo(() => {
