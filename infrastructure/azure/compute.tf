@@ -78,6 +78,14 @@ resource "azurerm_container_app" "backend" {
     value = azurerm_servicebus_namespace.main.default_primary_connection_string
   }
 
+  # Uploaded CVs and transcripts live in the storage account's private containers. Without
+  # this the backend would write them to the replica's own disk, where every restart or
+  # revision rollout loses them.
+  secret {
+    name  = "storage-connection-string"
+    value = azurerm_storage_account.main.primary_connection_string
+  }
+
   secret {
     name  = "internal-api-key"
     value = var.internal_api_key
@@ -146,6 +154,11 @@ resource "azurerm_container_app" "backend" {
       env {
         name        = "SERVICEBUS_CONNECTION_STRING"
         secret_name = "servicebus-connection-string"
+      }
+
+      env {
+        name        = "STORAGE_CONNECTION_STRING"
+        secret_name = "storage-connection-string"
       }
 
       env {
