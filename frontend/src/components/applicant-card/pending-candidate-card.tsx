@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Check, ExternalLink, Loader2, X } from "lucide-react";
 
 type PendingCandidateCardProps = {
   name: string;
@@ -17,6 +18,13 @@ type PendingCandidateCardProps = {
   onSecondaryActionClick?: () => void;
   isSecondaryActionDisabled?: boolean;
   isSecondaryActionLoading?: boolean;
+  onViewDetail?: () => void;
+  onShortlist?: () => void;
+  isShortlisting?: boolean;
+  onAccept?: () => void;
+  isAccepting?: boolean;
+  onReject?: () => void;
+  isRejecting?: boolean;
 };
 
 function getScoreColor(score?: number | null) {
@@ -74,6 +82,13 @@ export default function PendingCandidateCard({
   onSecondaryActionClick,
   isSecondaryActionDisabled = false,
   isSecondaryActionLoading = false,
+  onViewDetail,
+  onShortlist,
+  isShortlisting = false,
+  onAccept,
+  isAccepting = false,
+  onReject,
+  isRejecting = false,
 }: PendingCandidateCardProps) {
   const initials = name
     .split(" ")
@@ -82,6 +97,8 @@ export default function PendingCandidateCard({
     .slice(0, 2)
     .toUpperCase();
   const daysAgo = createdAt ? getDaysAgo(createdAt) : null;
+  const handleShortlistClick = onShortlist ?? onAccept;
+  const isShortlistLoading = isShortlisting || isAccepting;
 
   return (
     <div
@@ -146,14 +163,69 @@ export default function PendingCandidateCard({
         </div>
       </div>
 
-      <div className="flex w-full shrink-0 flex-col gap-2 @2xl:w-auto @2xl:items-end @2xl:justify-end">
+      <div className="flex w-full shrink-0 flex-wrap items-center gap-2 @2xl:w-auto @2xl:justify-end">
+        {handleShortlistClick && (
+          <Button
+            type="button"
+            variant="default"
+            size="sm"
+            className="h-8 gap-1 px-3 text-xs bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-500"
+            disabled={isShortlistLoading || isRejecting}
+            onClick={(event) => {
+              event.stopPropagation();
+              handleShortlistClick();
+            }}
+          >
+            {isShortlistLoading ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Check className="size-3.5" />
+            )}
+            <span>{isShortlistLoading ? "Shortlisting..." : "Shortlist"}</span>
+          </Button>
+        )}
+        {onReject && (
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            className="h-8 gap-1 px-3 text-xs"
+            disabled={isAccepting || isRejecting}
+            onClick={(event) => {
+              event.stopPropagation();
+              onReject();
+            }}
+          >
+            {isRejecting ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <X className="size-3.5" />
+            )}
+            <span>{isRejecting ? "Rejecting..." : "Reject"}</span>
+          </Button>
+        )}
+        {(onViewDetail || onClick) && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1 px-3 text-xs"
+            onClick={(event) => {
+              event.stopPropagation();
+              onViewDetail ? onViewDetail() : onClick?.();
+            }}
+          >
+            <ExternalLink className="size-3.5" />
+            <span>View Detail</span>
+          </Button>
+        )}
         {secondaryActionLabel ? (
           <Button
             type="button"
             variant="secondary"
             size="sm"
             className={cn(
-              "w-full justify-center gap-1 text-xs @2xl:w-30",
+              "h-8 gap-1 px-3 text-xs",
               isSecondaryActionDisabled &&
                 "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
             )}
@@ -168,22 +240,20 @@ export default function PendingCandidateCard({
             </span>
           </Button>
         ) : null}
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="w-full justify-center gap-1 text-xs bg-primary text-white dark:bg-sky-500 dark:hover:bg-sky-400 @2xl:w-30"
-          onClick={(event) => {
-            event.stopPropagation();
-            if (onActionClick) {
+        {onActionClick && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1 px-3 text-xs bg-primary text-white dark:bg-sky-500 dark:hover:bg-sky-400"
+            onClick={(event) => {
+              event.stopPropagation();
               onActionClick();
-              return;
-            }
-            onClick?.();
-          }}
-        >
-          <span>{actionLabel}</span>
-        </Button>
+            }}
+          >
+            <span>{actionLabel}</span>
+          </Button>
+        )}
       </div>
     </div>
   );
