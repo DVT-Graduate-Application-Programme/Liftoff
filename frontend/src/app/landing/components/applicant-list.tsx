@@ -131,6 +131,17 @@ function groupApplicationsByMarks(applications: CandidateApplication[]) {
     fail: [] as CandidateApplication[],
   };
 
+  for (const app of applications) {
+    const bucket = getMarksBucket(app.hiringAgentTotalScore);
+    groups[bucket].push(app);
+  }
+
+  for (const key of Object.keys(groups) as Array<keyof typeof groups>) {
+    groups[key].sort((a, b) => b.hiringAgentTotalScore - a.hiringAgentTotalScore);
+  }
+
+  return groups;
+}
 function getEducationSubtitle(evaluation: Evaluation | null | undefined, fallback: string) {
   const educationEvidence = evaluation?.evidenceJson?.education.trim();
   return educationEvidence || fallback;
