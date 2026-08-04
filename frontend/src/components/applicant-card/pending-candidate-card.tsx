@@ -118,6 +118,7 @@ export default function PendingCandidateCard({
           </span>
           <ScoreTag score={systemScore} />
         </div>
+        <div className="h-10 w-px bg-border" />
         <div className="flex w-20 shrink-0 flex-col items-center gap-0.5">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
             Acad. Avg
@@ -125,7 +126,9 @@ export default function PendingCandidateCard({
           {academicAverage !== undefined ? (
             <ScoreTag score={academicAverage} />
           ) : (
-            <span className="text-sm font-semibold text-muted-foreground">–</span>
+            <span className="text-sm font-semibold text-muted-foreground">
+              –
+            </span>
           )}
         </div>
         <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 @4xl:flex">
@@ -141,7 +144,9 @@ export default function PendingCandidateCard({
                   : String(daysAgo) + " day(s) ago"}
             </span>
           ) : (
-            <span className="text-sm font-semibold text-muted-foreground">–</span>
+            <span className="text-sm font-semibold text-muted-foreground">
+              –
+            </span>
           )}
         </div>
       </div>
