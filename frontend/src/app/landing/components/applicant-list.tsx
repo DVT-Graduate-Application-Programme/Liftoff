@@ -111,17 +111,18 @@ function PendingApplicationCard({
     getEducationSubtitle(evaluationQuery.data, application.cvSummary),
   );
 
+  const evaluationData = evaluationQuery.data;
   const academicAverage =
-    evaluationQuery.data?.institutionJson?.academic_average ??
-    evaluationQuery.data?.categoryScoresJson?.education?.score ??
+    evaluationData?.institutionJson?.academic_average ??
+    (evaluationData?.categoryScoresJson ? evaluationData.categoryScoresJson.education.score : undefined) ??
     application.academicAverage;
 
   const handleAccept = async () => {
     try {
       await shortlistMutation.mutateAsync(undefined);
-      toast.success("Candidate accepted");
+      toast.success("Candidate shortlisted");
     } catch {
-      toast.error("Couldn't accept candidate");
+      toast.error("Couldn't shortlist candidate");
     }
   };
 
@@ -159,9 +160,13 @@ function PendingApplicationCard({
       onViewDetail={() => {
         router.push(`/applicants/${application.applicationId}`);
       }}
-      onAccept={handleAccept}
+      onAccept={() => {
+        void handleAccept();
+      }}
       isAccepting={shortlistMutation.isPending}
-      onReject={handleReject}
+      onReject={() => {
+        void handleReject();
+      }}
       isRejecting={rejectMutation.isPending}
       onClick={() => {
         router.push(`/applicants/${application.applicationId}`);

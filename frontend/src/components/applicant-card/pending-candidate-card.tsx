@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, ChevronDown, ExternalLink, Loader2, X, Zap } from "lucide-react";
+import { Check, ChevronDown, ExternalLink, Loader2, Star, X } from "lucide-react";
 
 type PendingCandidateCardProps = {
   name: string;
@@ -28,32 +28,29 @@ type PendingCandidateCardProps = {
   isRejecting?: boolean;
 };
 
-function getScoreColor(score?: number | null) {
-  if (score == null || Number.isNaN(score)) return "text-muted-foreground";
-  if (score >= 80) return "text-primary";
-  if (score >= 65) return "text-amber-600 dark:text-amber-400";
-  return "text-red-600 dark:text-red-400";
-}
-
-function ScoreTag({ score, size = "md" }: { score?: number | null; size?: "sm" | "md" }) {
-  if (score == null || Number.isNaN(score)) {
-    return (
-      <div className="flex min-w-10 justify-center">
-        <span className="text-xs font-semibold text-muted-foreground">–</span>
-      </div>
-    );
-  }
+function ScoreTag({
+  score,
+  size = "md",
+}: {
+  score: number;
+  size?: "sm" | "md";
+}) {
+  const formattedScore = score.toFixed(1);
+  const isHigh = score >= 70;
+  const isMedium = score >= 50 && score < 70;
 
   return (
     <div className="flex min-w-10 justify-center">
       <span
         className={cn(
-          "font-semibold leading-none tabular-nums",
-          size === "md" ? "text-lg @2xl:text-xl" : "text-base",
-          getScoreColor(score),
+          "font-semibold tabular-nums",
+          size === "sm" ? "text-base" : "text-lg @2xl:text-xl",
+          isHigh && "text-emerald-600 dark:text-emerald-400",
+          isMedium && "text-amber-600 dark:text-amber-400",
+          !isHigh && !isMedium && "text-red-600 dark:text-red-400",
         )}
       >
-        {score.toFixed(1)}%
+        {formattedScore}%
       </span>
     </div>
   );
@@ -103,8 +100,12 @@ function QuickActionsMenu({
     <div
       ref={menuRef}
       className="relative inline-block text-left"
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
+      onMouseEnter={() => {
+        setIsOpen(true);
+      }}
+      onMouseLeave={() => {
+        setIsOpen(false);
+      }}
     >
       <Button
         type="button"
@@ -116,7 +117,7 @@ function QuickActionsMenu({
           setIsOpen((prev) => !prev);
         }}
       >
-        <Zap className="size-3.5 text-amber-500 fill-amber-500/20" />
+        <Star className="size-3.5 fill-amber-400 text-amber-500" />
         <span>Quick Actions</span>
         <ChevronDown
           className={cn(
@@ -128,46 +129,50 @@ function QuickActionsMenu({
 
       {isOpen && (
         <div
-          className="absolute right-0 top-full z-50 mt-1.5 w-48 rounded-lg border border-border bg-popover p-1.5 text-popover-foreground shadow-lg ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95"
-          onClick={(e) => e.stopPropagation()}
+          className="absolute right-0 top-full z-50 pt-1 w-48 animate-in fade-in-0 zoom-in-95"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
         >
-          {onShortlist && (
-            <button
-              type="button"
-              disabled={isShortlisting || isRejecting}
-              className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 disabled:opacity-50 transition-colors"
-              onClick={() => {
-                setIsOpen(false);
-                onShortlist();
-              }}
-            >
-              {isShortlisting ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <Check className="size-3.5" />
-              )}
-              <span>{isShortlisting ? "Shortlisting..." : "Shortlist Candidate"}</span>
-            </button>
-          )}
+          <div className="before:absolute before:-top-2 before:left-0 before:right-0 before:h-2 before:content-[''] rounded-lg border border-border bg-popover p-1.5 text-popover-foreground shadow-lg ring-1 ring-black/5">
+            {onShortlist && (
+              <button
+                type="button"
+                disabled={isShortlisting || isRejecting}
+                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 disabled:opacity-50 transition-colors"
+                onClick={() => {
+                  setIsOpen(false);
+                  onShortlist();
+                }}
+              >
+                {isShortlisting ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <Check className="size-3.5" />
+                )}
+                <span>{isShortlisting ? "Shortlisting..." : "Shortlist Candidate"}</span>
+              </button>
+            )}
 
-          {onReject && (
-            <button
-              type="button"
-              disabled={isShortlisting || isRejecting}
-              className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-xs font-medium text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors"
-              onClick={() => {
-                setIsOpen(false);
-                onReject();
-              }}
-            >
-              {isRejecting ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <X className="size-3.5" />
-              )}
-              <span>{isRejecting ? "Rejecting..." : "Reject Candidate"}</span>
-            </button>
-          )}
+            {onReject && (
+              <button
+                type="button"
+                disabled={isShortlisting || isRejecting}
+                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-xs font-medium text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors"
+                onClick={() => {
+                  setIsOpen(false);
+                  onReject();
+                }}
+              >
+                {isRejecting ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <X className="size-3.5" />
+                )}
+                <span>{isRejecting ? "Rejecting..." : "Reject Candidate"}</span>
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -315,9 +320,9 @@ export default function PendingCandidateCard({
       {/* Action Buttons & Quick Actions Menu */}
       <div className="flex w-full items-center justify-between gap-3 pt-1 @2xl:w-auto @2xl:justify-end @2xl:pt-0">
         <QuickActionsMenu
-          onShortlist={handleShortlistClick ? () => setConfirmAction("shortlist") : undefined}
+          onShortlist={handleShortlistClick ? () => { setConfirmAction("shortlist"); } : undefined}
           isShortlisting={isShortlistLoading}
-          onReject={onReject ? () => setConfirmAction("reject") : undefined}
+          onReject={onReject ? () => { setConfirmAction("reject"); } : undefined}
           isRejecting={isRejecting}
         />
 
@@ -386,12 +391,16 @@ export default function PendingCandidateCard({
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-150"
           onClick={(e) => {
             e.stopPropagation();
-            if (!isShortlistLoading && !isRejecting) setConfirmAction(null);
+            if (!isShortlistLoading && !isRejecting) {
+              setConfirmAction(null);
+            }
           }}
         >
           <div
             className="w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-xl flex flex-col gap-4 animate-in zoom-in-95 duration-150"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
           >
             <div className="flex items-center gap-3">
               <div
@@ -430,7 +439,9 @@ export default function PendingCandidateCard({
                 variant="ghost"
                 size="sm"
                 disabled={isShortlistLoading || isRejecting}
-                onClick={() => setConfirmAction(null)}
+                onClick={() => {
+                  setConfirmAction(null);
+                }}
               >
                 Cancel
               </Button>
@@ -467,5 +478,3 @@ export default function PendingCandidateCard({
     </div>
   );
 }
-
-
