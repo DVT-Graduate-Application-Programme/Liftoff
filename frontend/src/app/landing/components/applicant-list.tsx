@@ -79,56 +79,42 @@ const DATE_BUCKET_SECTIONS = [
 
 const MARKS_BUCKET_SECTIONS = [
   {
-    key: "excellent" as const,
-    label: "Marks 85 and Above",
+    key: "high" as const,
+    label: "System Score 80 and Above",
     countLabel: (count: number) => `${String(count)} Candidates`,
-    emptyText: "No candidates with marks 85 and above.",
-    headerColorClass: "text-emerald-600 dark:text-emerald-400",
-    lineColorClass: "bg-emerald-200 dark:bg-emerald-800/30",
-    countColorClass: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/20",
-  },
-  {
-    key: "good" as const,
-    label: "Marks Between 75 and 85",
-    countLabel: (count: number) => `${String(count)} Candidates`,
-    emptyText: "No candidates with marks between 75 and 85.",
+    emptyText: "No candidates with system score 80 and above.",
     headerColorClass: "text-sky-600 dark:text-sky-400",
     lineColorClass: "bg-sky-200 dark:bg-sky-800/30",
-    countColorClass: "text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800/20",
   },
   {
-    key: "average" as const,
-    label: "Marks Between 65 and 75",
+    key: "medium" as const,
+    label: "System Score Between 65 and 79",
     countLabel: (count: number) => `${String(count)} Candidates`,
-    emptyText: "No candidates with marks between 65 and 75.",
+    emptyText: "No candidates with system score between 65 and 79.",
     headerColorClass: "text-amber-600 dark:text-amber-400",
     lineColorClass: "bg-amber-200 dark:bg-amber-800/30",
-    countColorClass: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/20",
   },
   {
-    key: "fail" as const,
-    label: "Marks Less Than 65",
+    key: "low" as const,
+    label: "System Score Less Than 65",
     countLabel: (count: number) => `${String(count)} Candidates`,
-    emptyText: "No candidates with marks less than 65.",
+    emptyText: "No candidates with system score less than 65.",
     headerColorClass: "text-red-600 dark:text-red-400",
     lineColorClass: "bg-red-200 dark:bg-red-800/30",
-    countColorClass: "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800/20",
   },
 ];
 
-function getMarksBucket(systemScore?: number | null): "excellent" | "good" | "average" | "fail" {
+function getMarksBucket(systemScore?: number | null): "high" | "medium" | "low" {
   const score = systemScore ?? 0;
-  if (score >= 85) return "excellent";
-  if (score >= 75) return "good";
-  if (score >= 65) return "average";
-  return "fail";
+  if (score >= 80) return "high";
+  if (score >= 65) return "medium";
+  return "low";
 }
 function groupApplicationsByMarks(applications: CandidateApplication[]) {
   const groups = {
-    excellent: [] as CandidateApplication[],
-    good: [] as CandidateApplication[],
-    average: [] as CandidateApplication[],
-    fail: [] as CandidateApplication[],
+    high: [] as CandidateApplication[],
+    medium: [] as CandidateApplication[],
+    low: [] as CandidateApplication[],
   };
 
   for (const app of applications) {
@@ -435,7 +421,6 @@ export function ApplicantList({
             emptyText,
             headerColorClass,
             lineColorClass,
-            countColorClass,
           }) => {
             const bucketApplications = groupedApplications[key];
 
@@ -453,8 +438,8 @@ export function ApplicantList({
                   <div className={cn("h-px flex-1", lineColorClass)}></div>
                   <span
                     className={cn(
-                      "text-[12px] font-semibold px-2 py-0.5 rounded-full border leading-none tabular-nums",
-                      countColorClass,
+                      "text-xs font-bold uppercase tracking-widest leading-none",
+                      headerColorClass,
                     )}
                   >
                     {countLabel(bucketApplications.length)}
