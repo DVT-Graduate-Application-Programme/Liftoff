@@ -448,6 +448,37 @@ export function ApplicantList({
                       headerColorClass,
                     )}
                   >
+                    {label}
+                  </h3>
+                  <div className={cn("h-px flex-1", lineColorClass)}></div>
+                  <span
+                    className={cn(
+                      "text-[12px] font-semibold px-2 py-0.5 rounded-full border leading-none tabular-nums",
+                      countColorClass,
+                    )}
+                  >
+                    {countLabel(bucketApplications.length)}
+                  </span>
+                </div>
+                <div className="@container grid grid-cols-1 gap-4">
+                  {bucketApplications.length > 0 ? (
+                    bucketApplications.map(renderCardItem)
+                  ) : (
+                    <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                      {emptyText}
+                    </p>
+                  )}
+                </div>
+              </section>
+            );
+          },
+        )}
+        {hasNextPage && (
+          <div className="flex justify-center">{loadMoreButton}</div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="@container flex flex-col gap-3">
