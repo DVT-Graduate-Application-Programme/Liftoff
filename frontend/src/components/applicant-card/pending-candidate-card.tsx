@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, ChevronDown, ExternalLink, Loader2, Star, X } from "lucide-react";
+import { Check, ChevronDown, Loader2, X } from "lucide-react";
 
 type PendingCandidateCardProps = {
   name: string;
@@ -117,7 +117,6 @@ function QuickActionsMenu({
           setIsOpen((prev) => !prev);
         }}
       >
-        <Star className="size-3.5 fill-amber-400 text-amber-500" />
         <span>Quick Actions</span>
         <ChevronDown
           className={cn(
@@ -247,78 +246,90 @@ export default function PendingCandidateCard({
 
       {/* Metrics Row for Mobile (< @2xl) */}
       <div className="grid grid-cols-3 gap-2 rounded-lg bg-muted/40 p-2.5 border border-border/40 text-center @2xl:hidden">
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+        <div className="flex flex-col items-center justify-start h-11">
+          <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground h-3 leading-none">
             {scoreLabel}
           </span>
-          <ScoreTag score={systemScore} size="sm" />
+          <div className="flex-1 flex items-center justify-center">
+            <ScoreTag score={systemScore} size="sm" />
+          </div>
         </div>
-        <div className="flex flex-col items-center gap-1 border-x border-border/50 px-1">
-          <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+        <div className="flex flex-col items-center justify-start h-11 border-x border-border/50 px-1">
+          <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground h-3 leading-none">
             Acad. Avg
           </span>
-          {academicAverage !== undefined ? (
-            <ScoreTag score={academicAverage} size="sm" />
-          ) : (
-            <span className="text-xs font-semibold text-muted-foreground">–</span>
-          )}
+          <div className="flex-1 flex items-center justify-center">
+            {academicAverage !== undefined ? (
+              <ScoreTag score={academicAverage} size="sm" />
+            ) : (
+              <span className="text-xs font-semibold text-muted-foreground">–</span>
+            )}
+          </div>
         </div>
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+        <div className="flex flex-col items-center justify-start h-11">
+          <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground h-3 leading-none">
             Applied
           </span>
-          {daysAgo !== null && daysAgo >= 0 ? (
-            <span className="text-xs font-medium tabular-nums text-foreground">
-              {daysAgo === 0
-                ? "Today"
-                : daysAgo === 1
-                  ? "1 day ago"
-                  : `${String(daysAgo)}d ago`}
-            </span>
-          ) : (
-            <span className="text-xs font-semibold text-muted-foreground">–</span>
-          )}
+          <div className="flex-1 flex items-center justify-center">
+            {daysAgo !== null && daysAgo >= 0 ? (
+              <span className="text-xs font-medium tabular-nums text-foreground">
+                {daysAgo === 0
+                  ? "Today"
+                  : daysAgo === 1
+                    ? "1 day ago"
+                    : `${String(daysAgo)}d ago`}
+              </span>
+            ) : (
+              <span className="text-xs font-semibold text-muted-foreground">–</span>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Metrics Row for Desktop (>= @2xl) */}
       <div className="hidden flex-1 items-center justify-center gap-6 px-2 @2xl:flex">
-        <div className="flex w-20 shrink-0 flex-col items-center gap-0.5">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+        <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             {scoreLabel}
           </span>
-          <ScoreTag score={systemScore} />
+          <div className="flex-1 flex items-center justify-center">
+            <ScoreTag score={systemScore} />
+          </div>
         </div>
-        <div className="flex w-20 shrink-0 flex-col items-center gap-0.5">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+        <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             Acad. Avg
           </span>
-          {academicAverage !== undefined ? (
-            <ScoreTag score={academicAverage} />
-          ) : (
-            <span className="text-sm font-semibold text-muted-foreground">–</span>
-          )}
+          <div className="flex-1 flex items-center justify-center">
+            {academicAverage !== undefined ? (
+              <ScoreTag score={academicAverage} />
+            ) : (
+              <span className="text-sm font-semibold text-muted-foreground">–</span>
+            )}
+          </div>
         </div>
-        <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 @4xl:flex">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+        <div className="hidden w-24 shrink-0 flex-col items-center justify-start h-12 @4xl:flex">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             Applied
           </span>
-          {daysAgo !== null && daysAgo >= 0 ? (
-            <span className="max-w-full whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
-              {daysAgo === 0
-                ? "Today"
-                : daysAgo === 1
-                  ? "1 day ago"
-                  : String(daysAgo) + " day(s) ago"}
-            </span>
-          ) : (
-            <span className="text-sm font-semibold text-muted-foreground">–</span>
-          )}
+          <div className="flex-1 flex items-center justify-center">
+            {daysAgo !== null && daysAgo >= 0 ? (
+              <span className="max-w-full whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
+                {daysAgo === 0
+                  ? "Today"
+                  : daysAgo === 1
+                    ? "1 day ago"
+                    : String(daysAgo) + " day(s) ago"}
+              </span>
+            ) : (
+              <span className="text-sm font-semibold text-muted-foreground">–</span>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Action Buttons & Quick Actions Menu */}
-      <div className="flex w-full items-center justify-between gap-3 pt-1 @2xl:w-auto @2xl:justify-end @2xl:pt-0">
+      {/* Action Buttons & Quick Actions Menu in an Inline Row */}
+      <div className="flex w-full flex-wrap items-center justify-end gap-2 pt-1 @2xl:w-auto @2xl:pt-0">
         <QuickActionsMenu
           onShortlist={handleShortlistClick ? () => { setConfirmAction("shortlist"); } : undefined}
           isShortlisting={isShortlistLoading}
@@ -326,63 +337,57 @@ export default function PendingCandidateCard({
           isRejecting={isRejecting}
         />
 
-        <div className="flex items-center gap-2">
-          {secondaryActionLabel ? (
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className={cn(
-                "h-8 gap-1 px-3 text-xs",
-                isSecondaryActionDisabled &&
-                  "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
-              )}
-              disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
-              onClick={(event) => {
-                event.stopPropagation();
-                onSecondaryActionClick?.();
-              }}
-            >
-              <span>
-                {isSecondaryActionLoading ? "Claiming..." : secondaryActionLabel}
-              </span>
-            </Button>
-          ) : null}
-
-          {/* Stacked View Detail on top of Show AI Summary */}
-          <div className="flex flex-col gap-1.5 shrink-0 w-36">
-            {handleViewDetailClick && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-7 w-full gap-1 px-2 text-[11px] font-medium justify-center"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleViewDetailClick();
-                }}
-              >
-                <ExternalLink className="size-3 text-muted-foreground" />
-                <span>View Detail</span>
-              </Button>
+        {secondaryActionLabel ? (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className={cn(
+              "h-8 gap-1 px-3 text-xs font-medium",
+              isSecondaryActionDisabled &&
+                "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
             )}
+            disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
+            onClick={(event) => {
+              event.stopPropagation();
+              onSecondaryActionClick?.();
+            }}
+          >
+            <span>
+              {isSecondaryActionLoading ? "Claiming..." : secondaryActionLabel}
+            </span>
+          </Button>
+        ) : null}
 
-            {onActionClick && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-7 w-full gap-1 px-2 text-[11px] font-medium justify-center bg-primary text-white hover:bg-primary/90 dark:bg-sky-500 dark:hover:bg-sky-400"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onActionClick();
-                }}
-              >
-                <span>{actionLabel}</span>
-              </Button>
-            )}
-          </div>
-        </div>
+        {handleViewDetailClick && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1 px-3 text-xs font-medium border-border hover:bg-accent hover:text-accent-foreground"
+            onClick={(event) => {
+              event.stopPropagation();
+              handleViewDetailClick();
+            }}
+          >
+            <span>View Detail</span>
+          </Button>
+        )}
+
+        {onActionClick && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1 px-3 text-xs font-medium bg-primary text-white hover:bg-primary/90 dark:bg-sky-500 dark:hover:bg-sky-400"
+            onClick={(event) => {
+              event.stopPropagation();
+              onActionClick();
+            }}
+          >
+            <span>{actionLabel}</span>
+          </Button>
+        )}
       </div>
 
       {/* Confirmation Modal Popup */}
