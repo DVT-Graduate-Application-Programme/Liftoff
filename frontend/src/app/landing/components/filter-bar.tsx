@@ -169,6 +169,9 @@ export function FilterBar({
   activeFilters,
   onClearAll,
 }: FilterBarProps) {
+  const sortLabel =
+    SORT_OPTIONS.find(([optionValue]) => optionValue === sort)?.[1] ??
+    "Sort by";
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-end gap-3">
@@ -192,7 +195,9 @@ export function FilterBar({
           <SelectTrigger className="h-auto min-w-[14rem] rounded-lg border border-border bg-card py-2 text-foreground shadow-none transition-colors hover:bg-muted focus-visible:border-border focus-visible:ring-0 data-[size=default]:h-auto">
             <span className="flex min-w-0 items-center">
               <ListOrdered size={16} aria-hidden="true" />
-              <SelectValue className="truncate text-left" />
+              <SelectValue className="truncate text-left">
+                {sortLabel}
+              </SelectValue>
             </span>
           </SelectTrigger>
           <SelectContent
