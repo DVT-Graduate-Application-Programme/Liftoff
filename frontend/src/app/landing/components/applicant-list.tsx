@@ -87,6 +87,35 @@ const MARKS_BUCKET_SECTIONS = [
     lineColorClass: "bg-emerald-200 dark:bg-emerald-800/30",
     countColorClass: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/20",
   },
+  {
+    key: "good" as const,
+    label: "Marks Between 75 and 85",
+    countLabel: (count: number) => `${String(count)} Candidates`,
+    emptyText: "No candidates with marks between 75 and 85.",
+    headerColorClass: "text-sky-600 dark:text-sky-400",
+    lineColorClass: "bg-sky-200 dark:bg-sky-800/30",
+    countColorClass: "text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800/20",
+  },
+  {
+    key: "average" as const,
+    label: "Marks Between 65 and 75",
+    countLabel: (count: number) => `${String(count)} Candidates`,
+    emptyText: "No candidates with marks between 65 and 75.",
+    headerColorClass: "text-amber-600 dark:text-amber-400",
+    lineColorClass: "bg-amber-200 dark:bg-amber-800/30",
+    countColorClass: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/20",
+  },
+  {
+    key: "fail" as const,
+    label: "Marks Less Than 65",
+    countLabel: (count: number) => `${String(count)} Candidates`,
+    emptyText: "No candidates with marks less than 65.",
+    headerColorClass: "text-red-600 dark:text-red-400",
+    lineColorClass: "bg-red-200 dark:bg-red-800/30",
+    countColorClass: "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800/20",
+  },
+];
+
 
 function getEducationSubtitle(evaluation: Evaluation | null | undefined, fallback: string) {
   const educationEvidence = evaluation?.evidenceJson?.education.trim();
