@@ -218,24 +218,24 @@ export default function PendingCandidateCard({
   return (
     <div
       className={cn(
-        "group relative flex w-full flex-col gap-3 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm @2xl:flex-row @2xl:items-center @2xl:gap-4",
+        "group relative flex w-full flex-col gap-3.5 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm @3xl:flex-row @3xl:items-center @3xl:justify-between @3xl:gap-4",
       )}
     >
       {/* Candidate Profile Info */}
-      <div className="flex w-full min-w-0 flex-1 items-center gap-3 @2xl:w-auto">
+      <div className="flex w-full min-w-0 flex-1 items-center gap-3 @3xl:w-auto @3xl:max-w-xs">
         <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
           {initials}
         </div>
 
         <div className="min-w-0 flex-1">
-          <h4 className="font-semibold leading-tight text-foreground text-base">
+          <h4 className="font-semibold leading-tight text-foreground text-base truncate">
             {name}
           </h4>
           {showInstitute && (
-            <div className="mt-0.5 flex flex-col gap-0.5 text-xs text-muted-foreground">
-              <p className="whitespace-normal break-words">{institute}</p>
+            <div className="mt-0.5 flex flex-col text-xs text-muted-foreground">
+              <p className="line-clamp-1 break-words">{institute}</p>
               {secondaryInstitute ? (
-                <p className="whitespace-normal break-words">
+                <p className="line-clamp-1 break-words">
                   {secondaryInstitute}
                 </p>
               ) : null}
@@ -244,8 +244,8 @@ export default function PendingCandidateCard({
         </div>
       </div>
 
-      {/* Metrics Row for Mobile (< @2xl) */}
-      <div className="grid grid-cols-3 gap-2 rounded-lg bg-muted/40 p-2.5 border border-border/40 text-center @2xl:hidden">
+      {/* Metrics Row for Mobile (< @3xl) */}
+      <div className="grid grid-cols-3 gap-2 rounded-lg bg-muted/40 p-2.5 border border-border/40 text-center @3xl:hidden">
         <div className="flex flex-col items-center justify-start h-11">
           <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground h-3 leading-none">
             {scoreLabel}
@@ -286,8 +286,8 @@ export default function PendingCandidateCard({
         </div>
       </div>
 
-      {/* Metrics Row for Desktop (>= @2xl) */}
-      <div className="hidden flex-1 items-center justify-center gap-6 px-2 @2xl:flex">
+      {/* Metrics Row for Desktop (>= @3xl) */}
+      <div className="hidden flex-1 items-center justify-center gap-6 px-2 @3xl:flex">
         <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             {scoreLabel}
@@ -308,7 +308,7 @@ export default function PendingCandidateCard({
             )}
           </div>
         </div>
-        <div className="hidden w-24 shrink-0 flex-col items-center justify-start h-12 @4xl:flex">
+        <div className="hidden w-24 shrink-0 flex-col items-center justify-start h-12 @5xl:flex">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             Applied
           </span>
@@ -328,66 +328,70 @@ export default function PendingCandidateCard({
         </div>
       </div>
 
-      {/* Action Buttons & Quick Actions Menu in an Inline Row */}
-      <div className="flex w-full flex-wrap items-center justify-end gap-2 pt-1 @2xl:w-auto @2xl:pt-0">
-        <QuickActionsMenu
-          onShortlist={handleShortlistClick ? () => { setConfirmAction("shortlist"); } : undefined}
-          isShortlisting={isShortlistLoading}
-          onReject={onReject ? () => { setConfirmAction("reject"); } : undefined}
-          isRejecting={isRejecting}
-        />
+      {/* Action Buttons: Responsive Layout (2-row grid on Mobile, Inline Toolbar on Desktop) */}
+      <div className="flex w-full flex-col gap-2 @3xl:w-auto @3xl:flex-row @3xl:items-center @3xl:gap-2">
+        <div className="grid grid-cols-2 gap-2 w-full @3xl:flex @3xl:w-auto @3xl:items-center @3xl:gap-2">
+          <QuickActionsMenu
+            onShortlist={handleShortlistClick ? () => { setConfirmAction("shortlist"); } : undefined}
+            isShortlisting={isShortlistLoading}
+            onReject={onReject ? () => { setConfirmAction("reject"); } : undefined}
+            isRejecting={isRejecting}
+          />
 
-        {secondaryActionLabel ? (
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            className={cn(
-              "h-8 gap-1 px-3 text-xs font-medium",
-              isSecondaryActionDisabled &&
-                "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
-            )}
-            disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
-            onClick={(event) => {
-              event.stopPropagation();
-              onSecondaryActionClick?.();
-            }}
-          >
-            <span>
-              {isSecondaryActionLoading ? "Claiming..." : secondaryActionLabel}
-            </span>
-          </Button>
-        ) : null}
+          {handleViewDetailClick && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 w-full gap-1 px-3 text-xs font-medium border-border hover:bg-accent hover:text-accent-foreground @3xl:w-auto"
+              onClick={(event) => {
+                event.stopPropagation();
+                handleViewDetailClick();
+              }}
+            >
+              <span>View Detail</span>
+            </Button>
+          )}
+        </div>
 
-        {handleViewDetailClick && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1 px-3 text-xs font-medium border-border hover:bg-accent hover:text-accent-foreground"
-            onClick={(event) => {
-              event.stopPropagation();
-              handleViewDetailClick();
-            }}
-          >
-            <span>View Detail</span>
-          </Button>
-        )}
+        <div className="flex w-full items-center gap-2 @3xl:w-auto">
+          {secondaryActionLabel ? (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className={cn(
+                "h-8 flex-1 gap-1 px-3 text-xs font-medium @3xl:flex-initial",
+                isSecondaryActionDisabled &&
+                  "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
+              )}
+              disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
+              onClick={(event) => {
+                event.stopPropagation();
+                onSecondaryActionClick?.();
+              }}
+            >
+              <span>
+                {isSecondaryActionLoading ? "Claiming..." : secondaryActionLabel}
+              </span>
+            </Button>
+          ) : null}
 
-        {onActionClick && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1 px-3 text-xs font-medium bg-primary text-white hover:bg-primary/90 dark:bg-sky-500 dark:hover:bg-sky-400"
-            onClick={(event) => {
-              event.stopPropagation();
-              onActionClick();
-            }}
-          >
-            <span>{actionLabel}</span>
-          </Button>
-        )}
+          {onActionClick && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 w-full gap-1 px-3 text-xs font-medium bg-primary text-white hover:bg-primary/90 dark:bg-sky-500 dark:hover:bg-sky-400 @3xl:w-auto"
+              onClick={(event) => {
+                event.stopPropagation();
+                onActionClick();
+              }}
+            >
+              <span>{actionLabel}</span>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Confirmation Modal Popup */}
