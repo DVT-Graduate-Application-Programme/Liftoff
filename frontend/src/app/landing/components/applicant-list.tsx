@@ -123,6 +123,13 @@ function getMarksBucket(systemScore?: number | null): "excellent" | "good" | "av
   if (score >= 65) return "average";
   return "fail";
 }
+function groupApplicationsByMarks(applications: CandidateApplication[]) {
+  const groups = {
+    excellent: [] as CandidateApplication[],
+    good: [] as CandidateApplication[],
+    average: [] as CandidateApplication[],
+    fail: [] as CandidateApplication[],
+  };
 
 function getEducationSubtitle(evaluation: Evaluation | null | undefined, fallback: string) {
   const educationEvidence = evaluation?.evidenceJson?.education.trim();
