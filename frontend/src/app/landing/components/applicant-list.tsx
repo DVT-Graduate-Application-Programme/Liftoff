@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, type ReactElement, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
@@ -44,6 +45,7 @@ interface ApplicantListProps {
   showReviewedAt?: boolean;
   enableClaim?: boolean;
   groupByDate?: boolean;
+  groupByMarks?: boolean;
   renderItem?: (application: CandidateApplication) => ReactNode;
   renderCard?: (application: CandidateApplication) => ReactElement;
 }
@@ -74,6 +76,17 @@ const DATE_BUCKET_SECTIONS = [
     emptyText: "No older pending applicants.",
   },
 ];
+
+const MARKS_BUCKET_SECTIONS = [
+  {
+    key: "excellent" as const,
+    label: "Marks 85 and Above",
+    countLabel: (count: number) => `${String(count)} Candidates`,
+    emptyText: "No candidates with marks 85 and above.",
+    headerColorClass: "text-emerald-600 dark:text-emerald-400",
+    lineColorClass: "bg-emerald-200 dark:bg-emerald-800/30",
+    countColorClass: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/20",
+  },
 
 function getEducationSubtitle(evaluation: Evaluation | null | undefined, fallback: string) {
   const educationEvidence = evaluation?.evidenceJson?.education.trim();
