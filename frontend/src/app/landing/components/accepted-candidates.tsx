@@ -92,7 +92,7 @@ function AcceptedCandidates() {
   );
   const [sort, setSort] = useUrlFilterState<SortOption>(
     "acceptedSort",
-    "score_desc",
+    "date_desc",
   );
 
   const recruitersQuery = useRecruiters();
