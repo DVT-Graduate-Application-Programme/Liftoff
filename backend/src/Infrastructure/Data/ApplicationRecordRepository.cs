@@ -45,6 +45,14 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
             .FirstOrDefaultAsync(r => r.EmailMessageId == emailMessageId, cancellationToken);
     }
 
+    public async Task<ApplicationRecord?> GetByCandidateEmailAsync(string candidateEmail, CancellationToken cancellationToken = default)
+    {
+        var normalizedCandidateEmail = candidateEmail.Trim().ToLowerInvariant();
+        return await _dbContext.ApplicationRecords
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.CandidateEmail != null && r.CandidateEmail.ToLower() == normalizedCandidateEmail, cancellationToken);
+    }
+
     public async Task<bool> ExistsAsync(string emailMessageId, CancellationToken cancellationToken = default)
     {
         return await _dbContext.ApplicationRecords

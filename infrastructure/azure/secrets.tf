@@ -52,9 +52,11 @@ resource "azurerm_key_vault_secret" "db_credentials" {
 
 resource "azurerm_key_vault_secret" "app_secrets" {
   name = "app-secrets"
-  # Placeholder — populate with real keys before deploying
+  # GEMINI_API_KEY is the same value the hiring agent Container App consumes via its own
+  # inline secret; it is mirrored here so the key is recoverable from the vault. Anything
+  # still "replace-me" is unused by a deployed app.
   value = jsonencode({
-    GEMINI_API_KEY                 = "replace-me"
+    GEMINI_API_KEY                 = var.gemini_api_key
     OLLAMA_BASE_URL                = "replace-me"
     AUTH_SECRET                    = var.auth_secret
     AUTH_MICROSOFT_ENTRA_ID_ID     = var.auth_microsoft_entra_id_id

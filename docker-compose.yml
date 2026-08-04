@@ -85,6 +85,8 @@ services:
       # Defaults to the local emulator; override with a real Azure connection string.
       SERVICEBUS_CONNECTION_STRING: "${SERVICEBUS_CONNECTION_STRING:-Endpoint=sb://servicebus-emulator;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;}"
       INTERNAL_API_KEY: "${INTERNAL_API_KEY:-local-internal-key}"
+      # No hiring agent URL here on purpose: the backend never calls the agent. Both ingest
+      # and re-evaluate publish to the ingest queue and the worker owns the hand-off.
     ports:
       - "5000:5000"
     depends_on:
@@ -107,7 +109,11 @@ services:
       ASPNETCORE_URLS: "http://+:8080"
       # API key for the admin endpoints (X-Admin-Api-Key header). Set a real secret outside dev.
       Worker__AdminApiKey: "${WORKER_ADMIN_API_KEY:-local-dev-admin-key}"
-      # Worker__QueueName / Worker__HiringAgentBaseUrl override appsettings.json if needed.
+      # Required — WorkerOptions has no default for it, so the worker refuses to start
+      # without one rather than pointing at a host that may not exist. Deployed
+      # environments set this to the agent's internal Container Apps URL.
+      Worker__HiringAgentBaseUrl: "http://hiring-agent:8001"
+      # Worker__QueueName overrides appsettings.json if needed.
     ports:
       - "8080:8080"
     depends_on:
