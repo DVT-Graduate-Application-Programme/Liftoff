@@ -96,18 +96,13 @@ public static class IngestEndpoints
 
             if (result is not null && !string.IsNullOrWhiteSpace(result.ApplicationId.ToString()))
             {
-                  // applciation created successfully
-                try
-                {
-                    await NotifyHiringAgent(result.ApplicationId);
-                    // assign recruiter
-                    await recruiterAssignmentService.AssignRecruiterAsync(result.ApplicationId, ct);
-                }
-                catch (System.Exception)
-                {
-
-                    throw;
-                }
+                // Application created successfully. The hiring agent is NOT notified from here:
+                // SendApplicationHandler has already published the application to the ingest
+                // queue, and the worker owns the hand-off. Notifying directly as well would
+                // score every application twice — two full LLM evaluations racing to
+                // delete-then-insert the same record — and would skip the worker's retry and
+                // dead-letter handling for the direct attempt.
+                await recruiterAssignmentService.AssignRecruiterAsync(result.ApplicationId, ct);
             }
 
             return Results.Accepted(value: result);
@@ -129,21 +124,4 @@ public static class IngestEndpoints
     }
 
 
-    public static async Task NotifyHiringAgent(Guid applicationId)
-    {
-        const string fastApiBaseUrl = "http://hiring-agent:8001";
-        try
-        {
-            var payload = new { candidate_id = applicationId };
-            HttpResponseMessage response = await Client.PostAsJsonAsync($"{fastApiBaseUrl}/notify", payload);
-            response.EnsureSuccessStatusCode();
-            string responseBody = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Hiring agent notified: {responseBody}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Failed to notify hiring agent: {ex.Message}");
-            // swallow — don't let a notify failure crash ingest
-        }
-    }
 }

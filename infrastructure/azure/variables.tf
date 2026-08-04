@@ -67,6 +67,12 @@ variable "worker_image" {
   default     = ""
 }
 
+variable "hiring_agent_image" {
+  description = "Fully-qualified ACR image URI for the Python hiring agent container (built from backend/src/AI/hiring-agent/Dockerfile)."
+  type        = string
+  default     = ""
+}
+
 variable "migrations_image" {
   description = "Fully-qualified ACR image URI for the EF Core migrations job container (built from backend/Dockerfile.migrations)."
   type        = string
@@ -85,6 +91,42 @@ variable "internal_api_key" {
   description = "Internal api key for the backend and hiring agent to use"
   type        = string
   sensitive   = true
+}
+
+# ── Hiring agent (LLM) ────────────────────────────────────────────────────────
+# There is no Ollama server in this environment, so the deployed agent has to run against
+# a hosted provider. Leaving llm_provider at "ollama" would make every evaluation fail at
+# the first LLM call.
+
+variable "llm_provider" {
+  description = "LLM backend for the hiring agent: \"gemini\" or \"ollama\". Only gemini is reachable from Azure — there is no Ollama server deployed."
+  type        = string
+  default     = "gemini"
+
+  validation {
+    condition     = contains(["gemini", "ollama"], var.llm_provider)
+    error_message = "llm_provider must be either \"gemini\" or \"ollama\"."
+  }
+}
+
+variable "hiring_agent_model" {
+  description = "Model name passed to the LLM provider (DEFAULT_MODEL). Must be a key in the hiring agent's prompt.py MODEL_PROVIDER_MAPPING."
+  type        = string
+  default     = "gemini-3.1-flash-lite"
+}
+
+variable "gemini_api_key" {
+  description = "Google Gemini API key used by the hiring agent — set in terraform.tfvars, never hardcode here. Required when llm_provider is \"gemini\"."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "github_token" {
+  description = "Optional GitHub token used by the hiring agent to raise API rate limits when enriching candidate profiles. Set in terraform.tfvars."
+  type        = string
+  sensitive   = true
+  default     = ""
 }
 
 # ── Frontend authentication (Auth.js + Microsoft Entra ID) ────────────────────

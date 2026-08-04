@@ -145,6 +145,10 @@ jobs:
             context: .
             dockerfile: worker/Dockerfile
             app_secret: WORKER_CONTAINER_APP
+          - component: hiring-agent
+            context: ./backend/src/AI/hiring-agent
+            dockerfile: backend/src/AI/hiring-agent/Dockerfile
+            app_secret: HIRING_AGENT_CONTAINER_APP
           - component: frontend
             context: ./frontend
             dockerfile: frontend/Dockerfile
