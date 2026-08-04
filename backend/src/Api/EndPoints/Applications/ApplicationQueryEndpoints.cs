@@ -10,10 +10,12 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Api.EndPoints.Applications;
 
@@ -91,40 +93,21 @@ public static class ApplicationQueryEndpoints
         group.MapGet("/{id:guid}/cv", async (
             Guid id,
             IApplicationRecordRepository repository,
+            IDocumentStorage documentStorage,
             IAttachmentRetriever attachmentRetriever,
+            ILoggerFactory loggerFactory,
             CancellationToken ct) =>
         {
             var record = await repository.GetByIdAsync(id, ct);
-            if (record?.CvAttachmentId != null)
-            {
-                try
-                {
-                    var stream = await attachmentRetriever.GetContentAsync(record.CvAttachmentId, ct);
-                    if (stream != null)
-                    {
-                        return Results.File(stream, "application/pdf", $"{id}_cv.pdf");
-                    }
-                }
-                catch
-                {
-                    // Fall back to seed documents
-                }
-            }
 
-            var possiblePaths = new[]
-            {
-                Path.Combine(AppContext.BaseDirectory, "Data", "SeedDocuments"),
-                Path.Combine(Directory.GetCurrentDirectory(), "src", "Infrastructure", "Data", "SeedDocuments"),
-                Path.Combine(Directory.GetCurrentDirectory(), "..", "Infrastructure", "Data", "SeedDocuments")
-            };
-            string folder = possiblePaths.FirstOrDefault(Directory.Exists) ?? possiblePaths[0];
-            var filePath = Path.Combine(folder, $"{id}_cv.pdf");
-
-            if (!File.Exists(filePath))
-            {
-                return Results.NotFound("CV not found.");
-            }
-            return Results.File(filePath, "application/pdf", $"{id}_cv.pdf");
+            return await ServeDocumentAsync(
+                record?.CvAttachmentId,
+                $"{id}_cv.pdf",
+                "CV",
+                documentStorage,
+                attachmentRetriever,
+                loggerFactory,
+                ct);
         })
         .WithName("GetApplicationCv");
 
@@ -132,41 +115,78 @@ public static class ApplicationQueryEndpoints
         group.MapGet("/{id:guid}/transcript", async (
             Guid id,
             IApplicationRecordRepository repository,
+            IDocumentStorage documentStorage,
             IAttachmentRetriever attachmentRetriever,
+            ILoggerFactory loggerFactory,
             CancellationToken ct) =>
         {
             var record = await repository.GetByIdAsync(id, ct);
-            if (record?.TranscriptAttachmentId != null)
-            {
-                try
-                {
-                    var stream = await attachmentRetriever.GetContentAsync(record.TranscriptAttachmentId, ct);
-                    if (stream != null)
-                    {
-                        return Results.File(stream, "application/pdf", $"{id}_transcript.pdf");
-                    }
-                }
-                catch
-                {
-                    // Fall back to seed documents
-                }
-            }
 
-            var possiblePaths = new[]
-            {
-                Path.Combine(AppContext.BaseDirectory, "Data", "SeedDocuments"),
-                Path.Combine(Directory.GetCurrentDirectory(), "src", "Infrastructure", "Data", "SeedDocuments"),
-                Path.Combine(Directory.GetCurrentDirectory(), "..", "Infrastructure", "Data", "SeedDocuments")
-            };
-            string folder = possiblePaths.FirstOrDefault(Directory.Exists) ?? possiblePaths[0];
-            var filePath = Path.Combine(folder, $"{id}_transcript.pdf");
-
-            if (!File.Exists(filePath))
-            {
-                return Results.NotFound("Transcript not found.");
-            }
-            return Results.File(filePath, "application/pdf", $"{id}_transcript.pdf");
+            return await ServeDocumentAsync(
+                record?.TranscriptAttachmentId,
+                $"{id}_transcript.pdf",
+                "Transcript",
+                documentStorage,
+                attachmentRetriever,
+                loggerFactory,
+                ct);
         })
         .WithName("GetApplicationTranscript");
+    }
+
+    /// <summary>
+    /// Resolves a stored attachment reference. Uploads live in blob storage; references
+    /// predating that (share URLs) still resolve through the URL retriever. The seed-document
+    /// fallback covers only the sample PDFs baked into the image for local demos.
+    /// </summary>
+    private static async Task<IResult> ServeDocumentAsync(
+        string? attachmentReference,
+        string downloadFileName,
+        string documentLabel,
+        IDocumentStorage documentStorage,
+        IAttachmentRetriever attachmentRetriever,
+        ILoggerFactory loggerFactory,
+        CancellationToken ct)
+    {
+        var logger = loggerFactory.CreateLogger("Api.ApplicationDocuments");
+
+        if (!string.IsNullOrWhiteSpace(attachmentReference))
+        {
+            try
+            {
+                var stream = documentStorage.OwnsReference(attachmentReference)
+                    ? await documentStorage.GetAsync(attachmentReference, ct)
+                    : await attachmentRetriever.GetContentAsync(attachmentReference, ct);
+
+                if (stream != null)
+                {
+                    return Results.File(stream, "application/pdf", downloadFileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(
+                    ex,
+                    "Failed to retrieve {DocumentLabel} from {Reference}; falling back to seed documents.",
+                    documentLabel,
+                    attachmentReference);
+            }
+        }
+
+        var possiblePaths = new[]
+        {
+            Path.Combine(AppContext.BaseDirectory, "Data", "SeedDocuments"),
+            Path.Combine(Directory.GetCurrentDirectory(), "src", "Infrastructure", "Data", "SeedDocuments"),
+            Path.Combine(Directory.GetCurrentDirectory(), "..", "Infrastructure", "Data", "SeedDocuments")
+        };
+        string folder = possiblePaths.FirstOrDefault(Directory.Exists) ?? possiblePaths[0];
+        var filePath = Path.Combine(folder, downloadFileName);
+
+        if (!File.Exists(filePath))
+        {
+            return Results.NotFound($"{documentLabel} not found.");
+        }
+
+        return Results.File(filePath, "application/pdf", downloadFileName);
     }
 }

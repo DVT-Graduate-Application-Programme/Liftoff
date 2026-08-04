@@ -6,6 +6,7 @@ using Domain.Messaging;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,6 +19,7 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
     private readonly IApplicationRecordRepository _repository;
     private readonly IRecruiterAssignmentService _recruiterAssignmentService;
     private readonly IApplicationQueuePublisher _queuePublisher;
+    private readonly IDocumentStorage _documentStorage;
     private readonly ILogger<IngestApplicationHandler> _logger;
 
     public IngestApplicationHandler(
@@ -26,6 +28,7 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
         IApplicationRecordRepository repository,
         IRecruiterAssignmentService recruiterAssignmentService,
         IApplicationQueuePublisher queuePublisher,
+        IDocumentStorage documentStorage,
         ILogger<IngestApplicationHandler> logger)
     {
         _graphEmailService = graphEmailService;
@@ -33,6 +36,7 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
         _repository = repository;
         _recruiterAssignmentService = recruiterAssignmentService;
         _queuePublisher = queuePublisher;
+        _documentStorage = documentStorage;
         _logger = logger;
     }
 
@@ -78,11 +82,21 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
 
             if (classification == "CV")
             {
-                applicationRecord.SetCvAttachment(attachment.Id);
+                var reference = await StoreAttachmentAsync(
+                    DocumentKind.Cv,
+                    applicationRecord.Id,
+                    attachment,
+                    cancellationToken);
+                applicationRecord.SetCvAttachment(reference);
             }
             else if (classification == "Transcript")
             {
-                applicationRecord.SetTranscriptAttachment(attachment.Id);
+                var reference = await StoreAttachmentAsync(
+                    DocumentKind.Transcript,
+                    applicationRecord.Id,
+                    attachment,
+                    cancellationToken);
+                applicationRecord.SetTranscriptAttachment(reference);
             }
         }
 
@@ -102,5 +116,21 @@ public class IngestApplicationHandler : IRequestHandler<IngestApplicationRequest
         await _queuePublisher.PublishAsync(new CvProcessingMessage(applicationRecord.Id), cancellationToken);
 
         return true;
+    }
+
+    private async Task<string> StoreAttachmentAsync(
+        DocumentKind kind,
+        Guid applicationId,
+        EmailAttachmentDto attachment,
+        CancellationToken cancellationToken)
+    {
+        using var content = new MemoryStream(attachment.ContentBytes, writable: false);
+
+        return await _documentStorage.SaveAsync(
+            kind,
+            applicationId,
+            content,
+            attachment.ContentType,
+            cancellationToken);
     }
 }
