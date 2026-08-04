@@ -17,8 +17,6 @@ import {
 export type SortOption = NonNullable<ApplicationFilters["sort"]>;
 
 export const SORT_OPTIONS: [SortOption, string][] = [
-  ["score_desc", "Highest score"],
-  ["score_asc", "Lowest score"],
   ["date_desc", "Newest application"],
   ["date_asc", "Oldest application"],
 ];
