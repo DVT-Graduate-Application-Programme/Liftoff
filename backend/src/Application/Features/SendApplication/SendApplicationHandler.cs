@@ -1,4 +1,3 @@
-using System.IO;
 using Application.Interfaces;
 using Domain.Entities;
 using Domain.Enums;
@@ -12,13 +11,16 @@ public class SendApplicationHandler
 {
     private readonly IApplicationRecordRepository _repository;
     private readonly IApplicationQueuePublisher _queuePublisher;
+    private readonly IDocumentStorage _documentStorage;
 
     public SendApplicationHandler(
         IApplicationRecordRepository repository,
-        IApplicationQueuePublisher queuePublisher)
+        IApplicationQueuePublisher queuePublisher,
+        IDocumentStorage documentStorage)
     {
         _repository = repository;
         _queuePublisher = queuePublisher;
+        _documentStorage = documentStorage;
     }
 
     public async Task<SendApplicationResult> Handle(
@@ -33,6 +35,11 @@ public class SendApplicationHandler
         if (string.IsNullOrWhiteSpace(request.CandidateEmail))
         {
             throw new ArgumentException("CandidateEmail is required to ingest an application.", nameof(request));
+        }
+
+        if (request.CvStream is null)
+        {
+            throw new ArgumentException("CvStream is required to ingest an application.", nameof(request));
         }
 
         var emailMessageId = BuildEmailMessageId(request);
@@ -60,30 +67,23 @@ public class SendApplicationHandler
             status: ApplicationStatus.PROCESSING.ToString(),
             timestamp: now);
 
-        var possiblePaths = new[]
-        {
-            Path.Combine(AppContext.BaseDirectory, "Data", "SeedDocuments"),
-            Path.Combine(Directory.GetCurrentDirectory(), "src", "Infrastructure", "Data", "SeedDocuments"),
-            Path.Combine(Directory.GetCurrentDirectory(), "..", "Infrastructure", "Data", "SeedDocuments")
-        };
-        string folder = possiblePaths.FirstOrDefault(Directory.Exists) ?? possiblePaths[0];
-        Directory.CreateDirectory(folder);
-
-        var cvFilePath = Path.Combine(folder, $"{applicationRecord.Id}_cv.pdf");
-        using (var fileStream = new FileStream(cvFilePath, FileMode.Create))
-        {
-            await request.CvStream.CopyToAsync(fileStream, cancellationToken);
-        }
-        applicationRecord.SetCvAttachment(cvFilePath);
+        var cvReference = await _documentStorage.SaveAsync(
+            DocumentKind.Cv,
+            applicationRecord.Id,
+            request.CvStream,
+            "application/pdf",
+            cancellationToken);
+        applicationRecord.SetCvAttachment(cvReference);
 
         if (request.TranscriptStream != null)
         {
-            var transcriptFilePath = Path.Combine(folder, $"{applicationRecord.Id}_transcript.pdf");
-            using (var fileStream = new FileStream(transcriptFilePath, FileMode.Create))
-            {
-                await request.TranscriptStream.CopyToAsync(fileStream, cancellationToken);
-            }
-            applicationRecord.SetTranscriptAttachment(transcriptFilePath);
+            var transcriptReference = await _documentStorage.SaveAsync(
+                DocumentKind.Transcript,
+                applicationRecord.Id,
+                request.TranscriptStream,
+                "application/pdf",
+                cancellationToken);
+            applicationRecord.SetTranscriptAttachment(transcriptReference);
         }
 
         await _repository.AddAsync(applicationRecord, cancellationToken);

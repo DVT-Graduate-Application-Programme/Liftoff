@@ -210,6 +210,9 @@ public sealed class IngestApiFactory : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("POSTGRES_USER", "test");
         Environment.SetEnvironmentVariable("POSTGRES_PASSWORD", "test");
         Environment.SetEnvironmentVariable("SERVICEBUS_CONNECTION_STRING", "Endpoint=sb://localhost/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=123");
+        // AddInfrastructure refuses to start without one; the registration is replaced below,
+        // so no emulator has to be running for these tests.
+        Environment.SetEnvironmentVariable("STORAGE_CONNECTION_STRING", "UseDevelopmentStorage=true");
 
         builder.UseEnvironment("Testing");
         builder.ConfigureServices(services =>
@@ -220,6 +223,9 @@ public sealed class IngestApiFactory : WebApplicationFactory<Program>
             services.RemoveAll<IApplicationQueuePublisher>();
             services.AddSingleton<IApplicationQueuePublisher, TestQueuePublisher>();
 
+            services.RemoveAll<IDocumentStorage>();
+            services.AddSingleton<IDocumentStorage, InMemoryDocumentStorage>();
+
             services.RemoveAll<IRecruiterRepository>();
             services.AddSingleton<IRecruiterRepository, TestRecruiterRepository>();
         });
@@ -229,6 +235,51 @@ public sealed class IngestApiFactory : WebApplicationFactory<Program>
     {
         _repository.Clear();
     }
+}
+
+/// <summary>
+/// Stands in for blob storage so the ingest tests need no emulator. Mirrors the real
+/// reference format so anything asserting on the stored reference stays meaningful.
+/// </summary>
+internal sealed class InMemoryDocumentStorage : IDocumentStorage
+{
+    private const string ReferenceScheme = "blob://";
+
+    private readonly Dictionary<string, byte[]> _documents = [];
+
+    public async Task<string> SaveAsync(
+        DocumentKind kind,
+        Guid applicationId,
+        Stream content,
+        string contentType,
+        CancellationToken cancellationToken = default)
+    {
+        using var buffer = new MemoryStream();
+        await content.CopyToAsync(buffer, cancellationToken);
+
+        var reference = kind == DocumentKind.Cv
+            ? $"{ReferenceScheme}cvs/{applicationId}_cv.pdf"
+            : $"{ReferenceScheme}transcripts/{applicationId}_transcript.pdf";
+
+        lock (_documents)
+        {
+            _documents[reference] = buffer.ToArray();
+        }
+
+        return reference;
+    }
+
+    public Task<Stream?> GetAsync(string reference, CancellationToken cancellationToken = default)
+    {
+        lock (_documents)
+        {
+            return Task.FromResult<Stream?>(
+                _documents.TryGetValue(reference, out var bytes) ? new MemoryStream(bytes) : null);
+        }
+    }
+
+    public bool OwnsReference(string reference) =>
+        reference.StartsWith(ReferenceScheme, StringComparison.OrdinalIgnoreCase);
 }
 
 internal sealed class TestQueuePublisher : IApplicationQueuePublisher
