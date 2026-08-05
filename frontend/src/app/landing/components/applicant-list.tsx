@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, type ReactElement, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
@@ -44,6 +45,7 @@ interface ApplicantListProps {
   showReviewedAt?: boolean;
   enableClaim?: boolean;
   groupByDate?: boolean;
+  groupByMarks?: boolean;
   renderItem?: (application: CandidateApplication) => ReactNode;
   renderCard?: (application: CandidateApplication) => ReactElement;
 }
@@ -75,6 +77,57 @@ const DATE_BUCKET_SECTIONS = [
   },
 ];
 
+const MARKS_BUCKET_SECTIONS = [
+  {
+    key: "high" as const,
+    label: "System Score 80 and Above",
+    countLabel: (count: number) => `${String(count)} Candidates`,
+    emptyText: "No candidates with system score 80 and above.",
+    headerColorClass: "text-sky-600 dark:text-sky-400",
+    lineColorClass: "bg-sky-200 dark:bg-sky-800/30",
+  },
+  {
+    key: "medium" as const,
+    label: "System Score Between 65 and 79",
+    countLabel: (count: number) => `${String(count)} Candidates`,
+    emptyText: "No candidates with system score between 65 and 79.",
+    headerColorClass: "text-amber-600 dark:text-amber-400",
+    lineColorClass: "bg-amber-200 dark:bg-amber-800/30",
+  },
+  {
+    key: "low" as const,
+    label: "System Score Less Than 65",
+    countLabel: (count: number) => `${String(count)} Candidates`,
+    emptyText: "No candidates with system score less than 65.",
+    headerColorClass: "text-red-600 dark:text-red-400",
+    lineColorClass: "bg-red-200 dark:bg-red-800/30",
+  },
+];
+
+function getMarksBucket(systemScore?: number | null): "high" | "medium" | "low" {
+  const score = systemScore ?? 0;
+  if (score >= 80) return "high";
+  if (score >= 65) return "medium";
+  return "low";
+}
+function groupApplicationsByMarks(applications: CandidateApplication[]) {
+  const groups = {
+    high: [] as CandidateApplication[],
+    medium: [] as CandidateApplication[],
+    low: [] as CandidateApplication[],
+  };
+
+  for (const app of applications) {
+    const bucket = getMarksBucket(app.hiringAgentTotalScore);
+    groups[bucket].push(app);
+  }
+
+  for (const key of Object.keys(groups) as Array<keyof typeof groups>) {
+    groups[key].sort((a, b) => b.hiringAgentTotalScore - a.hiringAgentTotalScore);
+  }
+
+  return groups;
+}
 function getEducationSubtitle(evaluation: Evaluation | null | undefined, fallback: string) {
   const educationEvidence = evaluation?.evidenceJson?.education.trim();
   return educationEvidence || fallback;
@@ -151,6 +204,7 @@ export function ApplicantList({
   showReviewedAt = true,
   enableClaim = false,
   groupByDate = false,
+  groupByMarks = false,
   renderItem,
   renderCard,
 }: ApplicantListProps) {
@@ -347,6 +401,63 @@ export function ApplicantList({
             </section>
           );
         })}
+        {hasNextPage && (
+          <div className="flex justify-center">{loadMoreButton}</div>
+        )}
+      </div>
+    );
+  }
+
+  if (groupByMarks) {
+    const groupedApplications = groupApplicationsByMarks(applications);
+
+    return (
+      <div className="space-y-10">
+        {MARKS_BUCKET_SECTIONS.map(
+          ({
+            key,
+            label,
+            countLabel,
+            emptyText,
+            headerColorClass,
+            lineColorClass,
+          }) => {
+            const bucketApplications = groupedApplications[key];
+
+            return (
+              <section key={key}>
+                <div className="mb-4 flex items-center gap-4">
+                  <h3
+                    className={cn(
+                      "text-xs font-bold uppercase tracking-widest",
+                      headerColorClass,
+                    )}
+                  >
+                    {label}
+                  </h3>
+                  <div className={cn("h-px flex-1", lineColorClass)}></div>
+                  <span
+                    className={cn(
+                      "text-xs font-bold uppercase tracking-widest leading-none",
+                      headerColorClass,
+                    )}
+                  >
+                    {countLabel(bucketApplications.length)}
+                  </span>
+                </div>
+                <div className="@container grid grid-cols-1 gap-4">
+                  {bucketApplications.length > 0 ? (
+                    bucketApplications.map(renderCardItem)
+                  ) : (
+                    <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                      {emptyText}
+                    </p>
+                  )}
+                </div>
+              </section>
+            );
+          },
+        )}
         {hasNextPage && (
           <div className="flex justify-center">{loadMoreButton}</div>
         )}

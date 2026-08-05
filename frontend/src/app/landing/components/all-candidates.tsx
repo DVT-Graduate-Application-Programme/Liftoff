@@ -232,6 +232,7 @@ function AllCandidates() {
         filters={filters}
         emptyTitle="No applicants yet"
         enableClaim
+        groupByMarks
         renderCard={(application: CandidateApplication) => {
           const isClaimedByActiveRecruiter =
             application.claimedByRecruiterId === recruiterIdentity;
