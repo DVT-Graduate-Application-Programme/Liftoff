@@ -103,8 +103,8 @@ function QuickActionsMenu({
           if (val === "view_detail" && onViewDetail) onViewDetail();
         }}
       >
-        <SelectTrigger className="h-7.5 w-full gap-1.5 px-3 text-xs font-medium border-border justify-between hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors truncate whitespace-nowrap">
-          <SelectValue placeholder="Quick Actions" className="truncate whitespace-nowrap" />
+        <SelectTrigger className="group h-7.5 w-full gap-1.5 px-3 text-xs font-medium bg-secondary text-secondary-foreground border-border/60 justify-between hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white [&_svg]:group-hover:text-white transition-colors truncate whitespace-nowrap">
+          <SelectValue placeholder="Quick Actions" className="truncate whitespace-nowrap group-hover:text-white" />
         </SelectTrigger>
         <SelectContent
           position="popper"
