@@ -4,7 +4,10 @@ import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import type { ApplicationFilters } from "@/types/api";
 import { ApplicantList } from "./applicant-list";
-import { useUrlFilterState } from "@/hooks/use-url-filter-state";
+import {
+  useSetUrlFilters,
+  useUrlFilterState,
+} from "@/hooks/use-url-filter-state";
 import {
   FilterBar,
   type ActiveFilter,
@@ -17,6 +20,7 @@ const PendingCandidates = () => {
   const { data: session } = useSession();
   const recruiterIdentity = session?.user.email ?? ACTIVE_RECRUITER_ID;
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const setUrlFilters = useSetUrlFilters();
   const [minScore, setMinScore] = useUrlFilterState("pendingMinScore", "");
   const [dateRange, setDateRange] = useUrlFilterState(
     "pendingDateRange",
@@ -43,8 +47,10 @@ const PendingCandidates = () => {
   }, [dateRange, minScore, recruiterIdentity, sort]);
 
   const clearFilters = () => {
-    setMinScore("");
-    setDateRange("all");
+    setUrlFilters([
+      { key: "pendingMinScore", value: "", defaultValue: "" },
+      { key: "pendingDateRange", value: "all", defaultValue: "all" },
+    ]);
   };
 
   const fields: FilterFieldConfig[] = [
