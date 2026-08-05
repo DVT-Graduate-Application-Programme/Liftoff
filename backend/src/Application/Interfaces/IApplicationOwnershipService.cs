@@ -12,5 +12,6 @@ public interface IApplicationOwnershipService
     Task<ApplicationStatusUpdate?> AcceptAsync(Guid id, string recruiterIdentity, string? reason, CancellationToken cancellationToken = default);
     Task<ApplicationStatusUpdate?> RejectAsync(Guid id, string recruiterIdentity, string? reason, CancellationToken cancellationToken = default);
     Task<ApplicationRatingUpdate?> RateAsync(Guid id, string recruiterIdentity, short rating, string? notes, CancellationToken cancellationToken = default);
+    Task<DTOs.ApplicationTechnicalRatingDto?> RateTechnicalAsync(Guid id, string recruiterIdentity, short rating, CancellationToken cancellationToken = default);
     Task<ApplicationRatingUpdate?> AddNotesAsync(Guid id, string recruiterIdentity, string notes, CancellationToken cancellationToken = default);
 }
