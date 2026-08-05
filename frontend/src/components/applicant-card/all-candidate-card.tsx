@@ -121,7 +121,6 @@ export default function AllCandidateCard({
   reviewedAt,
   showReviewedAt = true,
   createdAt,
-  recruiterLabel,
   recruiterName,
   actionLabel = "Show AI Summary",
   onActionClick,
