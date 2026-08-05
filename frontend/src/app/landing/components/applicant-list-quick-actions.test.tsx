@@ -62,13 +62,13 @@ describe("ApplicantList Quick Actions & View Detail", () => {
     );
 
     expect(await screen.findByText("Sarah Connor")).toBeInTheDocument();
-    const quickActionsBtn = screen.getByRole("button", { name: /quick actions/i });
+    const quickActionsBtn = screen.getByRole("combobox");
     expect(quickActionsBtn).toBeInTheDocument();
 
-    fireEvent.click(quickActionsBtn);
-    expect(screen.getByRole("button", { name: /shortlist candidate/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /reject candidate/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /view detail/i })).toBeInTheDocument();
+    fireEvent.keyDown(quickActionsBtn, { key: "ArrowDown", code: "ArrowDown" });
+    expect(await screen.findByText(/shortlist candidate/i)).toBeInTheDocument();
+    expect(screen.getByText(/reject candidate/i)).toBeInTheDocument();
+    expect(screen.getByText(/view detail/i)).toBeInTheDocument();
   });
 
   it("navigates to candidate route when View Detail item is clicked inside Quick Actions menu", async () => {
@@ -89,9 +89,9 @@ describe("ApplicantList Quick Actions & View Detail", () => {
     );
 
     expect(await screen.findByText("Sarah Connor")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /quick actions/i }));
+    fireEvent.keyDown(screen.getByRole("combobox"), { key: "ArrowDown", code: "ArrowDown" });
 
-    const viewDetailBtn = screen.getByRole("button", { name: /view detail/i });
+    const viewDetailBtn = await screen.findByText(/view detail/i);
     fireEvent.click(viewDetailBtn);
 
     expect(mockPush).toHaveBeenCalledWith("/applicants/app-quick-1");
@@ -120,9 +120,9 @@ describe("ApplicantList Quick Actions & View Detail", () => {
     );
 
     expect(await screen.findByText("Sarah Connor")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /quick actions/i }));
+    fireEvent.keyDown(screen.getByRole("combobox"), { key: "ArrowDown", code: "ArrowDown" });
 
-    const shortlistBtn = screen.getByRole("button", { name: /shortlist candidate/i });
+    const shortlistBtn = await screen.findByText(/shortlist candidate/i);
     fireEvent.click(shortlistBtn);
 
     const confirmBtn = await screen.findByRole("button", { name: /^confirm$/i });
@@ -156,9 +156,9 @@ describe("ApplicantList Quick Actions & View Detail", () => {
     );
 
     expect(await screen.findByText("Sarah Connor")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /quick actions/i }));
+    fireEvent.keyDown(screen.getByRole("combobox"), { key: "ArrowDown", code: "ArrowDown" });
 
-    const rejectBtn = screen.getByRole("button", { name: /reject candidate/i });
+    const rejectBtn = await screen.findByText(/reject candidate/i);
     fireEvent.click(rejectBtn);
 
     const confirmBtn = await screen.findByRole("button", { name: /^confirm$/i });

@@ -1,7 +1,14 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { Check, ChevronDown, Loader2, X, NotebookTabs } from "lucide-react";
+import { Check, Loader2, X, NotebookTabs } from "lucide-react";
 
 type PendingCandidateCardProps = {
   name: string;
@@ -78,118 +85,72 @@ function QuickActionsMenu({
   isRejecting?: boolean;
   onViewDetail?: () => void;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen]);
-
   const hasAnyAction = Boolean(onShortlist || onReject || onViewDetail);
   if (!hasAnyAction) return null;
 
   return (
     <div
-      ref={menuRef}
-      className="relative w-full text-left"
-      onMouseEnter={() => {
-        setIsOpen(true);
+      onClick={(e) => {
+        e.stopPropagation();
       }}
-      onMouseLeave={() => {
-        setIsOpen(false);
-      }}
+      className="w-full"
     >
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="h-7.5 w-full gap-1.5 px-3 text-xs font-medium border-border justify-between hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors"
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsOpen((prev) => !prev);
+      <Select
+        value=""
+        onValueChange={(val) => {
+          if (val === "shortlist" && onShortlist) onShortlist();
+          if (val === "reject" && onReject) onReject();
+          if (val === "view_detail" && onViewDetail) onViewDetail();
         }}
       >
-        <span>Quick Actions</span>
-        <ChevronDown
-          className={cn(
-            "size-3.5 transition-transform duration-200",
-            isOpen && "rotate-180",
-          )}
-        />
-      </Button>
-
-      {isOpen && (
-        <div
-          className="absolute right-0 top-full z-50 pt-1 w-48 animate-in fade-in-0 zoom-in-95"
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
+        <SelectTrigger className="h-7.5 w-full gap-1.5 px-3 text-xs font-medium border-border justify-between hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors">
+          <SelectValue placeholder="Quick Actions" />
+        </SelectTrigger>
+        <SelectContent
+          position="popper"
+          className="w-(--radix-select-trigger-width) min-w-(--radix-select-trigger-width) p-1"
         >
-          <div className="before:absolute before:-top-2 before:left-0 before:right-0 before:h-2 before:content-[''] rounded-lg border border-border bg-popover p-1.5 text-popover-foreground shadow-lg ring-1 ring-black/5">
-            {onShortlist && (
-              <button
-                type="button"
-                disabled={isShortlisting || isRejecting}
-                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 dark:hover:text-white disabled:opacity-50 transition-colors"
-                onClick={() => {
-                  setIsOpen(false);
-                  onShortlist();
-                }}
-              >
-                {isShortlisting ? (
-                  <Loader2 className="size-3.5 animate-spin" />
-                ) : (
-                  <Check className="size-3.5" />
-                )}
-                <span>{isShortlisting ? "Shortlisting..." : "Shortlist Candidate"}</span>
-              </button>
-            )}
+          {onShortlist && (
+            <SelectItem
+              value="shortlist"
+              disabled={isShortlisting || isRejecting}
+              className="text-xs font-medium text-emerald-600 dark:text-emerald-400 focus:bg-emerald-600 focus:text-white dark:focus:bg-emerald-600 dark:focus:text-white cursor-pointer"
+            >
+              {isShortlisting ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Check className="size-3.5" />
+              )}
+              <span>{isShortlisting ? "Shortlisting..." : "Shortlist Candidate"}</span>
+            </SelectItem>
+          )}
 
-            {onReject && (
-              <button
-                type="button"
-                disabled={isShortlisting || isRejecting}
-                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-xs font-medium text-destructive hover:bg-destructive hover:text-white dark:hover:bg-destructive dark:hover:text-white disabled:opacity-50 transition-colors"
-                onClick={() => {
-                  setIsOpen(false);
-                  onReject();
-                }}
-              >
-                {isRejecting ? (
-                  <Loader2 className="size-3.5 animate-spin" />
-                ) : (
-                  <X className="size-3.5" />
-                )}
-                <span>{isRejecting ? "Rejecting..." : "Reject Candidate"}</span>
-              </button>
-            )}
+          {onReject && (
+            <SelectItem
+              value="reject"
+              disabled={isShortlisting || isRejecting}
+              className="text-xs font-medium text-destructive focus:bg-destructive focus:text-white dark:focus:bg-destructive dark:focus:text-white cursor-pointer"
+            >
+              {isRejecting ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <X className="size-3.5" />
+              )}
+              <span>{isRejecting ? "Rejecting..." : "Reject Candidate"}</span>
+            </SelectItem>
+          )}
 
-            {onViewDetail && (
-              <button
-                type="button"
-                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-xs font-medium text-foreground hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors"
-                onClick={() => {
-                  setIsOpen(false);
-                  onViewDetail();
-                }}
-              >
-                <NotebookTabs className="size-3.5" />
-                <span>View Detail</span>
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+          {onViewDetail && (
+            <SelectItem
+              value="view_detail"
+              className="text-xs font-medium text-foreground focus:bg-primary focus:text-white dark:focus:bg-primary dark:focus:text-white cursor-pointer"
+            >
+              <NotebookTabs className="size-3.5" />
+              <span>View Detail</span>
+            </SelectItem>
+          )}
+        </SelectContent>
+      </Select>
     </div>
   );
 }
