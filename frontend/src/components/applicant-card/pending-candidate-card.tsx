@@ -323,7 +323,7 @@ export default function PendingCandidateCard({
             )}
           </div>
         </div>
-        <div className="hidden w-24 shrink-0 flex-col items-center justify-start h-12 @5xl:flex">
+        <div className="flex w-24 shrink-0 flex-col items-center justify-start h-12">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             Applied
           </span>
