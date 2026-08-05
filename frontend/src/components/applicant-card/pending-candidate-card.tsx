@@ -325,7 +325,7 @@ export default function PendingCandidateCard({
             variant="secondary"
             size="sm"
             className={cn(
-              "h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors",
+              "h-7 w-full gap-1 px-3 text-xs font-medium justify-center hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors",
               isSecondaryActionDisabled &&
                 "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
             )}
@@ -346,7 +346,7 @@ export default function PendingCandidateCard({
             type="button"
             variant="outline"
             size="sm"
-            className="h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center bg-primary text-white hover:bg-primary/90 hover:text-white dark:bg-sky-500 dark:hover:bg-sky-400 dark:hover:text-white transition-colors"
+            className="h-7 w-full gap-1 px-3 text-xs font-medium justify-center bg-primary text-white hover:bg-primary/90 hover:text-white dark:bg-sky-500 dark:hover:bg-sky-400 dark:hover:text-white transition-colors"
             onClick={(event) => {
               event.stopPropagation();
               onActionClick();
