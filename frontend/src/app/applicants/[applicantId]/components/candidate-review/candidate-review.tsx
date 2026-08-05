@@ -10,6 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import { StarRating } from "@/components/ui/star-rating";
 import { apiFetch } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { useOwnership } from "@/hooks/use-ownership";
@@ -21,45 +23,6 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { queryKeys } from "@/lib/query-keys";
 import type { Ownership } from "@/types/api";
-
-function StarRatingInput({
-  value,
-  onChange,
-  disabled,
-}: {
-  value: number;
-  onChange: (rating: number) => void;
-  disabled?: boolean;
-}) {
-  const [hoveredValue, setHoveredValue] = useState<number | null>(null);
-
-  return (
-    <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map((star) => {
-        const isHighlighted = hoveredValue !== null ? star <= hoveredValue : star <= value;
-        return (
-          <button
-            key={star}
-            type="button"
-            disabled={disabled}
-            onClick={() => { onChange(star); }}
-            onMouseEnter={() => { if (!disabled) setHoveredValue(star); }}
-            onMouseLeave={() => { if (!disabled) setHoveredValue(null); }}
-            aria-label={`Rate ${String(star)} star${star > 1 ? "s" : ""}`}
-            className="disabled:opacity-50 transition-transform duration-100 hover:scale-110 focus:outline-none"
-          >
-            <Star
-              className={cn(
-                "size-6 text-muted-foreground transition-colors",
-                isHighlighted && "fill-primary text-primary",
-              )}
-            />
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 interface RateResponse {
   recruiterRating: number | null;
@@ -79,11 +42,16 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
   const rejectMutation = useRejectApplication(applicationId);
 
   const [ratingOverride, setRatingOverride] = useState<number | null>(null);
+  const [cultureFitOverride, setCultureFitOverride] = useState<number | null>(null);
+  const [techFitOverride, setTechFitOverride] = useState<number | null>(null);
   const [notesOverride, setNotesOverride] = useState<string | null>(null);
   const [decisionOverride, setDecisionOverride] = useState<ReviewDecision | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const rating = ratingOverride ?? ownershipQuery.data?.recruiterRating ?? 0;
+  // Culture/Tech Fit are local-only until the backend supports separate rating fields (see handleConfirmSubmit).
+  const cultureFit = cultureFitOverride ?? 0;
+  const techFit = techFitOverride ?? 0;
   const notes = notesOverride ?? ownershipQuery.data?.recruiterRatingNote ?? "";
   const statusUpper = currentStatus?.toUpperCase() ?? "";
   const recruiterIdentity = session?.user.email ?? ACTIVE_RECRUITER_ID;
@@ -100,7 +68,7 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
     rateMutation.isPending || shortlistMutation.isPending || rejectMutation.isPending;
   const canSubmit =
     isAssignedToCurrentRecruiter &&
-    rating > 0 &&
+    (isShortlisted ? cultureFit > 0 && techFit > 0 : rating > 0) &&
     decision !== null &&
     notes.trim().length > 0 &&
     !isSubmitting;
@@ -131,15 +99,22 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
   const handleConfirmSubmit = () => {
     if (!decision) return;
 
+    // TODO(#568-backend): persist cultureFit/techFit as separate fields once the backend
+    // supports it. Until then, collapse them into the single `rating` field via Math.max
+    // (rather than an average) so a candidate's standout dimension isn't diluted.
+    const ratingToSubmit = isShortlisted ? Math.max(cultureFit, techFit) : rating;
+
     void (async () => {
       try {
-        await rateMutation.mutateAsync({ rating, notes });
+        await rateMutation.mutateAsync({ rating: ratingToSubmit, notes });
         if (decision === "shortlist") {
           await shortlistMutation.mutateAsync(undefined);
         } else {
           await rejectMutation.mutateAsync(undefined);
         }
         setRatingOverride(null);
+        // Culture/Tech Fit have no persisted field to fall back to yet (see TODO above),
+        // so keep the submitted values visible instead of resetting them to 0.
         setNotesOverride(null);
         setDecisionOverride(null);
         setConfirmOpen(false);
@@ -164,12 +139,38 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
           <div className="rounded-md border border-dashed border-muted-foreground/30 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
             You can view this applicant and add notes, but shortlist, reject, and rating actions are available only after you claim or are assigned to this applicant.
           </div>
+        ) : isShortlisted ? (
+          <div className="flex flex-wrap items-stretch gap-4">
+            <div className="flex flex-col gap-2">
+              <Label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                Culture Fit
+              </Label>
+              <StarRating
+                value={cultureFit}
+                onChange={setCultureFitOverride}
+                disabled={ownershipQuery.isLoading}
+                variant="culture"
+              />
+            </div>
+            <Separator orientation="vertical" />
+            <div className="flex flex-col gap-2">
+              <Label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                Tech Fit
+              </Label>
+              <StarRating
+                value={techFit}
+                onChange={setTechFitOverride}
+                disabled={ownershipQuery.isLoading}
+                variant="tech"
+              />
+            </div>
+          </div>
         ) : (
           <div className="flex flex-col gap-2">
             <Label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
               Rating
             </Label>
-            <StarRatingInput value={rating} onChange={setRatingOverride} disabled={ownershipQuery.isLoading} />
+            <StarRating value={rating} onChange={setRatingOverride} disabled={ownershipQuery.isLoading} />
           </div>
         )}
 
@@ -239,13 +240,16 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
           </div>
         ) : null}
 
-        <Button
-          className="h-11 w-full text-base font-medium text-white hover:bg-primary/80"
-          disabled={!canSubmit}
-          onClick={() => { setConfirmOpen(true); }}
-        >
-          {isSubmitting ? "Submitting..." : "Submit Rating"}
-        </Button>
+        <div className="flex justify-end">
+          <Button
+            size="lg"
+            className="w-full font-medium text-white hover:bg-primary/80 sm:w-auto sm:min-w-40"
+            disabled={!canSubmit}
+            onClick={() => { setConfirmOpen(true); }}
+          >
+            {isSubmitting ? "Submitting..." : "Submit Rating"}
+          </Button>
+        </div>
       </CardContent>
 
       {confirmOpen && decision ? (
