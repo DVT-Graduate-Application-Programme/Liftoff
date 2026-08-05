@@ -29,17 +29,47 @@ resource "azurerm_resource_group" "main" {
   tags     = local.common_tags
 }
 
+# Production only. A CanNotDelete lock makes `terraform destroy`, and any accidental portal
+# delete, fail on the resource group and everything in it. Removing it is a deliberate
+# two-step: flip resource_group_lock_enabled in environments.tf, apply, then destroy.
+resource "azurerm_management_lock" "resource_group" {
+  count      = local.env.resource_group_lock_enabled ? 1 : 0
+  name       = "lock-${local.prefix}"
+  scope      = azurerm_resource_group.main.id
+  lock_level = "CanNotDelete"
+  notes      = "Production environment — delete protection. Managed by Terraform (environments.tf)."
+}
+
 # ── Blob Storage ───────────────────────────────────────────────────────────────
 # Stores uploaded CVs and transcripts.
-# Standard LRS = locally redundant, cheapest option.
+# Replication is per-environment (environments.tf): LRS in dev, GRS in prod.
 
 resource "azurerm_storage_account" "main" {
   name                     = "st${substr(replace(local.prefix, "-", ""), 0, 14)}${local.suffix}"
   resource_group_name      = azurerm_resource_group.main.name
   location                 = azurerm_resource_group.main.location
   account_tier             = "Standard"
-  account_replication_type = "LRS"
+  account_replication_type = local.env.storage_replication_type
   tags                     = local.common_tags
+
+  # Candidate documents are POPIA records: no anonymous access, TLS only.
+  allow_nested_items_to_be_public = false
+  min_tls_version                 = "TLS1_2"
+
+  blob_properties {
+    # A deleted blob stays recoverable for this many days. The application deletes nothing
+    # today, so this only ever guards against an operator or a script.
+    delete_retention_policy {
+      days = local.env.storage_blob_retention_days
+    }
+
+    container_delete_retention_policy {
+      days = local.env.storage_blob_retention_days
+    }
+
+    # Prod keeps prior versions of an overwritten blob; dev does not, to keep the bill flat.
+    versioning_enabled = local.env.storage_versioning_enabled
+  }
 }
 
 resource "azurerm_storage_container" "cvs" {
@@ -58,15 +88,16 @@ resource "azurerm_storage_container" "transcripts" {
 # Application ingest queue for async processing. The backend publishes a
 # CvProcessingMessage on ingest and the worker consumes it.
 #
-# Basic tier is sufficient: it supports queues, dead-lettering, and scheduled
+# Basic tier is sufficient in dev: it supports queues, dead-lettering, and scheduled
 # messages (used by the worker's delayed re-enqueue retry). It does NOT support
-# topics/subscriptions or duplicate detection — move to Standard if those are needed.
+# topics/subscriptions or duplicate detection — prod runs Standard for that headroom
+# (environments.tf).
 
 resource "azurerm_servicebus_namespace" "main" {
   name                = "sb-${local.prefix}-${local.suffix}"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
-  sku                 = "Basic"
+  sku                 = local.env.servicebus_sku
   tags                = local.common_tags
 }
 
