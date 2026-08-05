@@ -128,7 +128,7 @@ export default function DetailedApplicantInfo() {
       <div
         ref={containerRef}
         className={cn(
-          "w-full max-w-[1400px] flex flex-col md:flex-row items-stretch justify-center pt-10 md:h-[calc(100vh_-_10rem)] md:min-h-0",
+          "w-full max-w-[1400px] flex flex-col gap-4 md:flex-row md:gap-0 items-stretch justify-center pt-10 md:h-[calc(100vh_-_10rem)] md:min-h-0",
           isResizing && "select-none cursor-col-resize"
         )}
       >
@@ -214,18 +214,14 @@ export default function DetailedApplicantInfo() {
               <EvaluationSummary evaluation={evaluationQuery.data} applicationId={applicantId} />
             )}
           </section>
-
-          {/* Candidate Rating section*/}
-          <CandidateReview applicationId={applicantId} currentStatus={detailQuery.data?.currentStatus} />
         </div>
       </div>
 
-      {/* Under the split: Applicant Logs */}
-      {applicantId && (
-        <div className="w-full mt-6 max-w-[1400px]">
-          <ApplicationLogs applicationId={applicantId} />
-        </div>
-      )}
+      {/* Under the split: Candidate Review, then Applicant Logs */}
+      <div className="w-full mt-6 max-w-[1400px] flex flex-col gap-6">
+        <CandidateReview applicationId={applicantId} currentStatus={detailQuery.data?.currentStatus} />
+        {applicantId && <ApplicationLogs applicationId={applicantId} />}
+      </div>
     </div>
   );
 }
