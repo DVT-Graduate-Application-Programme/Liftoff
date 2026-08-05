@@ -1,18 +1,20 @@
-import { signIn } from "@/auth"
-import { Button } from "@/components/ui/button"
-import { Logo } from "@/components/logo"
+import { signIn } from "@/auth";
+import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/logo";
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string }>
+  searchParams: Promise<{ callbackUrl?: string }>;
 }) {
-  const { callbackUrl } = await searchParams
+  const { callbackUrl } = await searchParams;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 text-center">
-        <Logo />
+        <div>
+          <Logo className="mx-auto h-20 w-auto opacity-80" />
+        </div>
 
         <h1 className="mt-6 text-xl font-semibold text-foreground">
           Recruiter dashboard
@@ -24,10 +26,10 @@ export default async function LoginPage({
         <form
           className="mt-6"
           action={async () => {
-            "use server"
+            "use server";
             await signIn("microsoft-entra-id", {
               redirectTo: callbackUrl ?? "/landing",
-            })
+            });
           }}
         >
           <Button type="submit" variant="outline" className="w-full">
@@ -40,5 +42,5 @@ export default async function LoginPage({
         </p>
       </div>
     </div>
-  )
+  );
 }
