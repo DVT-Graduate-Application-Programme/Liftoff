@@ -179,7 +179,7 @@ export default function AllCandidateCard({
           </div>
         </>
       ) : (
-        <div className="min-w-0 flex-1 flex flex-col pl-4">
+        <div className="min-w-0 flex-1 @2xl:flex-initial @2xl:w-auto flex flex-col pl-4">
           <h4 className="font-semibold leading-tight text-foreground">
             {name}
           </h4>
