@@ -103,7 +103,7 @@ function QuickActionsMenu({
           if (val === "view_detail" && onViewDetail) onViewDetail();
         }}
       >
-        <SelectTrigger className="group h-7.5 w-full gap-1.5 px-3 text-xs font-medium bg-secondary text-secondary-foreground border-border/60 justify-between rounded-[min(var(--radius-md),12px)] hover:bg-primary hover:text-white hover:data-[placeholder]:text-white dark:hover:bg-primary dark:hover:text-white dark:hover:data-[placeholder]:text-white [&_svg]:hover:text-white [&_svg]:group-hover:text-white transition-colors truncate whitespace-nowrap">
+        <SelectTrigger size="sm" className="group h-7.5 w-full gap-1.5 px-3 text-xs font-medium bg-secondary text-secondary-foreground border-border/60 justify-between rounded-[min(var(--radius-md),12px)] hover:bg-primary hover:text-white hover:data-[placeholder]:text-white dark:hover:bg-primary dark:hover:text-white dark:hover:data-[placeholder]:text-white [&_svg]:hover:text-white [&_svg]:group-hover:text-white transition-colors truncate whitespace-nowrap">
           <SelectValue placeholder="Quick Actions" className="truncate whitespace-nowrap" />
         </SelectTrigger>
         <SelectContent
@@ -323,9 +323,8 @@ export default function PendingCandidateCard({
           <Button
             type="button"
             variant="secondary"
-            size="sm"
             className={cn(
-              "h-7 w-full gap-1 px-3 text-xs font-medium justify-center hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors",
+              "h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors",
               isSecondaryActionDisabled &&
                 "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
             )}
