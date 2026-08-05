@@ -161,7 +161,7 @@ export default function AllCandidateCard({
 
       {layout === "history" ? (
         <>
-          <div className="min-w-0 flex-1 flex flex-col @2xl:pl-4">
+          <div className="min-w-0 flex-1 @2xl:flex-initial @2xl:w-auto flex flex-col @2xl:pl-4">
             <h4 className="break-words font-semibold leading-tight text-foreground">
               {name}
             </h4>
