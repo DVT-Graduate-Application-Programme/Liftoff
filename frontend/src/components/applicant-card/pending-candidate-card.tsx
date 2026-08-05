@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, ChevronDown, Loader2, X } from "lucide-react";
+import { Check, ChevronDown, Eye, Loader2, X } from "lucide-react";
 
 type PendingCandidateCardProps = {
   name: string;
@@ -183,6 +183,7 @@ function QuickActionsMenu({
                   onViewDetail();
                 }}
               >
+                <Eye className="size-3.5" />
                 <span>View Detail</span>
               </button>
             )}
