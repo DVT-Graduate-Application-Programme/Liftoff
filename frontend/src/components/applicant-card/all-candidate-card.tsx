@@ -186,9 +186,9 @@ export default function AllCandidateCard({
           {showInstitute && (
             <div className="mt-0.5 flex flex-col gap-0.5 text-xs text-muted-foreground">
               <p className="whitespace-normal break-words">{institute}</p>
-              {displaySubtitle ? (
+              {displayRecruiterName ? (
                 <p className="whitespace-normal break-words">
-                  {displaySubtitle}
+                  Recruiter: {displayRecruiterName}
                 </p>
               ) : null}
             </div>
