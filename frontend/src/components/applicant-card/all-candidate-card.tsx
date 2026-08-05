@@ -296,7 +296,11 @@ export default function AllCandidateCard({
         {showInstitute && (
           <div className="mt-0.5 flex flex-col gap-0.5 text-xs text-muted-foreground">
             <p className="whitespace-normal break-words">{institute}</p>
-            {displaySubtitle ? (
+            {displayRecruiterName ? (
+              <p className="whitespace-normal break-words">
+                Recruiter: {displayRecruiterName}
+              </p>
+            ) : displaySubtitle ? (
               <p className="whitespace-normal break-words">
                 {displaySubtitle}
               </p>
@@ -304,43 +308,6 @@ export default function AllCandidateCard({
           </div>
         )}
       </div>
-      {layout === "history" ? (
-        <>
-          <div className="min-w-0 flex-1 @2xl:flex-initial @2xl:w-auto flex flex-col @2xl:pl-4">
-            <h4 className="break-words font-semibold leading-tight text-foreground">
-              {name}
-            </h4>
-            {showInstitute && (
-              <div className="mt-0.5 flex flex-col gap-0.5 text-xs text-muted-foreground">
-                {displaySubtitle ? (
-                  <p className="whitespace-normal break-words">
-                    {displaySubtitle}
-                  </p>
-                ) : null}
-                <p className="whitespace-normal break-words">{institute}</p>
-              </div>
-            )}
-
-          </div>
-        </>
-      ) : (
-        <div className="min-w-0 flex-1 @2xl:flex-initial @2xl:w-auto flex flex-col pl-4">
-          <h4 className="font-semibold leading-tight text-foreground">
-            {name}
-          </h4>
-          {showInstitute && (
-            <div className="mt-0.5 flex flex-col gap-0.5 text-xs text-muted-foreground">
-              <p className="whitespace-normal break-words">{institute}</p>
-              {displayRecruiterName ? (
-                <p className="whitespace-normal break-words">
-                  Recruiter: {displayRecruiterName}
-                </p>
-              ) : null}
-            </div>
-          )}
-
-        </div>
-      )}
 
       <div className="flex flex-1 items-center justify-start gap-6 @2xl:justify-center @2xl:px-2">
         <div className="flex w-20 shrink-0 flex-col items-center gap-0.5">
@@ -383,17 +350,6 @@ export default function AllCandidateCard({
             </span>
           )}
         </div>
-
-        {layout === "history" && displayRecruiterName && (
-          <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 @4xl:flex">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-              {recruiterLabel ?? "Recruiter"}
-            </span>
-            <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium text-foreground">
-              {displayRecruiterName}
-            </span>
-          </div>
-        )}
       </div>
 
       <div className="flex w-full shrink-0 flex-col gap-2 @2xl:w-auto @2xl:justify-end @2xl:items-end">
