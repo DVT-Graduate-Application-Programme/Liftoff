@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Menu, Search, X } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
-import { Logo } from "@/components/logo";
+import { Logo, Slogan } from "@/components/logo";
 import { NavSearchBar } from "./nav-search-bar";
 
 function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
@@ -21,7 +21,11 @@ function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
           >
             <Menu />
           </Button>
-          <Logo className="opacity-90" />
+          
+          <div className="flex items-center gap-2">
+            <Logo className="opacity-90" />
+            <Slogan />
+          </div>
         </div>
 
         {/* Full search bar — hidden on mobile, shown from sm up */}

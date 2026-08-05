@@ -16,3 +16,14 @@ export function Logo({ className }: { className?: string }) {
     </Link>
   );
 }
+
+export function Slogan() {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className="hidden sm:block leading-tight">
+        <p className="text-[9px] text-gray-400 tracking-wide">smart people</p>
+        <p className="text-[9px] text-gray-400 tracking-wide">smart solutions</p>
+      </div>
+    </div>
+  );
+}
