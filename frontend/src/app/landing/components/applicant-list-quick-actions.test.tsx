@@ -125,7 +125,7 @@ describe("ApplicantList Quick Actions & View Detail", () => {
     const shortlistBtn = screen.getByRole("button", { name: /shortlist candidate/i });
     fireEvent.click(shortlistBtn);
 
-    const confirmBtn = await screen.findByRole("button", { name: /confirm shortlist/i });
+    const confirmBtn = await screen.findByRole("button", { name: /^confirm$/i });
     fireEvent.click(confirmBtn);
 
     await waitFor(() => {
@@ -161,7 +161,7 @@ describe("ApplicantList Quick Actions & View Detail", () => {
     const rejectBtn = screen.getByRole("button", { name: /reject candidate/i });
     fireEvent.click(rejectBtn);
 
-    const confirmBtn = await screen.findByRole("button", { name: /confirm rejection/i });
+    const confirmBtn = await screen.findByRole("button", { name: /^confirm$/i });
     fireEvent.click(confirmBtn);
 
     await waitFor(() => {

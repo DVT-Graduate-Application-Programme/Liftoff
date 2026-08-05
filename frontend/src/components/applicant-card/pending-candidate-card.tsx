@@ -113,7 +113,7 @@ function QuickActionsMenu({
         type="button"
         variant="outline"
         size="sm"
-        className="h-7.5 w-full gap-1.5 px-3 text-xs font-medium border-border justify-between hover:bg-accent hover:text-accent-foreground"
+        className="h-7.5 w-full gap-1.5 px-3 text-xs font-medium border-border justify-between hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors"
         onClick={(e) => {
           e.stopPropagation();
           setIsOpen((prev) => !prev);
@@ -140,7 +140,7 @@ function QuickActionsMenu({
               <button
                 type="button"
                 disabled={isShortlisting || isRejecting}
-                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 disabled:opacity-50 transition-colors"
+                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 dark:hover:text-white disabled:opacity-50 transition-colors"
                 onClick={() => {
                   setIsOpen(false);
                   onShortlist();
@@ -159,7 +159,7 @@ function QuickActionsMenu({
               <button
                 type="button"
                 disabled={isShortlisting || isRejecting}
-                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-xs font-medium text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors"
+                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-xs font-medium text-destructive hover:bg-destructive hover:text-white dark:hover:bg-destructive dark:hover:text-white disabled:opacity-50 transition-colors"
                 onClick={() => {
                   setIsOpen(false);
                   onReject();
@@ -177,7 +177,7 @@ function QuickActionsMenu({
             {onViewDetail && (
               <button
                 type="button"
-                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-xs font-medium text-foreground hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors"
                 onClick={() => {
                   setIsOpen(false);
                   onViewDetail();
@@ -359,7 +359,7 @@ export default function PendingCandidateCard({
             variant="secondary"
             size="sm"
             className={cn(
-              "h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center",
+              "h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors",
               isSecondaryActionDisabled &&
                 "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
             )}
@@ -380,7 +380,7 @@ export default function PendingCandidateCard({
             type="button"
             variant="outline"
             size="sm"
-            className="h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center bg-primary text-white hover:bg-primary/90 dark:bg-sky-500 dark:hover:bg-sky-400"
+            className="h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center bg-primary text-white hover:bg-primary/90 hover:text-white dark:bg-sky-500 dark:hover:bg-sky-400 dark:hover:text-white transition-colors"
             onClick={(event) => {
               event.stopPropagation();
               onActionClick();
@@ -391,10 +391,10 @@ export default function PendingCandidateCard({
         )}
       </div>
 
-      {/* Confirmation Modal Popup */}
+      {/* Confirmation Modal Popup - Identical to Candidate Review page */}
       {confirmAction && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-150"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
           onClick={(e) => {
             e.stopPropagation();
             if (!isShortlistLoading && !isRejecting) {
@@ -403,47 +403,23 @@ export default function PendingCandidateCard({
           }}
         >
           <div
-            className="w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-xl flex flex-col gap-4 animate-in zoom-in-95 duration-150"
+            className="bg-background border rounded-lg shadow-lg w-full max-w-md p-6 flex flex-col gap-4 animate-in zoom-in-95 duration-200"
             onClick={(e) => {
               e.stopPropagation();
             }}
           >
-            <div className="flex items-center gap-3">
-              <div
-                className={cn(
-                  "flex size-10 items-center justify-center rounded-full text-base font-bold",
-                  confirmAction === "shortlist"
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400"
-                    : "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400",
-                )}
-              >
-                {confirmAction === "shortlist" ? (
-                  <Check className="size-5" />
-                ) : (
-                  <X className="size-5" />
-                )}
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-foreground">
-                  {confirmAction === "shortlist" ? "Shortlist Candidate?" : "Reject Candidate?"}
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Candidate: <span className="font-medium text-foreground">{name}</span>
-                </p>
-              </div>
-            </div>
-
+            <h3 className="text-lg font-semibold text-foreground">
+              {confirmAction === "shortlist" ? "Confirm Shortlist" : "Confirm Rejection"}
+            </h3>
             <p className="text-sm text-muted-foreground">
               {confirmAction === "shortlist"
                 ? `Are you sure you want to shortlist ${name}? This will move them to your team's shortlisted candidates list.`
                 : `Are you sure you want to reject ${name}? This will update their status to rejected.`}
             </p>
-
-            <div className="flex justify-end gap-3 pt-2">
+            <div className="flex justify-end gap-3 mt-4">
               <Button
                 type="button"
                 variant="ghost"
-                size="sm"
                 disabled={isShortlistLoading || isRejecting}
                 onClick={() => {
                   setConfirmAction(null);
@@ -453,12 +429,7 @@ export default function PendingCandidateCard({
               </Button>
               <Button
                 type="button"
-                variant={confirmAction === "shortlist" ? "default" : "destructive"}
-                size="sm"
-                className={cn(
-                  confirmAction === "shortlist" &&
-                    "bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-500",
-                )}
+                variant={confirmAction === "reject" ? "destructive" : "default"}
                 disabled={isShortlistLoading || isRejecting}
                 onClick={() => {
                   if (confirmAction === "shortlist" && handleShortlistClick) {
@@ -469,13 +440,7 @@ export default function PendingCandidateCard({
                   setConfirmAction(null);
                 }}
               >
-                {confirmAction === "shortlist"
-                  ? isShortlistLoading
-                    ? "Shortlisting..."
-                    : "Confirm Shortlist"
-                  : isRejecting
-                    ? "Rejecting..."
-                    : "Confirm Rejection"}
+                {isShortlistLoading || isRejecting ? "Submitting..." : "Confirm"}
               </Button>
             </div>
           </div>
