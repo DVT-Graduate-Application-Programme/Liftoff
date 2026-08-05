@@ -42,6 +42,7 @@ public class ApplicationRecord
     // Recruiter rating (denormalised for dashboard read performance)
     public short? RecruiterRating { get; private set; }
     public string? RecruiterRatingNote { get; private set; }
+    public short? TechnicalRating { get; private set; }
     public string? RatedByRecruiterId { get; private set; }
     public DateTimeOffset? RatedAt { get; private set; }
 
@@ -296,6 +297,44 @@ public class ApplicationRecord
             SourceService = "ApplicationRecordDomain",
             LogLevel = "Information",
             Message = $"Rated {rating}/5 by recruiter '{recruiterId}'.",
+            Timestamp = now
+        });
+    }
+
+    public void RateTechnical(short rating, string recruiterId, DateTimeOffset? timestamp = null)
+    {
+        if (string.IsNullOrWhiteSpace(recruiterId))
+        {
+            throw new ArgumentException("Recruiter identity is required to rate.", nameof(recruiterId));
+        }
+
+        if (rating < 1 || rating > 5)
+        {
+            throw new ArgumentOutOfRangeException(nameof(rating), "Rating must be between 1 and 5.");
+        }
+
+        var now = timestamp ?? DateTimeOffset.UtcNow;
+
+        TechnicalRating = rating;
+        RatedByRecruiterId = recruiterId;
+        RatedAt = now;
+        UpdatedAt = now;
+
+        RecruiterActions.Add(new RecruiterAction
+        {
+            ApplicationRecordId = Id,
+            RecruiterIdentity = recruiterId,
+            ActionType = "TECHNICAL_RATING",
+            RatingValue = rating,
+            ActionedAt = now
+        });
+
+        AuditLogs.Add(new AuditLog
+        {
+            ApplicationRecordId = Id,
+            SourceService = "ApplicationRecordDomain",
+            LogLevel = "Information",
+            Message = $"Technical rated {rating}/5 by recruiter '{recruiterId}'.",
             Timestamp = now
         });
     }

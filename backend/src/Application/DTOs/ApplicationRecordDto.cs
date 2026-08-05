@@ -26,6 +26,7 @@ public class ApplicationRecordDto
     public DateTimeOffset? ShortlistedAt { get; set; }
     public short? RecruiterRating { get; set; }
     public string? RecruiterRatingNote { get; set; }
+    public short? TechnicalRating { get; set; }
     public string? RatedByRecruiterId { get; set; }
     public DateTimeOffset? RatedAt { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
