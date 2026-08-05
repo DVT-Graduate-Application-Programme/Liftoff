@@ -166,3 +166,10 @@ variable "alert_email" {
   type        = string
   default     = ""
 }
+
+# ── Team access ───────────────────────────────────────────────────────────────
+
+variable "reader_group_object_id" {
+  description = "Object ID of the Entra ID security group granted the built-in Reader role on the resource group. Created out-of-band via `az ad group create`; membership is managed in Entra, not here."
+  type        = string
+}
