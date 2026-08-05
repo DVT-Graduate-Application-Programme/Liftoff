@@ -1,3 +1,4 @@
+using Application.DTOs;
 using Application.Interfaces;
 using Domain.Entities;
 using Domain.Enums;
@@ -122,6 +123,28 @@ public class ApplicationOwnershipService : IApplicationOwnershipService
             RatedAt = applicationRecord.RatedAt ?? now,
             RecruiterRating = applicationRecord.RecruiterRating,
             RecruiterRatingNote = applicationRecord.RecruiterRatingNote
+        };
+    }
+
+    public async Task<ApplicationTechnicalRatingDto?> RateTechnicalAsync(Guid id, string recruiterIdentity, short rating, CancellationToken cancellationToken = default)
+    {
+        var applicationRecord = await _dbContext.ApplicationRecords.FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+        if (applicationRecord is null) return null;
+
+        var now = DateTimeOffset.UtcNow;
+        applicationRecord.RateTechnical(rating, recruiterIdentity, now);
+        _dbContext.ApplicationRecords.Update(applicationRecord);
+
+        _events.PublishOwnershipChanged(id, "TECHNICAL_RATING");
+
+        return new ApplicationTechnicalRatingDto
+        {
+            ApplicationId = id,
+            TechnicalRating = applicationRecord.TechnicalRating,
+            RecruiterRating = applicationRecord.RecruiterRating,
+            RecruiterRatingNote = applicationRecord.RecruiterRatingNote,
+            RatedByRecruiterId = recruiterIdentity,
+            RatedAt = applicationRecord.RatedAt ?? now
         };
     }
 
