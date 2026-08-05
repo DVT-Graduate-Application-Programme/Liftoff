@@ -103,8 +103,8 @@ function QuickActionsMenu({
           if (val === "view_detail" && onViewDetail) onViewDetail();
         }}
       >
-        <SelectTrigger className="group h-7.5 w-full gap-1.5 px-3 text-xs font-medium bg-secondary text-secondary-foreground border-border/60 justify-between hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white [&_svg]:group-hover:text-white transition-colors truncate whitespace-nowrap">
-          <SelectValue placeholder="Quick Actions" className="truncate whitespace-nowrap group-hover:text-white" />
+        <SelectTrigger className="group h-7.5 w-full gap-1.5 px-3 text-xs font-medium bg-secondary text-secondary-foreground border-border/60 justify-between hover:bg-primary hover:text-white hover:data-[placeholder]:text-white dark:hover:bg-primary dark:hover:text-white dark:hover:data-[placeholder]:text-white [&_svg]:hover:text-white [&_svg]:group-hover:text-white transition-colors truncate whitespace-nowrap">
+          <SelectValue placeholder="Quick Actions" className="truncate whitespace-nowrap" />
         </SelectTrigger>
         <SelectContent
           position="popper"
@@ -131,7 +131,7 @@ function QuickActionsMenu({
             <SelectItem
               value="reject"
               disabled={isShortlisting || isRejecting}
-              className="text-xs font-medium text-destructive focus:bg-destructive focus:text-white dark:focus:bg-destructive dark:focus:text-white cursor-pointer truncate whitespace-nowrap"
+              className="text-xs font-medium text-red-600 dark:text-red-400 focus:bg-destructive focus:text-white dark:focus:bg-destructive dark:focus:text-white cursor-pointer truncate whitespace-nowrap"
             >
               {isRejecting ? (
                 <Loader2 className="size-3.5 shrink-0 animate-spin" />
