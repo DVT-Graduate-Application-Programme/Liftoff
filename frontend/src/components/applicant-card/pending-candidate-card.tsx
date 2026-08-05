@@ -36,8 +36,8 @@ function ScoreTag({
   size?: "sm" | "md";
 }) {
   const formattedScore = score.toFixed(1);
-  const isHigh = score >= 70;
-  const isMedium = score >= 50 && score < 70;
+  const isHigh = score >= 80;
+  const isMedium = score >= 65 && score < 80;
 
   return (
     <div className="flex min-w-10 justify-center">
