@@ -66,8 +66,8 @@ describe("ApplicantList Quick Actions & View Detail", () => {
     expect(quickActionsBtn).toBeInTheDocument();
 
     fireEvent.keyDown(quickActionsBtn, { key: "ArrowDown", code: "ArrowDown" });
-    expect(await screen.findByText(/shortlist candidate/i)).toBeInTheDocument();
-    expect(screen.getByText(/reject candidate/i)).toBeInTheDocument();
+    expect(await screen.findByText(/^shortlist$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^reject$/i)).toBeInTheDocument();
     expect(screen.getByText(/view detail/i)).toBeInTheDocument();
   });
 
@@ -122,7 +122,7 @@ describe("ApplicantList Quick Actions & View Detail", () => {
     expect(await screen.findByText("Sarah Connor")).toBeInTheDocument();
     fireEvent.keyDown(screen.getByRole("combobox"), { key: "ArrowDown", code: "ArrowDown" });
 
-    const shortlistBtn = await screen.findByText(/shortlist candidate/i);
+    const shortlistBtn = await screen.findByText(/^shortlist$/i);
     fireEvent.click(shortlistBtn);
 
     const confirmBtn = await screen.findByRole("button", { name: /^confirm$/i });
@@ -158,7 +158,7 @@ describe("ApplicantList Quick Actions & View Detail", () => {
     expect(await screen.findByText("Sarah Connor")).toBeInTheDocument();
     fireEvent.keyDown(screen.getByRole("combobox"), { key: "ArrowDown", code: "ArrowDown" });
 
-    const rejectBtn = await screen.findByText(/reject candidate/i);
+    const rejectBtn = await screen.findByText(/^reject$/i);
     fireEvent.click(rejectBtn);
 
     const confirmBtn = await screen.findByRole("button", { name: /^confirm$/i });

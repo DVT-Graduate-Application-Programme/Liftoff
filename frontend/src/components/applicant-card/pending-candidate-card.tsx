@@ -93,7 +93,7 @@ function QuickActionsMenu({
       onClick={(e) => {
         e.stopPropagation();
       }}
-      className="w-full"
+      className="w-full min-w-0"
     >
       <Select
         value=""
@@ -103,8 +103,8 @@ function QuickActionsMenu({
           if (val === "view_detail" && onViewDetail) onViewDetail();
         }}
       >
-        <SelectTrigger className="h-7.5 w-full gap-1.5 px-3 text-xs font-medium border-border justify-between hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors">
-          <SelectValue placeholder="Quick Actions" />
+        <SelectTrigger className="h-7.5 w-full gap-1.5 px-3 text-xs font-medium border-border justify-between hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors truncate whitespace-nowrap">
+          <SelectValue placeholder="Quick Actions" className="truncate whitespace-nowrap" />
         </SelectTrigger>
         <SelectContent
           position="popper"
@@ -114,14 +114,16 @@ function QuickActionsMenu({
             <SelectItem
               value="shortlist"
               disabled={isShortlisting || isRejecting}
-              className="text-xs font-medium text-emerald-600 dark:text-emerald-400 focus:bg-emerald-600 focus:text-white dark:focus:bg-emerald-600 dark:focus:text-white cursor-pointer"
+              className="text-xs font-medium text-emerald-600 dark:text-emerald-400 focus:bg-emerald-600 focus:text-white dark:focus:bg-emerald-600 dark:focus:text-white cursor-pointer truncate whitespace-nowrap"
             >
               {isShortlisting ? (
-                <Loader2 className="size-3.5 animate-spin" />
+                <Loader2 className="size-3.5 shrink-0 animate-spin" />
               ) : (
-                <Check className="size-3.5" />
+                <Check className="size-3.5 shrink-0" />
               )}
-              <span>{isShortlisting ? "Shortlisting..." : "Shortlist Candidate"}</span>
+              <span className="truncate whitespace-nowrap">
+                {isShortlisting ? "Shortlisting..." : "Shortlist"}
+              </span>
             </SelectItem>
           )}
 
@@ -129,24 +131,26 @@ function QuickActionsMenu({
             <SelectItem
               value="reject"
               disabled={isShortlisting || isRejecting}
-              className="text-xs font-medium text-destructive focus:bg-destructive focus:text-white dark:focus:bg-destructive dark:focus:text-white cursor-pointer"
+              className="text-xs font-medium text-destructive focus:bg-destructive focus:text-white dark:focus:bg-destructive dark:focus:text-white cursor-pointer truncate whitespace-nowrap"
             >
               {isRejecting ? (
-                <Loader2 className="size-3.5 animate-spin" />
+                <Loader2 className="size-3.5 shrink-0 animate-spin" />
               ) : (
-                <X className="size-3.5" />
+                <X className="size-3.5 shrink-0" />
               )}
-              <span>{isRejecting ? "Rejecting..." : "Reject Candidate"}</span>
+              <span className="truncate whitespace-nowrap">
+                {isRejecting ? "Rejecting..." : "Reject"}
+              </span>
             </SelectItem>
           )}
 
           {onViewDetail && (
             <SelectItem
               value="view_detail"
-              className="text-xs font-medium text-foreground focus:bg-primary focus:text-white dark:focus:bg-primary dark:focus:text-white cursor-pointer"
+              className="text-xs font-medium text-foreground focus:bg-primary focus:text-white dark:focus:bg-primary dark:focus:text-white cursor-pointer truncate whitespace-nowrap"
             >
-              <NotebookTabs className="size-3.5" />
-              <span>View Detail</span>
+              <NotebookTabs className="size-3.5 shrink-0" />
+              <span className="truncate whitespace-nowrap">View Detail</span>
             </SelectItem>
           )}
         </SelectContent>
