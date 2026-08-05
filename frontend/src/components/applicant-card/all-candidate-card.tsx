@@ -137,6 +137,136 @@ export default function AllCandidateCard({
   const displaySubtitle = subtitle ?? institute;
   const displayRecruiterName = recruiterName;
 
+  if (layout === "history") {
+    return (
+      <div
+        className={cn(
+          "group relative grid w-full grid-cols-1 gap-3 rounded-xl border bg-card p-4",
+          "@2xl:grid-cols-[5rem_minmax(0,1fr)_12rem_8rem_7.5rem] @2xl:items-center @2xl:gap-x-4",
+          "@4xl:grid-cols-[5rem_minmax(0,1fr)_12rem_8rem_7rem_7.5rem]",
+        )}
+      >
+        <div className="flex shrink-0 flex-col items-start gap-0.5 @2xl:items-center @2xl:justify-center">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+            Status
+          </span>
+          <span
+            className={cn(
+              "max-w-full rounded-full px-2 py-1 text-xs font-semibold",
+              "inline-flex items-center justify-center text-center leading-tight whitespace-normal",
+              statusStyle.text,
+              statusStyle.background,
+            )}
+          >
+            {statusLabel}
+          </span>
+        </div>
+
+        <div className="min-w-0 flex flex-col">
+          <h4 className="break-words font-semibold leading-tight text-foreground">
+            {name}
+          </h4>
+          {showInstitute && (
+            <div className="mt-0.5 flex flex-col gap-0.5 text-xs text-muted-foreground">
+              {displaySubtitle ? (
+                <p className="whitespace-normal break-words">{displaySubtitle}</p>
+              ) : null}
+              <p className="whitespace-normal break-words">{institute}</p>
+            </div>
+          )}
+        </div>
+
+        <div className="flex w-[12rem] shrink-0 items-center justify-center gap-3">
+          <div className="flex w-24 flex-col items-center gap-0.5">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+              {scoreLabel}
+            </span>
+            <ScoreTag score={systemScore} className={scoreClassName} />
+          </div>
+
+          <div className="h-10 w-px bg-border" />
+
+          <div className="flex w-24 flex-col items-center gap-0.5">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+              Acad. Avg
+            </span>
+            {academicAverage !== undefined ? (
+              <ScoreTag score={academicAverage} className={scoreClassName} />
+            ) : (
+              <span className="text-sm font-semibold text-muted-foreground">–</span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex w-32 shrink-0 flex-col items-center gap-0.5 pl-2">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+            Applied
+          </span>
+          {daysAgo !== null && daysAgo >= 0 ? (
+            <span className="max-w-full whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
+              {daysAgo === 0
+                ? "Today"
+                : daysAgo === 1
+                  ? "1 day ago"
+                  : `${String(daysAgo)} days ago`}
+            </span>
+          ) : (
+            <span className="text-sm font-semibold text-muted-foreground">–</span>
+          )}
+        </div>
+
+        <div className="hidden w-28 shrink-0 flex-col items-center gap-0.5 pl-2 @4xl:flex">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+            Reviewed
+          </span>
+          {showReviewedAt && reviewedAt ? (
+            <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
+              {reviewedAt}
+            </span>
+          ) : (
+            <span className="text-sm font-semibold text-muted-foreground">–</span>
+          )}
+        </div>
+
+        <div className="flex w-full flex-col gap-2 @2xl:w-auto @2xl:items-end @2xl:justify-end">
+          {secondaryActionLabel ? (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="w-full justify-center gap-1 text-xs @2xl:w-30"
+              disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
+              onClick={(event) => {
+                event.stopPropagation();
+                onSecondaryActionClick?.();
+              }}
+            >
+              <span>
+                {isSecondaryActionLoading ? "Claiming..." : secondaryActionLabel}
+              </span>
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="w-full justify-center gap-1 text-xs bg-primary text-white dark:bg-sky-500 dark:hover:bg-sky-400 @2xl:w-30"
+            onClick={(event) => {
+              event.stopPropagation();
+              if (onActionClick) {
+                onActionClick();
+                return;
+              }
+              onClick?.();
+            }}
+          >
+            <span>{actionLabel}</span>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -159,43 +289,21 @@ export default function AllCandidateCard({
         </span>
       </div>
 
-      {layout === "history" ? (
-        <>
-          <div className="min-w-0 flex-1 flex flex-col @2xl:pl-4">
-            <h4 className="break-words font-semibold leading-tight text-foreground">
-              {name}
-            </h4>
-            {showInstitute && (
-              <div className="mt-0.5 flex flex-col gap-0.5 text-xs text-muted-foreground">
-                {displaySubtitle ? (
-                  <p className="whitespace-normal break-words">
-                    {displaySubtitle}
-                  </p>
-                ) : null}
-                <p className="whitespace-normal break-words">{institute}</p>
-              </div>
-            )}
-
+      <div className="min-w-0 flex-1 flex flex-col pl-4">
+        <h4 className="font-semibold leading-tight text-foreground">
+          {name}
+        </h4>
+        {showInstitute && (
+          <div className="mt-0.5 flex flex-col gap-0.5 text-xs text-muted-foreground">
+            <p className="whitespace-normal break-words">{institute}</p>
+            {displaySubtitle ? (
+              <p className="whitespace-normal break-words">
+                {displaySubtitle}
+              </p>
+            ) : null}
           </div>
-        </>
-      ) : (
-        <div className="min-w-0 flex-1 flex flex-col pl-4">
-          <h4 className="font-semibold leading-tight text-foreground">
-            {name}
-          </h4>
-          {showInstitute && (
-            <div className="mt-0.5 flex flex-col gap-0.5 text-xs text-muted-foreground">
-              <p className="whitespace-normal break-words">{institute}</p>
-              {displaySubtitle ? (
-                <p className="whitespace-normal break-words">
-                  {displaySubtitle}
-                </p>
-              ) : null}
-            </div>
-          )}
-
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="flex flex-1 items-center justify-start gap-6 @2xl:justify-center @2xl:px-2">
         <div className="flex w-20 shrink-0 flex-col items-center gap-0.5">
@@ -247,23 +355,6 @@ export default function AllCandidateCard({
             <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium text-foreground">
               {displayRecruiterName}
             </span>
-          </div>
-        )}
-
-        {layout === "history" && (
-          <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 @4xl:flex">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-              Reviewed
-            </span>
-            {showReviewedAt && reviewedAt ? (
-              <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
-                {reviewedAt}
-              </span>
-            ) : (
-              <span className="text-sm font-semibold text-muted-foreground">
-                –
-              </span>
-            )}
           </div>
         )}
       </div>
