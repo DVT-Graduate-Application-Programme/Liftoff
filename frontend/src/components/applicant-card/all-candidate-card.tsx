@@ -239,7 +239,7 @@ export default function AllCandidateCard({
           )}
         </div>
 
-        {displayRecruiterName && (
+        {layout === "history" && displayRecruiterName && (
           <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 @4xl:flex">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
               {recruiterLabel ?? "Recruiter"}
