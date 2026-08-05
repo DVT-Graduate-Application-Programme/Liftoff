@@ -44,7 +44,7 @@ describe("ApplicantList Quick Actions & View Detail", () => {
     mockPush.mockReset();
   });
 
-  it("renders Quick Actions dropdown trigger and stacked View Detail button on My Candidates tab (pending)", async () => {
+  it("renders Quick Actions dropdown trigger on My Candidates tab (pending)", async () => {
     vi.spyOn(global, "fetch").mockImplementation((input) => {
       const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
       if (url.includes("/api/applications")) {
@@ -62,17 +62,16 @@ describe("ApplicantList Quick Actions & View Detail", () => {
     );
 
     expect(await screen.findByText("Sarah Connor")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /view detail/i })).toBeInTheDocument();
-
     const quickActionsBtn = screen.getByRole("button", { name: /quick actions/i });
     expect(quickActionsBtn).toBeInTheDocument();
 
     fireEvent.click(quickActionsBtn);
     expect(screen.getByRole("button", { name: /shortlist candidate/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /reject candidate/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /view detail/i })).toBeInTheDocument();
   });
 
-  it("navigates to candidate route when View Detail button is clicked", async () => {
+  it("navigates to candidate route when View Detail item is clicked inside Quick Actions menu", async () => {
     vi.spyOn(global, "fetch").mockImplementation((input) => {
       const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
       if (url.includes("/api/applications")) {
@@ -90,6 +89,8 @@ describe("ApplicantList Quick Actions & View Detail", () => {
     );
 
     expect(await screen.findByText("Sarah Connor")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /quick actions/i }));
+
     const viewDetailBtn = screen.getByRole("button", { name: /view detail/i });
     fireEvent.click(viewDetailBtn);
 

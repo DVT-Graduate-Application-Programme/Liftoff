@@ -70,11 +70,13 @@ function QuickActionsMenu({
   isShortlisting,
   onReject,
   isRejecting,
+  onViewDetail,
 }: {
   onShortlist?: () => void;
   isShortlisting?: boolean;
   onReject?: () => void;
   isRejecting?: boolean;
+  onViewDetail?: () => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -93,13 +95,13 @@ function QuickActionsMenu({
     };
   }, [isOpen]);
 
-  const hasAnyAction = Boolean(onShortlist || onReject);
+  const hasAnyAction = Boolean(onShortlist || onReject || onViewDetail);
   if (!hasAnyAction) return null;
 
   return (
     <div
       ref={menuRef}
-      className="relative inline-block text-left"
+      className="relative w-full text-left"
       onMouseEnter={() => {
         setIsOpen(true);
       }}
@@ -111,7 +113,7 @@ function QuickActionsMenu({
         type="button"
         variant="outline"
         size="sm"
-        className="h-8 gap-1.5 px-3 text-xs font-medium border-border hover:bg-accent hover:text-accent-foreground"
+        className="h-7.5 w-full gap-1.5 px-3 text-xs font-medium border-border justify-between hover:bg-accent hover:text-accent-foreground"
         onClick={(e) => {
           e.stopPropagation();
           setIsOpen((prev) => !prev);
@@ -169,6 +171,19 @@ function QuickActionsMenu({
                   <X className="size-3.5" />
                 )}
                 <span>{isRejecting ? "Rejecting..." : "Reject Candidate"}</span>
+              </button>
+            )}
+
+            {onViewDetail && (
+              <button
+                type="button"
+                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+                onClick={() => {
+                  setIsOpen(false);
+                  onViewDetail();
+                }}
+              >
+                <span>View Detail</span>
               </button>
             )}
           </div>
@@ -328,70 +343,52 @@ export default function PendingCandidateCard({
         </div>
       </div>
 
-      {/* Action Buttons: Responsive Layout (2-row grid on Mobile, Inline Toolbar on Desktop) */}
-      <div className="flex w-full flex-col gap-2 @3xl:w-auto @3xl:flex-row @3xl:items-center @3xl:gap-2">
-        <div className="grid grid-cols-2 gap-2 w-full @3xl:flex @3xl:w-auto @3xl:items-center @3xl:gap-2">
-          <QuickActionsMenu
-            onShortlist={handleShortlistClick ? () => { setConfirmAction("shortlist"); } : undefined}
-            isShortlisting={isShortlistLoading}
-            onReject={onReject ? () => { setConfirmAction("reject"); } : undefined}
-            isRejecting={isRejecting}
-          />
+      {/* Action Buttons: Stacked Quick Actions on top of Show AI Summary */}
+      <div className="flex w-full flex-col gap-1.5 shrink-0 @3xl:w-36">
+        <QuickActionsMenu
+          onShortlist={handleShortlistClick ? () => { setConfirmAction("shortlist"); } : undefined}
+          isShortlisting={isShortlistLoading}
+          onReject={onReject ? () => { setConfirmAction("reject"); } : undefined}
+          isRejecting={isRejecting}
+          onViewDetail={handleViewDetailClick}
+        />
 
-          {handleViewDetailClick && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-8 w-full gap-1 px-3 text-xs font-medium border-border hover:bg-accent hover:text-accent-foreground @3xl:w-auto"
-              onClick={(event) => {
-                event.stopPropagation();
-                handleViewDetailClick();
-              }}
-            >
-              <span>View Detail</span>
-            </Button>
-          )}
-        </div>
+        {secondaryActionLabel ? (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className={cn(
+              "h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center",
+              isSecondaryActionDisabled &&
+                "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
+            )}
+            disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
+            onClick={(event) => {
+              event.stopPropagation();
+              onSecondaryActionClick?.();
+            }}
+          >
+            <span>
+              {isSecondaryActionLoading ? "Claiming..." : secondaryActionLabel}
+            </span>
+          </Button>
+        ) : null}
 
-        <div className="flex w-full items-center gap-2 @3xl:w-auto">
-          {secondaryActionLabel ? (
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className={cn(
-                "h-8 flex-1 gap-1 px-3 text-xs font-medium @3xl:flex-initial",
-                isSecondaryActionDisabled &&
-                  "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
-              )}
-              disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
-              onClick={(event) => {
-                event.stopPropagation();
-                onSecondaryActionClick?.();
-              }}
-            >
-              <span>
-                {isSecondaryActionLoading ? "Claiming..." : secondaryActionLabel}
-              </span>
-            </Button>
-          ) : null}
-
-          {onActionClick && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-8 w-full gap-1 px-3 text-xs font-medium bg-primary text-white hover:bg-primary/90 dark:bg-sky-500 dark:hover:bg-sky-400 @3xl:w-auto"
-              onClick={(event) => {
-                event.stopPropagation();
-                onActionClick();
-              }}
-            >
-              <span>{actionLabel}</span>
-            </Button>
-          )}
-        </div>
+        {onActionClick && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center bg-primary text-white hover:bg-primary/90 dark:bg-sky-500 dark:hover:bg-sky-400"
+            onClick={(event) => {
+              event.stopPropagation();
+              onActionClick();
+            }}
+          >
+            <span>{actionLabel}</span>
+          </Button>
+        )}
       </div>
 
       {/* Confirmation Modal Popup */}
