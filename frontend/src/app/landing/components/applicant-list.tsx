@@ -106,8 +106,8 @@ const MARKS_BUCKET_SECTIONS = [
     label: "System Score Less Than 65",
     countLabel: (count: number) => `${String(count)} Candidates`,
     emptyText: "No candidates with system score less than 65.",
-    headerColorClass: "text-red-600 dark:text-red-400",
-    lineColorClass: "bg-red-200 dark:bg-red-800/30",
+    headerColorClass: "text-rose-600 dark:text-rose-400",
+    lineColorClass: "bg-rose-200 dark:bg-rose-800/30",
   },
 ];
 
@@ -117,6 +117,7 @@ function getMarksBucket(systemScore?: number | null): "high" | "medium" | "low" 
   if (score >= 65) return "medium";
   return "low";
 }
+
 function groupApplicationsByMarks(applications: CandidateApplication[]) {
   const groups = {
     high: [] as CandidateApplication[],
@@ -130,7 +131,9 @@ function groupApplicationsByMarks(applications: CandidateApplication[]) {
   }
 
   for (const key of Object.keys(groups) as Array<keyof typeof groups>) {
-    groups[key].sort((a, b) => b.hiringAgentTotalScore - a.hiringAgentTotalScore);
+    groups[key].sort(
+      (a, b) => b.hiringAgentTotalScore - a.hiringAgentTotalScore,
+    );
   }
 
   return groups;

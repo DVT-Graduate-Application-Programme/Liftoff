@@ -20,32 +20,6 @@ import { FilterBar, type ActiveFilter, type FilterFieldConfig, type SortOption }
 import type { CandidateApplication } from "@/types/candidate";
 import { getRecruiterLabel } from "./candidate-list-utils";
 
-const SHORTLISTED_DATE_BUCKET_SECTIONS = [
-  {
-    key: "today" as const,
-    label: "Today",
-    countLabel: (count: number) => `${String(count)} Shortlisted`,
-    emptyText: "No candidates shortlisted today.",
-  },
-  {
-    key: "thisWeek" as const,
-    label: "This Week",
-    countLabel: (count: number) => `${String(count)} Candidates`,
-    emptyText: "No candidates shortlisted earlier this week.",
-  },
-  {
-    key: "lastWeek" as const,
-    label: "Last Week",
-    countLabel: (count: number) => `${String(count)} Candidates`,
-    emptyText: "No candidates shortlisted last week.",
-  },
-  {
-    key: "older" as const,
-    label: "Older",
-    countLabel: (count: number) => `${String(count)} Candidates`,
-    emptyText: "No older shortlisted candidates.",
-  },
-];
 type Filters = Omit<ApplicationFilters, "status" | "search" | "limit" | "cursor">;
 
 function AcceptedCandidateCard({ application }: { application: CandidateApplication }) {
@@ -195,9 +169,7 @@ function AcceptedCandidates() {
         tabKey="accepted"
         filters={filters}
         emptyTitle="No accepted applicants yet"
-        groupByDate
-        groupByDateKey={(candidate) => candidate.shortlistedAt ?? candidate.createdAt}
-        dateBucketSections={SHORTLISTED_DATE_BUCKET_SECTIONS}
+        groupByMarks
         renderItem={(candidate) => <AcceptedCandidateCard application={candidate} />}
       />
     </>

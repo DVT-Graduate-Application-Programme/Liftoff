@@ -22,6 +22,6 @@ export interface CandidateApplication {
   shortlistedByRecruiterId: string | null;
   ratedByRecruiterId: string | null;
   createdAt: string;
-  shortlistedAt: string | null;
+  shortlistedAt?: string | null;
   academicAverage?: number;
 }
