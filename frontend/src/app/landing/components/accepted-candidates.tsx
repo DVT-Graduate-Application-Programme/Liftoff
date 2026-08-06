@@ -196,6 +196,7 @@ function AcceptedCandidates() {
         filters={filters}
         emptyTitle="No accepted applicants yet"
         groupByDate
+        groupByDateKey={(candidate) => candidate.shortlistedAt ?? candidate.createdAt}
         dateBucketSections={SHORTLISTED_DATE_BUCKET_SECTIONS}
         renderItem={(candidate) => <AcceptedCandidateCard application={candidate} />}
       />
