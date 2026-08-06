@@ -3,6 +3,7 @@ import { Star, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   Card,
+  CardAction,
   CardContent,
   CardHeader,
   CardTitle,
@@ -34,7 +35,15 @@ interface RateResponse {
 
 type ReviewDecision = "shortlist" | "reject";
 
-export function CandidateReview({ applicationId, currentStatus }: { applicationId: string; currentStatus?: string }) {
+export function CandidateReview({
+  applicationId,
+  currentStatus,
+  isMobile = false,
+}: {
+  applicationId: string;
+  currentStatus?: string;
+  isMobile?: boolean;
+}) {
   const queryClient = useQueryClient();
   const { data: session } = useSession();
   const ownershipQuery = useOwnership(applicationId);
@@ -140,6 +149,18 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
         <p className="text-sm text-muted-foreground">
           Rate, choose shortlist or reject, add notes, then submit your review
         </p>
+        {!isMobile && (
+          <CardAction>
+            <Button
+              size="lg"
+              className="min-w-40 font-medium text-white hover:bg-primary/80"
+              disabled={!canSubmit}
+              onClick={() => { setConfirmOpen(true); }}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Rating"}
+            </Button>
+          </CardAction>
+        )}
       </CardHeader>
 
       <CardContent className="flex flex-col gap-4">
@@ -207,6 +228,7 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
             value={notes}
             onChange={(e) => { setNotesOverride(e.target.value); }}
             disabled={ownershipQuery.isLoading}
+            className="min-h-24"
           />
         </div>
 
@@ -248,16 +270,18 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
           </div>
         ) : null}
 
-        <div className="flex justify-end">
-          <Button
-            size="lg"
-            className="w-full font-medium text-white hover:bg-primary/80 sm:w-auto sm:min-w-40"
-            disabled={!canSubmit}
-            onClick={() => { setConfirmOpen(true); }}
-          >
-            {isSubmitting ? "Submitting..." : "Submit Rating"}
-          </Button>
-        </div>
+        {isMobile && (
+          <div className="flex justify-end">
+            <Button
+              size="lg"
+              className="w-full font-medium text-white hover:bg-primary/80"
+              disabled={!canSubmit}
+              onClick={() => { setConfirmOpen(true); }}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Rating"}
+            </Button>
+          </div>
+        )}
       </CardContent>
 
       {confirmOpen && decision ? (
