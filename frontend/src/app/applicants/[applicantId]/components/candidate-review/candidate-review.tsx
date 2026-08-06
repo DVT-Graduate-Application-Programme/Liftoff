@@ -128,7 +128,7 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
         setConfirmOpen(false);
         void queryClient.invalidateQueries({ queryKey: queryKeys.applicationLogs(applicationId) });
       } catch {
-        // Mutations surface errors via react-query
+        toast.error("Couldn't submit your review. Please try again.");
       }
     })();
   };
