@@ -1,0 +1,237 @@
+name: Deploy Azure (reusable)
+
+# The deploy pipeline itself, shared by both environments. It is never triggered directly —
+# development-deploy-azure.yml and production-deploy-azure.yml call it with different
+# inputs, so the two environments cannot drift in *how* they deploy, only in what they
+# deploy to.
+#
+# The environment difference is three things:
+#   · which GitHub Environment supplies the secrets (dev vs prod Azure resources)
+#   · which Dockerfile target is built (development vs production)
+#   · which tag prefix images are pushed under (dev-<sha> vs prod-<sha>)
+#
+# Every secret below is resolved against the GitHub Environment named by
+# `environment_name`. Repository-level secrets still work as a fallback, which is what keeps
+# the existing development deploy running unchanged; production requires its own set, held
+# in the `production` environment where an approval rule can gate them.
+
+on:
+  workflow_call:
+    inputs:
+      environment_name:
+        description: GitHub Environment holding this deployment's secrets and protection rules.
+        required: true
+        type: string
+      image_tag_prefix:
+        description: Prefix for the immutable image tag, e.g. "dev" -> dev-<sha>.
+        required: true
+        type: string
+      build_target:
+        description: Dockerfile stage to build — "development" or "production".
+        required: true
+        type: string
+
+# Every run drives the same migration job and the same Container Apps, so only one may be
+# in flight at a time per environment. Queue rather than cancel — cancelling could stop a
+# run in the window between "migrations applied" and "apps updated", leaving the old images
+# against a new schema.
+concurrency:
+  group: deploy-azure-${{ inputs.environment_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  IMAGE_TAG: ${{ inputs.image_tag_prefix }}-${{ github.sha }}
+
+jobs:
+  # ── Schema gate · runs first, alone ─────────────────────────────────────────
+  # Builds the migration bundle and applies EF Core migrations before any application image
+  # is built or deployed, so a failed migration fails the run before anything goes live.
+  # The job runs inside the Container Apps environment (see infrastructure/azure/migrations.tf),
+  # so the database stays closed to the public internet and no credentials leave Azure.
+  #
+  # Because the application images are built downstream of this, a later build failure leaves
+  # the schema migrated while that app stays on its previous image. Migrations must therefore
+  # remain backward-compatible with the currently deployed version — expand/contract, not
+  # rename-in-place.
+  migrations:
+    name: Migrations · build · apply
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment_name }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to ACR
+        run: az acr login --name "${ACR_LOGIN_SERVER%%.*}"
+        env:
+          ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # No build target: Dockerfile.migrations produces the same efbundle for every
+      # environment. What differs is the database it is pointed at, which comes from the
+      # job's own configuration in Azure.
+      - name: Build and push migrations image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: backend/Dockerfile.migrations
+          push: true
+          tags: |
+            ${{ secrets.ACR_REPOSITORY }}/migrations:${{ env.IMAGE_TAG }}
+            ${{ secrets.ACR_REPOSITORY }}/migrations:latest
+          # Each job runs on a clean runner, so there is no shared Docker daemon to reuse
+          # layers from. The registry cache restores that across runs; scope it per image and
+          # per environment so migrations and backend (same SDK base, different final stage)
+          # don't evict each other, and so a dev build never seeds a prod image layer.
+          cache-from: type=gha,scope=${{ inputs.environment_name }}-migrations
+          cache-to: type=gha,mode=max,scope=${{ inputs.environment_name }}-migrations
+
+      - name: Apply database migrations
+        env:
+          JOB: ${{ secrets.MIGRATIONS_JOB }}
+          RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          REPOSITORY: ${{ secrets.ACR_REPOSITORY }}/migrations
+        run: |
+          set -euo pipefail
+
+          az containerapp job update \
+            --name "$JOB" \
+            --resource-group "$RESOURCE_GROUP" \
+            --image "$REPOSITORY:$IMAGE_TAG" \
+            --output none
+
+          execution=$(az containerapp job start \
+            --name "$JOB" \
+            --resource-group "$RESOURCE_GROUP" \
+            --query name -o tsv)
+          echo "Started migration execution: $execution"
+
+          # replica_timeout_in_seconds is 600, so stop waiting a little after that.
+          deadline=$(( SECONDS + 660 ))
+          while [ "$SECONDS" -lt "$deadline" ]; do
+            status=$(az containerapp job execution show \
+              --name "$JOB" \
+              --resource-group "$RESOURCE_GROUP" \
+              --job-execution-name "$execution" \
+              --query properties.status -o tsv)
+
+            case "$status" in
+              Succeeded)
+                echo "Migrations applied successfully."
+                exit 0
+                ;;
+              Failed|Degraded)
+                echo "::error::Migration job execution '$execution' finished with status '$status'."
+                echo "Container logs (Log Analytics may lag by a minute):"
+                az containerapp job logs show \
+                  --name "$JOB" \
+                  --resource-group "$RESOURCE_GROUP" \
+                  --container migrations || true
+                exit 1
+                ;;
+              *)
+                echo "Migration status: $status"
+                sleep 10
+                ;;
+            esac
+          done
+
+          echo "::error::Timed out waiting for migration job execution '$execution'."
+          exit 1
+
+  # ── Deploy · one self-contained job per Container App, all in parallel ──────
+  # Each job builds, pushes and rolls out exactly one image. Splitting them this way means a
+  # frontend build failure no longer blocks the backend rollout, and wall-clock is the
+  # slowest component rather than the sum of all of them.
+  #
+  # The image repository is derived from matrix.component, which is what keeps each app
+  # pointed at its own image.
+  deploy:
+    name: Deploy · ${{ matrix.component }}
+    needs: migrations
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment_name }}
+
+    strategy:
+      # Let every component finish. With fail-fast the first broken build cancels its
+      # siblings, so you fix one, re-run, and discover the next — one round trip each.
+      fail-fast: false
+      matrix:
+        include:
+          - component: backend
+            context: ./backend
+            dockerfile: backend/Dockerfile
+            app_secret: BACKEND_CONTAINER_APP
+          - component: worker
+            # Root context: worker/Dockerfile COPYs backend/src/Domain alongside worker/,
+            # so ./worker alone is not enough to build it.
+            context: .
+            dockerfile: worker/Dockerfile
+            app_secret: WORKER_CONTAINER_APP
+          - component: hiring-agent
+            context: ./backend/src/AI/hiring-agent
+            dockerfile: backend/src/AI/hiring-agent/Dockerfile
+            app_secret: HIRING_AGENT_CONTAINER_APP
+          - component: frontend
+            context: ./frontend
+            dockerfile: frontend/Dockerfile
+            app_secret: FRONTEND_CONTAINER_APP
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to ACR
+        run: az acr login --name "${ACR_LOGIN_SERVER%%.*}"
+        env:
+          ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # target is the dev/prod split at the image level: the development stage runs the app
+      # with ASPNETCORE_ENVIRONMENT=Development (Scalar UI, developer exception page), the
+      # production stage does not. The Container App also sets the environment name
+      # explicitly from Terraform, so the two agree.
+      - name: Build and push ${{ matrix.component }} image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          target: ${{ inputs.build_target }}
+          push: true
+          tags: |
+            ${{ secrets.ACR_REPOSITORY }}/${{ matrix.component }}:${{ env.IMAGE_TAG }}
+            ${{ secrets.ACR_REPOSITORY }}/${{ matrix.component }}:latest
+          cache-from: type=gha,scope=${{ inputs.environment_name }}-${{ matrix.component }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.environment_name }}-${{ matrix.component }}
+
+      - name: Update ${{ matrix.component }} Container App
+        env:
+          APP: ${{ secrets[matrix.app_secret] }}
+          RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          REPOSITORY: ${{ secrets.ACR_REPOSITORY }}/${{ matrix.component }}
+        run: |
+          set -euo pipefail
+
+          az containerapp update \
+            --name "$APP" \
+            --resource-group "$RESOURCE_GROUP" \
+            --image "$REPOSITORY:$IMAGE_TAG" \
+            --output none
+
+          echo "$APP now running $REPOSITORY:$IMAGE_TAG"
