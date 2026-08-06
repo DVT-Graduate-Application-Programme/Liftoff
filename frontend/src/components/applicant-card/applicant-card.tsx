@@ -156,13 +156,13 @@ export default function ApplicantCard({
     <div
       onClick={handleCardClick}
       className={cn(
-        "group relative flex w-full flex-col gap-3.5 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm @3xl:flex-row @3xl:items-center @3xl:justify-between @3xl:gap-4",
+        "group relative flex w-full flex-col gap-3.5 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm statusStyle.border @3xl:grid @3xl:grid-cols-[1fr_auto_1fr] @3xl:items-center @3xl:gap-4",
         statusStyle.border,
         onClick && "cursor-pointer",
       )}
     >
       {/* Left Section: Candidate Profile Info */}
-      <div className="flex w-full min-w-0 items-center gap-3 @3xl:flex-1 @3xl:gap-4">
+      <div className="flex w-full min-w-0 items-center gap-3 @3xl:gap-4">
         <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
           {initials}
         </div>
@@ -255,7 +255,7 @@ export default function ApplicantCard({
       </div>
 
       {/* Metrics Row for Desktop (>= @3xl) - Centered in middle */}
-      <div className="hidden shrink-0 items-center justify-center gap-4 px-2 @3xl:flex @4xl:gap-6 @4xl:px-4">
+      <div className="hidden items-center justify-center gap-4 px-2 @3xl:flex @3xl:justify-self-center @4xl:gap-6 @4xl:px-4">
         <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             {scoreLabel}
@@ -344,7 +344,7 @@ export default function ApplicantCard({
       </div>
 
       {/* Right Section: Action Buttons */}
-      <div className="flex w-full shrink-0 flex-col gap-1.5 @3xl:w-36">
+      <div className="flex w-full flex-col gap-1.5 @3xl:w-36 @3xl:justify-self-end">
         <div className="flex w-full flex-col gap-1.5 @3xl:w-36">
           {secondaryActionLabel ? (
             <Button

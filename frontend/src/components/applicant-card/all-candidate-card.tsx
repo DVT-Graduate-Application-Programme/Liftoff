@@ -146,21 +146,21 @@ export default function AllCandidateCard({
     <div
       onClick={handleCardClick}
       className={cn(
-        "group relative flex w-full flex-col gap-3.5 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm @3xl:flex-row @3xl:items-center @3xl:justify-between @3xl:gap-4",
+        "group relative flex w-full flex-col gap-3.5 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm @3xl:grid @3xl:grid-cols-[1fr_auto_1fr] @3xl:items-center @3xl:gap-4",
         layout === "history" && "bg-card/90",
         onClick && "cursor-pointer",
       )}
     >
       {/* Left Section: Status Column & Candidate Profile Info */}
-      <div className="flex w-full min-w-0 items-center gap-3.5 @3xl:flex-1 @3xl:gap-4">
+      <div className="flex w-full min-w-0 items-center gap-3.5 @3xl:gap-4">
         {/* Status Column for Desktop (far left, >= @3xl) */}
-        <div className="hidden shrink-0 flex-col items-center justify-center gap-1 @3xl:flex @3xl:w-28">
+        <div className="hidden shrink-0 flex-col items-center justify-center gap-1 @3xl:flex">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
             Status
           </span>
           <span
             className={cn(
-              "w-full rounded-full px-3 py-1 text-xs font-semibold text-center leading-tight truncate",
+              "rounded-full px-2.5 py-0.5 text-xs font-semibold text-center leading-tight truncate",
               statusStyle.text,
               statusStyle.background,
             )}
@@ -245,7 +245,7 @@ export default function AllCandidateCard({
       </div>
 
       {/* Metrics Row for Desktop (>= @3xl) - Centered in middle */}
-      <div className="hidden shrink-0 items-center justify-center gap-4 px-2 @3xl:flex @4xl:gap-6 @4xl:px-4">
+      <div className="hidden items-center justify-center gap-4 px-2 @3xl:flex @3xl:justify-self-center @4xl:gap-6 @4xl:px-4">
         <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             {scoreLabel}
@@ -298,7 +298,7 @@ export default function AllCandidateCard({
       </div>
 
       {/* Action Buttons Container */}
-      <div className="flex w-full shrink-0 flex-col gap-1.5 @3xl:w-36">
+      <div className="flex w-full flex-col gap-1.5 @3xl:w-36 @3xl:justify-self-end">
         <div className="flex w-full flex-col gap-1.5 @3xl:w-36">
           {secondaryActionLabel ? (
             <Button
