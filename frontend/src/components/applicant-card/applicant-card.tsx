@@ -161,8 +161,8 @@ export default function ApplicantCard({
         onClick && "cursor-pointer",
       )}
     >
-      {/* Candidate Profile Info */}
-      <div className="flex w-full min-w-0 flex-1 items-center gap-3 @3xl:w-auto @3xl:max-w-xs">
+      {/* Left Section: Candidate Profile Info */}
+      <div className="flex w-full min-w-0 items-center gap-3 @3xl:flex-1 @3xl:gap-4">
         <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
           {initials}
         </div>
@@ -175,7 +175,7 @@ export default function ApplicantCard({
             {showStatus && (
               <span
                 className={cn(
-                  "rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 @3xl:hidden",
+                  "rounded-full px-2.5 py-0.5 text-[10px] font-semibold leading-none shrink-0 @3xl:hidden",
                   statusStyle.text,
                   statusStyle.background,
                 )}
@@ -254,8 +254,8 @@ export default function ApplicantCard({
         </div>
       </div>
 
-      {/* Metrics Row for Desktop (>= @3xl) */}
-      <div className="hidden flex-1 items-center justify-center gap-6 px-2 @3xl:flex">
+      {/* Metrics Row for Desktop (>= @3xl) - Centered in middle */}
+      <div className="hidden shrink-0 items-center justify-center gap-4 px-2 @3xl:flex @4xl:gap-6 @4xl:px-4">
         <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             {scoreLabel}
@@ -274,14 +274,14 @@ export default function ApplicantCard({
         </div>
 
         {showStatus && (
-          <div className="flex w-16 shrink-0 flex-col items-center justify-start h-12">
+          <div className="flex w-28 shrink-0 flex-col items-center justify-start h-12">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
               Status
             </span>
             <div className="flex-1 flex items-center justify-center">
               <span
                 className={cn(
-                  "max-w-full rounded-full px-2 py-0.5 text-xs font-semibold text-center leading-tight truncate",
+                  "w-full rounded-full px-3 py-0.5 text-xs font-semibold text-center leading-tight truncate",
                   statusStyle.text,
                   statusStyle.background,
                 )}
@@ -343,50 +343,52 @@ export default function ApplicantCard({
         )}
       </div>
 
-      {/* Action Buttons Container */}
-      <div className="flex w-full flex-col gap-1.5 shrink-0 @3xl:w-36">
-        {secondaryActionLabel ? (
+      {/* Right Section: Action Buttons */}
+      <div className="flex w-full shrink-0 flex-col gap-1.5 @3xl:w-36">
+        <div className="flex w-full flex-col gap-1.5 @3xl:w-36">
+          {secondaryActionLabel ? (
+            <Button
+              type="button"
+              variant="secondary"
+              className={cn(
+                "h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors",
+                isSecondaryActionDisabled &&
+                  "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
+              )}
+              disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
+              onClick={(event) => {
+                event.stopPropagation();
+                onSecondaryActionClick?.();
+              }}
+            >
+              <span>
+                {isSecondaryActionLoading ? "Claiming..." : secondaryActionLabel}
+              </span>
+            </Button>
+          ) : null}
+
           <Button
             type="button"
-            variant="secondary"
+            variant={actionVariant}
+            size="sm"
             className={cn(
-              "h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors",
-              isSecondaryActionDisabled &&
-                "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
+              "h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center transition-colors",
+              actionVariant === "outline" || actionVariant === "default"
+                ? "bg-primary text-white hover:bg-primary/90 dark:bg-sky-500 dark:hover:bg-sky-400 dark:hover:text-white"
+                : undefined,
             )}
-            disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
             onClick={(event) => {
               event.stopPropagation();
-              onSecondaryActionClick?.();
+              if (onActionClick) {
+                onActionClick();
+                return;
+              }
+              onClick?.();
             }}
           >
-            <span>
-              {isSecondaryActionLoading ? "Claiming..." : secondaryActionLabel}
-            </span>
+            <span>{actionLabel}</span>
           </Button>
-        ) : null}
-
-        <Button
-          type="button"
-          variant={actionVariant}
-          size="sm"
-          className={cn(
-            "h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center transition-colors",
-            actionVariant === "default"
-              ? "bg-primary text-white hover:bg-primary/90 dark:bg-sky-500 dark:hover:bg-sky-400 dark:hover:text-white"
-              : undefined,
-          )}
-          onClick={(event) => {
-            event.stopPropagation();
-            if (onActionClick) {
-              onActionClick();
-              return;
-            }
-            onClick?.();
-          }}
-        >
-          <span>{actionLabel}</span>
-        </Button>
+        </div>
       </div>
     </div>
   );

@@ -151,31 +151,16 @@ export default function AllCandidateCard({
         onClick && "cursor-pointer",
       )}
     >
-      {/* Status Column for Desktop (far left, >= @3xl) */}
-      <div className="hidden shrink-0 flex-col items-center justify-center gap-1 @3xl:flex @3xl:w-20">
-        <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-          Status
-        </span>
-        <span
-          className={cn(
-            "max-w-full rounded-full px-2.5 py-0.5 text-xs font-semibold text-center leading-tight truncate",
-            statusStyle.text,
-            statusStyle.background,
-          )}
-        >
-          {statusLabel}
-        </span>
-      </div>
-
-      {/* Candidate Profile Info */}
-      <div className="flex w-full min-w-0 flex-1 flex-col @3xl:w-auto @3xl:max-w-xs">
-        <div className="flex items-center justify-between gap-2">
-          <h4 className="font-semibold leading-tight text-foreground text-base truncate">
-            {name}
-          </h4>
+      {/* Left Section: Status Column & Candidate Profile Info */}
+      <div className="flex w-full min-w-0 items-center gap-3.5 @3xl:flex-1 @3xl:gap-4">
+        {/* Status Column for Desktop (far left, >= @3xl) */}
+        <div className="hidden shrink-0 flex-col items-center justify-center gap-1 @3xl:flex @3xl:w-28">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+            Status
+          </span>
           <span
             className={cn(
-              "rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 @3xl:hidden",
+              "w-full rounded-full px-3 py-1 text-xs font-semibold text-center leading-tight truncate",
               statusStyle.text,
               statusStyle.background,
             )}
@@ -183,20 +168,38 @@ export default function AllCandidateCard({
             {statusLabel}
           </span>
         </div>
-        {showInstitute && (
-          <div className="mt-0.5 flex flex-col text-xs text-muted-foreground">
-            {displaySubtitle ? (
-              <p className="line-clamp-1 break-words">{displaySubtitle}</p>
-            ) : null}
-            {displayRecruiterName ? (
-              <p className="line-clamp-1 break-words">
-                Recruiter: {displayRecruiterName}
-              </p>
-            ) : institute ? (
-              <p className="line-clamp-1 break-words">{institute}</p>
-            ) : null}
+
+        {/* Candidate Profile Info */}
+        <div className="flex w-full min-w-0 flex-1 flex-col">
+          <div className="flex items-center justify-between gap-2">
+            <h4 className="font-semibold leading-tight text-foreground text-base truncate">
+              {name}
+            </h4>
+            <span
+              className={cn(
+                "rounded-full px-2.5 py-0.5 text-[10px] font-semibold leading-none shrink-0 @3xl:hidden",
+                statusStyle.text,
+                statusStyle.background,
+              )}
+            >
+              {statusLabel}
+            </span>
           </div>
-        )}
+          {showInstitute && (
+            <div className="mt-0.5 flex flex-col text-xs text-muted-foreground leading-snug">
+              {displaySubtitle ? (
+                <p className="line-clamp-2 break-words">{displaySubtitle}</p>
+              ) : null}
+              {displayRecruiterName ? (
+                <p className="line-clamp-1 break-words">
+                  Recruiter: {displayRecruiterName}
+                </p>
+              ) : institute ? (
+                <p className="line-clamp-2 break-words">{institute}</p>
+              ) : null}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Metrics Row for Mobile (< @3xl) */}
@@ -241,8 +244,8 @@ export default function AllCandidateCard({
         </div>
       </div>
 
-      {/* Metrics Row for Desktop (>= @3xl) */}
-      <div className="hidden flex-1 items-center justify-center gap-6 px-2 @3xl:flex">
+      {/* Metrics Row for Desktop (>= @3xl) - Centered in middle */}
+      <div className="hidden shrink-0 items-center justify-center gap-4 px-2 @3xl:flex @4xl:gap-6 @4xl:px-4">
         <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             {scoreLabel}
@@ -295,44 +298,46 @@ export default function AllCandidateCard({
       </div>
 
       {/* Action Buttons Container */}
-      <div className="flex w-full flex-col gap-1.5 shrink-0 @3xl:w-36">
-        {secondaryActionLabel ? (
+      <div className="flex w-full shrink-0 flex-col gap-1.5 @3xl:w-36">
+        <div className="flex w-full flex-col gap-1.5 @3xl:w-36">
+          {secondaryActionLabel ? (
+            <Button
+              type="button"
+              variant="secondary"
+              className={cn(
+                "h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors",
+                isSecondaryActionDisabled &&
+                  "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
+              )}
+              disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
+              onClick={(event) => {
+                event.stopPropagation();
+                onSecondaryActionClick?.();
+              }}
+            >
+              <span>
+                {isSecondaryActionLoading ? "Claiming..." : secondaryActionLabel}
+              </span>
+            </Button>
+          ) : null}
+
           <Button
             type="button"
-            variant="secondary"
-            className={cn(
-              "h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors",
-              isSecondaryActionDisabled &&
-                "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
-            )}
-            disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
+            variant="outline"
+            size="sm"
+            className="h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center bg-primary text-white hover:bg-primary/90 dark:bg-sky-500 dark:hover:bg-sky-400 dark:hover:text-white transition-colors"
             onClick={(event) => {
               event.stopPropagation();
-              onSecondaryActionClick?.();
+              if (onActionClick) {
+                onActionClick();
+                return;
+              }
+              onClick?.();
             }}
           >
-            <span>
-              {isSecondaryActionLoading ? "Claiming..." : secondaryActionLabel}
-            </span>
+            <span>{actionLabel}</span>
           </Button>
-        ) : null}
-
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center bg-primary text-white hover:bg-primary/90 dark:bg-sky-500 dark:hover:bg-sky-400 dark:hover:text-white transition-colors"
-          onClick={(event) => {
-            event.stopPropagation();
-            if (onActionClick) {
-              onActionClick();
-              return;
-            }
-            onClick?.();
-          }}
-        >
-          <span>{actionLabel}</span>
-        </Button>
+        </div>
       </div>
     </div>
   );
