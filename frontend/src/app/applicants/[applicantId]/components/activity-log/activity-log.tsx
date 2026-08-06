@@ -15,7 +15,7 @@ export function ApplicationLogs({ applicationId }: { applicationId: string }) {
 
   if (isLoading) {
     return (
-      <Card className="w-full mt-6 shrink-0">
+      <Card className="w-full shrink-0">
         <CardHeader>
           <CardTitle className="text-lg">Activity History</CardTitle>
         </CardHeader>
@@ -29,7 +29,7 @@ export function ApplicationLogs({ applicationId }: { applicationId: string }) {
 
   if (isError) {
     return (
-      <Card className="w-full mt-6 shrink-0">
+      <Card className="w-full shrink-0">
         <CardContent className="py-6">
           <ErrorState message="Could not load activity logs." onRetry={() => void refetch()} />
         </CardContent>
@@ -39,7 +39,7 @@ export function ApplicationLogs({ applicationId }: { applicationId: string }) {
 
   if (!logs || logs.length === 0) {
     return (
-      <Card className="w-full mt-6 shrink-0">
+      <Card className="w-full shrink-0">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <History className="size-5" />
@@ -73,7 +73,7 @@ export function ApplicationLogs({ applicationId }: { applicationId: string }) {
   };
 
   return (
-    <Card className="w-full mt-8 shrink-0">
+    <Card className="w-full shrink-0">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <History className="size-5" />

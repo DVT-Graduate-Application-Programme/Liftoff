@@ -7,7 +7,10 @@ import { useApplicationDetail } from "@/hooks/use-application-detail";
 import { useEvaluation } from "@/hooks/use-evaluation";
 import { useOwnership } from "@/hooks/use-ownership";
 import { useRecruiters } from "@/hooks/use-recruiters";
-import { useUrlFilterState } from "@/hooks/use-url-filter-state";
+import {
+  useSetUrlFilters,
+  useUrlFilterState,
+} from "@/hooks/use-url-filter-state";
 import { useApplicantSelection } from "@/components/providers/applicant-selection-provider";
 import { useSidebar } from "@/components/ui/sidebar";
 import ApplicantCard from "@/components/applicant-card/applicant-card";
@@ -16,6 +19,7 @@ import { ApplicantList } from "./applicant-list";
 import { FilterBar, type ActiveFilter, type FilterFieldConfig, type SortOption } from "./filter-bar";
 import type { CandidateApplication } from "@/types/candidate";
 import { getRecruiterLabel } from "./candidate-list-utils";
+
 type Filters = Omit<ApplicationFilters, "status" | "search" | "limit" | "cursor">;
 
 function AcceptedCandidateCard({ application }: { application: CandidateApplication }) {
@@ -85,6 +89,7 @@ function AcceptedCandidateCard({ application }: { application: CandidateApplicat
 
 function AcceptedCandidates() {
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const setUrlFilters = useSetUrlFilters();
   const [minScore, setMinScore] = useUrlFilterState("acceptedMinScore", "");
   const [ownership, setOwnership] = useUrlFilterState(
     "acceptedOwnership",
@@ -92,7 +97,7 @@ function AcceptedCandidates() {
   );
   const [sort, setSort] = useUrlFilterState<SortOption>(
     "acceptedSort",
-    "score_desc",
+    "date_desc",
   );
 
   const recruitersQuery = useRecruiters();
@@ -106,8 +111,10 @@ function AcceptedCandidates() {
   }, [minScore, ownership, sort]);
 
   const clearFilters = () => {
-    setMinScore("");
-    setOwnership("all");
+    setUrlFilters([
+      { key: "acceptedMinScore", value: "", defaultValue: "" },
+      { key: "acceptedOwnership", value: "all", defaultValue: "all" },
+    ]);
   };
 
   const fields: FilterFieldConfig[] = [
@@ -162,6 +169,7 @@ function AcceptedCandidates() {
         tabKey="accepted"
         filters={filters}
         emptyTitle="No accepted applicants yet"
+        groupByMarks
         renderItem={(candidate) => <AcceptedCandidateCard application={candidate} />}
       />
     </>

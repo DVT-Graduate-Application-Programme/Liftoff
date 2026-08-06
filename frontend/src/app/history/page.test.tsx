@@ -1,7 +1,6 @@
 import { screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { renderWithQueryClient, jsonResponse } from "@/test-utils";
-import { ApplicantSearchProvider } from "@/components/providers/applicant-search-provider";
 import HistoryPage from "./page";
 
 vi.mock("next/navigation", () => ({
@@ -9,11 +8,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 function renderHistoryPage() {
-  return renderWithQueryClient(
-    <ApplicantSearchProvider>
-      <HistoryPage />
-    </ApplicantSearchProvider>
-  );
+  return renderWithQueryClient(<HistoryPage />);
 }
 
 function requestUrl(input: RequestInfo | URL): string {

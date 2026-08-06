@@ -10,8 +10,8 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusTones: Record<string, "positive" | "warning" | "negative" | "neutral"> = {
-  pending: "neutral",
-  processing: "positive",
+  pending: "warning",
+  processing: "neutral",
   evaluated: "warning",
   forwarded: "warning",
   rejected: "negative",
@@ -45,7 +45,7 @@ export const getRecruiterLabel = (
     application.ratedByRecruiterId ??
     "Cannot get recruiter";
 
-  if (recruiters) {
+  if (Array.isArray(recruiters)) {
     const recruiter = recruiters.find((r) => r.email === email);
     if (recruiter?.fullName) {
       const parts = recruiter.fullName.trim().split(" ");
@@ -110,10 +110,11 @@ export const getDateBucket = (createdAt: string): DateBucket => {
 
 export const groupApplicationsByDate = <T extends { createdAt: string }>(
   applications: T[],
+  getDate: (item: T) => string = (item) => item.createdAt,
 ) =>
   applications.reduce(
     (groups, application) => {
-      groups[getDateBucket(application.createdAt)].push(application);
+      groups[getDateBucket(getDate(application))].push(application);
       return groups;
     },
     {

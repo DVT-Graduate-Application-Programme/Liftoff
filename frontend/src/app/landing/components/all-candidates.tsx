@@ -4,7 +4,10 @@ import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import type { ApplicationFilters } from "@/types/api";
 import { ApplicantList } from "./applicant-list";
-import { useUrlFilterState } from "@/hooks/use-url-filter-state";
+import {
+  useSetUrlFilters,
+  useUrlFilterState,
+} from "@/hooks/use-url-filter-state";
 import {
   FilterBar,
   type ActiveFilter,
@@ -95,6 +98,7 @@ function AllCandidates() {
   const { data: session } = useSession();
   const recruiterIdentity = session?.user.email ?? ACTIVE_RECRUITER_ID;
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const setUrlFilters = useSetUrlFilters();
   const [status, setStatus] = useUrlFilterState("allStatus", "");
   const [minScore, setMinScore] = useUrlFilterState("allMinScore", "");
   const [ownership, setOwnership] = useUrlFilterState("allOwnership", "all");
@@ -120,10 +124,12 @@ function AllCandidates() {
   }, [dateRange, minScore, ownership, recruiterIdentity, sort, status]);
 
   const clearFilters = () => {
-    setStatus("");
-    setMinScore("");
-    setOwnership("all");
-    setDateRange("all");
+    setUrlFilters([
+      { key: "allStatus", value: "", defaultValue: "" },
+      { key: "allMinScore", value: "", defaultValue: "" },
+      { key: "allOwnership", value: "all", defaultValue: "all" },
+      { key: "allDateRange", value: "all", defaultValue: "all" },
+    ]);
   };
 
   const fields: FilterFieldConfig[] = [
@@ -232,6 +238,7 @@ function AllCandidates() {
         filters={filters}
         emptyTitle="No applicants yet"
         enableClaim
+        groupByMarks
         renderCard={(application: CandidateApplication) => {
           const isClaimedByActiveRecruiter =
             application.claimedByRecruiterId === recruiterIdentity;
