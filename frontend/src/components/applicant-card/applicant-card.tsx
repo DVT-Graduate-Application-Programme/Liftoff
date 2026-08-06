@@ -156,13 +156,13 @@ export default function ApplicantCard({
     <div
       onClick={handleCardClick}
       className={cn(
-        "group relative flex w-full flex-col gap-3.5 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm statusStyle.border @3xl:grid @3xl:grid-cols-[1fr_auto_1fr] @3xl:items-center @3xl:gap-4",
+        "group relative flex w-full flex-col gap-3.5 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm @4xl:flex-row @4xl:items-center @4xl:justify-between @4xl:gap-4",
         statusStyle.border,
         onClick && "cursor-pointer",
       )}
     >
       {/* Left Section: Candidate Profile Info */}
-      <div className="flex w-full min-w-0 items-center gap-3 @3xl:gap-4">
+      <div className="flex w-full min-w-0 items-center gap-3 @4xl:w-auto @4xl:max-w-[220px] @5xl:max-w-xs shrink-0">
         <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
           {initials}
         </div>
@@ -175,7 +175,7 @@ export default function ApplicantCard({
             {showStatus && (
               <span
                 className={cn(
-                  "rounded-full px-2.5 py-0.5 text-[10px] font-semibold leading-none shrink-0 @3xl:hidden",
+                  "rounded-full px-2.5 py-0.5 text-[10px] font-semibold leading-none shrink-0 @4xl:hidden",
                   statusStyle.text,
                   statusStyle.background,
                 )}
@@ -212,8 +212,8 @@ export default function ApplicantCard({
         </div>
       </div>
 
-      {/* Metrics Row for Mobile (< @3xl) */}
-      <div className="grid grid-cols-3 gap-2 rounded-lg bg-muted/40 p-2.5 border border-border/40 text-center @3xl:hidden">
+      {/* Metrics Row for Mobile (< @4xl) */}
+      <div className="grid grid-cols-3 gap-2 rounded-lg bg-muted/40 p-2.5 border border-border/40 text-center @4xl:hidden">
         <div className="flex flex-col items-center justify-start h-11">
           <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground h-3 leading-none">
             {scoreLabel}
@@ -254,8 +254,8 @@ export default function ApplicantCard({
         </div>
       </div>
 
-      {/* Metrics Row for Desktop (>= @3xl) - Centered in space between left details & right buttons */}
-      <div className="hidden flex-1 items-center justify-center gap-4 px-4 @3xl:flex @4xl:gap-6">
+      {/* Metrics Row for Desktop (>= @4xl) - Centered in space between left details & right buttons */}
+      <div className="hidden flex-1 items-center justify-center gap-3 px-2 @4xl:flex @5xl:gap-6 @5xl:px-4">
         <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             {scoreLabel}
@@ -359,9 +359,8 @@ export default function ApplicantCard({
       </div>
 
       {/* Right Section: Action Buttons */}
-      <div className="flex w-full flex-col gap-1.5 @3xl:w-36 @3xl:justify-self-end">
-        <div className="flex w-full flex-col gap-1.5 @3xl:w-36">
-          {secondaryActionLabel ? (
+      <div className="flex w-full shrink-0 flex-col gap-1.5 @4xl:w-36">
+        {secondaryActionLabel ? (
             <Button
               type="button"
               variant="secondary"
@@ -404,7 +403,6 @@ export default function ApplicantCard({
             <span>{actionLabel}</span>
           </Button>
         </div>
-      </div>
     </div>
   );
 }

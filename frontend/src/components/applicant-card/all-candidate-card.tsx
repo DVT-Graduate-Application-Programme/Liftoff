@@ -143,22 +143,26 @@ export default function AllCandidateCard({
     if (onClick) onClick();
   };
 
-  const displayDegree = degree ?? (subtitle ? institute : institute);
-  const displayInstitute = degree ? (subtitle ?? institute) : (subtitle ?? undefined);
+  const displayDegree = degree ?? (subtitle ? subtitle : institute);
+  const displayInstitute = degree
+    ? (institute ?? subtitle)
+    : subtitle
+      ? institute
+      : undefined;
 
   return (
     <div
       onClick={handleCardClick}
       className={cn(
-        "group relative flex w-full flex-col gap-3.5 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm @3xl:flex-row @3xl:items-center @3xl:justify-between @3xl:gap-4",
+        "group relative flex w-full flex-col gap-3.5 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm @4xl:flex-row @4xl:items-center @4xl:justify-between @4xl:gap-4",
         layout === "history" && "bg-card/90",
         onClick && "cursor-pointer",
       )}
     >
       {/* Left Section: Status Column & Candidate Profile Info */}
-      <div className="flex w-full min-w-0 items-center gap-3.5 @3xl:w-auto @3xl:max-w-xs shrink-0">
-        {/* Status Column for Desktop (far left, >= @3xl) */}
-        <div className="hidden shrink-0 flex-col items-center justify-center gap-1 @3xl:flex @3xl:w-28">
+      <div className="flex w-full min-w-0 items-center gap-3.5 @4xl:w-auto @4xl:max-w-[220px] @5xl:max-w-xs shrink-0">
+        {/* Status Column for Desktop (far left, >= @4xl) */}
+        <div className="hidden shrink-0 flex-col items-center justify-center gap-1 @4xl:flex ">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
             Status
           </span>
@@ -181,7 +185,7 @@ export default function AllCandidateCard({
             </h4>
             <span
               className={cn(
-                "rounded-full px-2.5 py-0.5 text-[10px] font-semibold leading-none shrink-0 @3xl:hidden",
+                "rounded-full px-2.5 py-0.5 text-[10px] font-semibold leading-none shrink-0 @4xl:hidden",
                 statusStyle.text,
                 statusStyle.background,
               )}
@@ -192,7 +196,7 @@ export default function AllCandidateCard({
           {showInstitute && (
             <div className="mt-0.5 flex flex-col text-xs leading-snug">
               {displayDegree ? (
-                <p className="font-medium text-foreground/90 line-clamp-1 break-words">
+                <p className="font-medium text-foreground/90 line-clamp-2 break-words">
                   {displayDegree}
                 </p>
               ) : null}
@@ -211,14 +215,18 @@ export default function AllCandidateCard({
         </div>
       </div>
 
-      {/* Metrics Row for Mobile (< @3xl) */}
-      <div className="grid grid-cols-3 gap-2 rounded-lg bg-muted/40 p-2.5 border border-border/40 text-center @3xl:hidden">
+      {/* Metrics Row for Mobile (< @4xl) */}
+      <div className="grid grid-cols-3 gap-2 rounded-lg bg-muted/40 p-2.5 border border-border/40 text-center @4xl:hidden">
         <div className="flex flex-col items-center justify-start h-11">
           <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground h-3 leading-none">
             {scoreLabel}
           </span>
           <div className="flex-1 flex items-center justify-center">
-            <ScoreTag score={systemScore} size="sm" className={scoreClassName} />
+            <ScoreTag
+              score={systemScore}
+              size="sm"
+              className={scoreClassName}
+            />
           </div>
         </div>
         <div className="flex flex-col items-center justify-start h-11 border-x border-border/50 px-1">
@@ -226,7 +234,11 @@ export default function AllCandidateCard({
             Acad. Avg
           </span>
           <div className="flex-1 flex items-center justify-center">
-            <ScoreTag score={academicAverage} size="sm" className={scoreClassName} />
+            <ScoreTag
+              score={academicAverage}
+              size="sm"
+              className={scoreClassName}
+            />
           </div>
         </div>
         <div className="flex flex-col items-center justify-start h-11">
@@ -247,14 +259,16 @@ export default function AllCandidateCard({
                     : `${String(daysAgo)}d ago`}
               </span>
             ) : (
-              <span className="text-xs font-semibold text-muted-foreground">–</span>
+              <span className="text-xs font-semibold text-muted-foreground">
+                –
+              </span>
             )}
           </div>
         </div>
       </div>
 
-      {/* Metrics Row for Desktop (>= @3xl) - Centered in space between left details & right buttons */}
-      <div className="hidden flex-1 items-center justify-center gap-4 px-4 @3xl:flex @4xl:gap-6">
+      {/* Metrics Row for Desktop (>= @4xl) - Centered in space between left details & right buttons */}
+      <div className="hidden flex-1 items-center justify-center gap-3 px-2 @4xl:flex @5xl:gap-6 @5xl:px-4">
         <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             {scoreLabel}
@@ -313,8 +327,8 @@ export default function AllCandidateCard({
       </div>
 
       {/* Action Buttons Container */}
-      <div className="flex w-full shrink-0 flex-col gap-1.5 @3xl:w-36">
-        <div className="flex w-full flex-col gap-1.5 @3xl:w-36">
+      <div className="flex w-full shrink-0 flex-col gap-1.5 @4xl:w-36">
+        <div className="flex w-full flex-col gap-1.5 @4xl:w-36">
           {secondaryActionLabel ? (
             <Button
               type="button"
@@ -331,7 +345,9 @@ export default function AllCandidateCard({
               }}
             >
               <span>
-                {isSecondaryActionLoading ? "Claiming..." : secondaryActionLabel}
+                {isSecondaryActionLoading
+                  ? "Claiming..."
+                  : secondaryActionLabel}
               </span>
             </Button>
           ) : null}

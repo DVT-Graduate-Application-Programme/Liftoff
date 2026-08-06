@@ -199,11 +199,11 @@ export default function PendingCandidateCard({
   return (
     <div
       className={cn(
-        "group relative flex w-full flex-col gap-3.5 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm @3xl:flex-row @3xl:items-center @3xl:justify-between @3xl:gap-4",
+        "group relative flex w-full flex-col gap-3.5 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm @4xl:flex-row @4xl:items-center @4xl:justify-between @4xl:gap-4",
       )}
     >
       {/* Candidate Profile Info */}
-      <div className="flex w-full min-w-0 flex-1 items-center gap-3 @3xl:w-auto @3xl:max-w-xs">
+      <div className="flex w-full min-w-0 flex-1 items-center gap-3 @4xl:w-auto @4xl:max-w-[220px] @5xl:max-w-xs">
         <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
           {initials}
         </div>
@@ -225,8 +225,8 @@ export default function PendingCandidateCard({
         </div>
       </div>
 
-      {/* Metrics Row for Mobile (< @3xl) */}
-      <div className="grid grid-cols-3 gap-2 rounded-lg bg-muted/40 p-2.5 border border-border/40 text-center @3xl:hidden">
+      {/* Metrics Row for Mobile (< @4xl) */}
+      <div className="grid grid-cols-3 gap-2 rounded-lg bg-muted/40 p-2.5 border border-border/40 text-center @4xl:hidden">
         <div className="flex flex-col items-center justify-start h-11">
           <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground h-3 leading-none">
             {scoreLabel}
@@ -267,8 +267,8 @@ export default function PendingCandidateCard({
         </div>
       </div>
 
-      {/* Metrics Row for Desktop (>= @3xl) */}
-      <div className="hidden flex-1 items-center justify-center gap-6 px-2 @3xl:flex">
+      {/* Metrics Row for Desktop (>= @4xl) */}
+      <div className="hidden flex-1 items-center justify-center gap-6 px-2 @4xl:flex">
         <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             {scoreLabel}
@@ -310,7 +310,7 @@ export default function PendingCandidateCard({
       </div>
 
       {/* Action Buttons: Stacked Quick Actions on top of Show AI Summary */}
-      <div className="flex w-full flex-col gap-1.5 shrink-0 @3xl:w-36">
+      <div className="flex w-full flex-col gap-1.5 shrink-0 @4xl:w-36">
         <QuickActionsMenu
           onShortlist={handleShortlistClick ? () => { setConfirmAction("shortlist"); } : undefined}
           isShortlisting={isShortlistLoading}
