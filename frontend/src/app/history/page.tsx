@@ -18,6 +18,7 @@ import {
   type ActiveFilter,
 } from "@/app/landing/components/filter-bar";
 import { SidebarInset, SidebarProvider, useSidebar } from "@/components/ui/sidebar";
+import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
 import { ApplicantDetailsSidebar } from "@/app/landing/components/applicant-details/applicant-details-sidebar";
 import {
   ApplicantSelectionProvider,
@@ -207,6 +208,7 @@ function DateGroup({
 }
 
 export default function HistoryPage() {
+  const { search } = useApplicantSearch();
   const [filtersOpen, setFiltersOpen] = React.useState(false);
   const [filterDecision, setFilterDecision] = React.useState("All");
   const [filterDateRange, setFilterDateRange] = React.useState({ start: "", end: "" });
@@ -238,6 +240,7 @@ export default function HistoryPage() {
     status: filterDecision !== "All" ? filterDecision : undefined,
     dateFrom: filterDateRange.start || undefined,
     dateTo: filterDateRange.end || undefined,
+    search: search || undefined,
     limit: 12,
   });
   const filteredCandidates = React.useMemo(
@@ -308,7 +311,9 @@ export default function HistoryPage() {
                     </div>
                   ) : filteredCandidates.length === 0 ? (
                     <div className="mx-auto w-full max-w-lg">
-                      <EmptyState title="No candidate history matches your filters." />
+                      <EmptyState
+                        title={search.trim() ? `No candidate history matches "${search}".` : "No candidate history matches your filters."}
+                      />
                     </div>
                   ) : (
                     <div className="@container flex flex-col gap-8">

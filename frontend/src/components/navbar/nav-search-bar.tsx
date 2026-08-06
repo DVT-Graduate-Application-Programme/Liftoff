@@ -38,8 +38,9 @@ export function NavSearchBar({
 }) {
   const pathname = usePathname();
   const isDashboard = pathname.startsWith("/landing");
+  const isHistory = pathname.startsWith("/history");
   const isLogs = pathname.startsWith("/logs");
-  const popoverEnabled = !isDashboard && !isLogs;
+  const popoverEnabled = !isDashboard && !isHistory && !isLogs;
 
   const { search, setSearch } = useApplicantSearch();
   const [open, setOpen] = useState(false);
