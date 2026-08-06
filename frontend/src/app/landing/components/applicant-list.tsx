@@ -48,6 +48,7 @@ interface ApplicantListProps {
   showReviewedAt?: boolean;
   enableClaim?: boolean;
   groupByDate?: boolean;
+  dateBucketSections?: DateBucketSection[];
   groupByMarks?: boolean;
   renderItem?: (application: CandidateApplication) => ReactNode;
   renderCard?: (application: CandidateApplication) => ReactElement;
@@ -57,28 +58,30 @@ const DATE_BUCKET_SECTIONS = [
   {
     key: "today" as const,
     label: "Today",
-    countLabel: (count: number) => `${String(count)} New Applicants`,
-    emptyText: "No pending applicants received today.",
+    countLabel: (count: number) => `${String(count)} New`,
+    emptyText: "No applicants received today.",
   },
   {
     key: "thisWeek" as const,
     label: "This Week",
     countLabel: (count: number) => `${String(count)} Applicants`,
-    emptyText: "No pending applicants from earlier this week.",
+    emptyText: "No applicants from earlier this week.",
   },
   {
     key: "lastWeek" as const,
     label: "Last Week",
     countLabel: (count: number) => `${String(count)} Applicants`,
-    emptyText: "No pending applicants from last week.",
+    emptyText: "No applicants from last week.",
   },
   {
     key: "older" as const,
     label: "Older",
     countLabel: (count: number) => `${String(count)} Applicants`,
-    emptyText: "No older pending applicants.",
+    emptyText: "No older applicants.",
   },
 ];
+
+type DateBucketSection = (typeof DATE_BUCKET_SECTIONS)[number];
 
 const MARKS_BUCKET_SECTIONS = [
   {
@@ -239,6 +242,7 @@ export function ApplicantList({
   showReviewedAt = true,
   enableClaim = false,
   groupByDate = false,
+  dateBucketSections = DATE_BUCKET_SECTIONS,
   groupByMarks = false,
   renderItem,
   renderCard,
@@ -410,7 +414,7 @@ export function ApplicantList({
 
     return (
       <div className="space-y-10">
-        {DATE_BUCKET_SECTIONS.map(({ key, label, countLabel, emptyText }) => {
+        {dateBucketSections.map(({ key, label, countLabel, emptyText }) => {
           const bucketApplications = groupedApplications[key];
 
           return (
