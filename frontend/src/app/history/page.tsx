@@ -8,7 +8,6 @@ import type { CandidateApplication } from "@/types/candidate";
 import type { PaginatedApplications } from "@/types/api";
 import { Loader2 } from "lucide-react";
 import { LoadMoreButton } from "@/components/load-more-button";
-import { Separator } from "@/components/ui/separator";
 import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
@@ -186,16 +185,24 @@ function DateGroup({
 }) {
   if (candidates.length === 0) return null;
 
+const countLabel =
+    candidates.length === 1
+      ? "1 Applicant"
+      : `${String(candidates.length)} Applicants`;
+
   return (
-    <section aria-label={label} className="flex flex-col gap-3">
-      <div className="flex items-center gap-3">
-        <span className="shrink-0 rounded-md border border-border bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground tracking-wide">
+    <section aria-label={label}>
+      <div className="mb-4 flex items-center gap-4">
+        <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
           {label}
+        </h3>
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-[12px] font-medium text-muted-foreground">
+          {countLabel}
         </span>
-        <Separator className="flex-1" />
       </div>
 
-      <div className="flex flex-col gap-2.5">
+      <div className="@container grid grid-cols-1 gap-4">
         {candidates.map((c) => (
           <CandidateHistoryCard
             key={c.applicationId}
@@ -320,7 +327,7 @@ export default function HistoryPage() {
                       />
                     </div>
                   ) : (
-                    <div className="@container flex flex-col gap-8">
+                    <div className="space-y-10">
                       {groups.map(({ label, candidates }) => (
                         <DateGroup
                           key={label}
