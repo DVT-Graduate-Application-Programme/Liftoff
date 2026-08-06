@@ -160,7 +160,7 @@ export default function AllCandidateCard({
       )}
     >
       {/* Left Section: Status Column & Candidate Profile Info */}
-      <div className="flex w-full min-w-0 items-center gap-3.5 @4xl:w-auto @4xl:max-w-[220px] @5xl:max-w-xs shrink-0">
+      <div className="flex w-full min-w-0 items-center gap-3.5 @4xl:w-auto @4xl:max-w-[380px] @5xl:max-w-sm shrink-0">
         {/* Status Column for Desktop (far left, >= @4xl) */}
         <div className="hidden shrink-0 flex-col items-center justify-center gap-1 @4xl:flex ">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
