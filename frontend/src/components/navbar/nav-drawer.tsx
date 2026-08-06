@@ -46,7 +46,7 @@ export function NavDrawer({
               <Logo className="opacity-90" />
               <Slogan />
             </div>
-            
+
             <DrawerClose asChild>
               <Button
                 variant="ghost"

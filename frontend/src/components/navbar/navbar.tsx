@@ -29,7 +29,7 @@ function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
         </div>
 
         {/* Full search bar — hidden on mobile, shown from sm up */}
-        <NavSearchBar className="hidden sm:flex" />
+        <NavSearchBar className="hidden sm:flex ml-3 md:ml-0" />
 
         <div className="flex gap-2">
           {/* Mobile-only search toggle */}
