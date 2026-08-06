@@ -11,8 +11,9 @@ export interface CandidateSearchGroup {
   candidates: CandidateApplication[];
 }
 
-export function useCandidateSearch(query: string) {
-  const { data, isLoading } = useApplications();
+export function useCandidateSearch(query: string, options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true;
+  const { data, isLoading } = useApplications(undefined, { enabled });
 
   const groups = useMemo<CandidateSearchGroup[]>(() => {
     const trimmed = query.trim().toLowerCase();

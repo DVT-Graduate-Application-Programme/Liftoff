@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Search } from "lucide-react";
 
 import {
@@ -36,33 +36,45 @@ export function NavSearchBar({
   className?: string;
   autoFocus?: boolean;
 }) {
+  const pathname = usePathname();
+  const isDashboard = pathname.startsWith("/landing");
+  const isLogs = pathname.startsWith("/logs");
+  const popoverEnabled = !isDashboard && !isLogs;
+
   const { search, setSearch } = useApplicantSearch();
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const { groups, isLoading, hasQuery } = useCandidateSearch(search);
+  const { groups, isLoading, hasQuery } = useCandidateSearch(search, {
+    enabled: popoverEnabled,
+  });
 
   const goToCandidate = (applicationId: string) => {
     setOpen(false);
+    setSearch("");
     router.push(`/applicants/${applicationId}?from=search`);
   };
+
+  const placeholder = isLogs ? "Search actions or recruiters..." : "Search applicants...";
 
   return (
     <Command
       shouldFilter={false}
       className="w-full max-w-2xl overflow-visible bg-transparent pt-4"
     >
-      <Popover open={open && hasQuery} onOpenChange={setOpen}>
+      <Popover open={popoverEnabled && open && hasQuery} onOpenChange={setOpen}>
         <PopoverAnchor asChild>
           <InputGroup className={cn("w-full max-w-2xl border border-accent", className)}>
             <InputGroupInput
-              placeholder="Search applicants..."
+              placeholder={placeholder}
               value={search}
               autoFocus={autoFocus}
               onChange={(e) => {
                 setSearch(e.target.value);
-                setOpen(true);
+                if (popoverEnabled) setOpen(true);
               }}
-              onFocus={() => { setOpen(true); }}
+              onFocus={() => {
+                if (popoverEnabled) setOpen(true);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Escape") setOpen(false);
               }}
