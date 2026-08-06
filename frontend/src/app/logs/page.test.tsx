@@ -8,7 +8,7 @@ function renderLogsPage() {
   return renderWithQueryClient(
     <ApplicantSearchProvider>
       <LogsPage />
-    </ApplicantSearchProvider>
+    </ApplicantSearchProvider>,
   );
 }
 

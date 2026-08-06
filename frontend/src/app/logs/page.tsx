@@ -163,7 +163,13 @@ export default function LogsPage() {
     if (end) end.setHours(23, 59, 59, 999);
 
     return logs.filter((log) => {
-      if (query && !log.recruiterIdentity.toLowerCase().includes(query)) return false;
+      if (query) {
+        const actionLabel = log.actionType.replace(/_/g, " ").toLowerCase();
+        const matchesQuery =
+          log.recruiterIdentity.toLowerCase().includes(query) ||
+          actionLabel.includes(query);
+        if (!matchesQuery) return false;
+      }
       if (filterActionType !== ALL_VALUE && log.actionType !== filterActionType) return false;
       if (filterRecruiter !== ALL_VALUE && log.recruiterIdentity !== filterRecruiter) return false;
       const actionedAt = new Date(log.actionedAt);

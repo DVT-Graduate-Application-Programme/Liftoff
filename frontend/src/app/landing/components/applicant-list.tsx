@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, type ReactElement, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
 import {
   useApplicantSelection,
@@ -15,6 +17,8 @@ import {
   ACTIVE_RECRUITER_ID,
   useClaimApplication,
 } from "@/hooks/use-claim-application";
+import { useShortlistApplication } from "@/hooks/use-shortlist-application";
+import { useRejectApplication } from "@/hooks/use-reject-application";
 import { useSidebar } from "@/components/ui/sidebar";
 import { LoadMoreButton } from "@/components/load-more-button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -44,6 +48,9 @@ interface ApplicantListProps {
   showReviewedAt?: boolean;
   enableClaim?: boolean;
   groupByDate?: boolean;
+  groupByDateKey?: (application: CandidateApplication) => string;
+  dateBucketSections?: DateBucketSection[];
+  groupByMarks?: boolean;
   renderItem?: (application: CandidateApplication) => ReactNode;
   renderCard?: (application: CandidateApplication) => ReactElement;
 }
@@ -52,29 +59,85 @@ const DATE_BUCKET_SECTIONS = [
   {
     key: "today" as const,
     label: "Today",
-    countLabel: (count: number) => `${String(count)} New Applicants`,
-    emptyText: "No pending applicants received today.",
+    countLabel: (count: number) => `${String(count)} New`,
+    emptyText: "No applicants received today.",
   },
   {
     key: "thisWeek" as const,
     label: "This Week",
     countLabel: (count: number) => `${String(count)} Applicants`,
-    emptyText: "No pending applicants from earlier this week.",
+    emptyText: "No applicants from earlier this week.",
   },
   {
     key: "lastWeek" as const,
     label: "Last Week",
     countLabel: (count: number) => `${String(count)} Applicants`,
-    emptyText: "No pending applicants from last week.",
+    emptyText: "No applicants from last week.",
   },
   {
     key: "older" as const,
     label: "Older",
     countLabel: (count: number) => `${String(count)} Applicants`,
-    emptyText: "No older pending applicants.",
+    emptyText: "No older applicants.",
   },
 ];
 
+type DateBucketSection = (typeof DATE_BUCKET_SECTIONS)[number];
+
+const MARKS_BUCKET_SECTIONS = [
+  {
+    key: "high" as const,
+    label: "System Score 80 and Above",
+    countLabel: (count: number) => `${String(count)} Candidates`,
+    emptyText: "No candidates with system score 80 and above.",
+    headerColorClass: "text-sky-600 dark:text-sky-400",
+    lineColorClass: "bg-sky-200 dark:bg-sky-800/30",
+  },
+  {
+    key: "medium" as const,
+    label: "System Score Between 65 and 79",
+    countLabel: (count: number) => `${String(count)} Candidates`,
+    emptyText: "No candidates with system score between 65 and 79.",
+    headerColorClass: "text-amber-600 dark:text-amber-400",
+    lineColorClass: "bg-amber-200 dark:bg-amber-800/30",
+  },
+  {
+    key: "low" as const,
+    label: "System Score Less Than 65",
+    countLabel: (count: number) => `${String(count)} Candidates`,
+    emptyText: "No candidates with system score less than 65.",
+    headerColorClass: "text-rose-600 dark:text-rose-400",
+    lineColorClass: "bg-rose-200 dark:bg-rose-800/30",
+  },
+];
+
+function getMarksBucket(systemScore?: number | null): "high" | "medium" | "low" {
+  const score = systemScore ?? 0;
+  if (score >= 80) return "high";
+  if (score >= 65) return "medium";
+  return "low";
+}
+
+function groupApplicationsByMarks(applications: CandidateApplication[]) {
+  const groups = {
+    high: [] as CandidateApplication[],
+    medium: [] as CandidateApplication[],
+    low: [] as CandidateApplication[],
+  };
+
+  for (const app of applications) {
+    const bucket = getMarksBucket(app.hiringAgentTotalScore);
+    groups[bucket].push(app);
+  }
+
+  for (const key of Object.keys(groups) as Array<keyof typeof groups>) {
+    groups[key].sort(
+      (a, b) => b.hiringAgentTotalScore - a.hiringAgentTotalScore,
+    );
+  }
+
+  return groups;
+}
 function getEducationSubtitle(evaluation: Evaluation | null | undefined, fallback: string) {
   const educationEvidence = evaluation?.evidenceJson?.education.trim();
   return educationEvidence || fallback;
@@ -95,6 +158,9 @@ function PendingApplicationCard({
 }) {
   const router = useRouter();
   const evaluationQuery = useEvaluation(application.applicationId);
+  const shortlistMutation = useShortlistApplication(application.applicationId);
+  const rejectMutation = useRejectApplication(application.applicationId);
+
   const isClaimed = isClaimedByActiveRecruiter(application, recruiterIdentity);
   const isClaiming =
     enableClaim &&
@@ -105,10 +171,29 @@ function PendingApplicationCard({
     getEducationSubtitle(evaluationQuery.data, application.cvSummary),
   );
 
+  const evaluationData = evaluationQuery.data;
   const academicAverage =
-    evaluationQuery.data?.institutionJson?.academic_average ??
-    evaluationQuery.data?.categoryScoresJson.education.score ??
+    evaluationData?.institutionJson?.academic_average ??
+    (evaluationData?.categoryScoresJson ? evaluationData.categoryScoresJson.education.score : undefined) ??
     application.academicAverage;
+
+  const handleAccept = async () => {
+    try {
+      await shortlistMutation.mutateAsync(undefined);
+      toast.success("Candidate shortlisted");
+    } catch {
+      toast.error("Couldn't shortlist candidate");
+    }
+  };
+
+  const handleReject = async () => {
+    try {
+      await rejectMutation.mutateAsync(undefined);
+      toast.success("Candidate rejected");
+    } catch {
+      toast.error("Couldn't reject candidate");
+    }
+  };
 
   return (
     <PendingCandidateCard
@@ -132,10 +217,20 @@ function PendingApplicationCard({
                 },
           }
         : {})}
+      onViewDetail={() => {
+        router.push(`/applicants/${application.applicationId}`);
+      }}
+      onAccept={() => {
+        void handleAccept();
+      }}
+      isAccepting={shortlistMutation.isPending}
+      onReject={() => {
+        void handleReject();
+      }}
+      isRejecting={rejectMutation.isPending}
       onClick={() => {
         router.push(`/applicants/${application.applicationId}`);
       }}
-
       onActionClick={() => {
         openDetails(application.applicationId);
       }}
@@ -151,6 +246,9 @@ export function ApplicantList({
   showReviewedAt = true,
   enableClaim = false,
   groupByDate = false,
+  groupByDateKey,
+  dateBucketSections = DATE_BUCKET_SECTIONS,
+  groupByMarks = false,
   renderItem,
   renderCard,
 }: ApplicantListProps) {
@@ -316,12 +414,13 @@ export function ApplicantList({
   );
 
   if (groupByDate) {
+    const getDate = groupByDateKey ?? ((app: CandidateApplication) => app.createdAt);
     const groupedApplications =
-      groupApplicationsByDate<CandidateApplication>(applications);
+      groupApplicationsByDate<CandidateApplication>(applications, getDate);
 
     return (
       <div className="space-y-10">
-        {DATE_BUCKET_SECTIONS.map(({ key, label, countLabel, emptyText }) => {
+        {dateBucketSections.map(({ key, label, countLabel, emptyText }) => {
           const bucketApplications = groupedApplications[key];
 
           return (
@@ -347,6 +446,63 @@ export function ApplicantList({
             </section>
           );
         })}
+        {hasNextPage && (
+          <div className="flex justify-center">{loadMoreButton}</div>
+        )}
+      </div>
+    );
+  }
+
+  if (groupByMarks) {
+    const groupedApplications = groupApplicationsByMarks(applications);
+
+    return (
+      <div className="space-y-10">
+        {MARKS_BUCKET_SECTIONS.map(
+          ({
+            key,
+            label,
+            countLabel,
+            emptyText,
+            headerColorClass,
+            lineColorClass,
+          }) => {
+            const bucketApplications = groupedApplications[key];
+
+            return (
+              <section key={key}>
+                <div className="mb-4 flex items-center gap-4">
+                  <h3
+                    className={cn(
+                      "text-xs font-bold uppercase tracking-widest",
+                      headerColorClass,
+                    )}
+                  >
+                    {label}
+                  </h3>
+                  <div className={cn("h-px flex-1", lineColorClass)}></div>
+                  <span
+                    className={cn(
+                      "text-xs font-bold uppercase tracking-widest leading-none",
+                      headerColorClass,
+                    )}
+                  >
+                    {countLabel(bucketApplications.length)}
+                  </span>
+                </div>
+                <div className="@container grid grid-cols-1 gap-4">
+                  {bucketApplications.length > 0 ? (
+                    bucketApplications.map(renderCardItem)
+                  ) : (
+                    <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                      {emptyText}
+                    </p>
+                  )}
+                </div>
+              </section>
+            );
+          },
+        )}
         {hasNextPage && (
           <div className="flex justify-center">{loadMoreButton}</div>
         )}
