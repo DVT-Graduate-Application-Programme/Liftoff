@@ -25,7 +25,6 @@ import {
 } from "@/components/providers/applicant-selection-provider";
 import { useApplicant } from "@/hooks/use-applicant";
 import { useEvaluation } from "@/hooks/use-evaluation";
-import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
 import { getStatusLabel, parseEducationEvidence } from "@/app/landing/components/candidate-list-utils";
 
 function SelectedApplicantDetailsSidebar() {
@@ -208,7 +207,6 @@ function DateGroup({
 }
 
 export default function HistoryPage() {
-  const { search } = useApplicantSearch();
   const [filtersOpen, setFiltersOpen] = React.useState(false);
   const [filterDecision, setFilterDecision] = React.useState("All");
   const [filterDateRange, setFilterDateRange] = React.useState({ start: "", end: "" });
@@ -240,7 +238,6 @@ export default function HistoryPage() {
     status: filterDecision !== "All" ? filterDecision : undefined,
     dateFrom: filterDateRange.start || undefined,
     dateTo: filterDateRange.end || undefined,
-    search: search || undefined,
     limit: 12,
   });
   const filteredCandidates = React.useMemo(
@@ -311,13 +308,7 @@ export default function HistoryPage() {
                     </div>
                   ) : filteredCandidates.length === 0 ? (
                     <div className="mx-auto w-full max-w-lg">
-                      <EmptyState
-                        title={
-                          search.trim()
-                            ? `No candidate history matches "${search}".`
-                            : "No candidate history matches your filters."
-                        }
-                      />
+                      <EmptyState title="No candidate history matches your filters." />
                     </div>
                   ) : (
                     <div className="@container flex flex-col gap-8">
