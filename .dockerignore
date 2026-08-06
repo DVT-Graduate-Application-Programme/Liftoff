@@ -1,0 +1,40 @@
+# Applies to builds whose context is the repository root — currently only
+# worker/Dockerfile, which needs worker/ plus backend/src/Domain and nothing else.
+# The per-service contexts have their own ignore files (backend/, frontend/,
+# backend/src/AI/hiring-agent/).
+
+# Other services: not part of the worker image, and frontend/node_modules alone is
+# hundreds of megabytes of context uploaded on every build.
+frontend/
+hiring-agent/
+backend/src/AI/
+backend/tests/
+infrastructure/
+scripts/
+servicebus-emulator/
+docs/
+_bmad/
+_bmad-output/
+.claude/
+
+# Build output — see backend/.dockerignore for why a host obj/ must not reach the image.
+**/bin/
+**/obj/
+**/node_modules/
+**/__pycache__/
+**/*.pyc
+
+# Secrets and state.
+.env
+.env.*
+**/*.tfvars
+**/*.tfstate*
+
+.git/
+.github/
+.gitignore
+.idea/
+.vscode/
+**/.DS_Store
+**/logs/
+*.md

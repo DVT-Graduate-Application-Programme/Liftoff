@@ -72,6 +72,11 @@ output "postgresql_fqdn" {
 }
 
 
+output "key_vault_name" {
+  description = "Key Vault holding the application secrets — read by scripts/with-azure-secrets.sh."
+  value       = azurerm_key_vault.main.name
+}
+
 output "storage_account_name" {
   description = "Name of the Blob Storage account."
   value       = azurerm_storage_account.main.name
