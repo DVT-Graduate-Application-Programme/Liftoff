@@ -16,5 +16,6 @@ public interface IApplicationRecordRepository
     Task AddAsync(ApplicationRecord record, CancellationToken cancellationToken = default);
     Task AddAuditLogAsync(AuditLog auditLog, CancellationToken cancellationToken = default);
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
+    Task<string?> GetLastAssignedRecruiterIdentityAsync(CancellationToken cancellationToken = default);
 }
 

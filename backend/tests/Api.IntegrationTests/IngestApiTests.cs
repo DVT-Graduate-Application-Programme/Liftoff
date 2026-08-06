@@ -296,6 +296,9 @@ internal sealed class TestRecruiterRepository : IRecruiterRepository
     public Task<List<Recruiter>> GetRecruitersAsync(CancellationToken cancellationToken = default) => Task.FromResult(new List<Recruiter>());
     public Task AddRecruiterAsync(RecruiterPostDto recruiter, CancellationToken cancellationToken = default) => Task.CompletedTask;
     public Task SaveChangesAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+   public Task<IReadOnlyList<Recruiter>> GetActiveRecruiters(CancellationToken cancellationToken = default) 
+        => Task.FromResult<IReadOnlyList<Recruiter>>(new List<Recruiter>());
 }
 
 internal sealed class TestApplicationRecordRepository : IApplicationRecordRepository
@@ -392,5 +395,10 @@ internal sealed class TestApplicationRecordRepository : IApplicationRecordReposi
     public Task<bool> ResetEvaluationAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(true);
+    }
+
+    public Task<string?> GetLastAssignedRecruiterIdentityAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<string?>(null);
     }
 }

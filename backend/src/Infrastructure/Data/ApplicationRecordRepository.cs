@@ -73,4 +73,14 @@ public class ApplicationRecordRepository : IApplicationRecordRepository
     {
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<string?> GetLastAssignedRecruiterIdentityAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.ApplicationRecords
+            .AsNoTracking()
+            .Where(a => a.ClaimedByRecruiterId != null)
+            .OrderByDescending(a => a.ClaimedAt ?? a.UpdatedAt)
+            .Select(a => a.ClaimedByRecruiterId!)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }
