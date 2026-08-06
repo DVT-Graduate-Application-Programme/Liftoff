@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Logo } from "@/components/logo";
+import { Logo, Slogan } from "@/components/logo";
 import {
   Drawer,
   DrawerClose,
@@ -41,9 +41,18 @@ export function NavDrawer({
         <div className="flex h-full w-full flex-col p-4">
           <DrawerHeader className="flex flex-row items-center justify-between">
             <DrawerTitle className="sr-only">Navigation menu</DrawerTitle>
-            <Logo />
+
+            <div className="flex items-center gap-2">
+              <Logo className="opacity-90" />
+              <Slogan />
+            </div>
+
             <DrawerClose asChild>
-              <Button variant="ghost" size="icon" aria-label="Close navigation drawer">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Close navigation drawer"
+              >
                 <X size={16} />
               </Button>
             </DrawerClose>
@@ -70,7 +79,9 @@ export function NavDrawer({
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-medium leading-none">{displayName}</span>
+                <span className="text-sm font-medium leading-none">
+                  {displayName}
+                </span>
                 <span className="mt-1.5 text-xs text-muted-foreground">
                   {displayEmail || "Signed in recruiter"}
                 </span>
