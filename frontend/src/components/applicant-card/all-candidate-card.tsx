@@ -138,13 +138,6 @@ export default function AllCandidateCard({
   const displaySubtitle = subtitle ?? institute;
   const displayRecruiterName = recruiterName;
 
-  const initials = name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
   const handleCardClick = () => {
     if (onClick) onClick();
   };
@@ -154,45 +147,56 @@ export default function AllCandidateCard({
       onClick={handleCardClick}
       className={cn(
         "group relative flex w-full flex-col gap-3.5 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm @3xl:flex-row @3xl:items-center @3xl:justify-between @3xl:gap-4",
+        layout === "history" && "bg-card/90",
         onClick && "cursor-pointer",
       )}
     >
-      {/* Candidate Profile Info */}
-      <div className="flex w-full min-w-0 flex-1 items-center gap-3 @3xl:w-auto @3xl:max-w-xs">
-        <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
-          {initials}
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <h4 className="font-semibold leading-tight text-foreground text-base truncate">
-              {name}
-            </h4>
-            <span
-              className={cn(
-                "rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 @3xl:hidden",
-                statusStyle.text,
-                statusStyle.background,
-              )}
-            >
-              {statusLabel}
-            </span>
-          </div>
-          {showInstitute && (
-            <div className="mt-0.5 flex flex-col text-xs text-muted-foreground">
-              {displaySubtitle ? (
-                <p className="line-clamp-1 break-words">{displaySubtitle}</p>
-              ) : null}
-              {displayRecruiterName ? (
-                <p className="line-clamp-1 break-words">
-                  Recruiter: {displayRecruiterName}
-                </p>
-              ) : institute ? (
-                <p className="line-clamp-1 break-words">{institute}</p>
-              ) : null}
-            </div>
+      {/* Status Column for Desktop (far left, >= @3xl) */}
+      <div className="hidden shrink-0 flex-col items-center justify-center gap-1 @3xl:flex @3xl:w-20">
+        <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
+          Status
+        </span>
+        <span
+          className={cn(
+            "max-w-full rounded-full px-2.5 py-0.5 text-xs font-semibold text-center leading-tight truncate",
+            statusStyle.text,
+            statusStyle.background,
           )}
+        >
+          {statusLabel}
+        </span>
+      </div>
+
+      {/* Candidate Profile Info */}
+      <div className="flex w-full min-w-0 flex-1 flex-col @3xl:w-auto @3xl:max-w-xs">
+        <div className="flex items-center justify-between gap-2">
+          <h4 className="font-semibold leading-tight text-foreground text-base truncate">
+            {name}
+          </h4>
+          <span
+            className={cn(
+              "rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 @3xl:hidden",
+              statusStyle.text,
+              statusStyle.background,
+            )}
+          >
+            {statusLabel}
+          </span>
         </div>
+        {showInstitute && (
+          <div className="mt-0.5 flex flex-col text-xs text-muted-foreground">
+            {displaySubtitle ? (
+              <p className="line-clamp-1 break-words">{displaySubtitle}</p>
+            ) : null}
+            {displayRecruiterName ? (
+              <p className="line-clamp-1 break-words">
+                Recruiter: {displayRecruiterName}
+              </p>
+            ) : institute ? (
+              <p className="line-clamp-1 break-words">{institute}</p>
+            ) : null}
+          </div>
+        )}
       </div>
 
       {/* Metrics Row for Mobile (< @3xl) */}
@@ -248,29 +252,14 @@ export default function AllCandidateCard({
           </div>
         </div>
 
+        <div className="h-10 w-px bg-border/60" />
+
         <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             Acad. Avg
           </span>
           <div className="flex-1 flex items-center justify-center">
             <ScoreTag score={academicAverage} className={scoreClassName} />
-          </div>
-        </div>
-
-        <div className="flex w-16 shrink-0 flex-col items-center justify-start h-12">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
-            Status
-          </span>
-          <div className="flex-1 flex items-center justify-center">
-            <span
-              className={cn(
-                "max-w-full rounded-full px-2 py-0.5 text-xs font-semibold text-center leading-tight truncate",
-                statusStyle.text,
-                statusStyle.background,
-              )}
-            >
-              {statusLabel}
-            </span>
           </div>
         </div>
 
@@ -291,14 +280,14 @@ export default function AllCandidateCard({
           </div>
         )}
 
-        {displayRecruiterName && (
+        {showReviewedAt && reviewedAt && (
           <div className="flex w-24 shrink-0 flex-col items-center justify-start h-12">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
-              Recruiter
+              Reviewed
             </span>
             <div className="flex-1 flex items-center justify-center">
-              <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium text-foreground">
-                {displayRecruiterName}
+              <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
+                {reviewedAt}
               </span>
             </div>
           </div>

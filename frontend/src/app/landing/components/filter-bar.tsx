@@ -120,15 +120,15 @@ export function FilterBarShell({
 }: FilterBarShellProps) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap justify-end gap-3">
+      <div className="flex w-full justify-end gap-3 sm:w-auto">
         <button
           type="button"
           aria-expanded={filtersOpen}
           aria-controls={id}
           onClick={onToggleFilters}
-          className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-foreground transition-colors hover:bg-muted"
+          className="flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted sm:h-auto sm:w-auto sm:text-sm"
         >
-          <ListFilter size={16} />
+          <ListFilter size={16} className="shrink-0" />
           Advanced Filters
         </button>
       </div>
@@ -174,16 +174,16 @@ export function FilterBar({
     "Sort by";
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-end gap-3">
+      <div className="grid grid-cols-2 items-center gap-2.5 sm:flex sm:w-auto sm:justify-end sm:gap-3">
         <button
           type="button"
           aria-expanded={filtersOpen}
           aria-controls={id}
           onClick={onToggleFilters}
-          className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-foreground transition-colors hover:bg-muted"
+          className="flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted sm:h-auto sm:w-auto sm:px-4 sm:py-2 sm:text-sm"
         >
-          <ListFilter size={16} />
-          Advanced Filters
+          <ListFilter size={16} className="shrink-0" />
+          <span className="truncate">Advanced Filters</span>
         </button>
         <Select
           aria-label="Sort applicants"
@@ -192,9 +192,9 @@ export function FilterBar({
             onSortChange(selectedValue as SortOption);
           }}
         >
-          <SelectTrigger className="h-auto min-w-[14rem] rounded-lg border border-border bg-card py-2 text-foreground shadow-none transition-colors hover:bg-muted focus-visible:border-border focus-visible:ring-0 data-[size=default]:h-auto">
+          <SelectTrigger className="h-9 w-full min-w-0 rounded-lg border border-border bg-card px-3 py-2 text-xs font-medium text-foreground shadow-none transition-colors hover:bg-muted focus-visible:border-border focus-visible:ring-0 data-[size=default]:h-9 sm:h-auto sm:w-auto sm:min-w-[14rem] sm:px-4 sm:py-2 sm:text-sm sm:data-[size=default]:h-auto">
             <span className="flex min-w-0 items-center gap-2">
-              <ListOrdered size={16} aria-hidden="true" />
+              <ListOrdered size={16} aria-hidden="true" className="shrink-0" />
               <SelectValue className="truncate text-left">
                 {sortLabel}
               </SelectValue>

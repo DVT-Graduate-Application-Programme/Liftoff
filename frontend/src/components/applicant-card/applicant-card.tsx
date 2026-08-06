@@ -309,6 +309,26 @@ export default function ApplicantCard({
           </div>
         )}
 
+        {showReviewedAt && reviewedAt && (
+          <div className="flex w-24 shrink-0 flex-col items-center justify-start h-12">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
+              Reviewed
+            </span>
+            <div className="flex-1 flex items-center justify-center">
+              <span
+                className={cn(
+                  "max-w-full text-center text-xs font-medium tabular-nums text-foreground",
+                  wrapReviewedAt
+                    ? "whitespace-normal break-words"
+                    : "truncate whitespace-nowrap",
+                )}
+              >
+                {reviewedAt}
+              </span>
+            </div>
+          </div>
+        )}
+
         {displayRecruiterName && (
           <div className="flex w-24 shrink-0 flex-col items-center justify-start h-12">
             <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
