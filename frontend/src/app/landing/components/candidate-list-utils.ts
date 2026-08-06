@@ -110,10 +110,11 @@ export const getDateBucket = (createdAt: string): DateBucket => {
 
 export const groupApplicationsByDate = <T extends { createdAt: string }>(
   applications: T[],
+  getDate: (item: T) => string = (item) => item.createdAt,
 ) =>
   applications.reduce(
     (groups, application) => {
-      groups[getDateBucket(application.createdAt)].push(application);
+      groups[getDateBucket(getDate(application))].push(application);
       return groups;
     },
     {
