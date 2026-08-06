@@ -300,7 +300,7 @@ export default function PendingCandidateCard({
                   ? "Today"
                   : daysAgo === 1
                     ? "1 day ago"
-                    : String(daysAgo) + " day(s) ago"}
+                    : `${String(daysAgo)} days ago`}
               </span>
             ) : (
               <span className="text-sm font-semibold text-muted-foreground">–</span>

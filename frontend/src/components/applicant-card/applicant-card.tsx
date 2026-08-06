@@ -256,7 +256,7 @@ export default function ApplicantCard({
                 ? "Today"
                 : daysAgo === 1
                   ? "1 day ago"
-                  : `${String(daysAgo)} day(s) ago`}
+                  : `${String(daysAgo)} days ago`}
             </span>
           </div>
         )}
