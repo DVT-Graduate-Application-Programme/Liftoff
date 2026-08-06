@@ -254,8 +254,8 @@ export default function ApplicantCard({
         </div>
       </div>
 
-      {/* Metrics Row for Desktop (>= @3xl) - Centered in middle */}
-      <div className="hidden items-center justify-center gap-4 px-2 @3xl:flex @3xl:justify-self-center @4xl:gap-6 @4xl:px-4">
+      {/* Metrics Row for Desktop (>= @3xl) - Centered in space between left details & right buttons */}
+      <div className="hidden flex-1 items-center justify-center gap-4 px-4 @3xl:flex @4xl:gap-6">
         <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             {scoreLabel}
@@ -264,6 +264,9 @@ export default function ApplicantCard({
             <ScoreTag score={systemScore} />
           </div>
         </div>
+
+        <div className="h-10 w-px bg-border/60" />
+
         <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             {secondaryScoreLabel}
@@ -274,72 +277,84 @@ export default function ApplicantCard({
         </div>
 
         {showStatus && (
-          <div className="flex w-28 shrink-0 flex-col items-center justify-start h-12">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
-              Status
-            </span>
-            <div className="flex-1 flex items-center justify-center">
-              <span
-                className={cn(
-                  "w-full rounded-full px-3 py-0.5 text-xs font-semibold text-center leading-tight truncate",
-                  statusStyle.text,
-                  statusStyle.background,
-                )}
-              >
-                {statusLabel}
+          <>
+            <div className="h-10 w-px bg-border/60" />
+            <div className="flex w-28 shrink-0 flex-col items-center justify-start h-12">
+              <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
+                Status
               </span>
+              <div className="flex-1 flex items-center justify-center">
+                <span
+                  className={cn(
+                    "w-full rounded-full px-3 py-0.5 text-xs font-semibold text-center leading-tight truncate",
+                    statusStyle.text,
+                    statusStyle.background,
+                  )}
+                >
+                  {statusLabel}
+                </span>
+              </div>
             </div>
-          </div>
+          </>
         )}
 
         {daysAgo !== null && daysAgo >= 0 && (
-          <div className="flex w-24 shrink-0 flex-col items-center justify-start h-12">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
-              Applied
-            </span>
-            <div className="flex-1 flex items-center justify-center">
-              <span className="max-w-full whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
-                {daysAgo === 0
-                  ? "Today"
-                  : daysAgo === 1
-                    ? "1 day ago"
-                    : `${String(daysAgo)} days ago`}
+          <>
+            <div className="h-10 w-px bg-border/60" />
+            <div className="flex w-24 shrink-0 flex-col items-center justify-start h-12">
+              <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
+                Applied
               </span>
+              <div className="flex-1 flex items-center justify-center">
+                <span className="max-w-full whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
+                  {daysAgo === 0
+                    ? "Today"
+                    : daysAgo === 1
+                      ? "1 day ago"
+                      : `${String(daysAgo)} days ago`}
+                </span>
+              </div>
             </div>
-          </div>
+          </>
         )}
 
         {showReviewedAt && reviewedAt && (
-          <div className="flex w-24 shrink-0 flex-col items-center justify-start h-12">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
-              Reviewed
-            </span>
-            <div className="flex-1 flex items-center justify-center">
-              <span
-                className={cn(
-                  "max-w-full text-center text-xs font-medium tabular-nums text-foreground",
-                  wrapReviewedAt
-                    ? "whitespace-normal break-words"
-                    : "truncate whitespace-nowrap",
-                )}
-              >
-                {reviewedAt}
+          <>
+            <div className="h-10 w-px bg-border/60" />
+            <div className="flex w-24 shrink-0 flex-col items-center justify-start h-12">
+              <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
+                Reviewed
               </span>
+              <div className="flex-1 flex items-center justify-center">
+                <span
+                  className={cn(
+                    "max-w-full text-center text-xs font-medium tabular-nums text-foreground",
+                    wrapReviewedAt
+                      ? "whitespace-normal break-words"
+                      : "truncate whitespace-nowrap",
+                  )}
+                >
+                  {reviewedAt}
+                </span>
+              </div>
             </div>
-          </div>
+          </>
         )}
 
         {displayRecruiterName && (
-          <div className="flex w-24 shrink-0 flex-col items-center justify-start h-12">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
-              {recruiterLabel ?? "Recruiter"}
-            </span>
-            <div className="flex-1 flex items-center justify-center">
-              <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium text-foreground">
-                {displayRecruiterName}
+          <>
+            <div className="h-10 w-px bg-border/60" />
+            <div className="flex w-24 shrink-0 flex-col items-center justify-start h-12">
+              <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
+                {recruiterLabel ?? "Recruiter"}
               </span>
+              <div className="flex-1 flex items-center justify-center">
+                <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium text-foreground">
+                  {displayRecruiterName}
+                </span>
+              </div>
             </div>
-          </div>
+          </>
         )}
       </div>
 

@@ -5,6 +5,7 @@ type StatusTone = "positive" | "warning" | "negative" | "neutral";
 
 type AllCandidateCardProps = {
   name: string;
+  degree?: string;
   institute?: string;
   subtitle?: string;
   academicAverage?: number;
@@ -110,6 +111,7 @@ function getDaysAgo(dateString: string): number | null {
 
 export default function AllCandidateCard({
   name,
+  degree,
   institute,
   subtitle,
   academicAverage,
@@ -135,32 +137,34 @@ export default function AllCandidateCard({
   const currentStatusTone = statusTone ?? "positive";
   const statusStyle = statusStyles[currentStatusTone];
   const daysAgo = createdAt ? getDaysAgo(createdAt) : null;
-  const displaySubtitle = subtitle ?? institute;
   const displayRecruiterName = recruiterName;
 
   const handleCardClick = () => {
     if (onClick) onClick();
   };
 
+  const displayDegree = degree ?? (subtitle ? institute : institute);
+  const displayInstitute = degree ? (subtitle ?? institute) : (subtitle ?? undefined);
+
   return (
     <div
       onClick={handleCardClick}
       className={cn(
-        "group relative flex w-full flex-col gap-3.5 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm @3xl:grid @3xl:grid-cols-[1fr_auto_1fr] @3xl:items-center @3xl:gap-4",
+        "group relative flex w-full flex-col gap-3.5 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm @3xl:flex-row @3xl:items-center @3xl:justify-between @3xl:gap-4",
         layout === "history" && "bg-card/90",
         onClick && "cursor-pointer",
       )}
     >
       {/* Left Section: Status Column & Candidate Profile Info */}
-      <div className="flex w-full min-w-0 items-center gap-3.5 @3xl:gap-4">
+      <div className="flex w-full min-w-0 items-center gap-3.5 @3xl:w-auto @3xl:max-w-xs shrink-0">
         {/* Status Column for Desktop (far left, >= @3xl) */}
-        <div className="hidden shrink-0 flex-col items-center justify-center gap-1 @3xl:flex">
+        <div className="hidden shrink-0 flex-col items-center justify-center gap-1 @3xl:flex @3xl:w-28">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
             Status
           </span>
           <span
             className={cn(
-              "rounded-full px-2.5 py-0.5 text-xs font-semibold text-center leading-tight truncate",
+              "w-full rounded-full px-2.5 py-0.5 text-xs font-semibold text-center leading-tight truncate",
               statusStyle.text,
               statusStyle.background,
             )}
@@ -186,16 +190,21 @@ export default function AllCandidateCard({
             </span>
           </div>
           {showInstitute && (
-            <div className="mt-0.5 flex flex-col text-xs text-muted-foreground leading-snug">
-              {displaySubtitle ? (
-                <p className="line-clamp-2 break-words">{displaySubtitle}</p>
+            <div className="mt-0.5 flex flex-col text-xs leading-snug">
+              {displayDegree ? (
+                <p className="font-medium text-foreground/90 line-clamp-1 break-words">
+                  {displayDegree}
+                </p>
+              ) : null}
+              {displayInstitute ? (
+                <p className="line-clamp-1 truncate text-muted-foreground">
+                  {displayInstitute}
+                </p>
               ) : null}
               {displayRecruiterName ? (
-                <p className="line-clamp-1 break-words">
+                <p className="line-clamp-1 truncate text-muted-foreground">
                   Recruiter: {displayRecruiterName}
                 </p>
-              ) : institute ? (
-                <p className="line-clamp-2 break-words">{institute}</p>
               ) : null}
             </div>
           )}
@@ -244,8 +253,8 @@ export default function AllCandidateCard({
         </div>
       </div>
 
-      {/* Metrics Row for Desktop (>= @3xl) - Centered in middle */}
-      <div className="hidden items-center justify-center gap-4 px-2 @3xl:flex @3xl:justify-self-center @4xl:gap-6 @4xl:px-4">
+      {/* Metrics Row for Desktop (>= @3xl) - Centered in space between left details & right buttons */}
+      <div className="hidden flex-1 items-center justify-center gap-4 px-4 @3xl:flex @4xl:gap-6">
         <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             {scoreLabel}
@@ -267,38 +276,44 @@ export default function AllCandidateCard({
         </div>
 
         {daysAgo !== null && daysAgo >= 0 && (
-          <div className="flex w-24 shrink-0 flex-col items-center justify-start h-12">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
-              Applied
-            </span>
-            <div className="flex-1 flex items-center justify-center">
-              <span className="max-w-full whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
-                {daysAgo === 0
-                  ? "Today"
-                  : daysAgo === 1
-                    ? "1 day ago"
-                    : `${String(daysAgo)} days ago`}
+          <>
+            <div className="h-10 w-px bg-border/60" />
+            <div className="flex w-24 shrink-0 flex-col items-center justify-start h-12">
+              <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
+                Applied
               </span>
+              <div className="flex-1 flex items-center justify-center">
+                <span className="max-w-full whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
+                  {daysAgo === 0
+                    ? "Today"
+                    : daysAgo === 1
+                      ? "1 day ago"
+                      : `${String(daysAgo)} days ago`}
+                </span>
+              </div>
             </div>
-          </div>
+          </>
         )}
 
         {showReviewedAt && reviewedAt && (
-          <div className="flex w-24 shrink-0 flex-col items-center justify-start h-12">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
-              Reviewed
-            </span>
-            <div className="flex-1 flex items-center justify-center">
-              <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
-                {reviewedAt}
+          <>
+            <div className="h-10 w-px bg-border/60" />
+            <div className="flex w-24 shrink-0 flex-col items-center justify-start h-12">
+              <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
+                Reviewed
               </span>
+              <div className="flex-1 flex items-center justify-center">
+                <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
+                  {reviewedAt}
+                </span>
+              </div>
             </div>
-          </div>
+          </>
         )}
       </div>
 
       {/* Action Buttons Container */}
-      <div className="flex w-full flex-col gap-1.5 @3xl:w-36 @3xl:justify-self-end">
+      <div className="flex w-full shrink-0 flex-col gap-1.5 @3xl:w-36">
         <div className="flex w-full flex-col gap-1.5 @3xl:w-36">
           {secondaryActionLabel ? (
             <Button
