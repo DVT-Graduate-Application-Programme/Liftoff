@@ -196,17 +196,13 @@ export default function ApplicantCard({
             </span>
             <ScoreTag score={systemScore} />
           </div>
-          {academicAverage !== undefined && (
-            <>
-              <div className="h-10 w-px bg-border" />
-              <div className="flex w-24 flex-col items-center gap-0.5">
-                <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-                  {secondaryScoreLabel}
-                </span>
-                <ScoreTag score={academicAverage} />
-              </div>
-            </>
-          )}
+          <div className="h-10 w-px bg-border" />
+          <div className="flex w-24 flex-col items-center gap-0.5">
+            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+              {secondaryScoreLabel}
+            </span>
+            <ScoreTag score={academicAverage} />
+          </div>
         </div>
 
         {showStatus && (
