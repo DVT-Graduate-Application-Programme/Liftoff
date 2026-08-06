@@ -16,6 +16,7 @@ import { apiFetch } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { useOwnership } from "@/hooks/use-ownership";
 import { useRateApplication } from "@/hooks/use-rate-application";
+import { useRateTechnicalApplication } from "@/hooks/use-rate-technical-application";
 import { ACTIVE_RECRUITER_ID } from "@/hooks/use-claim-application";
 import { useShortlistApplication } from "@/hooks/use-shortlist-application";
 import { useRejectApplication } from "@/hooks/use-reject-application";
@@ -38,6 +39,7 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
   const { data: session } = useSession();
   const ownershipQuery = useOwnership(applicationId);
   const rateMutation = useRateApplication(applicationId);
+  const rateTechnicalMutation = useRateTechnicalApplication(applicationId);
   const shortlistMutation = useShortlistApplication(applicationId);
   const rejectMutation = useRejectApplication(applicationId);
 
@@ -49,9 +51,10 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const rating = ratingOverride ?? ownershipQuery.data?.recruiterRating ?? 0;
-  // Culture/Tech Fit are local-only until the backend supports separate rating fields (see handleConfirmSubmit).
-  const cultureFit = cultureFitOverride ?? 0;
-  const techFit = techFitOverride ?? 0;
+  // When shortlisted, Culture Fit reuses the same recruiterRating field as the single
+  // Rating input; Tech Fit is the separate technicalRating field.
+  const cultureFit = cultureFitOverride ?? ownershipQuery.data?.recruiterRating ?? 0;
+  const techFit = techFitOverride ?? ownershipQuery.data?.technicalRating ?? 0;
   const notes = notesOverride ?? ownershipQuery.data?.recruiterRatingNote ?? "";
   const statusUpper = currentStatus?.toUpperCase() ?? "";
   const recruiterIdentity = session?.user.email ?? ACTIVE_RECRUITER_ID;
@@ -65,7 +68,10 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
     decisionOverride ??
     (isShortlisted ? "shortlist" : isRejected ? "reject" : null);
   const isSubmitting =
-    rateMutation.isPending || shortlistMutation.isPending || rejectMutation.isPending;
+    rateMutation.isPending ||
+    rateTechnicalMutation.isPending ||
+    shortlistMutation.isPending ||
+    rejectMutation.isPending;
   const canSubmit =
     isAssignedToCurrentRecruiter &&
     (isShortlisted ? cultureFit > 0 && techFit > 0 : rating > 0) &&
@@ -99,22 +105,24 @@ export function CandidateReview({ applicationId, currentStatus }: { applicationI
   const handleConfirmSubmit = () => {
     if (!decision) return;
 
-    // TODO(#568-backend): persist cultureFit/techFit as separate fields once the backend
-    // supports it. Until then, collapse them into the single `rating` field via Math.max
-    // (rather than an average) so a candidate's standout dimension isn't diluted.
-    const ratingToSubmit = isShortlisted ? Math.max(cultureFit, techFit) : rating;
-
     void (async () => {
       try {
-        await rateMutation.mutateAsync({ rating: ratingToSubmit, notes });
+        if (isShortlisted) {
+          await Promise.all([
+            rateMutation.mutateAsync({ rating: cultureFit, notes }),
+            rateTechnicalMutation.mutateAsync({ rating: techFit }),
+          ]);
+        } else {
+          await rateMutation.mutateAsync({ rating, notes });
+        }
         if (decision === "shortlist") {
           await shortlistMutation.mutateAsync(undefined);
         } else {
           await rejectMutation.mutateAsync(undefined);
         }
         setRatingOverride(null);
-        // Culture/Tech Fit have no persisted field to fall back to yet (see TODO above),
-        // so keep the submitted values visible instead of resetting them to 0.
+        setCultureFitOverride(null);
+        setTechFitOverride(null);
         setNotesOverride(null);
         setDecisionOverride(null);
         setConfirmOpen(false);
