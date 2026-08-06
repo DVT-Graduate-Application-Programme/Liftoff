@@ -11,7 +11,7 @@ const starRatingVariants = cva("", {
     variant: {
       default: "fill-primary text-primary",
       culture: "fill-chart-4 text-chart-4",
-      tech: "fill-chart-2 text-chart-2",
+      tech: "fill-blue-500 text-blue-500",
     },
   },
   defaultVariants: {
