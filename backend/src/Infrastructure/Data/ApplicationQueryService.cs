@@ -104,6 +104,24 @@ public class ApplicationQueryService : IApplicationQueryService
                 ShortlistedAt = r.ShortlistedAt,
                 RecruiterRating = r.RecruiterRating,
                 RecruiterRatingNote = r.RecruiterRatingNote,
+                TechnicalRating = r.TechnicalRating,
+                RatedByRecruiterId = r.RatedByRecruiterId,
+                RatedAt = r.RatedAt
+            })
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public Task<ApplicationTechnicalRatingDto?> GetTechnicalRatingAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return _dbContext.ApplicationRecords
+            .Where(r => r.Id == id)
+            .Select(r => new ApplicationTechnicalRatingDto
+            {
+                ApplicationId = r.Id,
+                TechnicalRating = r.TechnicalRating,
+                RecruiterRating = r.RecruiterRating,
+                RecruiterRatingNote = r.RecruiterRatingNote,
                 RatedByRecruiterId = r.RatedByRecruiterId,
                 RatedAt = r.RatedAt
             })

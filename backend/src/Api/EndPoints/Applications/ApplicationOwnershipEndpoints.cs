@@ -2,6 +2,7 @@ using Application.Features.AcceptApplication;
 using Application.Features.AddApplicationNotes;
 using Application.Features.ClaimApplicationOwnership;
 using Application.Features.RateApplication;
+using Application.Features.RateTechnicalApplication;
 using Application.Features.ReevaluateApplication;
 using Application.Features.RejectApplication;
 using Application.Features.ShortlistApplication;
@@ -99,6 +100,20 @@ public static class ApplicationOwnershipEndpoints
         })
         .WithName("RateApplication");
 
+        // POST /api/applications/{id}/technical-rating and POST /api/applications/{id}/ownership/technical-rate
+        group.MapPost("/{id:guid}/technical-rating", async (Guid id, RateTechnicalApplicationRequest request, HttpContext context, IMediator mediator, ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
+        {
+            var recruiterIdentity = ResolveRecruiterIdentity(context, request.RecruiterIdentity);
+            logger.LogInformation("Recruiter {RecruiterIdentity} is technical rating application {ApplicationId} with {Rating} stars", recruiterIdentity, id, request.Rating);
+            
+            var result = await mediator.Send(new RateTechnicalApplicationCommand(id, recruiterIdentity, request.Rating), ct);
+            if (result is null) return Results.NotFound();
+            
+            logger.LogInformation("Recruiter {RecruiterIdentity} successfully technical rated application {ApplicationId}", recruiterIdentity, id);
+            return Results.Ok(result);
+        })
+        .WithName("RateTechnicalApplication");
+
         // POST /api/applications/{id}/ownership/notes
         group.MapPost("/{id:guid}/ownership/notes", async (Guid id, AddNotesRequest request, HttpContext context, IMediator mediator, ILogger<IEndpointRouteBuilder> logger, CancellationToken ct) =>
         {
@@ -157,5 +172,6 @@ public static class ApplicationOwnershipEndpoints
     public record AcceptApplicationRequest(string RecruiterIdentity, string? Reason);
     public record RejectApplicationRequest(string RecruiterIdentity, string? Reason);
     public record RateApplicationRequest(string RecruiterIdentity, short Rating, string? Notes);
+    public record RateTechnicalApplicationRequest(string RecruiterIdentity, short Rating);
     public record AddNotesRequest(string RecruiterIdentity, string Notes);
 }
