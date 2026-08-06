@@ -42,7 +42,7 @@ function ScoreTag({
   score: number;
   size?: "sm" | "md";
 }) {
-  const formattedScore = score.toFixed(1);
+  const formattedScore = score ? score.toFixed(1) : 0;
   const isHigh = score >= 80;
   const isMedium = score >= 65 && score < 80;
 

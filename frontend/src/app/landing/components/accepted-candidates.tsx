@@ -19,6 +19,7 @@ import { ApplicantList } from "./applicant-list";
 import { FilterBar, type ActiveFilter, type FilterFieldConfig, type SortOption } from "./filter-bar";
 import type { CandidateApplication } from "@/types/candidate";
 import { getRecruiterLabel } from "./candidate-list-utils";
+
 type Filters = Omit<ApplicationFilters, "status" | "search" | "limit" | "cursor">;
 
 function AcceptedCandidateCard({ application }: { application: CandidateApplication }) {
@@ -168,6 +169,7 @@ function AcceptedCandidates() {
         tabKey="accepted"
         filters={filters}
         emptyTitle="No accepted applicants yet"
+        groupByMarks
         renderItem={(candidate) => <AcceptedCandidateCard application={candidate} />}
       />
     </>
