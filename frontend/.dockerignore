@@ -1,0 +1,22 @@
+# Host node_modules must never reach the build context: `COPY . .` would overwrite the
+# node_modules installed by `npm ci` inside the image, which are built for the image's
+# platform, not the developer's laptop.
+node_modules
+.next
+out
+
+.git
+.gitignore
+.env
+.env.*
+Dockerfile
+.dockerignore
+
+npm-debug.log*
+*.tsbuildinfo
+coverage
+.vscode
+.idea
+.DS_Store
+README.md
+AGENTS.md

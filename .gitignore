@@ -6,7 +6,11 @@
 # dotenv files
 .env.**
 .env
-# OpenTofu / Terraform — never commit real variable values
+# Templates carry no values — .env.production.example documents which production secrets
+# docker-compose.prod.yml needs. .env.development is force-added and stays committed
+# (local-only values); .env.production must never be.
+!.env.production.example
+# Terraform — never commit real variable values
 infrastructure/**/*.tfvars
 infrastructure/**/*.tfvars.example
 infrastructure/**/.terraform/*
