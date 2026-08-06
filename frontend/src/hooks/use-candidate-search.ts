@@ -26,17 +26,18 @@ export function useCandidateSearch(query: string, options?: { enabled?: boolean 
       )
       .slice(0, MAX_RESULTS);
 
-    const byStatus = new Map<CandidateApplication["currentStatus"], CandidateApplication[]>();
+    const byStatus = new Map<string, { status: CandidateApplication["currentStatus"]; candidates: CandidateApplication[] }>();
     for (const candidate of matches) {
-      const bucket = byStatus.get(candidate.currentStatus);
+      const key = candidate.currentStatus.toLowerCase();
+      const bucket = byStatus.get(key);
       if (bucket) {
-        bucket.push(candidate);
+        bucket.candidates.push(candidate);
       } else {
-        byStatus.set(candidate.currentStatus, [candidate]);
+        byStatus.set(key, { status: candidate.currentStatus, candidates: [candidate] });
       }
     }
 
-    return Array.from(byStatus.entries()).map(([status, candidates]) => ({
+    return Array.from(byStatus.values()).map(({ status, candidates }) => ({
       status,
       label: getStatusLabel(status),
       candidates,
