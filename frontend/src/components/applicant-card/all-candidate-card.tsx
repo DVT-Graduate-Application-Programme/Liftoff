@@ -154,7 +154,7 @@ export default function AllCandidateCard({
     <div
       onClick={handleCardClick}
       className={cn(
-        "group relative flex w-full flex-col gap-3.5 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm @4xl:flex-row @4xl:items-center @4xl:justify-between @4xl:gap-4",
+        "group relative flex w-full overflow-clip flex-col gap-3.5 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm @4xl:flex-row @4xl:items-center @4xl:justify-between @4xl:gap-4",
         layout === "history" && "bg-card/90",
         onClick && "cursor-pointer",
       )}
@@ -268,7 +268,7 @@ export default function AllCandidateCard({
       </div>
 
       {/* Metrics Row for Desktop (>= @4xl) - Centered in space between left details & right buttons */}
-      <div className="hidden flex-1 items-center justify-center gap-3 px-2 @4xl:flex @5xl:gap-6 @5xl:px-4">
+      <div className="hidden flex-1 items-center justify-center gap-1 px-1 @4xl:flex">
         <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             {scoreLabel}
