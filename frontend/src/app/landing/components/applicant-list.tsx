@@ -48,6 +48,7 @@ interface ApplicantListProps {
   showReviewedAt?: boolean;
   enableClaim?: boolean;
   groupByDate?: boolean;
+  groupByDateKey?: (application: CandidateApplication) => string;
   dateBucketSections?: DateBucketSection[];
   groupByMarks?: boolean;
   renderItem?: (application: CandidateApplication) => ReactNode;
@@ -242,6 +243,7 @@ export function ApplicantList({
   showReviewedAt = true,
   enableClaim = false,
   groupByDate = false,
+  groupByDateKey,
   dateBucketSections = DATE_BUCKET_SECTIONS,
   groupByMarks = false,
   renderItem,
@@ -409,8 +411,9 @@ export function ApplicantList({
   );
 
   if (groupByDate) {
+    const getDate = groupByDateKey ?? ((app: CandidateApplication) => app.createdAt);
     const groupedApplications =
-      groupApplicationsByDate<CandidateApplication>(applications);
+      groupApplicationsByDate<CandidateApplication>(applications, getDate);
 
     return (
       <div className="space-y-10">
