@@ -21,10 +21,11 @@ function toQueryString(filters?: ApplicationFilters) {
   return qs ? `?${qs}` : "";
 }
 
-export function useApplications(filters?: ApplicationFilters) {
+export function useApplications(filters?: ApplicationFilters, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: queryKeys.applications(filters),
     queryFn: () =>
       apiFetch<{ applications: CandidateApplication[] }>(`/api/applications${toQueryString(filters)}`),
+    enabled: options?.enabled,
   });
 }

@@ -17,6 +17,7 @@ import {
   type ActiveFilter,
 } from "@/app/landing/components/filter-bar";
 import { SidebarInset, SidebarProvider, useSidebar } from "@/components/ui/sidebar";
+import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
 import { ApplicantDetailsSidebar } from "@/app/landing/components/applicant-details/applicant-details-sidebar";
 import {
   ApplicantSelectionProvider,
@@ -24,7 +25,6 @@ import {
 } from "@/components/providers/applicant-selection-provider";
 import { useApplicant } from "@/hooks/use-applicant";
 import { useEvaluation } from "@/hooks/use-evaluation";
-import { useApplicantSearch } from "@/components/providers/applicant-search-provider";
 import { getStatusLabel, parseEducationEvidence } from "@/app/landing/components/candidate-list-utils";
 
 function SelectedApplicantDetailsSidebar() {
@@ -319,11 +319,7 @@ export default function HistoryPage() {
                   ) : filteredCandidates.length === 0 ? (
                     <div className="mx-auto w-full max-w-lg">
                       <EmptyState
-                        title={
-                          search.trim()
-                            ? `No candidate history matches "${search}".`
-                            : "No candidate history matches your filters."
-                        }
+                        title={search.trim() ? `No candidate history matches "${search}".` : "No candidate history matches your filters."}
                       />
                     </div>
                   ) : (
