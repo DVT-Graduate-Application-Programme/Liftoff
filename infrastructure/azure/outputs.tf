@@ -71,15 +71,6 @@ output "postgresql_fqdn" {
   sensitive   = true
 }
 
-output "key_vault_name" {
-  description = "Name of the Key Vault."
-  value       = azurerm_key_vault.main.name
-}
-
-output "key_vault_uri" {
-  description = "URI of the Key Vault — used by apps to fetch secrets at runtime."
-  value       = azurerm_key_vault.main.vault_uri
-}
 
 output "storage_account_name" {
   description = "Name of the Blob Storage account."
