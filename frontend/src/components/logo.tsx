@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 export function Logo({ className }: { className?: string }) {
   return (
@@ -8,9 +9,11 @@ export function Logo({ className }: { className?: string }) {
       aria-label="Go to home"
       className=" shrink-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <img
+      <Image
         src="/favicon.png"
         alt="DVT Logo"
+        width={100}
+        height={100}
         className={cn("h-10 w-auto shrink-0", className)}
       />
     </Link>
