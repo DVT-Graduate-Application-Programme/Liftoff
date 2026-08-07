@@ -59,12 +59,15 @@ locals {
       backend_memory        = "0.5Gi"
       frontend_min_replicas = 1
       frontend_max_replicas = 1
-      frontend_cpu          = 0.25
-      frontend_memory       = "0.5Gi"
-      worker_cpu            = 0.25
-      worker_memory         = "0.5Gi"
-      hiring_agent_cpu      = 0.5
-      hiring_agent_memory   = "1Gi"
+      # Larger than the other .NET apps because dev runs `next dev` (build_target in
+      # .github/workflows/development-deploy-azure.yml), which compiles routes on demand in
+      # the replica. 0.25/0.5Gi made the first request take ~25s and risked an OOM.
+      frontend_cpu        = 0.75
+      frontend_memory     = "1.5Gi"
+      worker_cpu          = 0.25
+      worker_memory       = "0.5Gi"
+      hiring_agent_cpu    = 0.5
+      hiring_agent_memory = "1Gi"
 
       # Observability
       log_retention_days  = 30
