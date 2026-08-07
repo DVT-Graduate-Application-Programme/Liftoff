@@ -216,9 +216,9 @@ export default function PendingCandidateCard({
           </h4>
           {showInstitute && (
             <div className="mt-0.5 flex flex-col text-xs text-muted-foreground">
-              <p className="line-clamp-1 break-words">{institute}</p>
+              <p className="line-clamp-2 break-words">{institute}</p>
               {secondaryInstitute ? (
-                <p className="line-clamp-1 break-words">
+                <p className="line-clamp-1 truncate">
                   {secondaryInstitute}
                 </p>
               ) : null}
@@ -270,7 +270,7 @@ export default function PendingCandidateCard({
       </div>
 
       {/* Metrics Row for Desktop (>= @4xl) */}
-      <div className="hidden flex-1 items-center justify-center gap-6 px-2 @4xl:flex">
+      <div className="hidden flex-1 items-center justify-center gap-4 px-2 @4xl:flex">
         <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             {scoreLabel}
