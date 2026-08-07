@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
 import { usePathname, useParams, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import {
@@ -30,20 +30,24 @@ function tabHref(from: string) {
   return TAB_HREFS[from] ?? `/landing?tab=${from}`
 }
 
+function subscribeNever() {
+  return () => {}
+}
+
+// Cached query data can already be available on the client's first render (e.g. after a
+// client-side navigation) while the server has no way to know about it, which would
+// mismatch the server-rendered fallback. useSyncExternalStore's getServerSnapshot forces
+// the first client render to agree with the server; the real value follows right after.
+function useHasMounted() {
+  return useSyncExternalStore(subscribeNever, () => true, () => false)
+}
+
 function ApplicantCrumb() {
   const params = useParams<{ applicantId: string }>()
   const applicantQuery = useApplicant(params.applicantId)
+  const hasMounted = useHasMounted()
 
-  // Cached query data can already be available on the client's first render (e.g. after
-  // a client-side navigation) while the server has no way to know about it, which would
-  // mismatch the server-rendered "Applicant" fallback. Force the first client render to
-  // match the server, then swap in the real name on the next (post-hydration) render.
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const label = mounted ? (applicantQuery.data?.candidateName ?? "Applicant") : "Applicant"
+  const label = hasMounted ? (applicantQuery.data?.candidateName ?? "Applicant") : "Applicant"
 
   return <BreadcrumbPage>{label}</BreadcrumbPage>
 }
