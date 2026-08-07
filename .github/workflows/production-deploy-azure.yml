@@ -1,0 +1,59 @@
+name: Deploy Azure (production)
+
+# Production deploys: `main` is the release branch, so a merge to main is a release.
+# The pipeline itself lives in deploy-azure.yml, shared with development.
+#
+# ── Not live yet ─────────────────────────────────────────────────────────────
+# The production environment has not been created on Azure. Until it is, every run of this
+# workflow is skipped by the `if` below, so merging to main is safe and this file can land
+# ahead of the infrastructure.
+#
+# To turn it on, once `terraform apply` has run in the prod workspace:
+#
+#   1. Settings → Environments → New environment → "production".
+#      Add required reviewers there — that is what makes a production deploy an approved
+#      action rather than a side effect of merging.
+#   2. Add these secrets to that environment, all pointing at the *prod* resource group:
+#        AZURE_CREDENTIALS        service principal with Contributor on rg-liftoff-prod
+#        AZURE_RESOURCE_GROUP     rg-liftoff-prod
+#        ACR_LOGIN_SERVER         terraform output -raw acr_login_server
+#        ACR_REPOSITORY           same host as ACR_LOGIN_SERVER
+#        MIGRATIONS_JOB           terraform output -raw migrations_job_name
+#        BACKEND_CONTAINER_APP    terraform output -raw backend_container_app_name
+#        FRONTEND_CONTAINER_APP   terraform output -raw frontend_container_app_name
+#        WORKER_CONTAINER_APP     terraform output -raw worker_container_app_name
+#        HIRING_AGENT_CONTAINER_APP
+#                                 terraform output -raw hiring_agent_container_app_name
+#      None of these may be the development values.
+#   3. Settings → Variables → New repository variable: PROD_DEPLOY_ENABLED = true.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'worker/**'
+      - 'frontend/**'
+      - '.github/workflows/production-deploy-azure.yml'
+      - '.github/workflows/deploy-azure.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    # The kill switch. Unset or anything other than "true" and the job is skipped, which is
+    # the state until the prod environment exists. It also serves afterwards as a way to
+    # freeze production deploys without reverting anything.
+    if: vars.PROD_DEPLOY_ENABLED == 'true'
+    uses: ./.github/workflows/deploy-azure.yml
+    with:
+      # Secrets resolve against the `production` GitHub Environment. Its protection rules
+      # apply to both jobs in the reusable workflow, so an approval is required before the
+      # migration job touches the production database — not just before the rollout.
+      environment_name: production
+      image_tag_prefix: prod
+      # Production images: no OpenAPI document, no Scalar UI, no developer exception page.
+      build_target: production
+    secrets: inherit

@@ -1,3 +1,17 @@
+# Local development stack.
+#
+# Everything here is the development side of the dev/prod split: the `development` build
+# target of each Dockerfile, emulators standing in for the Azure services (Postgres,
+# Azurite for Blob Storage, the Service Bus emulator), and schema auto-migration plus mock
+# seed data on backend startup.
+#
+# The production counterpart is docker-compose.prod.yml — production image targets, no
+# emulators, no seeding, real Azure endpoints. It is for smoke-testing a production image,
+# not for daily development:
+#
+#   docker compose up --build                          # this file — normal development
+#   docker compose -f docker-compose.prod.yml up        # production images
+
 services:
   db:
     image: postgres:16-alpine
@@ -76,7 +90,12 @@ services:
 #    restart: "no"
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      # Development target: ASPNETCORE_ENVIRONMENT=Development, so /scalar and the OpenAPI
+      # document are served. The production target is what docker-compose.prod.yml and the
+      # prod deploy build.
+      target: development
     env_file:
       - .env.development
     environment:
@@ -116,6 +135,7 @@ services:
     build:
       context: .
       dockerfile: worker/Dockerfile
+      target: development
     env_file:
       - .env.development
     environment:
@@ -140,7 +160,11 @@ services:
         condition: service_started
 
   hiring-agent:
-      build: ./backend/src/AI/hiring-agent
+      build:
+        context: ./backend/src/AI/hiring-agent
+        # uvicorn --reload and DEVELOPMENT_MODE=True: writes resume_evaluations.csv and
+        # caches extraction JSON under cache/.
+        target: development
       env_file:
         - .env.development
       environment:
@@ -155,7 +179,18 @@ services:
           condition: service_started
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      # next dev with hot reload. The production target serves the standalone build.
+      target: development
+    # Source is mounted so edits reload without a rebuild. The two anonymous volumes keep
+    # the container's own node_modules and .next — a bare bind mount would hide the
+    # node_modules installed inside the image behind the host's, which are built for the
+    # host platform.
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
     env_file:
       - .env.development
     environment:
