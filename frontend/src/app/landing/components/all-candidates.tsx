@@ -74,8 +74,8 @@ function AllCandidateListCard({
       <AllCandidateCard
         key={application.applicationId}
         name={application.candidateName}
-        institute={education.degree || application.cvSummary}
-        subtitle={education.institution || undefined}
+        degree={education.degree || application.cvSummary}
+        institute={education.institution || undefined}
         systemScore={toScorePercent(application.hiringAgentTotalScore)}
         academicAverage={academicAverage}
         statusLabel={getStatusLabel(displayStatus)}

@@ -5,6 +5,7 @@ type StatusTone = "positive" | "warning" | "negative" | "neutral";
 
 type AllCandidateCardProps = {
   name: string;
+  degree?: string;
   institute?: string;
   subtitle?: string;
   academicAverage?: number;
@@ -65,25 +66,28 @@ const statusStyles = {
 function ScoreTag({
   score,
   isDefault = true,
+  size = "md",
   className,
 }: {
   score?: number | null;
   isDefault?: boolean;
+  size?: "sm" | "md";
   className?: string;
 }) {
   if (score == null || Number.isNaN(score)) {
     return (
-      <div className="flex min-w-12 justify-center">
-        <span className="text-sm font-semibold text-muted-foreground">–</span>
+      <div className="flex min-w-10 justify-center">
+        <span className="text-xs font-semibold text-muted-foreground">–</span>
       </div>
     );
   }
 
   return (
-    <div className="flex min-w-12 justify-center">
+    <div className="flex min-w-10 justify-center">
       <span
         className={cn(
-          "text-lg font-semibold leading-none tabular-nums text-foreground",
+          "font-semibold leading-none tabular-nums text-foreground",
+          size === "sm" ? "text-base" : "text-lg @2xl:text-xl",
           className,
           !isDefault ? getScoreColor(score) : undefined,
         )}
@@ -93,7 +97,6 @@ function ScoreTag({
     </div>
   );
 }
-
 
 function getDaysAgo(dateString: string): number | null {
   const inputDate = new Date(dateString);
@@ -108,6 +111,7 @@ function getDaysAgo(dateString: string): number | null {
 
 export default function AllCandidateCard({
   name,
+  degree,
   institute,
   subtitle,
   academicAverage,
@@ -133,26 +137,38 @@ export default function AllCandidateCard({
   const currentStatusTone = statusTone ?? "positive";
   const statusStyle = statusStyles[currentStatusTone];
   const daysAgo = createdAt ? getDaysAgo(createdAt) : null;
-  const displaySubtitle = subtitle ?? institute;
   const displayRecruiterName = recruiterName;
 
-  if (layout === "history") {
-    return (
-      <div
-        className={cn(
-          "group relative grid w-full grid-cols-1 gap-3 rounded-xl border bg-card p-4",
-          "@2xl:grid-cols-[5rem_minmax(0,1fr)_12rem_8rem_7.5rem] @2xl:items-center @2xl:gap-x-4",
-          "@4xl:grid-cols-[5rem_minmax(0,1fr)_12rem_8rem_7rem_7.5rem]",
-        )}
-      >
-        <div className="flex shrink-0 flex-col items-start gap-0.5 @2xl:items-center @2xl:justify-center">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+  const handleCardClick = () => {
+    if (onClick) onClick();
+  };
+
+  const displayDegree = degree ?? (subtitle ? subtitle : institute);
+  const displayInstitute = degree
+    ? (institute ?? subtitle)
+    : subtitle
+      ? institute
+      : undefined;
+
+  return (
+    <div
+      onClick={handleCardClick}
+      className={cn(
+        "group relative flex w-full overflow-clip flex-col gap-3.5 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm @4xl:flex-row @4xl:items-center @4xl:justify-between @4xl:gap-4",
+        layout === "history" && "bg-card/90",
+        onClick && "cursor-pointer",
+      )}
+    >
+      {/* Left Section: Status Column & Candidate Profile Info */}
+      <div className="flex w-full min-w-0 items-center gap-3.5 @4xl:w-auto @4xl:max-w-[380px] @5xl:max-w-sm shrink-0">
+        {/* Status Column for Desktop (far left, >= @4xl) */}
+        <div className="hidden shrink-0 flex-col items-center justify-center gap-1 @4xl:flex ">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
             Status
           </span>
           <span
             className={cn(
-              "max-w-full rounded-full px-2 py-1 text-xs font-semibold",
-              "inline-flex items-center justify-center text-center leading-tight whitespace-normal",
+              "w-full rounded-full px-2.5 py-0.5 text-xs font-semibold text-center leading-tight truncate",
               statusStyle.text,
               statusStyle.background,
             )}
@@ -161,79 +177,167 @@ export default function AllCandidateCard({
           </span>
         </div>
 
-        <div className="min-w-0 flex flex-col">
-          <h4 className="break-words font-semibold leading-tight text-foreground">
-            {name}
-          </h4>
+        {/* Candidate Profile Info */}
+        <div className="flex w-full min-w-0 flex-1 flex-col">
+          <div className="flex items-center justify-between gap-2">
+            <h4 className="font-semibold leading-tight text-foreground text-base truncate">
+              {name}
+            </h4>
+            <span
+              className={cn(
+                "rounded-full px-2.5 py-0.5 text-[10px] font-semibold leading-none shrink-0 @4xl:hidden",
+                statusStyle.text,
+                statusStyle.background,
+              )}
+            >
+              {statusLabel}
+            </span>
+          </div>
           {showInstitute && (
-            <div className="mt-0.5 flex flex-col gap-0.5 text-xs text-muted-foreground">
-              {displaySubtitle ? (
-                <p className="whitespace-normal break-words">{displaySubtitle}</p>
+            <div className="mt-0.5 flex flex-col text-xs leading-snug">
+              {displayDegree ? (
+                <p className="font-medium text-foreground/90 line-clamp-2 break-words">
+                  {displayDegree}
+                </p>
               ) : null}
-              <p className="whitespace-normal break-words">{institute}</p>
+              {displayInstitute ? (
+                <p className="line-clamp-1 truncate text-muted-foreground">
+                  {displayInstitute}
+                </p>
+              ) : null}
+              {displayRecruiterName ? (
+                <p className="line-clamp-1 truncate text-muted-foreground">
+                  Recruiter: {displayRecruiterName}
+                </p>
+              ) : null}
             </div>
           )}
         </div>
+      </div>
 
-        <div className="flex w-[12rem] shrink-0 items-center justify-center gap-3">
-          <div className="flex w-24 flex-col items-center gap-0.5">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-              {scoreLabel}
-            </span>
-            <ScoreTag score={systemScore} className={scoreClassName} />
+      {/* Metrics Row for Mobile (< @4xl) */}
+      <div className="grid grid-cols-3 gap-2 rounded-lg bg-muted/40 p-2.5 border border-border/40 text-center @4xl:hidden">
+        <div className="flex flex-col items-center justify-start h-11">
+          <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground h-3 leading-none">
+            {scoreLabel}
+          </span>
+          <div className="flex-1 flex items-center justify-center">
+            <ScoreTag
+              score={systemScore}
+              size="sm"
+              className={scoreClassName}
+            />
           </div>
-
-          <div className="h-10 w-px bg-border" />
-
-          <div className="flex w-24 flex-col items-center gap-0.5">
-            <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-              Acad. Avg
-            </span>
-            {academicAverage !== undefined ? (
-              <ScoreTag score={academicAverage} className={scoreClassName} />
+        </div>
+        <div className="flex flex-col items-center justify-start h-11 border-x border-border/50 px-1">
+          <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground h-3 leading-none">
+            Acad. Avg
+          </span>
+          <div className="flex-1 flex items-center justify-center">
+            <ScoreTag
+              score={academicAverage}
+              size="sm"
+              className={scoreClassName}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col items-center justify-start h-11">
+          <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground h-3 leading-none">
+            {displayRecruiterName ? "Recruiter" : "Applied"}
+          </span>
+          <div className="flex-1 flex items-center justify-center">
+            {displayRecruiterName ? (
+              <span className="text-xs font-medium text-foreground truncate max-w-full">
+                {displayRecruiterName}
+              </span>
+            ) : daysAgo !== null && daysAgo >= 0 ? (
+              <span className="text-xs font-medium tabular-nums text-foreground">
+                {daysAgo === 0
+                  ? "Today"
+                  : daysAgo === 1
+                    ? "1 day ago"
+                    : `${String(daysAgo)}d ago`}
+              </span>
             ) : (
-              <span className="text-sm font-semibold text-muted-foreground">–</span>
+              <span className="text-xs font-semibold text-muted-foreground">
+                –
+              </span>
             )}
           </div>
         </div>
+      </div>
 
-        <div className="flex w-32 shrink-0 flex-col items-center gap-0.5 pl-2">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-            Applied
+      {/* Metrics Row for Desktop (>= @4xl) - Centered in space between left details & right buttons */}
+      <div className="hidden flex-1 items-center justify-center gap-1 px-1 @4xl:flex">
+        <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
+            {scoreLabel}
           </span>
-          {daysAgo !== null && daysAgo >= 0 ? (
-            <span className="max-w-full whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
-              {daysAgo === 0
-                ? "Today"
-                : daysAgo === 1
-                  ? "1 day ago"
-                  : `${String(daysAgo)} days ago`}
-            </span>
-          ) : (
-            <span className="text-sm font-semibold text-muted-foreground">–</span>
-          )}
+          <div className="flex-1 flex items-center justify-center">
+            <ScoreTag score={systemScore} className={scoreClassName} />
+          </div>
         </div>
 
-        <div className="hidden w-28 shrink-0 flex-col items-center gap-0.5 pl-2 @4xl:flex">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-            Reviewed
+        <div className="h-10 w-px bg-border/60" />
+
+        <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
+          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
+            Acad. Avg
           </span>
-          {showReviewedAt && reviewedAt ? (
-            <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
-              {reviewedAt}
-            </span>
-          ) : (
-            <span className="text-sm font-semibold text-muted-foreground">–</span>
-          )}
+          <div className="flex-1 flex items-center justify-center">
+            <ScoreTag score={academicAverage} className={scoreClassName} />
+          </div>
         </div>
 
-        <div className="flex w-full flex-col gap-2 @2xl:w-auto @2xl:items-end @2xl:justify-end">
+        {daysAgo !== null && daysAgo >= 0 && (
+          <>
+            <div className="h-10 w-px bg-border/60" />
+            <div className="flex w-24 shrink-0 flex-col items-center justify-start h-12">
+              <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
+                Applied
+              </span>
+              <div className="flex-1 flex items-center justify-center">
+                <span className="max-w-full whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
+                  {daysAgo === 0
+                    ? "Today"
+                    : daysAgo === 1
+                      ? "1 day ago"
+                      : `${String(daysAgo)} days ago`}
+                </span>
+              </div>
+            </div>
+          </>
+        )}
+
+        {showReviewedAt && reviewedAt && (
+          <>
+            <div className="h-10 w-px bg-border/60" />
+            <div className="flex w-24 shrink-0 flex-col items-center justify-start h-12">
+              <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
+                Reviewed
+              </span>
+              <div className="flex-1 flex items-center justify-center">
+                <span className="max-w-full truncate whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
+                  {reviewedAt}
+                </span>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Action Buttons Container */}
+      <div className="flex w-full shrink-0 flex-col gap-1.5 @4xl:w-36">
+        <div className="flex w-full flex-col gap-1.5 @4xl:w-36">
           {secondaryActionLabel ? (
             <Button
               type="button"
               variant="secondary"
-              size="sm"
-              className="w-full justify-center gap-1 text-xs @2xl:w-30"
+              className={cn(
+                "h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors",
+                isSecondaryActionDisabled &&
+                  "border-border bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground",
+              )}
               disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
               onClick={(event) => {
                 event.stopPropagation();
@@ -241,15 +345,18 @@ export default function AllCandidateCard({
               }}
             >
               <span>
-                {isSecondaryActionLoading ? "Claiming..." : secondaryActionLabel}
+                {isSecondaryActionLoading
+                  ? "Claiming..."
+                  : secondaryActionLabel}
               </span>
             </Button>
           ) : null}
+
           <Button
             type="button"
             variant="outline"
             size="sm"
-            className="w-full justify-center gap-1 text-xs bg-primary text-white dark:bg-sky-500 dark:hover:bg-sky-400 @2xl:w-30"
+            className="h-7.5 w-full gap-1 px-3 text-xs font-medium justify-center bg-primary text-white hover:bg-primary/90 dark:bg-sky-500 dark:hover:bg-sky-400 dark:hover:text-white transition-colors"
             onClick={(event) => {
               event.stopPropagation();
               if (onActionClick) {
@@ -262,129 +369,6 @@ export default function AllCandidateCard({
             <span>{actionLabel}</span>
           </Button>
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={cn(
-        "group relative flex flex-col gap-3 rounded-xl border bg-card p-4 w-full @2xl:flex-row @2xl:items-center @2xl:gap-0",
-      )}
-    >
-      <div className="flex shrink-0 flex-col items-start gap-0.5 @2xl:w-20 @2xl:items-center @2xl:justify-center">
-        <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-          Status
-        </span>
-        <span
-          className={cn(
-            "max-w-full rounded-full px-2 py-1 text-xs font-semibold",
-            "inline-flex items-center justify-between text-center leading-tight whitespace-normal",
-            statusStyle.text,
-            statusStyle.background,
-          )}
-        >
-          {statusLabel}
-        </span>
-      </div>
-
-      <div className="min-w-0 flex-1 flex flex-col pl-4">
-        <h4 className="font-semibold leading-tight text-foreground">
-          {name}
-        </h4>
-        {showInstitute && (
-          <div className="mt-0.5 flex flex-col gap-0.5 text-xs text-muted-foreground">
-            <p className="whitespace-normal break-words">{institute}</p>
-            {displayRecruiterName ? (
-              <p className="whitespace-normal break-words">
-                Recruiter: {displayRecruiterName}
-              </p>
-            ) : displaySubtitle ? (
-              <p className="whitespace-normal break-words">
-                {displaySubtitle}
-              </p>
-            ) : null}
-          </div>
-        )}
-      </div>
-
-      <div className="flex flex-1 items-center justify-start gap-6 @2xl:justify-center @2xl:px-2">
-        <div className="flex w-20 shrink-0 flex-col items-center gap-0.5">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-            {scoreLabel}
-          </span>
-          <ScoreTag score={systemScore} className={scoreClassName} />
-        </div>
-
-        <div className="h-10 w-px bg-border" />
-
-        <div className="flex w-20 shrink-0 flex-col items-center gap-0.5">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-            Acad. Avg
-          </span>
-          {academicAverage !== undefined ? (
-            <ScoreTag score={academicAverage} className={scoreClassName} />
-          ) : (
-            <span className="text-sm font-semibold text-muted-foreground">
-              –
-            </span>
-          )}
-        </div>
-
-        <div className="hidden w-24 shrink-0 flex-col items-center gap-0.5 @4xl:flex">
-          <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center">
-            Applied
-          </span>
-          {daysAgo !== null && daysAgo >= 0 ? (
-            <span className="max-w-full whitespace-nowrap text-center text-xs font-medium tabular-nums text-foreground">
-              {daysAgo === 0
-                ? "Today"
-                : daysAgo === 1
-                  ? "1 day ago"
-                  : `${String(daysAgo)} days ago`}
-            </span>
-          ) : (
-            <span className="text-sm font-semibold text-muted-foreground">
-              –
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="flex w-full shrink-0 flex-col gap-2 @2xl:w-auto @2xl:justify-end @2xl:items-end">
-        {secondaryActionLabel ? (
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            className="w-full justify-center gap-1 text-xs @2xl:w-30"
-            disabled={isSecondaryActionDisabled || isSecondaryActionLoading}
-            onClick={(event) => {
-              event.stopPropagation();
-              onSecondaryActionClick?.();
-            }}
-          >
-            <span>
-              {isSecondaryActionLoading ? "Claiming..." : secondaryActionLabel}
-            </span>
-          </Button>
-        ) : null}
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="w-full justify-center gap-1 text-xs bg-primary text-white dark:bg-sky-500 dark:hover:bg-sky-400 @2xl:w-30"
-          onClick={(event) => {
-            event.stopPropagation();
-            if (onActionClick) {
-              onActionClick();
-              return;
-            }
-            onClick?.();
-          }}
-        >
-          <span>{actionLabel}</span>
-        </Button>
       </div>
     </div>
   );
