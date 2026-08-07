@@ -6,7 +6,7 @@ export function Logo({ className }: { className?: string }) {
     <Link
       href="/landing"
       aria-label="Go to home"
-      className=" shrink-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="shrink-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <img
         src="/favicon.png"
