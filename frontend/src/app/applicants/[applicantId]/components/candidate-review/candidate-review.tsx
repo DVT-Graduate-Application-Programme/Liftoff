@@ -3,7 +3,6 @@ import { Star, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   Card,
-  CardAction,
   CardContent,
   CardHeader,
   CardTitle,
@@ -149,18 +148,6 @@ export function CandidateReview({
         <p className="text-sm text-muted-foreground">
           Rate, choose shortlist or reject, add notes, then submit your review
         </p>
-        {!isMobile && (
-          <CardAction>
-            <Button
-              size="lg"
-              className="min-w-40 font-medium text-white hover:bg-primary/80"
-              disabled={!canSubmit}
-              onClick={() => { setConfirmOpen(true); }}
-            >
-              {isSubmitting ? "Submitting..." : "Submit Rating"}
-            </Button>
-          </CardAction>
-        )}
       </CardHeader>
 
       <CardContent className="flex flex-col gap-4">
@@ -232,43 +219,57 @@ export function CandidateReview({
           />
         </div>
 
-        {isAssignedToCurrentRecruiter ? (
-          <div className="flex flex-col gap-2 pt-2">
-            <Label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-              Decision
-            </Label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                disabled={isSubmitting}
-                onClick={() => { setDecisionOverride("shortlist"); }}
-                className={cn(
-                  "flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
-                  decision === "shortlist"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-input hover:bg-accent hover:text-white",
-                )}
-              >
-                <Star className={cn("size-4", decision === "shortlist" && "fill-primary")} />
-                Shortlist
-              </button>
-              <button
-                type="button"
-                disabled={isSubmitting}
-                onClick={() => { setDecisionOverride("reject"); }}
-                className={cn(
-                  "flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
-                  decision === "reject"
-                    ? "border-destructive bg-destructive text-destructive-foreground"
-                    : "border-input hover:bg-destructive hover:text-white",
-                )}
-              >
-                <X className="size-4" />
-                Reject
-              </button>
+        <div className="flex items-end justify-between gap-4 pt-2">
+          {isAssignedToCurrentRecruiter ? (
+            <div className="flex w-full flex-col gap-2 md:w-auto">
+              <Label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                Decision
+              </Label>
+              <div className="flex justify-center gap-2 md:justify-start">
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => { setDecisionOverride("shortlist"); }}
+                  className={cn(
+                    "flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
+                    decision === "shortlist"
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-input hover:bg-accent hover:text-white",
+                  )}
+                >
+                  <Star className={cn("size-4", decision === "shortlist" && "fill-primary")} />
+                  Shortlist
+                </button>
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => { setDecisionOverride("reject"); }}
+                  className={cn(
+                    "flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
+                    decision === "reject"
+                      ? "border-destructive bg-destructive text-destructive-foreground"
+                      : "border-input hover:bg-destructive hover:text-white",
+                  )}
+                >
+                  <X className="size-4" />
+                  Reject
+                </button>
+              </div>
             </div>
-          </div>
-        ) : null}
+          ) : (
+            <div />
+          )}
+          {!isMobile && (
+            <Button
+              size="lg"
+              className="min-w-40 font-medium text-white hover:bg-primary/80"
+              disabled={!canSubmit}
+              onClick={() => { setConfirmOpen(true); }}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Rating"}
+            </Button>
+          )}
+        </div>
 
         {isMobile && (
           <div className="flex justify-end">
