@@ -277,6 +277,7 @@ export default function PendingCandidateCard({
             <ScoreTag score={systemScore} />
           </div>
         </div>
+        <div className="h-10 w-px bg-border/60" />
         <div className="flex w-20 shrink-0 flex-col items-center justify-start h-12">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             Acad. Avg
@@ -289,6 +290,7 @@ export default function PendingCandidateCard({
             )}
           </div>
         </div>
+        <div className="h-10 w-px bg-border/60" />
         <div className="flex w-24 shrink-0 flex-col items-center justify-start h-12">
           <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground text-center h-3 leading-none">
             Applied
