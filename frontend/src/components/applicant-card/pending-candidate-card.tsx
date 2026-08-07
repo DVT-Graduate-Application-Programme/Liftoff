@@ -35,6 +35,12 @@ type PendingCandidateCardProps = {
   isRejecting?: boolean;
 };
 
+function getScoreColor(score: number) {
+  if (score >= 80) return "text-primary";
+  if (score >= 65) return "text-amber-600 dark:text-amber-400";
+  return "text-red-600 dark:text-red-400";
+}
+
 function ScoreTag({
   score,
   size = "md",
@@ -43,8 +49,6 @@ function ScoreTag({
   size?: "sm" | "md";
 }) {
   const formattedScore = score ? score.toFixed(1) : 0;
-  const isHigh = score >= 80;
-  const isMedium = score >= 65 && score < 80;
 
   return (
     <div className="flex min-w-10 justify-center">
@@ -52,9 +56,7 @@ function ScoreTag({
         className={cn(
           "font-semibold tabular-nums",
           size === "sm" ? "text-base" : "text-lg @2xl:text-xl",
-          isHigh && "text-emerald-600 dark:text-emerald-400",
-          isMedium && "text-amber-600 dark:text-amber-400",
-          !isHigh && !isMedium && "text-red-600 dark:text-red-400",
+          getScoreColor(score),
         )}
       >
         {formattedScore}%
