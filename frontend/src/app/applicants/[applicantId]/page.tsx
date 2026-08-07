@@ -65,9 +65,7 @@ export default function DetailedApplicantInfo() {
   useEffect(() => {
     const el = candidateReviewRef.current;
     if (!el || isMobile) return;
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (!entry) return;
+    const observer = new ResizeObserver(([entry]) => {
       const next = entry.contentRect.height;
       setCandidateReviewHeight((prev) => (prev !== undefined && Math.abs(prev - next) < 1 ? prev : next));
     });
