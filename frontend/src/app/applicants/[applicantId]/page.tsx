@@ -57,6 +57,24 @@ export default function DetailedApplicantInfo() {
     return () => { window.removeEventListener("resize", checkMobile); };
   }, []);
 
+  // Activity History mirrors Candidate Review's natural height (stacked or side by side)
+  // so it can clip/scroll to match instead of both trying to stretch each other.
+  const candidateReviewRef = useRef<HTMLDivElement>(null);
+  const [candidateReviewHeight, setCandidateReviewHeight] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    const el = candidateReviewRef.current;
+    if (!el || isMobile) return;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      const next = entry.contentRect.height;
+      setCandidateReviewHeight((prev) => (prev !== undefined && Math.abs(prev - next) < 1 ? prev : next));
+    });
+    observer.observe(el);
+    return () => { observer.disconnect(); };
+  }, [isMobile]);
+
   useEffect(() => {
     if (!isResizing) return;
 
@@ -224,7 +242,7 @@ export default function DetailedApplicantInfo() {
             <TabsContent value="summary" className="mt-0">
               {aiSummaryBlock}
             </TabsContent>
-            <TabsContent value="history" className="mt-0">
+            <TabsContent value="history" className="mt-0 h-[65vh]">
               {applicantId && <ApplicationLogs applicationId={applicantId} />}
             </TabsContent>
           </Tabs>
@@ -270,10 +288,17 @@ export default function DetailedApplicantInfo() {
             </div>
           </div>
 
-          {/* Under the split: Candidate Review, then Applicant Logs */}
-          <div className="w-full mt-6 max-w-[1400px] flex flex-col gap-6">
-            <CandidateReview applicationId={applicantId} currentStatus={detailQuery.data?.currentStatus} />
-            {applicantId && <ApplicationLogs applicationId={applicantId} />}
+          {/* Under the split: Activity History, then Candidate Review, side by side */}
+          <div className="w-full mt-6 max-w-[1400px] flex flex-col items-stretch min-[1100px]:flex-row min-[1100px]:items-start gap-6">
+            <div
+              className="min-w-0 min-[1100px]:flex-1"
+              style={candidateReviewHeight ? { height: candidateReviewHeight } : undefined}
+            >
+              {applicantId && <ApplicationLogs applicationId={applicantId} />}
+            </div>
+            <div ref={candidateReviewRef} className="min-w-0 min-[1100px]:flex-1">
+              <CandidateReview applicationId={applicantId} currentStatus={detailQuery.data?.currentStatus} />
+            </div>
           </div>
         </>
       )}
