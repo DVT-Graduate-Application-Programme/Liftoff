@@ -235,7 +235,7 @@ export default function DetailedApplicantInfo() {
           <div
             ref={containerRef}
             className={cn(
-              "w-full max-w-[1400px] flex flex-row items-stretch justify-center pt-10 h-[calc(100vh_-_10rem)] min-h-0",
+              "w-full max-w-[1400px] flex flex-row items-stretch justify-center pt-10 h-[calc(100vh_-_7rem)] min-h-0",
               isResizing && "select-none cursor-col-resize"
             )}
           >
