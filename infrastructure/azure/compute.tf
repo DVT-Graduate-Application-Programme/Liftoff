@@ -546,6 +546,15 @@ resource "azurerm_container_app" "frontend" {
         name  = "AUTH_URL"
         value = "https://ca-${local.prefix}-frontend.${azurerm_container_app_environment.main.default_domain}"
       }
+
+      # Read by next.config.ts as allowedDevOrigins. Only `next dev` uses it — dev builds the
+      # Dockerfile's development stage, so without this every /_next/webpack-hmr request is
+      # refused as cross-origin. Same host as AUTH_URL above, without the scheme, so it stays
+      # correct if the Container Apps environment is recreated with a new default domain.
+      env {
+        name  = "ALLOWED_DEV_ORIGINS"
+        value = "ca-${local.prefix}-frontend.${azurerm_container_app_environment.main.default_domain}"
+      }
     }
   }
 }

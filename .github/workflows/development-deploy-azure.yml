@@ -27,7 +27,5 @@ jobs:
       # its own set, so the two can never be confused.
       environment_name: development
       image_tag_prefix: dev
-      # Development images: ASPNETCORE_ENVIRONMENT=Development, so the deployed dev API
-      # keeps serving /scalar and the OpenAPI document.
       build_target: development
     secrets: inherit
