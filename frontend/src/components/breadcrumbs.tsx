@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { usePathname, useParams, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import {
@@ -32,7 +33,17 @@ function tabHref(from: string) {
 function ApplicantCrumb() {
   const params = useParams<{ applicantId: string }>()
   const applicantQuery = useApplicant(params.applicantId)
-  const label = applicantQuery.data?.candidateName ?? "Applicant"
+
+  // Cached query data can already be available on the client's first render (e.g. after
+  // a client-side navigation) while the server has no way to know about it, which would
+  // mismatch the server-rendered "Applicant" fallback. Force the first client render to
+  // match the server, then swap in the real name on the next (post-hydration) render.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const label = mounted ? (applicantQuery.data?.candidateName ?? "Applicant") : "Applicant"
 
   return <BreadcrumbPage>{label}</BreadcrumbPage>
 }
