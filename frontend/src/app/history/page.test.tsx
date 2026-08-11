@@ -7,8 +7,14 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
+import { ApplicantSearchProvider } from "@/components/providers/applicant-search-provider";
+
 function renderHistoryPage() {
-  return renderWithQueryClient(<HistoryPage />);
+  return renderWithQueryClient(
+    <ApplicantSearchProvider>
+      <HistoryPage />
+    </ApplicantSearchProvider>,
+  );
 }
 
 function requestUrl(input: RequestInfo | URL): string {

@@ -1,13 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Sidebar, SidebarContent, SidebarGroup } from "@/components/ui/sidebar";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { StarRating } from "@/components/ui/star-rating";
 import type { Evaluation, EvaluationScore } from "@/types/api";
 import { CloseApplicantDetailsSidebarButton } from "./applicant-details-sidebar-controls";
 import { SCORE_CATEGORIES } from "./constants";
 import type { SelectionTabKey } from "@/components/providers/applicant-selection-provider";
 import { useApplicationLogs } from "@/hooks/use-recruiter-logs";
+import { useOwnership } from "@/hooks/use-ownership";
+import { useRateApplication } from "@/hooks/use-rate-application";
+import { useRateTechnicalApplication } from "@/hooks/use-rate-technical-application";
 import { ScrollText } from "lucide-react";
 
 type ApplicantDetailsSidebarProps = {
@@ -39,6 +50,26 @@ export function ApplicantDetailsSidebar({
   const keyStrengths = evaluation?.keyStrengthsJson ?? [];
   const showNotesSection = tabKey === "accepted";
   const { data: applicationLogs, isLoading: isLoadingNotes } = useApplicationLogs(applicantId ?? "");
+  const ownershipQuery = useOwnership(applicantId ?? "");
+  const rateMutation = useRateApplication(applicantId ?? "");
+  const rateTechnicalMutation = useRateTechnicalApplication(applicantId ?? "");
+  const cultureFit = ownershipQuery.data?.recruiterRating ?? 0;
+  const techFit = ownershipQuery.data?.technicalRating ?? 0;
+  const isQuickRating = rateMutation.isPending || rateTechnicalMutation.isPending;
+
+  const handleQuickRateCultureFit = (value: number) => {
+    rateMutation.mutate(
+      { rating: value },
+      { onError: () => { toast.error("Couldn't save Culture Fit rating"); } },
+    );
+  };
+
+  const handleQuickRateTechFit = (value: number) => {
+    rateTechnicalMutation.mutate(
+      { rating: value },
+      { onError: () => { toast.error("Couldn't save Tech Fit rating"); } },
+    );
+  };
   const notes = (applicationLogs ?? []).filter((log) => {
     const actionType = log.actionType.toUpperCase();
     return (actionType === "NOTES" || actionType === "RATING") && Boolean(log.reason);
@@ -119,15 +150,65 @@ export function ApplicantDetailsSidebar({
                   </p>
                 </div>
                 {keyStrengths.length > 0 ? (
-                  <div className="space-y-2">
-                    <p className="font-heading text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                      Key strengths
+                  showNotesSection ? (
+                    <Accordion type="single" collapsible defaultValue="key-strengths">
+                      <AccordionItem value="key-strengths" className="border-none">
+                        <AccordionTrigger className="font-heading text-xs font-semibold tracking-wide text-muted-foreground uppercase hover:no-underline">
+                          Key strengths
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <ol className="list-decimal space-y-1.5 pl-5 text-sm leading-6">
+                            {keyStrengths.map((strength) => (
+                              <li key={strength}>{strength}</li>
+                            ))}
+                          </ol>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="font-heading text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                        Key strengths
+                      </p>
+                      <ol className="list-decimal space-y-1.5 pl-5 text-sm leading-6">
+                        {keyStrengths.map((strength) => (
+                          <li key={strength}>{strength}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  )
+                ) : null}
+                {showNotesSection && applicantId ? (
+                  <div className="space-y-3 rounded-md border border-sidebar-border bg-sidebar-accent/20 p-5">
+                    <p className="font-heading text-xl font-semibold text-sidebar-foreground leading-tight">
+                      Quick Ratings
                     </p>
-                    <ol className="list-decimal space-y-1.5 pl-5 text-sm leading-6">
-                      {keyStrengths.map((strength) => (
-                        <li key={strength}>{strength}</li>
-                      ))}
-                    </ol>
+                    <div className="flex flex-wrap gap-x-6 gap-y-3">
+                      <div className="space-y-1.5">
+                        <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                          Culture Fit
+                        </p>
+                        <StarRating
+                          value={cultureFit}
+                          onChange={handleQuickRateCultureFit}
+                          disabled={isQuickRating}
+                          variant="culture"
+                          size="sm"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                          Tech Fit
+                        </p>
+                        <StarRating
+                          value={techFit}
+                          onChange={handleQuickRateTechFit}
+                          disabled={isQuickRating}
+                          variant="tech"
+                          size="sm"
+                        />
+                      </div>
+                    </div>
                   </div>
                 ) : null}
               </>

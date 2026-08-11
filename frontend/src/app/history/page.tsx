@@ -150,8 +150,8 @@ function CandidateHistoryCard({
     <AllCandidateCard
       key={candidate.applicationId}
       name={candidate.candidateName}
+      degree={degreeName}
       institute={institutionName}
-      subtitle={degreeName}
       academicAverage={academicAverage}
       systemScore={candidate.hiringAgentTotalScore}
       scoreLabel="Sys Score"

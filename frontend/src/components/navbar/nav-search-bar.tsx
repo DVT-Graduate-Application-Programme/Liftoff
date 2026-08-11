@@ -60,11 +60,11 @@ export function NavSearchBar({
   return (
     <Command
       shouldFilter={false}
-      className="w-full max-w-2xl overflow-visible bg-transparent pt-4"
+      className="w-full min-w-0 max-w-2xl overflow-visible bg-transparent pt-4"
     >
       <Popover open={popoverEnabled && open && hasQuery} onOpenChange={setOpen}>
         <PopoverAnchor asChild>
-          <InputGroup className={cn("w-full max-w-2xl border border-accent", className)}>
+          <InputGroup className={cn("w-full min-w-0 max-w-2xl border border-accent", className)}>
             <InputGroupInput
               placeholder={placeholder}
               value={search}

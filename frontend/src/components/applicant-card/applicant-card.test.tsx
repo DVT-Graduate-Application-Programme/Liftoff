@@ -14,7 +14,7 @@ describe("ApplicantCard", () => {
       />,
     );
 
-    const statusLabel = screen.getByText("Approved");
-    expect(statusLabel.className).toContain("bg-primary/10");
+    const statusLabels = screen.getAllByText("Approved");
+    expect(statusLabels[0].className).toContain("bg-primary/10");
   });
 });
