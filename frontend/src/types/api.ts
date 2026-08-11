@@ -77,6 +77,7 @@ export interface Ownership {
   shortlistedAt: string | null;
   recruiterRating: number | null;
   recruiterRatingNote: string | null;
+  technicalRating: number | null;
   ratedByRecruiterId: string | null;
   ratedAt: string | null;
 }

@@ -1,5 +1,6 @@
 "use client"
 
+import { useSyncExternalStore } from "react"
 import { usePathname, useParams, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import {
@@ -29,10 +30,24 @@ function tabHref(from: string) {
   return TAB_HREFS[from] ?? `/landing?tab=${from}`
 }
 
+function subscribeNever() {
+  return () => {}
+}
+
+// Cached query data can already be available on the client's first render (e.g. after a
+// client-side navigation) while the server has no way to know about it, which would
+// mismatch the server-rendered fallback. useSyncExternalStore's getServerSnapshot forces
+// the first client render to agree with the server; the real value follows right after.
+function useHasMounted() {
+  return useSyncExternalStore(subscribeNever, () => true, () => false)
+}
+
 function ApplicantCrumb() {
   const params = useParams<{ applicantId: string }>()
   const applicantQuery = useApplicant(params.applicantId)
-  const label = applicantQuery.data?.candidateName ?? "Applicant"
+  const hasMounted = useHasMounted()
+
+  const label = hasMounted ? (applicantQuery.data?.candidateName ?? "Applicant") : "Applicant"
 
   return <BreadcrumbPage>{label}</BreadcrumbPage>
 }
