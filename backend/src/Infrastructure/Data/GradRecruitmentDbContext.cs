@@ -30,9 +30,11 @@ public class GradRecruitmentDbContext : DbContext
             // Constraint and index names below are pinned to the names the previously
             // hand-written DDL produced, so an existing database can be baselined into
             // __EFMigrationsHistory without the two schemas drifting apart.
-            entity.ToTable("ApplicationRecords", t => t.HasCheckConstraint(
-                "ApplicationRecords_RecruiterRating_check",
-                "\"RecruiterRating\" BETWEEN 1 AND 5"));
+            entity.ToTable("ApplicationRecords", t =>
+            {
+                t.HasCheckConstraint("ApplicationRecords_RecruiterRating_check", "\"RecruiterRating\" BETWEEN 1 AND 5");
+                t.HasCheckConstraint("ApplicationRecords_TechnicalRating_check", "\"TechnicalRating\" BETWEEN 1 AND 5");
+            });
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName(nameof(ApplicationRecord.Id)).HasDefaultValueSql("gen_random_uuid()");
             entity.HasIndex(e => e.EmailMessageId).IsUnique().HasDatabaseName("UQ_EmailMessageId");
@@ -70,6 +72,7 @@ public class GradRecruitmentDbContext : DbContext
             // Recruiter rating
             entity.Property(e => e.RecruiterRating).HasColumnName(nameof(ApplicationRecord.RecruiterRating));
             entity.Property(e => e.RecruiterRatingNote).HasColumnName(nameof(ApplicationRecord.RecruiterRatingNote));
+            entity.Property(e => e.TechnicalRating).HasColumnName(nameof(ApplicationRecord.TechnicalRating));
             entity.Property(e => e.RatedByRecruiterId).HasColumnName(nameof(ApplicationRecord.RatedByRecruiterId)).HasMaxLength(255);
             entity.Property(e => e.RatedAt).HasColumnName(nameof(ApplicationRecord.RatedAt));
 

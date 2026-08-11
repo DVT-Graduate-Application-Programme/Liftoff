@@ -95,6 +95,7 @@ public class DashboardQueryService : IDashboardQueryService
                 a.ClaimedByRecruiterId,
                 a.ShortlistedByRecruiterId,
                 a.RecruiterRating,
+                a.TechnicalRating,
                 a.CreatedAt,
                 LatestEvaluation = a.HiringAgentEvaluations
                     .OrderByDescending(e => e.ProcessedAt)
@@ -118,6 +119,7 @@ public class DashboardQueryService : IDashboardQueryService
                 ClaimedByRecruiterId = a.ClaimedByRecruiterId,
                 ShortlistedByRecruiterId = a.ShortlistedByRecruiterId,
                 RecruiterRating = a.RecruiterRating,
+                TechnicalRating = a.TechnicalRating,
                 AcademicAverage = GetAcademicAverage(a.LatestEvaluation?.InstitutionJson, a.LatestEvaluation?.CategoryScoresJson),
                 CreatedAt = a.CreatedAt.UtcDateTime
             })

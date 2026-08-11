@@ -13,6 +13,13 @@ resource "azurerm_key_vault" "main" {
   tenant_id           = data.azurerm_client_config.current.tenant_id
   sku_name            = "standard"
   tags                = local.common_tags
+
+  # Prod only, and one-way: once enabled, Azure does not allow purge protection to be
+  # turned off, and neither the vault nor its secrets can be permanently deleted before the
+  # soft-delete window elapses. That is the point — it makes an accidental destroy
+  # recoverable — but it also means a prod vault cannot be recreated under the same name
+  # for 90 days. Dev leaves it off so the stack stays disposable.
+  purge_protection_enabled = local.env.key_vault_purge_protection_enabled
 }
 
 # Access policy: deployer identity — full secret management
@@ -29,6 +36,25 @@ resource "azurerm_key_vault_access_policy" "container_apps" {
   key_vault_id = azurerm_key_vault.main.id
   tenant_id    = data.azurerm_client_config.current.tenant_id
   object_id    = azurerm_user_assigned_identity.container_apps.principal_id
+
+  secret_permissions = ["Get", "List"]
+}
+
+# Access policy: operators — read-only at the data plane.
+#
+# Key Vault's data plane is governed by these policies, not by Azure RBAC, so the team's
+# subscription Reader role (iam.tf) deliberately cannot read a single secret value. This
+# policy is the narrow exception: it lets a named person or group run
+# scripts/with-azure-secrets.sh, which loads the stack's configuration straight from the
+# vault instead of from a .env file on someone's laptop.
+#
+# Get and List only — no Set, no Delete. Grant it to a group, not an individual, and treat
+# prod membership as a short list: it is read access to every production credential.
+resource "azurerm_key_vault_access_policy" "operators" {
+  count        = var.secrets_operator_object_id != "" ? 1 : 0
+  key_vault_id = azurerm_key_vault.main.id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = var.secrets_operator_object_id
 
   secret_permissions = ["Get", "List"]
 }

@@ -10,7 +10,7 @@ resource "azurerm_log_analytics_workspace" "main" {
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
   sku                 = "PerGB2018"
-  retention_in_days   = 30
+  retention_in_days   = local.env.log_retention_days
   tags                = local.common_tags
 }
 
@@ -62,7 +62,7 @@ resource "azurerm_monitor_metric_alert" "backend_5xx" {
     # more than `threshold` 5xx responses summed across the window_size.
     aggregation = "Total"
     operator    = "GreaterThan"
-    threshold   = 5
+    threshold   = local.env.alert_5xx_threshold
 
     dimension {
       name     = "statusCodeCategory"
@@ -92,7 +92,9 @@ resource "azurerm_monitor_metric_alert" "backend_replicas" {
     metric_name      = "Replicas"
     aggregation      = "Average"
     operator         = "LessThan"
-    threshold        = 1
+    # Alerts when the app is running below the replica count it is configured for, so in
+    # prod a single lost replica is visible rather than only a full outage.
+    threshold = local.env.backend_min_replicas
   }
 
   action {

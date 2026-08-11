@@ -14,7 +14,7 @@ resource "azurerm_container_registry" "main" {
   name                = "cr${substr(replace(local.prefix, "-", ""), 0, 18)}${local.suffix}"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
-  sku                 = "Basic"
+  sku                 = local.env.acr_sku
   admin_enabled       = true
   tags                = local.common_tags
 }
@@ -107,18 +107,29 @@ resource "azurerm_container_app" "backend" {
   }
 
   template {
-    min_replicas = 1
-    max_replicas = 1
+    # dev runs a single replica; prod runs at least two so a revision rollout or a crashed
+    # replica is not an outage. Safe to scale because the API is stateless — note that
+    # src/Api/BackgroundServices/EmailPollingWorker.cs is present but never registered with
+    # AddHostedService. Registering it would make every replica poll the same mailbox, and
+    # prod would then need it moved into the worker or gated to a single instance.
+    min_replicas = local.env.backend_min_replicas
+    max_replicas = local.env.backend_max_replicas
 
     container {
       name   = "backend"
       image  = var.backend_image != "" ? var.backend_image : "${azurerm_container_registry.main.login_server}/backend:latest"
-      cpu    = 0.25
-      memory = "0.5Gi"
+      cpu    = local.env.backend_cpu
+      memory = local.env.backend_memory
 
+      # Development in dev, Production in prod (environments.tf). Program.cs maps the
+      # OpenAPI document and the Scalar UI only under Development, so prod stops serving
+      # /scalar and stops returning developer exception pages.
+      #
+      # This is set here as well as in the image (backend/Dockerfile targets) because the
+      # container-level value is the one an operator can read off the deployed app.
       env {
         name  = "ASPNETCORE_ENVIRONMENT"
-        value = "Development"
+        value = local.env.app_environment_name
       }
 
       env {
@@ -235,12 +246,12 @@ resource "azurerm_container_app" "worker" {
     container {
       name   = "worker"
       image  = var.worker_image != "" ? var.worker_image : "${azurerm_container_registry.main.login_server}/worker:latest"
-      cpu    = 0.25
-      memory = "0.5Gi"
+      cpu    = local.env.worker_cpu
+      memory = local.env.worker_memory
 
       env {
         name  = "DOTNET_ENVIRONMENT"
-        value = "Development"
+        value = local.env.app_environment_name
       }
 
       # Bind Kestrel (admin + /health endpoints) to the ingress target port.
@@ -357,8 +368,8 @@ resource "azurerm_container_app" "hiring_agent" {
       # scanned PDFs is the memory peak, and extraction runs one LLM call per resume
       # section. 0.5/1.0Gi is the smallest valid Container Apps pairing above the 0.25/0.5Gi
       # the other apps use.
-      cpu    = 0.5
-      memory = "1Gi"
+      cpu    = local.env.hiring_agent_cpu
+      memory = local.env.hiring_agent_memory
 
       # Stable app FQDN, not latest_revision_fqdn — see the note on the frontend below.
       env {
@@ -462,14 +473,14 @@ resource "azurerm_container_app" "frontend" {
   }
 
   template {
-    min_replicas = 1
-    max_replicas = 1
+    min_replicas = local.env.frontend_min_replicas
+    max_replicas = local.env.frontend_max_replicas
 
     container {
       name   = "frontend"
       image  = var.frontend_image != "" ? var.frontend_image : "${azurerm_container_registry.main.login_server}/frontend:latest"
-      cpu    = 0.25
-      memory = "0.5Gi"
+      cpu    = local.env.frontend_cpu
+      memory = local.env.frontend_memory
 
       # The app's stable FQDN, not latest_revision_fqdn. The revision-scoped hostname
       # changes on every backend deploy (ca-...-backend--0000032 -> --0000033), which both
@@ -534,6 +545,15 @@ resource "azurerm_container_app" "frontend" {
       env {
         name  = "AUTH_URL"
         value = "https://ca-${local.prefix}-frontend.${azurerm_container_app_environment.main.default_domain}"
+      }
+
+      # Read by next.config.ts as allowedDevOrigins. Only `next dev` uses it — dev builds the
+      # Dockerfile's development stage, so without this every /_next/webpack-hmr request is
+      # refused as cross-origin. Same host as AUTH_URL above, without the scheme, so it stays
+      # correct if the Container Apps environment is recreated with a new default domain.
+      env {
+        name  = "ALLOWED_DEV_ORIGINS"
+        value = "ca-${local.prefix}-frontend.${azurerm_container_app_environment.main.default_domain}"
       }
     }
   }

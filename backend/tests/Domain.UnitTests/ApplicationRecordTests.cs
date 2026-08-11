@@ -128,6 +128,37 @@ public class ApplicationRecordTests
             .WithParameterName("rating");
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(5)]
+    public void RateTechnical_AcceptsRatingsWithinBounds(short rating)
+    {
+        var record = ApplicationRecord.Create("message-130", "candidate@example.com");
+        var now = DateTimeOffset.Parse("2026-08-05T11:00:00Z");
+
+        record.RateTechnical(rating, "recruiter-tech-1", now);
+
+        record.TechnicalRating.Should().Be(rating);
+        record.RatedByRecruiterId.Should().Be("recruiter-tech-1");
+        record.RatedAt.Should().Be(now);
+        record.RecruiterActions.Should().ContainSingle(action =>
+            action.ActionType == "TECHNICAL_RATING"
+            && action.RatingValue == rating);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(6)]
+    public void RateTechnical_RejectsRatingsOutsideBounds(short rating)
+    {
+        var record = ApplicationRecord.Create("message-131", "candidate@example.com");
+
+        var act = () => record.RateTechnical(rating, "recruiter-tech-1");
+
+        act.Should().Throw<ArgumentOutOfRangeException>()
+            .WithParameterName("rating");
+    }
+
     [Fact]
     public void ApplyEvaluation_StoresDerivedEvaluationSummary()
     {

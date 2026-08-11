@@ -10,7 +10,7 @@ terraform {
     }
   }
 
-  # Minimum OpenTofu version
+  # Minimum Terraform version
   required_version = ">= 1.6.0"
 }
 
@@ -20,9 +20,11 @@ provider "azurerm" {
   skip_provider_registration = true
   features {
     key_vault {
-      # Fully removes Key Vault on destroy instead of soft-deleting it.
-      # Useful in dev so you can re-run apply with the same name.
-      purge_soft_delete_on_destroy    = true
+      # dev: fully removes the Key Vault on destroy instead of soft-deleting it, so apply
+      # can be re-run with the same name.
+      # prod: false — a destroyed vault stays recoverable, and purge_protection_enabled
+      # (secrets.tf) would refuse the purge anyway.
+      purge_soft_delete_on_destroy    = local.env.key_vault_purge_on_destroy
       recover_soft_deleted_key_vaults = true
     }
   }

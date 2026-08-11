@@ -3,6 +3,7 @@ using Application.Features.GetApplicationDetails;
 using Application.Features.GetApplicationLogs;
 using Application.Features.GetApplicationOwnership;
 using Application.Features.GetApplications;
+using Application.Features.GetApplicationTechnicalRating;
 using Application.Features.GetHardGateScreening;
 using Application.Features.GetHiringAgentEvaluation;
 using Application.Interfaces;
@@ -72,6 +73,13 @@ public static class ApplicationQueryEndpoints
             return ownership is not null ? Results.Ok(ownership) : Results.NotFound();
         })
         .WithName("GetApplicationOwnership");
+
+        group.MapGet("/{id:guid}/rating", async (Guid id, IMediator mediator, CancellationToken ct) =>
+        {
+            var rating = await mediator.Send(new GetApplicationTechnicalRatingQuery(id), ct);
+            return rating is not null ? Results.Ok(rating) : Results.NotFound();
+        })
+        .WithName("GetApplicationRating");
 
         // GET /api/applications/{id}/logs
         group.MapGet("/{id:guid}/logs", async (Guid id, IMediator mediator, CancellationToken ct) =>

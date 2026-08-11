@@ -30,6 +30,7 @@ public static class ApplicationMappingExtensions
             ShortlistedAt = entity.ShortlistedAt,
             RecruiterRating = entity.RecruiterRating,
             RecruiterRatingNote = entity.RecruiterRatingNote,
+            TechnicalRating = entity.TechnicalRating,
             RatedByRecruiterId = entity.RatedByRecruiterId,
             RatedAt = entity.RatedAt,
             CreatedAt = entity.CreatedAt,

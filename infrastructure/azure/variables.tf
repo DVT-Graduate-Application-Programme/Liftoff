@@ -11,9 +11,18 @@ variable "project_name" {
 }
 
 variable "environment" {
-  description = "Deployment environment (dev, staging, prod)."
+  description = <<-EOT
+    Deployment environment. Must be a key of local.environments in environments.tf, which
+    is where every dev/prod difference (tiers, replicas, retention, safety rails) is
+    defined. The workspace must match — see terraform_data.environment_guard.
+  EOT
   type        = string
   default     = "dev"
+
+  validation {
+    condition     = contains(["dev", "prod"], var.environment)
+    error_message = "environment must be \"dev\" or \"prod\" — add a block to local.environments in environments.tf before introducing a third."
+  }
 }
 
 variable "subscription_id" {
@@ -159,10 +168,41 @@ variable "auth_microsoft_entra_id_issuer" {
   sensitive   = true
 }
 
+variable "secrets_operator_object_id" {
+  description = <<-EOT
+    Object ID of the Entra user or security group granted Get/List on the Key Vault's
+    secrets. Needed by anyone running scripts/with-azure-secrets.sh, which loads the stack's
+    configuration from the vault rather than from a local .env file.
+
+    Empty grants nobody beyond the deployer and the Container Apps identity — that is the
+    default, and the right setting for prod until someone actually needs it. Reader on the
+    subscription does not confer this: Key Vault's data plane is governed by access
+    policies, not RBAC.
+  EOT
+  type        = string
+  default     = ""
+}
+
 # ── Monitoring ────────────────────────────────────────────────────────────────
 
 variable "alert_email" {
   description = "Email address to receive Azure Monitor alert notifications."
+  type        = string
+  default     = ""
+}
+
+# ── Team access ───────────────────────────────────────────────────────────────
+
+variable "reader_group_object_id" {
+  description = <<-EOT
+    Object ID of the Entra ID security group granted the built-in Reader role. Created
+    out-of-band via `az ad group create`; membership is managed in Entra, not here.
+
+    Empty skips the role assignment entirely, which is what lets prod be applied before its
+    own reader group exists. Give each environment a distinct group: the assignment is
+    subscription-scoped (see iam.tf), so the same group id in both environments would be
+    the same assignment, and whichever stack applies second fails on the duplicate.
+  EOT
   type        = string
   default     = ""
 }

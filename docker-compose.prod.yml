@@ -1,0 +1,165 @@
+# Production stack.
+#
+# The counterpart to docker-compose.yml: the `production` build target of every Dockerfile,
+# no emulators, no seeding, no source mounts. Every backing service is real — Azure
+# PostgreSQL, Blob Storage and Service Bus.
+#
+# Production on Azure runs as Container Apps (infrastructure/azure), not from this file.
+# What it is for:
+#   · smoke-testing the exact image a deploy will roll out, before or after the rollout
+#   · reproducing a production-only problem locally, with production configuration
+#   · running the stack on a plain VM if Container Apps is ever not an option
+#
+# ── Secrets ──────────────────────────────────────────────────────────────────
+# Every credential below is read from the process environment, and the normal way to fill
+# that environment is straight from Azure Key Vault — no file on disk, nothing to commit,
+# nothing to go stale when a value is rotated:
+#
+#   ./scripts/with-azure-secrets.sh -- docker compose -f docker-compose.prod.yml up -d
+#
+# The `${VAR:?...}` form means a missing credential fails immediately with the name of what
+# is missing, rather than starting a container that dies on its first connection.
+#
+# A local .env.production still works as a fallback — `docker compose --env-file
+# .env.production -f docker-compose.prod.yml up` — but it puts every production secret in
+# cleartext on a laptop, so prefer the vault. See .env.production.example.
+#
+# Neither route hides the values from `docker inspect`: once Compose has them they are part
+# of the container configuration. What the vault removes is the file.
+#
+#   ./scripts/with-azure-secrets.sh -- docker compose -f docker-compose.prod.yml build
+#   ./scripts/with-azure-secrets.sh -- docker compose -f docker-compose.prod.yml run --rm migrations
+#   ./scripts/with-azure-secrets.sh -- docker compose -f docker-compose.prod.yml up -d
+#
+# To run images already pushed to ACR instead of building locally (the script sets
+# ACR_REPOSITORY from the Terraform output; IMAGE_TAG is yours to choose):
+#   az acr login --name crliftoffprodxxxxxx
+#   IMAGE_TAG=prod-<sha> ./scripts/with-azure-secrets.sh -- \
+#     docker compose -f docker-compose.prod.yml up -d --pull always
+#
+# There is deliberately no `db` service. Production data lives in the managed PostgreSQL
+# server; a container here would quietly become a second, unbacked-up copy.
+
+services:
+  # ── Schema ──────────────────────────────────────────────────────────────────
+  # Run-to-completion, never part of `up`: the `migrations` profile keeps it out of the
+  # default set. Mirrors the Container Apps Job that gates the deploy
+  # (infrastructure/azure/migrations.tf) — same image, same variables, same exit codes.
+  migrations:
+    profiles: ["migrations"]
+    image: ${ACR_REPOSITORY:-liftoff}/migrations:${IMAGE_TAG:-latest}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.migrations
+    # efbundle resolves its connection through GradRecruitmentDbContextFactory, which reads
+    # these. Deliberately not --connection, which would put the password in the process
+    # command line — the same reasoning as migrations.tf.
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST:?set by scripts/with-azure-secrets.sh, or by --env-file}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_DB: ${POSTGRES_DB:?missing}
+      POSTGRES_USER: ${POSTGRES_USER:?missing}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?missing}
+    restart: "no"
+
+  backend:
+    image: ${ACR_REPOSITORY:-liftoff}/backend:${IMAGE_TAG:-latest}
+    build:
+      context: ./backend
+      target: production
+    environment:
+      # Production: no OpenAPI document, no Scalar UI, no developer exception page.
+      ASPNETCORE_ENVIRONMENT: Production
+      # Database__AutoMigrateAndSeed is deliberately absent. It is what makes the backend
+      # migrate on startup and run DbSeeder, and DbSeeder truncates before it seeds.
+      # Schema changes come from the migrations service above.
+      POSTGRES_HOST: ${POSTGRES_HOST:?set by scripts/with-azure-secrets.sh, or by --env-file}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_DB: ${POSTGRES_DB:?missing}
+      POSTGRES_USER: ${POSTGRES_USER:?missing}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?missing}
+      # Real Azure endpoints — never the Azurite or Service Bus emulator credentials, which
+      # are public and well known.
+      STORAGE_CONNECTION_STRING: ${STORAGE_CONNECTION_STRING:?missing}
+      SERVICEBUS_CONNECTION_STRING: ${SERVICEBUS_CONNECTION_STRING:?missing}
+      APPLICATIONINSIGHTS_CONNECTION_STRING: ${APPLICATIONINSIGHTS_CONNECTION_STRING:-}
+      # Shared with the hiring agent: it signs the evaluation callback with this.
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:?missing}
+      NOTIFICATIONS__NEXTJS__WEBHOOKURL: ${NOTIFICATIONS__NEXTJS__WEBHOOKURL:-http://frontend:3000/api/internal/notify}
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5000/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  worker:
+    image: ${ACR_REPOSITORY:-liftoff}/worker:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+      target: production
+    environment:
+      DOTNET_ENVIRONMENT: Production
+      ASPNETCORE_URLS: "http://+:8080"
+      Worker__HiringAgentBaseUrl: "http://hiring-agent:8001"
+      SERVICEBUS_CONNECTION_STRING: ${SERVICEBUS_CONNECTION_STRING:?set by scripts/with-azure-secrets.sh, or by --env-file}
+      APPLICATIONINSIGHTS_CONNECTION_STRING: ${APPLICATIONINSIGHTS_CONNECTION_STRING:-}
+      # Empty leaves the admin endpoints disabled (503), which is a valid production choice.
+      Worker__AdminApiKey: ${Worker__AdminApiKey:-}
+    # Admin endpoints and /health are not published to the host: they are reachable from
+    # inside the compose network only, matching the internal-ingress-only Container App.
+    expose:
+      - "8080"
+    restart: unless-stopped
+    depends_on:
+      hiring-agent:
+        condition: service_started
+
+  hiring-agent:
+    image: ${ACR_REPOSITORY:-liftoff}/hiring-agent:${IMAGE_TAG:-latest}
+    build:
+      context: ./backend/src/AI/hiring-agent
+      target: production
+    environment:
+      BACKEND_BASE_URL: "http://backend:5000"
+      # No evaluation CSV, no extraction cache — see the production target in its Dockerfile.
+      DEVELOPMENT_MODE: "False"
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:?set by scripts/with-azure-secrets.sh, or by --env-file}
+      # gemini only: there is no Ollama server in a deployed environment.
+      LLM_PROVIDER: ${LLM_PROVIDER:-gemini}
+      DEFAULT_MODEL: ${DEFAULT_MODEL:-gemini-3.1-flash-lite}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:?missing}
+      # Optional — raises the GitHub API rate limit when enriching a candidate's profile.
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+    # Internal only: the worker is the sole caller and POST /notify has no auth of its own.
+    expose:
+      - "8001"
+    restart: unless-stopped
+
+  frontend:
+    image: ${ACR_REPOSITORY:-liftoff}/frontend:${IMAGE_TAG:-latest}
+    build:
+      context: ./frontend
+      target: production
+    environment:
+      NODE_ENV: production
+      BACKEND_URL: "http://backend:5000"
+      # Browser-facing, so it must be reachable from the user's machine, not just this network.
+      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:5000}
+      AUTH_SECRET: ${AUTH_SECRET:?set by scripts/with-azure-secrets.sh, or by --env-file}
+      AUTH_MICROSOFT_ENTRA_ID_ID: ${AUTH_MICROSOFT_ENTRA_ID_ID:?missing}
+      AUTH_MICROSOFT_ENTRA_ID_SECRET: ${AUTH_MICROSOFT_ENTRA_ID_SECRET:?missing}
+      AUTH_MICROSOFT_ENTRA_ID_ISSUER: ${AUTH_MICROSOFT_ENTRA_ID_ISSUER:?missing}
+      AUTH_TRUST_HOST: "true"
+      # Auth.js builds redirect_uri from this, so it must match the Entra app registration.
+      AUTH_URL: ${AUTH_URL:-http://localhost:3000}
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started

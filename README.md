@@ -113,7 +113,10 @@ uvicorn main:app --port 8001
 
 ## Configuration
 
-Environment is loaded from `.env.development`, referenced by every Compose service.
+Environment is loaded from `.env.development`, referenced by every Compose service. The
+production counterpart is `.env.production`, which is never committed — see
+`.env.production.example` for the variables it needs and the [Environments](#environments)
+section for how the two stacks differ.
 
 | Variable | Purpose |
 |---|---|
@@ -192,20 +195,103 @@ POST /notify               enqueue an application for evaluation (202 Accepted)
 
 ---
 
+## Environments
+
+Two deployment environments, separated end to end. Production is defined but **not yet
+created on Azure** — the configuration is complete and waiting on the first apply.
+
+| | development | production |
+|---|---|---|
+| Branch | `development` | `main` |
+| Azure | `rg-liftoff-dev` (live) | `rg-liftoff-prod` (not created) |
+| Terraform workspace | `default` | `prod` |
+| Image target | `development` | `production` |
+| Image tag | `dev-<sha>` | `prod-<sha>` |
+| Deploy workflow | [development-deploy-azure.yml](.github/workflows/development-deploy-azure.yml) | [production-deploy-azure.yml](.github/workflows/production-deploy-azure.yml) (gated) |
+| Local stack | `docker-compose.yml` | `docker-compose.prod.yml` |
+| Config | `.env.development` (committed) | Azure Key Vault, at run time |
+
+**Dockerfiles.** Each service's Dockerfile has a `development` and a `production` target off
+a shared build stage, so the two can only differ in how they run — not in what they compile:
+
+| | development | production |
+|---|---|---|
+| backend / worker | `ASPNETCORE_ENVIRONMENT=Development` — Scalar UI, OpenAPI document, developer exception page | `Production` — none of those, diagnostics off |
+| frontend | `next dev`, hot reload | standalone build, non-root, `NODE_ENV=production` |
+| hiring agent | `uvicorn --reload`, `DEVELOPMENT_MODE=True` (evaluation CSV + extraction cache) | no reload, non-root, `DEVELOPMENT_MODE=False` |
+
+`production` is the last stage in every file, so a bare `docker build` is prod-safe by
+default. `docker compose up` is unaffected — it names the `development` target explicitly.
+
+**Infrastructure.** Every dev/prod difference — database tier, replica counts, backup
+retention, storage redundancy, Key Vault purge protection, the resource group lock — is
+declared in one map in
+[`infrastructure/azure/environments.tf`](infrastructure/azure/environments.tf). The resource
+files read `local.env.<setting>` and are otherwise environment-agnostic.
+
+**Deploys.** Both environments run the same pipeline
+([deploy-azure.yml](.github/workflows/deploy-azure.yml)); the callers differ only in which
+GitHub Environment supplies the secrets, which image target is built, and how images are
+tagged. Production is skipped entirely until the `PROD_DEPLOY_ENABLED` repository variable
+is set to `true`, so this can land ahead of the infrastructure.
+
+**GitHub Environments.** Each environment's secrets are scoped to a GitHub Environment —
+`development` and `production` — rather than shared at repository level, and each is pinned
+by a deployment branch policy to the only branch allowed to deploy there. A run from the
+wrong branch cannot read the other environment's secrets; that is enforced on the runner,
+not by convention in a workflow file. `scripts/sync-github-secrets.sh` creates the
+environment, applies the branch policy and fills it from the matching Terraform workspace:
+
+```bash
+./scripts/sync-github-secrets.sh --environment dev --dry-run
+./scripts/sync-github-secrets.sh --environment dev
+./scripts/sync-github-secrets.sh --environment dev --prune-repo-secrets   # remove the old shared copies
+./scripts/sync-github-secrets.sh --environment prod --enable-prod-deploys # once prod exists
+```
+
+Required reviewers on `production` are deliberately left to the UI — approving a production
+deploy is a human decision, not something a script should switch on.
+
+**Secrets.** The production stack reads its credentials from Azure Key Vault at run time —
+there is no `.env.production` to create, leak, or leave stale when a value is rotated:
+
+```bash
+./scripts/with-azure-secrets.sh -- docker compose -f docker-compose.prod.yml up -d
+./scripts/with-azure-secrets.sh -- docker compose -f docker-compose.prod.yml run --rm migrations
+./scripts/with-azure-secrets.sh --environment dev --list   # variable names, never values
+```
+
+The script fetches the vault's secrets into the command's environment and nothing else —
+it cannot print them and cannot write an env file. Reading the vault needs a Key Vault
+access policy (`secrets_operator_object_id`); a subscription Reader deliberately cannot,
+because Key Vault's data plane is governed by access policies rather than RBAC.
+
+A local `.env.production` still works as a fallback for anyone who cannot reach the vault —
+`docker compose --env-file .env.production -f docker-compose.prod.yml up` — see
+`.env.production.example`. Neither route hides values from `docker inspect`; what the vault
+removes is the file on disk.
+
+---
+
 ## Infrastructure
 
 Terraform for two clouds under `infrastructure/`:
 
 ```
 infrastructure/
-├── azure/   main, compute, networking, database, secrets, monitoring
+├── azure/   environments (dev/prod matrix), main, compute, networking, database, secrets, monitoring
 └── aws/     compute, networking, database, secrets, monitoring, IAM policy
 ```
 
-Working notes on the cloud build-out are in [cloud-infrastructure-session-notes.md](cloud-infrastructure-session-notes.md).
+Per-environment commands, the full dev/prod comparison and the production bootstrap
+checklist are in [infrastructure/azure/README.md](infrastructure/azure/README.md). Working
+notes on the cloud build-out are in
+[cloud-infrastructure-session-notes.md](cloud-infrastructure-session-notes.md).
 
-> `terraform.tfstate` files are currently checked into the repo. Move to remote state
-> (Azure Storage / S3 + DynamoDB) before multiple people apply against these stacks.
+> State is still local to whoever last ran `apply`, and it stores `db_password`,
+> `auth_secret` and the Entra client secret in cleartext. Move to remote state (Azure
+> Storage / S3 + DynamoDB) before more than one person applies against either stack — and
+> before production carries real candidate data.
 
 ---
 
